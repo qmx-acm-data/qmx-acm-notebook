@@ -531,6 +531,7 @@ app.whenReady().then(() => {
   updater = createUpdater({
     currentVersion: APP_VERSION, runtimeVersion: process.versions.electron, downloadDir: path.join(dir, 'updates'),
     fetcher: networkFetch,
+    installedArchive: app.isPackaged ? path.join(path.dirname(process.execPath), 'resources', 'app.asar') : undefined,
     onProgress: progress => { if (!win.isDestroyed()) win.webContents.send('update-progress', progress); }
   });
   win.on('close', event => {

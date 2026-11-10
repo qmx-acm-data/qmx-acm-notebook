@@ -1112,6 +1112,9 @@
     const percent = typeof update.percent === 'number' && Number.isFinite(update.percent) ? update.percent : typeof update.total === 'number' && update.total > 0 && Number.isFinite(update.downloaded) ? update.downloaded / update.total * 100 : null;
     if (percent === null) progress.removeAttribute('value'); else { progress.value = Math.min(100, Math.max(0, percent)); if (!progress.hidden) text += ` ${Math.round(progress.value)}%`; }
     if (!progress.hidden && Number.isFinite(update.downloaded) && Number.isFinite(update.total) && update.total > 0) text += `（${(update.downloaded / 1048576).toFixed(1)} / ${(update.total / 1048576).toFixed(1)} MB）`;
+    if (update.downloadKind === 'delta' && Number.isFinite(update.total) && Number.isFinite(update.fullSize) && update.fullSize > update.total) {
+      text += ` 差分下载 ${(update.total / 1048576).toFixed(2)} MB，完整包 ${(update.fullSize / 1048576).toFixed(1)} MB。`;
+    }
     $('#update-status').textContent = text;
     $('#update-status').classList.toggle('update-error', update.phase === 'error');
     $('#check-update-button').textContent = updateReady && update.phase === 'error' ? '重试安装' : '检查更新';

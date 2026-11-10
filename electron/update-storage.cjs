@@ -64,7 +64,7 @@ function cleanTransactions(userDataDir, installDir, publicKey, report, downloads
     if (!/^qmx-update-[A-Za-z0-9]{6}$/.test(name)) continue;
     const directory = path.join(updates, name);
     try {
-      const files = removableDirectory(directory, name => ['app.asar', 'app.asar.part', '.owner.json'].includes(name));
+      const files = removableDirectory(directory, name => ['app.asar', 'app.asar.part', 'patch.qmxdelta', 'patch.qmxdelta.part', '.owner.json'].includes(name));
       const ownerPath = path.join(directory, '.owner.json');
       if (exists(ownerPath)) {
         const owner = helper.readJson(ownerPath);
