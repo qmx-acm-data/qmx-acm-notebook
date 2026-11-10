@@ -135,6 +135,41 @@ function createUpdater({ currentVersion, downloadDir, fetcher = globalThis.fetch
   let checkPromise = null;
   let downloadPromise = null;
   let verifyPromise = null;
+  // Only this instance's mkdtemp directories are ours to prune. Startup cleanup
+  // handles older instances; no cached selection is trusted across restarts.
+  const ownedDirectories = new Map();
+
+  async function pruneDownloads() {
+    for (const [directory, identity] of ownedDirectories) {
+      let info;
+      try { info = await fs.lstat(directory); }
+      catch (error) {
+        if (error.code !== 'ENOENT') throw error;
+        ownedDirectories.delete(directory);
+        continue;
+      }
+      // A renamed/replaced directory (including a junction) is no longer ours.
+      if (!info.isDirectory() || info.isSymbolicLink() || info.dev !== identity.dev || info.ino !== identity.ino) {
+        ownedDirectories.delete(directory);
+        continue;
+      }
+      await verifyDirectories(directory);
+      for (const name of ['app.asar.part', 'app.asar', '.owner.json']) {
+        const file = path.join(directory, name);
+        try {
+          const entry = await fs.lstat(file);
+          // Never recurse into an unexpected directory or follow a link.
+          if (entry.isFile() && !entry.isSymbolicLink()) await fs.unlink(file);
+        } catch (error) { if (error.code !== 'ENOENT') throw error; }
+      }
+      try { await fs.rmdir(directory); }
+      catch (error) {
+        // Preserve any unrelated entries, even inside a directory we created.
+        if (!['ENOENT', 'ENOTEMPTY', 'EEXIST'].includes(error.code)) throw error;
+      }
+      ownedDirectories.delete(directory);
+    }
+  }
 
   function emit(patch) {
     state = { ...state, ...patch };
@@ -186,6 +221,9 @@ function createUpdater({ currentVersion, downloadDir, fetcher = globalThis.fetch
     selected = null;
     ready = null;
     try {
+      // Discard the prior ready download before contacting the network, including
+      // when discovery fails or reports that no newer update is available.
+      await pruneDownloads();
       const deadline = Date.now() + timeoutMs;
       const commit = await candidates([COMMIT_URL, COMMIT_URL, COMMIT_URL], deadline, json);
       if (!commit || typeof commit.sha !== 'string' || !/^[a-f0-9]{40}$/.test(commit.sha)) throw new Error('Invalid main commit SHA');
@@ -264,10 +302,17 @@ function createUpdater({ currentVersion, downloadDir, fetcher = globalThis.fetch
         if (!selected) throw new Error('No newer update is available');
         const selection = selected;
         const metadata = validateManifest(selection.manifest);
+        // verifyReady failures retain their archive until a replacement download.
+        await pruneDownloads();
         await fs.mkdir(downloadDir, { recursive: true });
         await verifyDirectories(downloadDir);
         const ownDir = await fs.mkdtemp(path.join(downloadDir, 'qmx-update-'));
+        const identity = await fs.lstat(ownDir);
+        if (!identity.isDirectory() || identity.isSymbolicLink()) throw new Error('Update staging directory must not contain links');
+        ownedDirectories.set(ownDir, { dev: identity.dev, ino: identity.ino });
         await verifyDirectories(ownDir);
+        // Startup cleanup skips downloads while their creating process is alive.
+        await fs.writeFile(path.join(ownDir, '.owner.json'), JSON.stringify({ schema: 1, pid: process.pid }), { flag: 'wx', mode: 0o600 });
         temporary = path.join(ownDir, 'app.asar.part');
         handle = await fs.open(temporary, 'wx', 0o600);
         emit({ phase: 'downloading', version: selection.manifest.version, downloaded: 0, total: metadata.size, percent: 0, message: 'Downloading application update' });
@@ -301,7 +346,9 @@ function createUpdater({ currentVersion, downloadDir, fetcher = globalThis.fetch
         return clone(ready);
       } catch (error) {
         if (handle) await handle.close().catch(() => {});
-        if (temporary) await fs.unlink(temporary).catch(() => {});
+        // Includes empty directories and the final archive if post-rename
+        // verification failed. Keep ownership for a later retry if removal fails.
+        await pruneDownloads().catch(() => {});
         ready = null;
         return failure(error);
       }
