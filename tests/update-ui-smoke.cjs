@@ -48,8 +48,11 @@ const { chromium } = require('playwright');
   try {
     let page = await fixturePage({ available: false });
     await page.click('#check-update-button'); await settled(page);
-    assert.match(await page.locator('#update-status').innerText(), /最新版本/);
+    assert.match(await page.locator('#update-status').innerText(), /当前版本 1\.2\.3，暂无可用更新/);
     assert.deepEqual(await calls(page), ['check']);
+    await page.evaluate(() => fixture.progress({ phase: 'idle', available: false, currentVersion: '1.2.3', latestVersion: '1.2.2', message: 'Already up to date' }));
+    assert.match(await page.locator('#update-status').innerText(), /当前版本 1\.2\.3，暂无可用更新/);
+    assert.doesNotMatch(await page.locator('#update-status').innerText(), /最新版本 1\.2\.2/);
     await page.close();
 
     page = await fixturePage();

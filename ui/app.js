@@ -1487,7 +1487,7 @@
     if (s.updateCapability?.supported === false) $('#update-notice').textContent = s.updateCapability.reason;
     const latest = update.latestVersion ? ` ${update.latestVersion}` : '';
     const labels = { checking: '正在检查更新…', available: `发现新版本${latest}，可点击检查更新进行升级。`, downloading: `正在下载新版本${latest}…`, ready: `新版本${latest}的签名和文件已校验，正在准备更新。`, installing: '本地记录已备份，退出后将备份并替换程序文件，完成后自动重启。', error: '更新失败，请点击检查更新重试。' };
-    let text = labels[update.phase] || (update.available === false && !!update.message ? `当前已是最新版本${latest}。` : '可随时检查更新，无需登录 GitHub。');
+    let text = labels[update.phase] || (update.available === false && !!update.message ? `当前版本 ${s.appVersion || update.currentVersion || '未知'}，暂无可用更新。` : '可随时检查更新，无需登录 GitHub。');
     if (update.phase === 'checking' || update.phase === 'available' || update.phase === 'downloading' || update.phase === 'ready' || update.phase === 'installing' || update.phase === 'error' || update.available === false) {
       if (update.message) text += ` ${update.message}`;
     }
