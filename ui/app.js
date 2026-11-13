@@ -1499,6 +1499,11 @@
     if (update.downloadKind === 'delta' && Number.isFinite(update.total) && Number.isFinite(update.fullSize) && update.fullSize > update.total) {
       text += ` 差分下载 ${(update.total / 1048576).toFixed(2)} MB，完整包 ${(update.fullSize / 1048576).toFixed(1)} MB。`;
     }
+    if (update.downloadKind === 'delta' && update.deltaSteps > 1) text += ` 连续应用 ${update.deltaSteps} 个补丁，完成后统一安装。`;
+    if (update.downloadKind === 'full' && ['available', 'downloading', 'ready'].includes(update.phase)) {
+      const reasons = { 'no-patch-path': '未找到从当前版本到新版的完整补丁链', 'base-mismatch': '本机应用文件与补丁基础包不匹配', 'metadata-unavailable': '差分清单或历史记录暂不可用', 'patch-failed': '补丁下载、重建或校验失败' };
+      if (reasons[update.deltaReason]) text += ` 使用完整包：${reasons[update.deltaReason]}。`;
+    }
     $('#update-status').textContent = text;
     $('#update-status').classList.toggle('update-error', update.phase === 'error');
     $('#check-update-button').textContent = updateReady && update.phase === 'error' ? '重试安装' : '检查更新';
