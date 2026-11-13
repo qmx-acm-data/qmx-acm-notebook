@@ -11,6 +11,8 @@ const { EventEmitter } = require('node:events');
 const MAIN = path.resolve(__dirname, '../electron/main.cjs');
 const SOURCE = fs.readFileSync(MAIN, 'utf8');
 const REPO = 'team/notebook';
+const { normalizeServerUrl, repositoryKey } = require('../electron/github.cjs');
+const scoped = record => ({ ...record, repo: REPO, serverUrl: '', sourceKey: repositoryKey(REPO) });
 const UUID = '55c710aa-e083-4b14-94fe-a3a825d17f70';
 const localRecord = (extra = {}) => ({ id: 'local:one', kind: 'local', clientId: UUID, ownerId: '42', title: 'Original local', body: 'local body', ...extra });
 const documentRecord = (extra = {}) => ({ id: `document:problems/qmx/42/${UUID}.md`, kind: 'document', path: `problems/qmx/42/${UUID}.md`, repo: REPO, sha: 'new-sha', clientId: UUID, authorId: 42, title: 'Remote document', body: 'remote body', ...extra });
@@ -85,13 +87,13 @@ function harness({ files = {}, account = { id: 42, login: 'alice' }, backend = {
   class FakeGitHub {
     constructor(options) { this.options = options; }
   }
-  for (const method of ['saveDocument', 'deleteDocument', 'deleteIssue', 'sync', 'profile', 'comment', 'comments', 'getTagCatalog', 'requestTag', 'getTagReview', 'reviewTag']) {
+  for (const method of ['saveDocument', 'deleteDocument', 'deleteIssue', 'sync', 'profile', 'identity', 'saveAlgorithmNote', 'saveAlgorithmTopic', 'comment', 'comments', 'getTagCatalog', 'requestTag', 'getTagReview', 'reviewTag']) {
     FakeGitHub.prototype[method] = async function (...args) {
       calls.push({ method, args: clone(args), options: clone(this.options) });
       if (backend[method]) return backend[method](...args, this.options);
       if (method === 'saveDocument') return documentRecord();
       if (method === 'deleteDocument') return { id: args[0].id || `document:${args[0].path}`, path: args[0].path, repo: REPO, deleted: true };
-      if (method === 'profile') return { account: { id: 42, login: 'alice', avatarUrl: '' }, permissions: { repo: this.options.repo, push: true } };
+      if (method === 'profile' || method === 'identity') return { account: { id: 42, login: 'alice', avatarUrl: '' }, permissions: { repo: this.options.repo, push: true } };
       if (method === 'sync') return { records: [], issues: [], blobs: {}, lastSync: '2026-11-02T00:00:00Z' };
        if (method === 'getTagCatalog') return require('../ui/tag-presets.js');
        if (method === 'getTagReview') return { canReview: false, requests: [] };
@@ -144,7 +146,7 @@ function harness({ files = {}, account = { id: 42, login: 'alice' }, backend = {
         if (browserBackend.spawn) return browserBackend.spawn(file, args, options, child);
         return child;
       } };
-      if (name === './github.cjs') return { GitHub: FakeGitHub, repoParts(repo) { if (!/^[\w.-]+\/[\w.-]+$/.test(repo || '')) throw new Error('Invalid repo'); return repo.split('/'); } };
+      if (name === './github.cjs') return { GitHub: FakeGitHub, normalizeServerUrl, repositoryKey, repoParts(repo) { if (!/^[\w.-]+\/[\w.-]+$/.test(repo || '')) throw new Error('Invalid repo'); return repo.split('/'); } };
       throw new Error(`Unexpected dependency ${name}`);
     }, __dirname: path.dirname(MAIN),
   });
@@ -615,8 +617,8 @@ test('bootstrap separates a pre-sync mixed legacy cache and scopes it to its rep
   const doc = documentRecord({ repo: undefined }), issue = issueRecord();
   const h = harness({ files: { 'cache.json': { repo: REPO, records: [doc, issue], lastSync: 'cached-time' } } });
   const state = await h.invoke('bootstrap');
-  assert.deepEqual(state.records, [{ ...doc, repo: REPO }]);
-  assert.deepEqual(state.issues, [{ ...issue, repo: REPO }]);
+  assert.deepEqual(state.records, [scoped(doc)]);
+  assert.deepEqual(state.issues, [scoped(issue)]);
   assert.equal(state.lastSync, 'cached-time');
   await h.invoke('saveSettings', { repo: 'different/repository' });
   const changed = await h.invoke('bootstrap');
@@ -733,7 +735,7 @@ test('successful online save mutates cache immediately, preserves discussions an
   const h = harness({ files: { 'cache.json': { repo: REPO, records: [oldDoc, issue], blobs: { old: 'cached blob' }, lastSync: 'before-write' }, 'local.json': data } });
   const saved = await h.invoke('saveDocument', { ...own, repo: REPO });
   const state = await h.invoke('bootstrap');
-  assert.deepEqual(state.records, [saved]); assert.deepEqual(state.issues, [{ ...issue, repo: REPO }]);
+  assert.deepEqual(state.records, [saved]); assert.deepEqual(state.issues, [scoped(issue)]);
   assert.equal(state.lastSync, 'before-write');
   assert.deepEqual(state.local.records, [foreign, proposal, unrelated]);
   assert.deepEqual(state.local.favorites, data.favorites); assert.deepEqual(state.local.mastery, data.mastery); assert.deepEqual(state.local.draft, data.draft);
@@ -746,7 +748,7 @@ test('successful remote delete removes cached document and stale online local mi
   const h = harness({ files: { 'cache.json': { repo: REPO, records: [doc, other], issues: [issue] }, 'local.json': personal([doc, own]) } });
   await h.invoke('deleteDocument', doc);
   const state = await h.invoke('bootstrap');
-  assert.deepEqual(state.records, [other]); assert.deepEqual(state.issues, [{ ...issue, repo: REPO }]); assert.deepEqual(state.local.records, [own]);
+  assert.deepEqual(state.records, [scoped(other)]); assert.deepEqual(state.issues, [scoped(issue)]); assert.deepEqual(state.local.records, [own]);
 });
 
 test('stale UI local snapshots cannot resurrect online mirrors after remote deletion', async () => {
@@ -1092,4 +1094,93 @@ test('IPC handlers reject senders other than the application window', async () =
   const h = harness();
   await assert.rejects(h.handlers.get('updateLocal')({ sender: {} }, personal()), /非法调用/);
   assert.equal(h.stored('local.json'), null); assert.equal(h.calls.length, 0);
+});
+
+
+test('public installs default to GitHub and repository selection honors active ID over stale path', async () => {
+  const h = harness({ account: null, files: { 'settings.json': {} } });
+  const initial = await h.invoke('bootstrap');
+  assert.equal(initial.settings.repo, 'qmx-acm-data/2026');
+  assert.equal(initial.settings.serverUrl, '');
+  const changed = await h.invoke('saveSettings', { activeRepoId: 'ctgu-2026' });
+  assert.equal(changed.settings.repo, 'ctguacm/2026');
+  assert.equal(changed.settings.serverUrl, 'http://172.25.5.128:3000');
+  assert.equal((await h.invoke('saveSettings', { activeRepoId: 'qmx-official' })).settings.serverUrl, '');
+});
+
+test('same repository on separate servers has isolated caches, credentials, permissions and writes', async () => {
+  const repositories = [{ id: 'github', repo: REPO, serverUrl: '' }, { id: 'gitea', repo: REPO, serverUrl: 'https://git.example.test/api/v1/' }];
+  const h = harness({ files: { 'settings.json': { repo: REPO, repositories, activeRepoId: 'github' } }, backend: {
+    sync: async (_, options) => ({ records: [documentRecord({ title: options.serverUrl || 'GitHub' })], issues: [], blobs: { test: options.serverUrl }, lastSync: 'now' })
+  } });
+  await h.invoke('sync');
+  assert.equal((await h.invoke('bootstrap')).permissions.push, true);
+  let changed = await h.invoke('saveSettings', { activeRepoId: 'gitea' });
+  assert.equal(changed.settings.serverUrl, 'https://git.example.test');
+  assert.deepEqual(changed.records, []); assert.equal(changed.permissions, null);
+  changed = await h.invoke('sync');
+  assert.equal(changed.records[0].sourceKey, repositoryKey(REPO, 'https://git.example.test'));
+  assert.equal(changed.permissions.push, false);
+  assert.equal(h.calls.find(c => c.method === 'sync' && c.options.serverUrl).options.token, '');
+  assert.deepEqual(h.calls.find(c => c.method === 'sync' && c.options.serverUrl).args[0], {});
+  assert.equal(h.calls.find(c => c.method === 'identity').options.serverUrl, '');
+  await assert.rejects(h.invoke('saveDocument', documentRecord()), /Git 服务|仓库/);
+  await assert.rejects(h.invoke('comment', { repo: REPO, serverUrl: 'https://git.example.test', number: 7, body: 'test' }), /匿名读取/);
+  const cache = h.stored('cache.json');
+  assert.ok(cache.repos[repositoryKey(REPO)]); assert.ok(cache.repos[repositoryKey(REPO, 'https://git.example.test')]);
+  changed = await h.invoke('saveSettings', { activeRepoId: 'github' });
+  assert.equal(changed.records[0].title, 'GitHub');
+  await assert.rejects(h.invoke('deleteDocument', { ...changed.records[0], serverUrl: 'https://git.example.test', sourceKey: repositoryKey(REPO, 'https://git.example.test') }), /Git 服务|仓库/);
+});
+
+test('sync refuses to commit a result after generation invalidation', async () => {
+  const gate = deferred(), h = harness({ backend: { sync: () => gate.promise } });
+  const syncing = h.invoke('sync');
+  await h.invoke('cancelLogin');
+  gate.resolve({ records: [documentRecord()], issues: [], blobs: {} });
+  await assert.rejects(syncing, /配置已改变/);
+  assert.equal(h.stored('cache.json'), null);
+});
+
+test('GitHub OAuth on a custom source verifies identity only at canonical GitHub', async () => {
+  const h = harness({ account: null, files: { 'settings.json': {
+    repo: REPO, activeRepoId: 'custom', repositories: [{ id: 'custom', repo: REPO, serverUrl: 'http://git.example.test' }]
+  } }, networkBackend: async url => ({ ok: true, json: async () => String(url).endsWith('/device/code')
+    ? { user_code: 'ABCD', verification_uri: AUTH_URL, device_code: 'device', expires_in: 60, interval: 5 }
+    : { access_token: 'NEW_TEST_TOKEN' } }) });
+  const loggingIn = h.invoke('login');
+  await new Promise(setImmediate);
+  h.advanceTimers(5000);
+  assert.equal((await loggingIn).login, 'alice');
+  const identity = h.calls.find(call => call.method === 'identity');
+  assert.equal(identity.options.serverUrl, '');
+  assert.equal(identity.options.token, 'NEW_TEST_TOKEN');
+  assert.equal(h.calls.some(call => call.method === 'profile'), false);
+  assert(h.networkCalls.every(call => new URL(call.url).hostname === 'github.com'));
+  const state = await h.invoke('bootstrap');
+  assert.equal(state.permissions.push, false);
+  assert.equal(state.permissions.sourceKey, repositoryKey(REPO, 'http://git.example.test'));
+});
+
+test('legacy same-path custom server settings survive source-aware migration', async () => {
+  for (const repo of ['qmx-acm-data/2026', 'ctguacm/2026', REPO]) {
+    const h = harness({ account: null, files: { 'settings.json': { repo, serverUrl: 'https://git.example.test/api/v1/' } } });
+    const state = await h.invoke('bootstrap');
+    assert.equal(state.settings.repo, repo);
+    assert.equal(state.settings.serverUrl, 'https://git.example.test');
+    assert.equal(state.settings.activeRepoId, 'repo-current');
+    const saved = await h.invoke('saveSettings', { theme: 'dark' });
+    assert.equal(saved.settings.serverUrl, 'https://git.example.test');
+    assert.equal(saved.settings.repo, repo);
+  }
+});
+
+test('Gitea cache never adopts an ambiguous GitHub legacy cache', async () => {
+  const h = harness({ account: null, files: {
+    'settings.json': { repo: REPO, serverUrl: 'http://git.example.test', repositories: [{ id: 'custom', repo: REPO, serverUrl: 'http://git.example.test' }], activeRepoId: 'custom' },
+    'cache.json': { repo: REPO, records: [documentRecord()], blobs: { secret: 'old' } }
+  } });
+  assert.deepEqual((await h.invoke('bootstrap')).records, []);
+  await h.invoke('sync');
+  assert.deepEqual(h.calls.find(c => c.method === 'sync').args[0], {});
 });

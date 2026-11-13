@@ -4,6 +4,7 @@
   const $$ = (selector, root = document) => Array.from(root.querySelectorAll(selector));
   const bridge = window.notebook;
   const demo = !bridge;
+  const webPreview = demo && ['http:', 'https:'].includes(location.protocol);
   const STORAGE = 'acm-notebook.demo.v1';
   const THEME_STORAGE = 'acm-notebook.theme';
   const SIDEBAR_STORAGE = 'acm-notebook.sidebar';
@@ -48,11 +49,21 @@
   function button(label, className, action) { const node = element('button', className, label); node.type = 'button'; node.addEventListener('click', action); return node; }
   function toast(message) { $('#toast').textContent = message; $('#toast').hidden = false; clearTimeout(toastTimer); toastTimer = setTimeout(() => { $('#toast').hidden = true; }, 3400); }
   function errorMessage(error) { const message = typeof error === 'string' ? error : error?.message || '操作未完成，请稍后重试'; return message.replace(/^Error invoking remote method '[^']+':\s*(?:Error:\s*)?/, ''); }
-  function key(record) { return String(record.id ?? record.number ?? `${record.platform}:${record.pid}:${record.url}`); }
-  function uuid() { return crypto.randomUUID(); }
+  function key(record) { const id = String(record.id ?? record.number ?? `${record.platform}:${record.pid}:${record.url}`); return record.kind !== 'local' && record.sourceKey && record.sourceKey !== 'https://api.github.com|qmx-acm-data/2026' ? `${record.sourceKey}:${id}` : id; }
+  function uuid() {
+    if (typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function') {
+      return crypto.randomUUID();
+    }
+    return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, c => {
+      const r = Math.random() * 16 | 0;
+      const v = c === 'x' ? r : (r & 0x3 | 0x8);
+      return v.toString(16);
+    });
+  }
   function accountId() { return s.account?.id == null ? null : String(s.account.id); }
   function repo() { return s.permissions.repo || s.settings.repo || ''; }
-  function sameRepo(record) { return !!record.repo && String(record.repo).toLowerCase() === String(repo()).toLowerCase(); }
+  function repoSource(repoPath = repo(), serverUrl = s.settings.serverUrl) { let server = String(serverUrl || '').replace(/\/+$/, '').replace(/\/api\/v1$/, ''); if (!server || ['https://github.com', 'https://api.github.com'].includes(server)) server = 'https://api.github.com'; return `${server}|${String(repoPath).toLowerCase()}`; }
+  function sameRepo(record) { return !!record.repo && String(record.repo).toLowerCase() === String(repo()).toLowerCase() && (record.sourceKey ? record.sourceKey === repoSource() : repoSource(record.repo, record.serverUrl) === repoSource()); }
   const migratedClientIds = new Map();
   function normalizeLocal(local) { return { records: (Array.isArray(local?.records) ? local.records : []).filter(record => record?.kind === 'local').map(record => { const legacyKey = record.id == null ? null : String(record.id); const clientId = record.clientId || (legacyKey && migratedClientIds.get(legacyKey)) || uuid(); if (legacyKey) migratedClientIds.set(legacyKey, clientId); return { ...record, clientId, id: record.id ?? `local:${clientId}`, ownerId: record.ownerId == null ? null : String(record.ownerId) }; }), favorites: Array.isArray(local?.favorites) ? local.favorites : [], mastery: local?.mastery && typeof local.mastery === 'object' ? local.mastery : {}, draft: local?.draft && typeof local.draft === 'object' ? local.draft : {}, learningPaths: local?.learningPaths && typeof local.learningPaths === 'object' && !Array.isArray(local.learningPaths) ? local.learningPaths : {} }; }
   function visibleLocal(record) { return record.ownerId == null || (accountId() !== null && String(record.ownerId) === accountId()); }
@@ -91,6 +102,7 @@
     s.account = payload.account || null; s.lastSync = payload.lastSync || null; s.error = payload.error ? errorMessage(payload.error) : '';
     applyTheme(s.settings.theme || readTheme());
     applyCodeSettings();
+    renderRepoSelector();
   }
   function readTheme() { try { return localStorage.getItem(THEME_STORAGE) || 'light'; } catch (_) { return 'light'; } }
   function applyTheme(theme) { theme = ['light', 'dark', 'cards'].includes(theme) ? theme : 'light'; document.body.dataset.theme = theme; $('#theme-select').value = theme; try { localStorage.setItem(THEME_STORAGE, theme); } catch (_) {} }
@@ -1116,7 +1128,62 @@
   async function sync() {
     if (s.busy || $('#submit-dialog').open) { toast('请先完成或关闭当前编辑'); return; }
     setBusy(true);
-    try { if (demo) { toast('演示模式：本地记录已保留，未连接公共题库'); return; } if (!navigator.onLine) throw new Error('当前离线，请连接网络后重试'); applyPayload(await call('sync')); s.comments.clear(); refreshFilters(); render(); toast('学习空间已同步'); } catch (error) { const message = errorMessage(error); try { applyPayload(await call('bootstrap')); } catch (_) {} s.error = message; refreshFilters(); render(); toast(`同步失败：${message}`); } finally { setBusy(false); }
+    try {
+      if (demo && !webPreview) { toast('演示模式：本地记录已保留，未连接公共题库'); return; }
+      if (demo) {
+        const activeRepo = (s.settings.repositories || []).find(r => r.id === s.settings.activeRepoId) ||
+          (s.settings.repositories || [])[0] ||
+          { repo: 'qmx-acm-data/2026', serverUrl: '' };
+        const currentRepo = activeRepo.repo || s.settings?.repo || 'qmx-acm-data/2026';
+        const currentServer = activeRepo.serverUrl !== undefined ? activeRepo.serverUrl : (s.settings?.serverUrl || '');
+        s.settings.repo = currentRepo;
+        s.permissions.repo = currentRepo;
+
+        try {
+          const res = await fetch(`/api/sync?repo=${encodeURIComponent(currentRepo)}&serverUrl=${encodeURIComponent(currentServer)}`);
+          if (res.ok) {
+            const data = await res.json();
+            if (Array.isArray(data.records)) {
+              s.records = data.records.map(r => ({ ...r, repo: currentRepo, serverUrl: currentServer, sourceKey: repoSource(currentRepo, currentServer) }));
+              s.issues = (Array.isArray(data.issues) ? data.issues : []).map(r => ({ ...r, repo: currentRepo, serverUrl: currentServer, sourceKey: repoSource(currentRepo, currentServer) }));
+              s.algorithmNotes = Array.isArray(data.algorithmNotes) ? data.algorithmNotes : [];
+              s.algorithmTopics = Array.isArray(data.algorithmTopics) ? data.algorithmTopics : [];
+              s.algorithmTree = window.NotebookAlgorithmDirectory.hydrate(window.QMX_ALGORITHM_TREE, s.algorithmTopics);
+              s.lastSync = new Date().toISOString();
+              s.comments.clear();
+              refreshFilters();
+              render();
+              toast(`已从 ${currentRepo} 同步 ${s.records.length} 道题解`);
+              return;
+            }
+          } else {
+            const errData = await res.json().catch(() => ({}));
+            toast(`同步失败：${errData.error || res.statusText}`);
+            return;
+          }
+        } catch (fetchErr) {
+          toast(`网络请求失败：${errorMessage(fetchErr)}`);
+          return;
+        }
+        toast('演示模式：本地记录已保留，未连接公共题库');
+        return;
+      }
+      if (!navigator.onLine) throw new Error('当前离线，请连接网络后重试');
+      applyPayload(await call('sync'));
+      s.comments.clear();
+      refreshFilters();
+      render();
+      toast('学习空间已同步');
+    } catch (error) {
+      const message = errorMessage(error);
+      try { applyPayload(await call('bootstrap')); } catch (_) {}
+      s.error = message;
+      refreshFilters();
+      render();
+      toast(`同步失败：${message}`);
+    } finally {
+      setBusy(false);
+    }
   }
   $$('.nav-item').forEach(node => node.addEventListener('click', event => { navigate(node.dataset.view); if (event.pointerType === 'touch') { sidebarHovered = false; sidebarFocused = false; updateSidebar(); } }));
   document.addEventListener('keydown', event => { if (event.key === 'Escape' && focusedDetail && !document.querySelector('dialog[open]')) { event.preventDefault(); closeDetail(); } });
@@ -1177,9 +1244,196 @@
   $('#submit-form').addEventListener('input', () => { clearTimeout(draftTimer); draftTimer = setTimeout(saveDraft, 650); });
   $('#submit-form').elements.platform.addEventListener('change', () => { const form = $('#submit-form'); form.elements.rating.value = ''; form.elements.difficulty.value = ''; setEditorPlatform(form.elements.platform.value, false); });
   $('#save-local-button').addEventListener('click', () => saveRecord(false)); $('#submit-form').addEventListener('submit', event => { event.preventDefault(); saveRecord(true); });
+  const escapeHtml = value => String(value ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+  let editingRepos = [];
+  let editingActiveId = '';
+
+  function renderRepoSelector() {
+    const select = $('#repo-select');
+    if (!select) return;
+    const repos = Array.isArray(s.settings?.repositories) && s.settings.repositories.length ? s.settings.repositories : [
+      { id: 'repo-current', name: '当前题库', repo: s.settings?.repo || 'qmx-acm-data/2026', serverUrl: s.settings?.serverUrl || '' }
+    ];
+    const activeId = s.settings?.activeRepoId || repos[0].id;
+    select.replaceChildren();
+    repos.forEach(r => {
+      const opt = document.createElement('option');
+      opt.value = r.id;
+      opt.textContent = `${r.name || r.repo} (${r.repo})`;
+      if (r.id === activeId) opt.selected = true;
+      select.append(opt);
+    });
+  }
+
+  function renderSettingsRepoList() {
+    const container = $('#settings-repo-list');
+    if (!container) return;
+    container.replaceChildren();
+    editingRepos.forEach((r, idx) => {
+      const item = document.createElement('div');
+      item.className = 'repo-card-item' + (r.id === editingActiveId ? ' active' : '');
+      item.style.cssText = 'display:flex;justify-content:space-between;align-items:center;padding:8px 12px;border:1px solid var(--line);border-radius:6px;margin-bottom:6px;background:var(--surface-soft);font-size:11px;';
+      if (r.id === editingActiveId) {
+        item.style.borderColor = 'var(--accent)';
+        item.style.background = 'var(--accent-soft)';
+      }
+      const meta = document.createElement('div');
+      meta.style.cssText = 'min-width:0;flex:1;';
+      meta.innerHTML = `<div><strong>${escapeHtml(r.name || r.repo)}</strong> ${r.id === editingActiveId ? '<span style="color:var(--accent);font-size:10px;font-weight:600;">[当前使用]</span>' : ''}</div><div style="font-size:10px;color:var(--muted);">${escapeHtml(r.serverUrl ? r.serverUrl + ' · ' : 'GitHub · ')}${escapeHtml(r.repo)}</div>`;
+      const actions = document.createElement('div');
+      actions.style.cssText = 'display:flex;gap:6px;align-items:center;';
+      if (r.id !== editingActiveId) {
+        const switchBtn = document.createElement('button');
+        switchBtn.type = 'button';
+        switchBtn.className = 'button secondary';
+        switchBtn.style.padding = '4px 8px';
+        switchBtn.style.fontSize = '10px';
+        switchBtn.textContent = '设为当前';
+        switchBtn.onclick = () => { editingActiveId = r.id; renderSettingsRepoList(); };
+        actions.append(switchBtn);
+      }
+      if (editingRepos.length > 1) {
+        const delBtn = document.createElement('button');
+        delBtn.type = 'button';
+        delBtn.className = 'icon-button';
+        delBtn.style.fontSize = '12px';
+        delBtn.title = '删除此仓库';
+        delBtn.textContent = '✕';
+        delBtn.onclick = () => {
+          editingRepos.splice(idx, 1);
+          if (editingActiveId === r.id) editingActiveId = editingRepos[0].id;
+          renderSettingsRepoList();
+        };
+        actions.append(delBtn);
+      }
+      item.append(meta, actions);
+      container.append(item);
+    });
+  }
+
+  $('#repo-select')?.addEventListener('change', async event => {
+    const selectedId = event.target.value;
+    if (selectedId === s.settings.activeRepoId) return;
+    if (s.busy || $('#submit-dialog').open || document.querySelector('dialog[open]')) { event.target.value = s.settings.activeRepoId; toast('请先完成当前操作或关闭弹窗'); return; }
+    setBusy(true);
+    try {
+      if (!demo) {
+        await call('saveSettings', { activeRepoId: selectedId });
+        applyPayload(await call('bootstrap'));
+      } else {
+        s.settings.activeRepoId = selectedId;
+        const target = (s.settings.repositories || []).find(r => r.id === selectedId);
+        if (target) {
+          s.settings.repo = target.repo;
+          s.settings.serverUrl = target.serverUrl;
+          s.permissions.repo = target.repo;
+        }
+        writeDemo();
+        s.records = []; s.issues = []; s.algorithmNotes = []; s.algorithmTopics = []; s.lastSync = null;
+        s.algorithmTree = window.NotebookAlgorithmDirectory.hydrate(window.QMX_ALGORITHM_TREE, []);
+        renderRepoSelector();
+      }
+      s.comments.clear(); s.selected = null; focusedDetail = false; document.body.classList.remove('reading-detail');
+      refreshFilters(); render();
+      toast('已切换到仓库：' + (s.settings.repo || ''));
+    } catch (err) {
+      renderRepoSelector(); toast(errorMessage(err)); return;
+    } finally {
+      setBusy(false);
+    }
+    await sync();
+  });
+
+  $('#new-repo-add-btn')?.addEventListener('click', () => {
+    const nameInput = $('#new-repo-name'), serverInput = $('#new-repo-server'), pathInput = $('#new-repo-path');
+    const name = nameInput.value.trim();
+    const serverUrl = serverInput.value.trim();
+    const repo = pathInput.value.trim();
+    if (!repo || !/^[\w.-]+\/[\w.-]+$/.test(repo)) {
+      toast('仓库路径格式不正确，应为 owner/repo');
+      return;
+    }
+    if (serverUrl) {
+      try { const url = new URL(serverUrl); if (!['http:', 'https:'].includes(url.protocol) || url.username || url.password || url.search || url.hash || /[\s\\]/.test(serverUrl)) throw new Error(); }
+      catch { toast('Git 服务地址须为不含账号密码、查询参数和锚点的 HTTP/HTTPS 地址'); return; }
+    }
+    const id = 'repo-' + Math.random().toString(36).slice(2, 9);
+    editingRepos.push({ id, name: name || repo, serverUrl, repo });
+    nameInput.value = ''; serverInput.value = ''; pathInput.value = '';
+    renderSettingsRepoList();
+    toast('已添加仓库：' + (name || repo));
+  });
+
   $('#theme-select').addEventListener('change', async event => { const previous = { ...s.settings }; s.settings.theme = event.target.value; applyTheme(s.settings.theme); try { if (demo) writeDemo(); else await call('saveSettings', { ...s.settings }); } catch (error) { s.settings = previous; toast(`当前风格已预览，设置未保存：${errorMessage(error)}`); } });
-  $('#settings-button').addEventListener('click', () => { if (s.busy || $('#submit-dialog').open) { toast('请先完成或关闭编辑'); return; } settingsPreview = { ...s.settings, theme: document.body.dataset.theme }; const form = $('#settings-form'); form.elements.theme.value = settingsPreview.theme; form.elements.repo.value = s.settings.repo || 'qmx-acm-data/2026'; form.elements.clientId.value = s.settings.clientId || ''; form.elements.displayName.value = s.settings.displayName || ''; form.elements.autoSync.checked = s.settings.autoSync !== false; form.elements.codeFontSize.value = String(s.settings.codeFontSize || 11); $('#code-font-size-value').textContent = (s.settings.codeFontSize || 11) + 'px'; form.elements.codeLineNumbers.checked = s.settings.codeLineNumbers === true; $('#settings-dialog').showModal(); });
-  $('#settings-form').addEventListener('submit', async event => { event.preventDefault(); const form = event.currentTarget; const settings = { ...s.settings, theme: form.elements.theme.value, repo: form.elements.repo.value.trim() || 'qmx-acm-data/2026', clientId: form.elements.clientId.value.trim(), displayName: form.elements.displayName.value.trim(), autoSync: form.elements.autoSync.checked, codeFontSize: Number(form.elements.codeFontSize.value), codeLineNumbers: form.elements.codeLineNumbers.checked }; if (s.busy) return; setBusy(true); try { if (!demo) { await call('saveSettings', settings); applyPayload(await call('bootstrap')); } else { s.settings = settings; } settingsPreview = null; applyCodeSettings(); applyTheme(settings.theme); writeDemo(); $('#settings-dialog').close(); refreshFilters(); render(); toast('设置已保存'); } catch (error) { toast(errorMessage(error)); } finally { setBusy(false); } });
+  $('#settings-button').addEventListener('click', () => {
+    if (s.busy || $('#submit-dialog').open) { toast('请先完成或关闭编辑'); return; }
+    try {
+      settingsPreview = { ...s.settings, theme: document.body.dataset.theme };
+      const form = $('#settings-form');
+      if (form.elements.theme) form.elements.theme.value = settingsPreview.theme;
+      editingRepos = (Array.isArray(s.settings.repositories) && s.settings.repositories.length) ? structuredClone(s.settings.repositories) : [
+        { id: 'repo-current', name: '当前题库', serverUrl: s.settings.serverUrl || '', repo: s.settings.repo || 'qmx-acm-data/2026' }
+      ];
+      editingActiveId = s.settings.activeRepoId || editingRepos[0]?.id || 'repo-current';
+      renderSettingsRepoList();
+      if (form.elements.clientId) form.elements.clientId.value = s.settings.clientId || '';
+      if (form.elements.displayName) form.elements.displayName.value = s.settings.displayName || '';
+      if (form.elements.autoSync) form.elements.autoSync.checked = s.settings.autoSync !== false;
+      if (form.elements.codeFontSize) form.elements.codeFontSize.value = String(s.settings.codeFontSize || 11);
+      const fontSizeNode = $('#code-font-size-value');
+      if (fontSizeNode) fontSizeNode.textContent = (s.settings.codeFontSize || 11) + 'px';
+      if (form.elements.codeLineNumbers) form.elements.codeLineNumbers.checked = s.settings.codeLineNumbers === true;
+    } catch (e) {
+      console.error('Settings init error:', e);
+    }
+    $('#settings-dialog').showModal();
+  });
+  $('#settings-form').addEventListener('submit', async event => {
+    event.preventDefault();
+    const form = event.currentTarget;
+    const previousSource = repoSource(); let saved = false;
+    const activeRepoObj = editingRepos.find(r => r.id === editingActiveId) || editingRepos[0];
+    const settings = {
+      ...s.settings,
+      theme: form.elements.theme.value,
+      repositories: editingRepos,
+      activeRepoId: editingActiveId,
+      serverUrl: activeRepoObj ? activeRepoObj.serverUrl : (s.settings.serverUrl || ''),
+      repo: activeRepoObj ? activeRepoObj.repo : (s.settings.repo || 'qmx-acm-data/2026'),
+      clientId: form.elements.clientId.value.trim(),
+      displayName: form.elements.displayName.value.trim(),
+      autoSync: form.elements.autoSync.checked,
+      codeFontSize: Number(form.elements.codeFontSize.value),
+      codeLineNumbers: form.elements.codeLineNumbers.checked
+    };
+    if (s.busy) return;
+    setBusy(true);
+    try {
+      if (!demo) {
+        await call('saveSettings', settings);
+        applyPayload(await call('bootstrap'));
+      } else {
+        s.settings = settings; s.permissions.repo = settings.repo;
+        if (previousSource !== repoSource()) { s.records = []; s.issues = []; s.algorithmNotes = []; s.algorithmTopics = []; s.lastSync = null; s.algorithmTree = window.NotebookAlgorithmDirectory.hydrate(window.QMX_ALGORITHM_TREE, []); }
+      }
+      if (previousSource !== repoSource()) { s.comments.clear(); s.selected = null; focusedDetail = false; document.body.classList.remove('reading-detail'); }
+      saved = true;
+      settingsPreview = null;
+      applyCodeSettings();
+      applyTheme(settings.theme);
+      renderRepoSelector();
+      writeDemo();
+      $('#settings-dialog').close();
+      refreshFilters();
+      render();
+      toast('设置已保存');
+    } catch (error) {
+      toast(errorMessage(error));
+    } finally {
+      setBusy(false);
+    }
+    if (saved && previousSource !== repoSource()) await sync();
+  });
   $('#settings-form').elements.codeFontSize.addEventListener('input', () => { if (!settingsPreview) return; const size = Number($('#settings-form').elements.codeFontSize.value); settingsPreview.codeFontSize = size; applyCodeSettings(); $('#code-font-size-value').textContent = size + 'px'; });
   $('#settings-form').elements.codeLineNumbers.addEventListener('change', () => { if (!settingsPreview) return; settingsPreview.codeLineNumbers = $('#settings-form').elements.codeLineNumbers.checked; render(); });
   $('#settings-dialog').addEventListener('close', () => { if (!settingsPreview) return; settingsPreview = null; applyCodeSettings(); render(); });
@@ -1395,13 +1649,34 @@
   document.addEventListener('keydown', event => { if (event.key === '/' && !event.ctrlKey && !event.metaKey && !['INPUT', 'TEXTAREA', 'SELECT'].includes(document.activeElement?.tagName) && !document.querySelector('dialog[open]')) { event.preventDefault(); if (['home', 'tricks', 'algorithms'].includes(s.view)) { navigate('public'); } $('#search-input').focus(); } });
   async function bootstrap() {
     applyTheme(readTheme()); applySidebar(readSidebar()); render();
-    if (demo) { s.permissions = { repo: 'qmx-acm-data/2026', push: false, admin: false }; s.records = examples.filter(record => record.kind === 'document').map(record => ({ ...record, repo: s.permissions.repo })); s.issues = examples.filter(record => record.kind === 'issue').map(record => ({ ...record, repo: s.permissions.repo })); s.local = normalizeLocal(cached?.local || { records: [examples[2]], favorites: [key(examples[1])], mastery: { [key(examples[1])]: 'reviewing' }, draft: {} }); s.local.records = s.local.records.map(record => record.id === 'demo-local-3' && record.pid === 'dp_f' && record.rating == null ? { ...examples[2] } : record); s.settings = cached?.settings || {}; applyTheme(s.settings.theme || readTheme()); applyCodeSettings(); }
+    if (demo) {
+      s.settings = cached?.settings || {};
+      if (!Array.isArray(s.settings.repositories) || !s.settings.repositories.length) {
+        s.settings.repositories = [
+          { id: 'ctgu-2026', name: '三峡大学 2026 题解库 (校内)', repo: 'ctguacm/2026', serverUrl: 'http://172.25.5.128:3000' },
+          { id: 'official', name: '官方题解库 (GitHub)', repo: 'qmx-acm-data/2026', serverUrl: '' }
+        ];
+        s.settings.activeRepoId = 'official';
+        s.settings.repo = s.settings.repo || 'qmx-acm-data/2026';
+        s.settings.serverUrl = s.settings.serverUrl || '';
+      }
+      s.permissions = { repo: s.settings.repo || 'qmx-acm-data/2026', push: false, admin: false };
+      s.records = examples.filter(record => record.kind === 'document').map(record => ({ ...record, repo: s.permissions.repo }));
+      s.issues = examples.filter(record => record.kind === 'issue').map(record => ({ ...record, repo: s.permissions.repo }));
+      s.local = normalizeLocal(cached?.local || { records: [examples[2]], favorites: [key(examples[1])], mastery: { [key(examples[1])]: 'reviewing' }, draft: {} });
+      s.local.records = s.local.records.map(record => record.id === 'demo-local-3' && record.pid === 'dp_f' && record.rating == null ? { ...examples[2] } : record);
+      applyTheme(s.settings.theme || readTheme());
+      applyCodeSettings();
+      renderRepoSelector();
+    }
     else { try { applyPayload(await call('bootstrap')); } catch (error) { s.error = errorMessage(error); } }
     s.loading = false; refreshFilters(); render();
+    renderRepoSelector();
     void refreshContests(false);
     if (!demo && !s.catalogFromPayload && typeof bridge?.getTagCatalog === 'function') { try { const catalog = await call('getTagCatalog'); if (Array.isArray(catalog?.categories)) s.tagCatalog = catalog; } catch (_) { /* Presets remain available offline. */ } }
     void checkStartupUpdates();
     if (!demo && !s.error && s.settings.autoSync !== false && navigator.onLine) await sync();
+    else if (webPreview && s.settings.autoSync !== false && navigator.onLine) void sync();
   }
   setInterval(tickContests, 1000);
   document.addEventListener('visibilitychange', () => { if (!document.hidden) { tickContests(); refreshVisibleContests(); } });
