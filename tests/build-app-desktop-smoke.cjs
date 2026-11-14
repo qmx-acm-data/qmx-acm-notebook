@@ -25,10 +25,18 @@ const { _electron: electron } = require('playwright');
     assert.equal(reader, fs.readFileSync(path.join(built, 'ui/reading-detail.js'), 'utf8'), 'desktop and tests run identical compiled reader');
     assert.equal(info.version, require('../package.json').version);
     const loaded = await page.evaluate(async () => {
+      if (typeof window.require !== 'undefined' || typeof window.process !== 'undefined') throw new Error('Renderer must remain isolated from Node');
       const bootstrap = await window.notebook.bootstrap();
+      const boundary = window.NotebookIPC(window.notebook);
+      await boundary.cancelLogin();
+      const stopAuth = window.notebook.onAuthProgress(() => {});
+      const stopUpdate = window.notebook.onUpdateProgress(() => {});
+      stopAuth(); stopUpdate();
+      const invalid = await boundary.formatCode('original input', 'unsupported');
+      if (invalid.code !== 'original input' || !invalid.error) throw new Error('Formatter failure must retain original input');
       const results = [];
       for (const [language, code] of [['cpp', 'int main(){return 0;}'], ['python', 'x=1\n'], ['rust', 'fn main(){let x=1;}']]) {
-        results.push({ language, ...(await window.notebook.formatCode(code, language)) });
+        results.push({ language, ...(await boundary.formatCode(code, language)) });
       }
       return { version: bootstrap.appVersion, results };
     });

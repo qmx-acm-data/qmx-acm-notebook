@@ -76,7 +76,7 @@
   function authorName(author) { return typeof author === 'string' ? author : author?.name || author?.login || '匿名学习者'; }
   function date(value) { const time = new Date(value); return Number.isNaN(time.getTime()) ? '尚未同步' : time.toLocaleDateString('zh-CN', { month: '2-digit', day: '2-digit' }); }
   function writeDemo() { if (!demo) return; try { localStorage.setItem(STORAGE, JSON.stringify({ local: s.local, settings: s.settings })); } catch (_) { toast('浏览器存储不可用，本次修改仅在当前页面保留'); } }
-  async function call(name, ...args) { if (typeof bridge?.[name] !== 'function') throw new Error(`客户端尚未提供 ${name} 接口`); const response = await bridge[name](...args); if (response?.error && !['bootstrap', 'sync'].includes(name)) throw new Error(errorMessage(response.error)); return response; }
+  async function call(name, ...args) { if (typeof bridge?.[name] !== 'function') throw new Error(`客户端尚未提供 ${name} 接口`); const target = ['openExternal', 'openAuthUrl', 'formatCode', 'cancelLogin', 'exportLocal'].includes(name) ? window.NotebookIPC(bridge) : bridge; const response = await target[name](...args); if (response?.error && !['bootstrap', 'sync'].includes(name)) throw new Error(errorMessage(response.error)); return response; }
   let localWrite = Promise.resolve();
   async function persistLocal() { if (demo) { writeDemo(); return; } const snapshot = structuredClone(s.local); const write = localWrite.catch(() => {}).then(() => call('updateLocal', snapshot)); localWrite = write; await write; }
   function applyPayload(payload) {
@@ -694,7 +694,7 @@
     const language = codeLanguage(pre), source = codeBlockText(pre);
     if (!formattableLanguages.has(language)) { toast(language ? `暂不支持 ${language} 代码的格式化` : '未能识别代码语言，无法格式化'); return; }
     const format = typeof window.notebook?.formatCode === 'function'
-      ? (text, lang) => window.notebook.formatCode(text, lang)
+      ? (text, lang) => window.NotebookIPC(window.notebook).formatCode(text, lang)
       : typeof window.formatCode === 'function' ? (text, lang) => Promise.resolve(window.formatCode(text, lang)) : null;
     if (!format) { toast('格式化功能尚未启用'); return; }
     actionButton.disabled = true; actionButton.setAttribute('aria-busy', 'true');

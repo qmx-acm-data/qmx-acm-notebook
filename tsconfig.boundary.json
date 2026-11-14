@@ -1,0 +1,4 @@
+{
+  "extends": "./tsconfig.json",
+  "include": ["src/main/ipc/boundary.ts", "src/renderer/ipc/boundary.ts", "src/shared/**/*.ts", "types/**/*.ts", "tests/types/**/*.ts"]
+}

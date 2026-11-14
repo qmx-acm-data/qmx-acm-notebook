@@ -99,8 +99,10 @@ async function fixture(t, options = {}) {
   await options.configure?.(context);
   function counted(bytes, kind) {
     return response(bytes, { body: (async function* () {
-      for (let offset = 0; offset < bytes.length; offset += 4096) {
-        const chunk = bytes.subarray(offset, offset + 4096);
+      // Even a highly compact random patch must expose an intermediate progress event.
+      const chunkSize = Math.min(4096, Math.max(1, Math.ceil(bytes.length / 2)));
+      for (let offset = 0; offset < bytes.length; offset += chunkSize) {
+        const chunk = bytes.subarray(offset, offset + chunkSize);
         context.bodyBytes[kind] += chunk.length;
         yield chunk;
       }

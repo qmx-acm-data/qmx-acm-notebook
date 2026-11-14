@@ -34,7 +34,7 @@ pnpm dist
 
 ## 渐进式 TypeScript 重构
 
-功能保持基线和迁移约束见 [TypeScript 重构说明](docs/TYPESCRIPT_REFACTOR.md)。`pnpm check:refactor` 汇总类型、语法、生成数据和单元检查；`pnpm test:ui:refactor` 运行现有界面回归组，需要 Playwright 和 Microsoft Edge。首批类型检查覆盖范围以 `tsconfig.json` 为准。阅读详情源码位于 `src/renderer/reading/reading-detail.ts`，修改后运行 `pnpm reader:build` 更新生成脚本。`pnpm build:app` 构建独立应用副本，`pnpm preview:app` 启动副本，`pnpm test:build:desktop` 验证真实桌面与离线格式化器；开发启动、单元/界面测试及未签名打包已统一使用构建副本；正式签名包装仍复用已验收归档。直接运行单个测试前先执行 `pnpm build:app`。
+功能保持基线和迁移约束见 [TypeScript 重构说明](docs/TYPESCRIPT_REFACTOR.md)。`pnpm check:refactor` 汇总类型、语法、生成数据和单元检查；`pnpm test:ui:refactor` 运行现有界面回归组，需要 Playwright 和 Microsoft Edge。类型检查覆盖范围以 `tsconfig.json`、`tsconfig.preload.json` 和 `tsconfig.boundary.json` 为准。阅读详情源码位于 `src/renderer/reading/reading-detail.ts`，修改后运行 `pnpm reader:build` 更新生成脚本。`pnpm build:app` 构建独立应用副本，`pnpm preview:app` 启动副本，`pnpm test:build:desktop` 验证真实桌面与离线格式化器；开发启动、单元/界面测试及未签名打包已统一使用构建副本；正式签名包装仍复用已验收归档。直接运行单个测试前先执行 `pnpm build:app`。preload 与 IPC 适配器源码位于 `src/preload`、`src/main/ipc`、`src/renderer/ipc`，修改后分别运行 `pnpm preload:build`、`pnpm ipc:build`，不要手改生成脚本。共享契约位于 `src/shared/contracts/notebook.ts`；未细化业务仍返回 unknown，不应绕过类型或运行时校验。
 
 ## 贡献约定
 

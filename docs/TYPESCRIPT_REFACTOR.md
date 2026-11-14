@@ -14,13 +14,21 @@ pnpm test:ui:refactor
 
 `check:refactor` 汇总严格类型检查、现有语法检查、生成数据一致性检查和所有 Node 单元测试。`test:ui:refactor` 顺序运行现有 13 个界面回归脚本（含多仓库管理），遇到失败立即停止；需要 Playwright 和 Microsoft Edge，使用隔离浏览器与模拟 bridge，不写入正式资料库。截图继续输出到已忽略的目录。
 
-首批 `tsconfig.json` 严格检查 `src/renderer/reading/reading-detail.ts` 与其 API 类型，其他业务 JS 尚未迁移。`ui/reading-detail.js` 是受版本控制的生成兼容产物，禁止手改；修改 TS 后运行 `pnpm reader:build`，`pnpm typecheck` 会检查产物是否一致并拒绝 CommonJS 浏览器输出。每迁移一个模块，将其加入检查范围；禁止以 `any`、`@ts-nocheck` 或大范围忽略错误作为迁移完成标准。
+`tsconfig.json` 严格检查阅读详情与共享类型；`tsconfig.preload.json` 检查 preload，`tsconfig.boundary.json` 检查五项 IPC 主进程注册/页面适配器及类型反例。其余业务 JS 尚未迁移。`ui/reading-detail.js` 是受版本控制的生成兼容产物，禁止手改；修改 TS 后运行 `pnpm reader:build`，`pnpm typecheck` 会检查产物是否一致并拒绝 CommonJS 浏览器输出。每迁移一个模块，将其加入检查范围；禁止以 `any`、`@ts-nocheck` 或大范围忽略错误作为迁移完成标准。
 
 `pnpm build:app` 生成独立 `build/app` 副本，保留现有 Electron/UI 相对布局并收集生产依赖；构建前先检查生成产物一致性。`pnpm start` / `preview:app` 构建并启动该副本，`pnpm serve:web` 默认先构建并从副本提供页面与匿名同步后端。导入 server 模块不会启动构建或监听。
 
 `pnpm test` 先构建，再用统一 `appPath` 定位运行时模块、VM 入口、缓存覆盖和浏览器资源；源码数据、生成工具及可信签名工具仍按用途单独验证。`test:ui:refactor` 也先构建并显式传入同一根目录，避免继承的环境变量把检查指向旧副本。直接运行单个测试前先 `pnpm build:app`；`QMX_APP_ROOT` 可用于指定单个测试的已构建应用。
 
 未签名打包（`QMX_BUILD_UPDATE_FEED=1` 或没有 feed）先调用同一构建器，再复制到全新暂存目录。存在有效 signed feed 的正式打包直接验证并使用已接受的 app.asar，不重新编译；该归档必须来自此前未签名构建和签名验收流程。`pnpm test:build:desktop` 验证真实 preload、版本与离线格式化器；设置 `QMX_PACKAGED_EXE` 可检查本地便携包及其阅读脚本与构建脚本字节一致。正式签名归档和本次未发布的源码改动属于不同构建，不可混淆。
+
+## 首批 IPC 契约
+
+共享类型来源为 `src/shared/contracts/notebook.ts`。已细化 `openExternal`、`openAuthUrl`、`formatCode`、`cancelLogin`、`exportLocal` 的参数与返回值，以及 auth/update 事件。其余 29 项仍以 `unknown` 参数/结果标注为待迁移，不代表已经完成业务类型建模。原有 34 项方法和两项订阅保持可用。
+
+`src/preload/preload.ts` 编译为独立 `electron/preload.cjs`，运行时只加载 Electron；`src/main/ipc/boundary.ts` 和 `src/renderer/ipc/boundary.ts` 分别生成注册器与页面适配器。主进程仍使用原 `handle` sender/更新锁校验及原业务实现，尚未整体经过 TS 检查。页面迁移的五项调用真实经过已检查适配器，保留格式化器对实时 bridge 和浏览器回退的选择。类型不替代不可信 IPC 入参校验。
+
+修改后运行 `pnpm preload:build` / `pnpm ipc:build` 更新对应产物；`typecheck` 和构建均检查生成一致性。类型反例在 `tests/types/ipc-contracts.ts`，会拒绝错误频道、参数、返回类型和事件字段。授权返回 false 代表默认浏览器回退成功；格式化错误返回原代码；auth 事件字段保留 unknown，因为 OAuth JSON 尚无对应运行时格式校验。更新事件的可选字段保留首次状态缺失的情况。
 
 ## 行为保持矩阵
 

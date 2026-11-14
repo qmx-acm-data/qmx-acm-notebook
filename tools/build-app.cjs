@@ -2,6 +2,7 @@
 const fs = require('node:fs');
 const path = require('node:path');
 const { main: buildReader } = require('./build-reading-detail.cjs');
+const { main: buildPreload } = require('./build-preload.cjs');
 const root = path.resolve(__dirname, '..');
 
 // Preserve pnpm's per-package resolution and every production asset, including WASM.
@@ -33,12 +34,15 @@ function main() {
   for (const entry of [buildDir, output]) {
     if (fs.existsSync(entry) && fs.lstatSync(entry).isSymbolicLink()) throw new Error(`Linked build target: ${entry}`);
   }
-  const reader = buildReader(true); // Drift check does not rewrite source-tree output.
+  const reader = buildReader(true); // Drift checks do not rewrite source-tree output.
+  const preload = buildPreload(true);
+  require('./build-ipc-boundary.cjs').main(true);
   const pkg = JSON.parse(fs.readFileSync(path.join(root, 'package.json'), 'utf8'));
   fs.rmSync(output, { recursive: true, force: true });
   fs.mkdirSync(output, { recursive: true });
   for (const name of ['electron', 'ui']) fs.cpSync(path.join(root, name), path.join(output, name), { recursive: true });
   fs.writeFileSync(path.join(output, 'ui/reading-detail.js'), reader);
+  fs.writeFileSync(path.join(output, 'electron/preload.cjs'), preload);
   fs.writeFileSync(path.join(output, 'package.json'), JSON.stringify({
     name: pkg.name, version: pkg.version, main: pkg.main, dependencies: pkg.dependencies
   }, null, 2) + '\n');

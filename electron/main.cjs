@@ -589,7 +589,6 @@ function setup() {
     if (writeBusy || syncBusy) throw new Error('请等待当前操作完成后再退出');
     auth.logout(); loginGeneration++; token = ''; account = null; permissions = null; return state();
   });
-  handle('cancelLogin', () => { loginGeneration++; });
   const saveDocument = record => writeOperation(async () => {
     checkRecordRepo(record); requireWritableSource();
     if (!account?.id || !token) throw new Error('请先登录 GitHub');
@@ -646,14 +645,17 @@ function setup() {
     return client().comment(data);
   }));
   handle('getComments', async number => (await client().comments(number)).map(x => ({ id: x.id, body: x.body, author: x.user?.login || '', createdAt: x.created_at, url: x.html_url })));
-  handle('openExternal', external);
-  handle('openAuthUrl', openAuthUrl);
-  handle('formatCode', (source, lang) => formatCode(source, lang).catch(error => ({ code: source, error: error.message })));
-  handle('exportLocal', async () => {
-    const { dialog } = require('electron');
-    const result = await dialog.showSaveDialog(win, { defaultPath: '我的题解备份.json', filters: [{ name: 'JSON', extensions: ['json'] }] });
-    if (!result.canceled) { fs.writeFileSync(result.filePath, JSON.stringify(local(), null, 2)); return true; }
-    return false;
+  require('./ipc-boundary.cjs').registerBoundary(handle, {
+    openExternal: external,
+    openAuthUrl,
+    formatCode: (source, lang) => formatCode(source, lang).catch(error => ({ code: source, error: error.message })),
+    cancelLogin: () => { loginGeneration++; },
+    exportLocal: async () => {
+      const { dialog } = require('electron');
+      const result = await dialog.showSaveDialog(win, { defaultPath: '我的题解备份.json', filters: [{ name: 'JSON', extensions: ['json'] }] });
+      if (!result.canceled) { fs.writeFileSync(result.filePath, JSON.stringify(local(), null, 2)); return true; }
+      return false;
+    }
   });
 }
 app.whenReady().then(() => {

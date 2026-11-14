@@ -22,7 +22,7 @@ const personal = (records = []) => ({ records, favorites: ['issue:7'], mastery: 
 const clone = value => JSON.parse(JSON.stringify(value));
 function deferred() { let resolve, reject; const promise = new Promise((yes, no) => { resolve = yes; reject = no; }); return { promise, resolve, reject }; }
 
-function harness({ files = {}, account = { id: 42, login: 'alice' }, backend = {}, updaterBackend = {}, upgradeBackend = {}, browserBackend = {}, networkBackend, platform = 'win32', env = {}, switches = {}, isPackaged = true } = {}) {
+function harness({ files = {}, account = { id: 42, login: 'alice' }, backend = {}, updaterBackend = {}, upgradeBackend = {}, browserBackend = {}, networkBackend, exportBackend = {}, platform = 'win32', env = {}, switches = {}, isPackaged = true } = {}) {
   const root = path.resolve('mock-user-data');
   const disk = new Map();
   const writes = [];
@@ -31,7 +31,7 @@ function harness({ files = {}, account = { id: 42, login: 'alice' }, backend = {
   if (account) disk.set(path.join(root, 'auth.json'), JSON.stringify({ encrypted: encrypted(JSON.stringify({ token: 'FAKE_TEST_TOKEN', account })).toString('base64') }));
   const fakeFs = {
     readFileSync(file) { if (!disk.has(file)) throw new Error('ENOENT'); return disk.get(file); },
-    writeFileSync(file, text) { disk.set(file, String(text)); writes.push(file); },
+    writeFileSync(file, text) { exportBackend.beforeWrite?.(file, text); disk.set(file, String(text)); writes.push(file); },
     renameSync(from, to) { if (!disk.has(from)) throw new Error('ENOENT'); disk.set(to, disk.get(from)); disk.delete(from); },
     mkdirSync() {},
     existsSync(file) { return browserBackend.existsSync?.(file) || false; },
@@ -75,6 +75,7 @@ function harness({ files = {}, account = { id: 42, login: 'alice' }, backend = {
     loadFile() {}
   }
   const electron = {
+    dialog: { showSaveDialog: (window, options) => exportBackend.showSaveDialog?.(window, options) ?? Promise.resolve({ canceled: true }) },
     net: { fetch: async (url, options) => { networkCalls.push({ url: String(url), options }); return networkBackend ? networkBackend(url, options) : { url, options }; } },
     app: { isPackaged, disableHardwareAcceleration() {}, commandLine: {
       appendSwitch(name, value) { appendedSwitches.push({ name, value }); commandLineSwitches.set(name, value); },
@@ -113,6 +114,7 @@ function harness({ files = {}, account = { id: 42, login: 'alice' }, backend = {
       if (name === 'node:path') return path;
       if (name === 'node:crypto') return { randomUUID: () => '00000000-0000-4000-8000-000000000001' };
       if (name === '../package.json') return { version: '0.3.0' };
+      if (name === './ipc-boundary.cjs') return require(appPath('electron/ipc-boundary.cjs'));
       if (name === './auth.cjs') return require(appPath('electron/auth.cjs'));
       if (name === './platform-service.cjs') return require(appPath('electron/platform-service.cjs'));
       if (name === './planner-service.cjs') return require(appPath('electron/planner-service.cjs'));
@@ -170,6 +172,34 @@ function harness({ files = {}, account = { id: 42, login: 'alice' }, backend = {
     get updaterOptions() { return updaterOptions; }, get quitCalls() { return quitCalls; },
     stored: name => JSON.parse(disk.get(path.join(root, name)) || 'null') };
 }
+
+// END_MAIN_HARNESS
+
+test('typed boundary preserves exact void returns and export cancellation, writes and errors', async () => {
+  const h = harness({ account: null });
+  const raw = (value, name, ...args) => value.handlers.get(name)({ sender: value.windows[0].webContents }, ...args);
+  assert.equal(await raw(h, 'openExternal', 'https://example.org/'), undefined);
+  assert.equal(await raw(h, 'cancelLogin'), undefined);
+  const before = [...h.writes];
+  assert.equal(await raw(h, 'exportLocal'), false);
+  assert.deepEqual(h.writes, before, 'canceling export must not write');
+  const destination = path.resolve('mock-export.json');
+  const exported = harness({ account: null, exportBackend: { showSaveDialog(window, options) {
+    assert.equal(window, exported.windows[0]);
+    assert.equal(options.defaultPath, '我的题解备份.json');
+    return Promise.resolve({ canceled: false, filePath: destination });
+  } } });
+  assert.equal(await raw(exported, 'exportLocal'), true);
+  assert.ok(exported.writes.includes(destination));
+  const failure = new Error('export failed');
+  const dialogFailure = harness({ exportBackend: { showSaveDialog() { throw failure; } } });
+  await assert.rejects(raw(dialogFailure, 'exportLocal'), error => error === failure);
+  const writeFailure = harness({ exportBackend: {
+    showSaveDialog: async () => ({ canceled: false, filePath: destination }),
+    beforeWrite(file) { if (file === destination) throw failure; }
+  } });
+  await assert.rejects(raw(writeFailure, 'exportLocal'), error => error === failure);
+});
 
 test('planner IPC persists device data across account/repository changes and restart without network', async () => {
   const h = harness({ account: null });

@@ -155,7 +155,7 @@ test('sync returns shared additions and removes remotely deleted file without re
 // Reuse the existing main-process VM fixture without changing or registering its tests.
 function mainHarness(options) {
   const fs = require('node:fs'), path = require('node:path');
-  let source = fs.readFileSync(path.join(__dirname, 'main.test.cjs'), 'utf8').split("test('planner IPC persists")[0];
+  let source = fs.readFileSync(path.join(__dirname, 'main.test.cjs'), 'utf8').split('// END_MAIN_HARNESS')[0];
   source = source.replace("['saveDocument', 'deleteDocument'", "['saveAlgorithmTopic', 'saveDocument', 'deleteDocument'");
   return new Function('require', '__dirname', 'Buffer', source + '\nreturn harness;')(require, __dirname, Buffer)(options);
 }
