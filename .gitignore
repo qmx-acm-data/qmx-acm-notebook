@@ -3,6 +3,7 @@ node_modules/
 .pnpm-store/
 
 # Generated desktop bundles and temporary staging
+/.cache/
 release/
 /build/
 .package-stage/

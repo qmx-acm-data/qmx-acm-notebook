@@ -51,8 +51,21 @@ jobs:
           git rev-parse -q --verify "refs/tags/$TAG_INPUT^{commit}" >/dev/null || { echo 'Requested tag does not exist'; exit 1; }
           TAG_COMMIT=$(git rev-parse "refs/tags/$TAG_INPUT^{commit}")
           git merge-base --is-ancestor "$TAG_COMMIT" origin/main || { echo 'Release tag must point to reviewed source already in main'; exit 1; }
-          for TOOL in tools/package.cjs tools/installer.cjs tools/update-manifest.cjs tools/release-feed.cjs tools/delta-feed.cjs electron/updater.cjs electron/update-key.cjs electron/delta-codec.cjs electron/delta-manifest.cjs electron/delta-chain.cjs; do
-            git diff --quiet "$GITHUB_SHA" "$TAG_COMMIT" -- "$TOOL" || { echo "Release tag must contain the reviewed release tooling: $TOOL"; exit 1; }
+          # Compare Git trees before any tag checkout can install dependencies, run
+          # tests/generators, or supply bytes for signing. Use the exact workflow
+          # commit, never the moving origin/main ref or files supplied by the tag.
+          TRUSTED_INPUTS=(
+            tools/package.cjs tools/installer.cjs tools/update-manifest.cjs tools/release-feed.cjs tools/delta-feed.cjs
+            electron/updater.cjs electron/update-key.cjs electron/delta-codec.cjs electron/delta-manifest.cjs electron/delta-chain.cjs
+            # Sources, tracked runtime output, generators and executed test helpers.
+            src electron ui server.js tools types tests data
+            # Root configs include inherited compiler settings and future tsconfigs.
+            ':(top,glob)tsconfig*.json'
+            package.json pnpm-lock.yaml pnpm-workspace.yaml .npmrc
+            .pnpmfile.cjs .pnpmfile.mjs pnpmfile.cjs patches .gitattributes
+          )
+          for INPUT in "${TRUSTED_INPUTS[@]}"; do
+            git diff --no-ext-diff --no-textconv --quiet "$GITHUB_SHA" "$TAG_COMMIT" -- "$INPUT" || { echo "Release tag must contain the reviewed release inputs: $INPUT"; exit 1; }
           done
           VERSION=$(git show "$TAG_COMMIT:package.json" | node -e "let s='';process.stdin.on('data',c=>s+=c).on('end',()=>process.stdout.write(JSON.parse(s).version))")
           [[ "$VERSION" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ && "$TAG_INPUT" == "v$VERSION" ]] || { echo 'Tag must match stable package version'; exit 1; }

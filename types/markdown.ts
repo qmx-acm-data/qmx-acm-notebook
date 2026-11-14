@@ -67,8 +67,3 @@ export interface MarkdownPurifier {
 export interface MarkdownColorApi {
   sanitize(html: string, purifier: MarkdownPurifier, document: MarkdownColorDocument): DocumentFragment;
 }
-
-export interface MarkdownGlobal {
-  NotebookMarkdownTable?: Readonly<MarkdownTableApi>;
-  NotebookMarkdownColor?: Readonly<MarkdownColorApi>;
-}

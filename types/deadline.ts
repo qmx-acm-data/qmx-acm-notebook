@@ -12,9 +12,3 @@ export interface DeadlineApi {
   enhance(input: HTMLInputElement): DeadlineController;
   attach(input: HTMLInputElement): DeadlineController;
 }
-
-declare global {
-  interface Window {
-    NotebookDeadline: Readonly<DeadlineApi>;
-  }
-}

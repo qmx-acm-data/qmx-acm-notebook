@@ -1,0 +1,184 @@
+'use strict';
+
+import fs = require('node:fs');
+import path = require('node:path');
+import crypto = require('node:crypto');
+
+type PublicKey = string | Buffer;
+interface PrepareOptions {
+  userDataDir?: string;
+  installDir?: string;
+  version?: string;
+  targetVersion?: string;
+  ready?: {
+    path: string;
+    version: string;
+    manifest: { version: string };
+  };
+  runtimeVersion?: string;
+  executablePath?: string;
+  parentPid?: number;
+  launchArgs?: string[];
+}
+interface UpgradeBackup {
+  prepareUpgrade(options: { userDataDir: string; installDir: string; version: string; targetVersion?: string }, dependencies: { installer: false }): { backupDir: string };
+}
+interface FileMetadata { size: number; sha256: string }
+interface ValidatedJob {
+  userDataDir: string;
+  installDir: string;
+  parentPid: number;
+  statePath: string;
+}
+interface TransactionResult { phase: string }
+interface UpdateHelper {
+  absolute(value: unknown): string;
+  directory(value: string): string;
+  overlaps(a: string, b: string): boolean;
+  assertFileUpgradeSupported(): void;
+  readJson(file: string): unknown;
+  validateJob(jobPath: string, publicKey: PublicKey, options?: { allowCurrentParent: boolean }): ValidatedJob;
+  recoverTransaction(jobPath: string, publicKey: PublicKey): TransactionResult;
+  canonical(value: unknown): string;
+  writeJson(file: string, value: unknown, exclusive?: boolean): void;
+  installationPaths(installDir: string): { executablePath: string; resourcesDir: string };
+  regular(file: string): fs.Stats;
+  newer(a: string, b: string): boolean;
+  validateManifest(manifest: unknown, publicKey: PublicKey, runtimeVersion?: string): FileMetadata;
+  verifyFile(file: string, expected: FileMetadata): FileMetadata;
+  metadata(file: string): FileMetadata;
+  syncFile(file: string): void;
+  getFileUpgradeCapability(platform?: string): { supported: boolean; reason: string };
+}
+// These views preserve property access and the original JSON validation order.
+interface PointerView { schema?: unknown; transaction?: unknown }
+interface StateView {
+  schema?: unknown;
+  phase?: unknown;
+  mutationStarted?: unknown;
+  helperPid?: unknown;
+  [key: string]: unknown;
+}
+
+const { prepareUpgrade } = require('./upgrade.cjs') as UpgradeBackup;
+const helper = require('./update-helper.cjs') as UpdateHelper;
+
+function publicKeyPem(): PublicKey {
+  const configured = require('./update-key.cjs') as Parameters<typeof crypto.createPublicKey>[0];
+  const key = (configured as crypto.KeyObject | null | undefined)?.type === 'public' ? configured as crypto.KeyObject : crypto.createPublicKey(configured);
+  if (key.asymmetricKeyType !== 'ed25519') throw new Error('Update public key must be Ed25519');
+  return key.export({ type: 'spki', format: 'pem' });
+}
+function updatesDirectory(userDataDir: string, create = false): string {
+  helper.directory(userDataDir);
+  const updates = path.join(userDataDir, 'updates');
+  if (create) { try { fs.mkdirSync(updates, { mode: 0o700 }); } catch (error) { if ((error as NodeJS.ErrnoException).code !== 'EEXIST') throw error; } }
+  return helper.directory(updates);
+}
+function recoverFileUpgrade(userDataDir: string, installDir: string): TransactionResult {
+  userDataDir = helper.absolute(userDataDir);
+  installDir = helper.absolute(installDir);
+  helper.directory(userDataDir); helper.directory(installDir);
+  if (helper.overlaps(userDataDir, installDir)) throw new Error('Install and user data directories overlap');
+  let updates: string;
+  try { updates = updatesDirectory(userDataDir); } catch (error) { if ((error as NodeJS.ErrnoException).code === 'ENOENT') return { phase: 'none' }; throw error; }
+  const pointerPath = path.join(updates, 'active.json');
+  let pointer: PointerView;
+  try { pointer = helper.readJson(pointerPath) as PointerView; } catch (error) { if ((error as NodeJS.ErrnoException).code === 'ENOENT') return { phase: 'none' }; throw error; }
+  helper.assertFileUpgradeSupported();
+  if (pointer.schema !== 1 || typeof pointer.transaction !== 'string' || !/^transaction-[a-f0-9]{32}$/.test(pointer.transaction)) throw new Error('Unsafe update recovery pointer; manual recovery required');
+  const jobPath = path.join(updates, pointer.transaction, 'job.json');
+  const job = helper.validateJob(jobPath, publicKeyPem());
+  if (job.userDataDir !== userDataDir || job.installDir !== installDir) throw new Error('Update recovery install location mismatch');
+  const result = helper.recoverTransaction(jobPath, publicKeyPem());
+  // Once recovery has verified a terminal transaction, retire its pointer.
+  // A later manual installation must not be compared with this old release forever.
+  if (['completed', 'completed-stale', 'rolled-back', 'failed', 'cancelled'].includes(result.phase)) {
+    fs.renameSync(pointerPath, path.join(updates, `${pointer.transaction}-resolved.json`));
+  }
+  return result;
+}
+
+// Only the parent that confirmed helper spawn failure may abandon its preparation.
+// Ordinary helper execution and recovery must continue rejecting current-parent jobs.
+function cancelPreparedFileUpgrade(userDataDir: string, installDir: string): TransactionResult {
+  helper.assertFileUpgradeSupported();
+  userDataDir = helper.absolute(userDataDir);
+  installDir = helper.absolute(installDir);
+  helper.directory(userDataDir); helper.directory(installDir);
+  if (helper.overlaps(userDataDir, installDir)) throw new Error('Install and user data directories overlap');
+  const updates = updatesDirectory(userDataDir);
+  const pointerPath = path.join(updates, 'active.json');
+  const pointer = helper.readJson(pointerPath) as PointerView;
+  if (pointer.schema !== 1 || Object.keys(pointer).sort().join(',') !== 'schema,transaction' || typeof pointer.transaction !== 'string' || !/^transaction-[a-f0-9]{32}$/.test(pointer.transaction)) throw new Error('Unsafe update cancellation pointer');
+  const jobPath = path.join(updates, pointer.transaction, 'job.json');
+  const job = helper.validateJob(jobPath, publicKeyPem(), { allowCurrentParent: true });
+  if (job.userDataDir !== userDataDir || job.installDir !== installDir || job.parentPid !== process.pid) throw new Error('Update cancellation parent or install location mismatch');
+  const state = helper.readJson(job.statePath) as StateView;
+  if (state.schema !== 1 || state.phase !== 'prepared' || state.mutationStarted !== false || state.helperPid !== null) throw new Error('Only an unstarted prepared update can be cancelled');
+  // Recheck the published pointer before changing the receipt or retiring it.
+  if (helper.canonical(helper.readJson(pointerPath)) !== helper.canonical(pointer)) throw new Error('Update cancellation pointer changed');
+  helper.writeJson(job.statePath, { ...state, phase: 'cancelled', updatedAt: new Date().toISOString() });
+  fs.renameSync(pointerPath, path.join(updates, `${pointer.transaction}-resolved.json`));
+  return { phase: 'cancelled' };
+}
+
+/** Prepare synchronously, then spawn process.execPath with returned args and merged env.
+ * Electron's default RunAsNode fuse must remain enabled. Wait for the helper's
+ * spawn event before quitting Electron. The external helper waits for this PID.
+ */
+function prepareFileUpgrade({ userDataDir, installDir, version, targetVersion, ready, runtimeVersion, executablePath, parentPid = process.pid, launchArgs = ['--disable-gpu'] }: PrepareOptions = {}): { args: string[]; env: { ELECTRON_RUN_AS_NODE: string }; backupDir: string } {
+  helper.assertFileUpgradeSupported();
+  userDataDir = helper.absolute(userDataDir);
+  installDir = helper.absolute(installDir);
+  helper.directory(userDataDir); helper.directory(installDir);
+  if (helper.overlaps(userDataDir, installDir)) throw new Error('Install and user data directories overlap');
+  const { executablePath: expectedExecutable, resourcesDir } = helper.installationPaths(installDir);
+  if (executablePath !== expectedExecutable) throw new Error('File upgrades require the installed application executable');
+  helper.regular(executablePath);
+  if (!Number.isSafeInteger(parentPid) || parentPid <= 0 || !Array.isArray(launchArgs) || launchArgs.some(arg => typeof arg !== 'string' || /[\x00\r\n]/.test(arg))) throw new Error('Invalid upgrade parent PID or launch arguments');
+  if (!ready || ready.version !== targetVersion || ready.manifest?.version !== targetVersion || typeof version !== 'string' || !/^(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)$/.test(version) || !helper.newer(targetVersion as string, version)) throw new Error('Update version mismatch');
+  const pem = publicKeyPem();
+  const manifest: unknown = JSON.parse(JSON.stringify(ready.manifest));
+  const file = helper.validateManifest(manifest, pem, runtimeVersion);
+  helper.verifyFile(ready.path, file);
+  helper.metadata(path.join(resourcesDir, 'app.asar'));
+  // Never replace a pointer to an unfinished transaction.
+  recoverFileUpgrade(userDataDir, installDir);
+  const { backupDir } = prepareUpgrade({ userDataDir, installDir, version, targetVersion }, { installer: false });
+  const updates = updatesDirectory(userDataDir, true);
+  const id = crypto.randomBytes(16).toString('hex');
+  const transactionDir = path.join(updates, `transaction-${id}`);
+  fs.mkdirSync(transactionDir, { mode: 0o700 });
+  helper.directory(transactionDir);
+  const stagePath = path.join(transactionDir, 'app.asar');
+  const helperPath = path.join(transactionDir, 'update-helper.cjs');
+  const keyPath = path.join(transactionDir, 'public-key.pem');
+  const jobPath = path.join(transactionDir, 'job.json');
+  // __dirname may be inside Electron's virtual app.asar; copyFileSync cannot
+  // reliably copy virtual ASAR entries, but readFileSync transparently reads them.
+  const helperSource = fs.readFileSync(path.join(__dirname, 'update-helper.cjs'));
+  fs.writeFileSync(helperPath, helperSource, { flag: 'wx', mode: 0o600 });
+  helper.syncFile(helperPath);
+  if (!fs.readFileSync(helperPath).equals(helperSource)) throw new Error('Update helper copy verification failed');
+  fs.writeFileSync(keyPath, pem, { flag: 'wx', mode: 0o600 }); helper.syncFile(keyPath);
+  const archiveFs = (process.versions.electron ? require('original-fs') : fs) as typeof fs;
+  archiveFs.copyFileSync(ready.path, stagePath, fs.constants.COPYFILE_EXCL); helper.syncFile(stagePath);
+  helper.verifyFile(stagePath, file); helper.verifyFile(ready.path, file);
+  const job = {
+    schema: 1, transactionDir, userDataDir, installDir, executablePath, parentPid,
+    fromVersion: version, toVersion: targetVersion, runtimeVersion, manifest,
+    launchArgs: launchArgs.slice(), backupDir, stagePath, keyPath,
+    backupPath: path.join(transactionDir, 'original.asar'),
+    statePath: path.join(transactionDir, 'state.json'),
+    targetPath: path.join(resourcesDir, 'app.asar'),
+    newPath: path.join(resourcesDir, `app.asar.${id}.new`),
+    oldPath: path.join(resourcesDir, `app.asar.${id}.old`)
+  };
+  helper.writeJson(jobPath, job, true);
+  helper.writeJson(job.statePath, { schema: 1, phase: 'prepared', mutationStarted: false, helperPid: null, updatedAt: new Date().toISOString() }, true);
+  // Pointer is published last, after all inputs and state have reached disk.
+  helper.writeJson(path.join(updates, 'active.json'), { schema: 1, transaction: path.basename(transactionDir) });
+  return { args: [helperPath, jobPath], env: { ELECTRON_RUN_AS_NODE: '1' }, backupDir };
+}
+export = { prepareFileUpgrade, recoverFileUpgrade, cancelPreparedFileUpgrade, getFileUpgradeCapability: helper.getFileUpgradeCapability };

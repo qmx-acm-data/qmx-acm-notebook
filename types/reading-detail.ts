@@ -21,9 +21,3 @@ export interface ReadingDetailApi {
   open(options?: ReadingDetailOptions): ReadingDetailController | undefined;
   closeAll(): void;
 }
-
-declare global {
-  interface Window {
-    NotebookReadingDetail: Readonly<ReadingDetailApi>;
-  }
-}

@@ -2,9 +2,7 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.createPlatformService = createPlatformService;
-// The emitted service lives beside the unmigrated collector in electron/.
-// This structural contract covers only operations used here. Migrating platform-data.cjs
-// must later establish validated collector outputs before exposing a richer public model.
+// The generated service and collector live beside each other in electron/.
 const { parseProfileLink, fetchPlatform } = require('./platform-data.cjs');
 // Bindings and public snapshots belong to this device, independently of GitHub login.
 function createPlatformService({ read, save, fetcher, readPage, now = () => new Date().toISOString() }) {

@@ -1,20 +1,8 @@
-export type PlatformCode = 'CF' | 'AT' | 'LG' | 'NC' | 'LC';
+import type { PlatformCode, PlatformFetcher, PlatformPageReader } from './data-types.js';
+export type { PlatformCode, PlatformFetcher, PlatformPageReader, PlatformRequestOptions } from './data-types.js';
 
-/** Saved snapshots are passed through; nested stored/collector fields are not validated here. */
+/** Saved snapshots are passed through; nested stored fields are not validated here. */
 export type PlatformSnapshot = Record<string, unknown>;
-
-export interface PlatformRequestOptions {
-  signal: AbortSignal;
-  redirect: 'error';
-  credentials: 'omit';
-  headers: Record<string, string>;
-  method?: string;
-  body?: string;
-}
-
-/** The legacy collector checks response/page fields, so their public values remain unknown. */
-export type PlatformFetcher = (url: string, options: PlatformRequestOptions) => Promise<unknown>;
-export type PlatformPageReader = (url: string) => Promise<unknown>;
 
 export interface PlatformServiceOptions {
   read(name: 'platforms.json', fallback: PlatformSnapshot): unknown;
@@ -32,31 +20,8 @@ export interface PlatformService {
   isBusy(): boolean;
 }
 
-interface ParsedPlatformBinding {
-  platform: PlatformCode;
-  id: string;
-  username: string;
-  url: string;
-}
-
-interface PlatformCollectorData {
-  // Every legacy collector initializes this field; its public contents stay unvalidated here.
-  username: unknown;
-  [field: string]: unknown;
-}
-
-interface PlatformDataModule {
-  parseProfileLink(platform: PlatformCode, input: unknown): ParsedPlatformBinding;
-  fetchPlatform(binding: unknown, options: {
-    fetcher?: PlatformFetcher;
-    readPage?: PlatformPageReader;
-  }): Promise<PlatformCollectorData>;
-}
-
-// The emitted service lives beside the unmigrated collector in electron/.
-// This structural contract covers only operations used here. Migrating platform-data.cjs
-// must later establish validated collector outputs before exposing a richer public model.
-const { parseProfileLink, fetchPlatform } = require('./platform-data.cjs') as PlatformDataModule;
+// The generated service and collector live beside each other in electron/.
+const { parseProfileLink, fetchPlatform } = require('./platform-data.cjs') as typeof import('./data.cjs');
 
 // Bindings and public snapshots belong to this device, independently of GitHub login.
 export function createPlatformService({ read, save, fetcher, readPage, now = () => new Date().toISOString() }: PlatformServiceOptions): PlatformService {

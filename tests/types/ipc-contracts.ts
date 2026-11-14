@@ -4,6 +4,7 @@ import type {
   InvokeArgs,
   InvokeName,
   InvokeResult,
+  LegacyMethodName,
   NotebookBridge,
   ProgressEvents
 } from '../../src/shared/contracts/notebook';
@@ -53,6 +54,147 @@ function contractAssertions(invoke: Invoke, register: BoundaryRegister, subscrib
   // @ts-expect-error Export returns a boolean rather than an Electron dialog object.
   const wrongExportResult: Promise<{ canceled: boolean }> = bridge.exportLocal();
   void [wrongAuthResult, wrongOpenResult, wrongExportResult];
+
+  type SavedDocument = import('../../src/shared/models/ipc-services').SavedDocument;
+  const newDocument = { clientId: '00000000-0000-0000-0000-000000000001', title: { legacy: true } };
+  const existingDocument = { path: 'problems/example.md', sha: 'current-sha' };
+  const bound: Promise<import('../../src/shared/models/ipc-services').PlatformSnapshot> = invoke('bindPlatform', 'CF', 'https://codeforces.com/profile/example');
+  const refreshed = bridge.refreshPlatform('AT');
+  const unbound = bridge.unbindPlatform('LG');
+  const contests: Promise<import('../../src/shared/models/ipc-services').ContestSnapshot> = invoke('getContests');
+  bridge.getContests(true);
+  const synced: Promise<InvokeResult<'bootstrap'>> = bridge.sync();
+  const submitted: Promise<SavedDocument> = invoke('submit', newDocument);
+  const proposed: Promise<SavedDocument> = bridge.propose(newDocument);
+  const document: Promise<SavedDocument> = bridge.saveDocument(existingDocument);
+  const note: Promise<SavedDocument> = bridge.saveAlgorithmNote({ body: '# Note', noteScope: 'personal' });
+  const topic = bridge.saveAlgorithmTopic({ parentId: 'root', label: 'DP', fullLabel: 'Dynamic programming', color: 'basic' });
+  bridge.saveAlgorithmTopic({ parentId: 'root', label: 'Topics', fullLabel: 'Topics', kind: 'directory' });
+  const deletedDocument = bridge.deleteDocument(existingDocument);
+  const deletedIssue = bridge.deleteIssue({ number: 1, repo: 'owner/repo' });
+  const commented: Promise<unknown> = bridge.comment({ number: '1', repo: 'owner/repo', body: 'Thanks' });
+  const comments: Promise<import('../../src/shared/models/ipc-services').CommentSnapshot[]> = bridge.getComments(1);
+  const settings: Promise<InvokeResult<'bootstrap'>> = bridge.saveSettings({ repositories: [{ repo: 'owner/repo' }], autoSync: true, codeFontSize: 14 });
+  const login = bridge.login();
+  const logout: Promise<InvokeResult<'bootstrap'>> = bridge.logout();
+  const account: Promise<InvokeResult<'bootstrap'>> = bridge.refreshAccount();
+  const startup: Promise<ProgressEvents['update-progress'] | null> = bridge.checkStartupUpdates();
+  const checked: Promise<ProgressEvents['update-progress']> = bridge.checkForUpdates();
+  const downloaded: Promise<ProgressEvents['update-progress']> = bridge.downloadUpdate();
+  const installed: Promise<{ installing: boolean }> = bridge.installUpdate();
+  const catalog = bridge.getTagCatalog();
+  const requested = bridge.requestTag({ category: 'algorithm', name: 'DP' });
+  const review = bridge.getTagReview();
+  const reviewed = bridge.reviewTag({ number: 1, decision: 'approve', expected: { category: 'algorithm', name: 'DP', updatedAt: { raw: true } } });
+  const legacyName: LegacyMethodName = 'reviewTag';
+  void [bound, refreshed, unbound, contests, synced, submitted, proposed, document, note, topic, deletedDocument, deletedIssue, commented, comments, settings, login, logout, account, startup, checked, downloaded, installed, catalog, requested, review, reviewed, legacyName];
+  // @ts-expect-error Service channels do not become boundary registrations before runtime migration.
+  register('sync', () => { throw new Error('compile-only fixture'); });
+  // @ts-expect-error Platform codes are exact, rather than arbitrary strings.
+  invoke('bindPlatform', 'codeforces', 'https://codeforces.com/profile/example');
+  // @ts-expect-error Binding requires the profile URL.
+  bridge.bindPlatform('CF');
+  // @ts-expect-error Refresh accepts exactly one platform.
+  bridge.refreshPlatform('CF', true);
+  // @ts-expect-error Unbind requires the platform.
+  bridge.unbindPlatform();
+  // @ts-expect-error Contest force flags must be booleans.
+  invoke('getContests', 'force');
+  // @ts-expect-error Sync has no renderer-selected repository.
+  bridge.sync('owner/repo');
+  // @ts-expect-error Submit requires an authored document, not a bare client ID.
+  bridge.submit('client-id');
+  // @ts-expect-error Propose shares saveDocument's creation/edit prerequisites.
+  bridge.propose({ title: 'missing client ID' });
+  // @ts-expect-error Existing document writes require the current SHA.
+  bridge.saveDocument({ path: 'problems/example.md' });
+  // @ts-expect-error Algorithm note writes require a Markdown body.
+  bridge.saveAlgorithmNote({ title: 'missing body' });
+  // @ts-expect-error Algorithm note body is checked as a string in main.
+  bridge.saveAlgorithmNote({ body: 42 });
+  // @ts-expect-error Existing algorithm notes need a SHA field even though its scalar stays raw.
+  bridge.saveAlgorithmNote({ body: '# Note', path: 'algorithms/notes/example.md' });
+  // @ts-expect-error Directory nodes cannot carry algorithm difficulty colors.
+  bridge.saveAlgorithmTopic({ parentId: 'root', label: 'DP', fullLabel: 'DP', kind: 'directory', color: 'basic' });
+  // @ts-expect-error Algorithm nodes require one of the accepted difficulty colors.
+  bridge.saveAlgorithmTopic({ parentId: 'root', label: 'DP', fullLabel: 'DP', color: 'impossible' });
+  // @ts-expect-error Document deletion needs a current SHA.
+  bridge.deleteDocument({ path: 'problems/example.md' });
+  // @ts-expect-error Issue deletion checks a numeric identifier without string coercion.
+  bridge.deleteIssue({ repo: 'owner/repo', number: '1' });
+  // @ts-expect-error Comments must supply their text and source repository.
+  bridge.comment({ number: 1, repo: 'owner/repo' });
+  // @ts-expect-error API response uncertainty does not loosen comment arguments.
+  invoke('comment', { number: 1, repo: 'owner/repo', body: 42 });
+  // @ts-expect-error Comment lookup accepts a numeric identifier, not an object.
+  bridge.getComments({ number: 1 });
+  // @ts-expect-error Settings updates use known field names.
+  bridge.saveSettings({ colour: 'dark' });
+  // @ts-expect-error Contest preferences are an array of strings.
+  bridge.saveSettings({ contestOptOuts: [1] });
+  // @ts-expect-error Device login does not accept renderer credentials.
+  bridge.login('token');
+  // @ts-expect-error Logout has no account argument.
+  bridge.logout(1);
+  // @ts-expect-error Account refresh has no account argument.
+  bridge.refreshAccount(1);
+  // @ts-expect-error Startup discovery takes no force flag.
+  bridge.checkStartupUpdates(true);
+  // @ts-expect-error Update checks take no release URL.
+  bridge.checkForUpdates('https://example.org/');
+  // @ts-expect-error Download uses the discovered release rather than a caller path.
+  bridge.downloadUpdate('update.zip');
+  // @ts-expect-error Installation uses the verified archive rather than a caller path.
+  bridge.installUpdate('update.zip');
+  // @ts-expect-error Catalog lookup has no category selector.
+  bridge.getTagCatalog('algorithm');
+  // @ts-expect-error Tag requests require a name.
+  bridge.requestTag({ category: 'algorithm' });
+  // @ts-expect-error Tag review lookup takes no account argument.
+  bridge.getTagReview(1);
+  // @ts-expect-error Review action names must match the implemented decisions.
+  bridge.reviewTag({ number: 1, decision: 'delete', expected: { category: 'algorithm', name: 'DP' } });
+  // @ts-expect-error Review writes require the latest request snapshot.
+  bridge.reviewTag({ number: 1, decision: 'reject' });
+  // @ts-expect-error Raw comment POST output cannot promise an API object.
+  const wrongComment: Promise<{ id: number }> = commented;
+  // @ts-expect-error Startup checks can resolve null when busy or unavailable.
+  const wrongStartup: Promise<ProgressEvents['update-progress']> = startup;
+  // @ts-expect-error Parsed saves can return an algorithm note depending on the path.
+  const wrongDocument: Promise<import('../../src/shared/models/records').DocumentRecord> = document;
+  void [wrongComment, wrongStartup, wrongDocument];
+
+  void comments.then(values => {
+    const body: unknown = values[0]?.body;
+    // @ts-expect-error Projecting a provider field does not validate it as Markdown text.
+    const text: string = values[0]!.body;
+    void [body, text];
+  });
+  void catalog.then(value => {
+    const name: string | undefined = value.categories[0]?.tags[0]?.name;
+    const categoryId: unknown = value.categories[0]?.id;
+    void [name, categoryId];
+  });
+  void requested.then(value => {
+    if (!value) return;
+    const name: string = value.name;
+    // @ts-expect-error Provider issue IDs are returned without scalar validation.
+    const number: number = value.number;
+    void [name, number];
+  });
+  void login.then(value => {
+    const id: number = value.id;
+    const picture: string | null = value.avatarData;
+    // @ts-expect-error Provider display names remain unvalidated API values.
+    const name: string = value.name;
+    void [id, picture, name];
+  });
+  void topic.then(value => {
+    const author: string = value.createdBy.login;
+    // @ts-expect-error Idempotent topic replay may retain a regex-coerced persisted ID.
+    const id: string = value.id;
+    void [author, id];
+  });
 
   const operations: BoundaryHandlers = {
     openExternal: async (_url) => {},

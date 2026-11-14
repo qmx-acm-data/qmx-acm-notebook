@@ -78,9 +78,3 @@ export interface PlannerDeadline {
   title?: string;
   overdue: boolean;
 }
-
-declare global {
-  interface Window {
-    NotebookPlanner: PlannerUIApi;
-  }
-}

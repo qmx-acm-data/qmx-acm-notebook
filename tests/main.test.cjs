@@ -102,7 +102,8 @@ function harness({ files = {}, account = { id: 42, login: 'alice' }, backend = {
       return [];
     };
   }
-  const context = vm.createContext({ Buffer, URL, AbortSignal, console,
+  const commonJSModule = { exports: {} };
+  const context = vm.createContext({ Buffer, URL, AbortSignal, console, module: commonJSModule, exports: commonJSModule.exports,
     process: { execPath, platform, versions: { electron: '40.0.0' }, argv: [], env: { ELECTRON_RUN_AS_NODE: '1', QMX_TEST_ENV: 'preserved', ...env } },
     Date: class extends Date { static now() { return now; } },
     setTimeout(callback, delay) { const id = ++timerId; timers.set(id, { callback, at: now + delay }); return id; },
@@ -149,6 +150,11 @@ function harness({ files = {}, account = { id: 42, login: 'alice' }, backend = {
         if (browserBackend.spawn) return browserBackend.spawn(file, args, options, child);
         return child;
       } };
+      if (name === './code-formatter.cjs') return require(appPath('electron/code-formatter.cjs'));
+      if (name === './settings.cjs') return require(appPath('electron/settings.cjs'));
+      if (name === './external-links.cjs') return require(appPath('electron/external-links.cjs'));
+      if (name === './ipc-handlers.cjs') return require(appPath('electron/ipc-handlers.cjs'));
+      if (name === './session.cjs') return require(appPath('electron/session.cjs'));
       if (name === './github.cjs') return { GitHub: FakeGitHub, normalizeServerUrl, repositoryKey, repoParts(repo) { if (!/^[\w.-]+\/[\w.-]+$/.test(repo || '')) throw new Error('Invalid repo'); return repo.split('/'); } };
       throw new Error(`Unexpected dependency ${name}`);
     }, __dirname: path.dirname(MAIN),

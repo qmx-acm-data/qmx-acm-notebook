@@ -27,9 +27,3 @@ export interface SearchApi {
   match(record: unknown, query: unknown): number;
   tagHits(record: unknown, selected: unknown): number;
 }
-
-declare global {
-  interface Window {
-    NotebookSearch: SearchApi;
-  }
-}

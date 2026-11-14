@@ -1,5 +1,5 @@
 /** Structural contracts for the standalone Markdown/KaTeX helper; types only. */
-import type { MarkdownGlobal, MarkdownTableToken, MarkdownTokenizer } from './markdown';
+import type { MarkdownTableToken, MarkdownTokenizer } from './markdown';
 
 export interface MarkdownMathFormula {
   raw: string;
@@ -60,8 +60,4 @@ export type MarkdownMathContainer = ParentNode & { ownerDocument: Document };
 export interface MarkdownMathApi {
   parse(source: string, marked: MarkdownMathMarked): string;
   render(container: MarkdownMathContainer, katex?: MarkdownMathKatex | null): void;
-}
-
-export interface MarkdownMathGlobal extends MarkdownGlobal {
-  NotebookMarkdownMath?: Readonly<MarkdownMathApi>;
 }
