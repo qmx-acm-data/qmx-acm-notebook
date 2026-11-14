@@ -1,4 +1,5 @@
 'use strict';
+const { appPath } = require('./app-path.cjs');
 
 const nativeTest = require('node:test');
 const test = Object.assign((name, fn) => nativeTest(name, { skip: process.platform === 'darwin' ? 'macOS signed bundle application is disabled; covered in update-helper tests' : false }, fn), { after: nativeTest.after });
@@ -8,11 +9,11 @@ const os = require('node:os');
 const path = require('node:path');
 const crypto = require('node:crypto');
 const { EventEmitter } = require('node:events');
-const helper = require('../electron/update-helper.cjs');
-const { prepareFileUpgrade, recoverFileUpgrade, cancelPreparedFileUpgrade } = require('../electron/file-upgrade.cjs');
+const helper = require(appPath('electron/update-helper.cjs'));
+const { prepareFileUpgrade, recoverFileUpgrade, cancelPreparedFileUpgrade } = require(appPath('electron/file-upgrade.cjs'));
 const { publicKey, privateKey } = crypto.generateKeyPairSync('ed25519');
 const pem = publicKey.export({ type: 'spki', format: 'pem' });
-const keyModule = require.resolve('../electron/update-key.cjs');
+const keyModule = require.resolve(appPath('electron/update-key.cjs'));
 require(keyModule);
 const productionKey = require.cache[keyModule].exports;
 test.after(() => { require.cache[keyModule].exports = productionKey; });

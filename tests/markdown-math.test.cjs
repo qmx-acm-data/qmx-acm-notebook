@@ -1,6 +1,7 @@
 'use strict';
+const { appPath } = require('./app-path.cjs');
 const test = require('node:test'), assert = require('node:assert/strict'), marked = require('marked');
-const { parse } = require('../ui/markdown-math.js');
+const { parse } = require(appPath('ui/markdown-math.js'));
 const count = html => (html.match(/class="notebook-math-source"/g) || []).length;
 test('math subscripts, braces and backslashes survive Markdown interpretation', () => {
  const formula = String.raw`1,\underbrace{0,\ldots,0}_{k\text{ 个}}, 1,\underbrace{0,\ldots,0}_{k\text{ 个}}, \ldots`;

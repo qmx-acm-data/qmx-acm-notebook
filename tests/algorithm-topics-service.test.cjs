@@ -1,9 +1,10 @@
 'use strict';
+const { appPath } = require('./app-path.cjs');
 const test = require('node:test');
 const assert = require('node:assert/strict');
-const { GitHub } = require('../electron/github.cjs');
-const { AlgorithmTopics, TOPICS_PATH, validateTopics, parseTopics } = require('../electron/algorithm-topics.cjs');
-const tree = require('../ui/algorithm-tree.js');
+const { GitHub } = require(appPath('electron/github.cjs'));
+const { AlgorithmTopics, TOPICS_PATH, validateTopics, parseTopics } = require(appPath('electron/algorithm-topics.cjs'));
+const tree = require(appPath('ui/algorithm-tree.js'));
 const UUID = '3d12970c-1ea6-4da8-809c-a8f85b2db247';
 const UUID2 = 'cc720a4b-31e5-4a89-a438-ea74ab9886c4';
 const id = `custom-${UUID}`, id2 = `custom-${UUID2}`;
@@ -111,7 +112,7 @@ test('split concrete algorithm IDs can receive persisted children across subsequ
   const h = fixture(); const first = await h.service.save(input());
   const second = await new AlgorithmTopics(h.gh, { uuid: () => UUID2 }).save(input({ parentId: first.topic.id, label: '变体', requestId: 'child-1' }));
   const synthetic = `algorithm-content-${first.topic.id}`;
-  const effective = require('../electron/algorithm-topics.cjs').builtinIndex(tree, second.topics);
+  const effective = require(appPath('electron/algorithm-topics.cjs')).builtinIndex(tree, second.topics);
   assert.equal(effective.get(first.topic.id).kind, 'directory');
   assert.equal(effective.get(synthetic).kind, 'algorithm');
   const UUID3 = 'a1d16a2e-502f-4a76-9f60-c5a6dca6b210';
@@ -154,7 +155,7 @@ test('sync returns shared additions and removes remotely deleted file without re
 // Reuse the existing main-process VM fixture without changing or registering its tests.
 function mainHarness(options) {
   const fs = require('node:fs'), path = require('node:path');
-  let source = fs.readFileSync(path.join(__dirname, 'main.test.cjs'), 'utf8').split("test('planner IPC persists")[0];
+  let source = fs.readFileSync(path.join(__dirname, 'main.test.cjs'), 'utf8').split('// END_MAIN_HARNESS')[0];
   source = source.replace("['saveDocument', 'deleteDocument'", "['saveAlgorithmTopic', 'saveDocument', 'deleteDocument'");
   return new Function('require', '__dirname', 'Buffer', source + '\nreturn harness;')(require, __dirname, Buffer)(options);
 }
@@ -185,7 +186,7 @@ test('main IPC caches only committed additions, exposes offline bootstrap/sync a
 test('preload exposes saveAlgorithmTopic through the isolated IPC bridge', () => {
   const fs = require('node:fs'), path = require('node:path'), vm = require('node:vm');
   let bridge; const calls = [];
-  vm.runInNewContext(fs.readFileSync(path.join(__dirname, '../electron/preload.cjs'), 'utf8'), { require: () => ({ contextBridge: { exposeInMainWorld(name, value) { assert.equal(name, 'notebook'); bridge = value; } }, ipcRenderer: { invoke(...args) { calls.push(args); return Promise.resolve('saved'); } } }) });
+  vm.runInNewContext(fs.readFileSync(appPath('electron/preload.cjs'), 'utf8'), { require: () => ({ contextBridge: { exposeInMainWorld(name, value) { assert.equal(name, 'notebook'); bridge = value; } }, ipcRenderer: { invoke(...args) { calls.push(args); return Promise.resolve('saved'); } } }) });
   assert.equal(typeof bridge.saveAlgorithmTopic, 'function');
   bridge.saveAlgorithmTopic(input()); assert.equal(calls[0][0], 'saveAlgorithmTopic');
   assert.equal(calls[0][1].label, '测试算法');

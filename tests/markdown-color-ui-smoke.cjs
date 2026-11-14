@@ -1,4 +1,5 @@
 'use strict';
+const { appPath } = require('./app-path.cjs');
 const assert = require('node:assert/strict');
 const path = require('node:path');
 const { pathToFileURL } = require('node:url');
@@ -47,7 +48,7 @@ $\href{javascript:alert(1)}{unsafe}$ $\htmlStyle{position:fixed;color:red}{unsaf
       window.openedUrls = [];
       window.notebook = { bootstrap: async () => structuredClone(payload), sync: async () => structuredClone(payload), openExternal: async url => window.openedUrls.push(url) };
     }, source);
-    await page.goto(pathToFileURL(path.resolve(__dirname, '../ui/index.html')).href);
+    await page.goto(pathToFileURL(appPath('ui/index.html')).href);
     await page.locator('.rail-nav-item[data-view="public"]').click();
     const reader = page.locator('#detail-panel .markdown-body');
     await reader.locator('.katex').first().waitFor();

@@ -1,9 +1,10 @@
 'use strict';
+const { appPath } = require('./app-path.cjs');
 const assert = require('node:assert/strict');
 const path = require('node:path');
 const {pathToFileURL} = require('node:url');
 const {chromium} = require('playwright');
-const search = require('../ui/search.js');
+const search = require(appPath('ui/search.js'));
 assert.equal(search.tagHits({tags:['a','a','b']}, new Set(['a','b'])), 2);
 (async()=>{
  const browser=await chromium.launch({channel:'msedge',headless:true});
@@ -15,7 +16,7 @@ assert.equal(search.tagHits({tags:['a','a','b']}, new Set(['a','b'])), 2);
    window.fixture={calls:[]}; const payload=()=>({records:docs,local:{records:[],favorites:[],mastery:{},draft:{}},settings:{autoSync:false},account:{id:1,login:'user'},permissions:{repo,push:true,admin:true},tagCatalog:catalog,authStatus:{status:'expired'}});
    window.notebook={bootstrap:async()=>payload(),updateLocal:async data=>fixture.calls.push(['local',data]),requestTag:async data=>fixture.calls.push(['request',data]),getTagCatalog:async()=>catalog,getTagReview:async()=>({canReview:true,requests:[{number:9,category:'dp',name:'丙',author:'user',state:'open',expected:{category:'dp',name:'丙',updatedAt:'stamp'}}]}),reviewTag:async data=>fixture.calls.push(['review',data])};
   });
-  await page.goto(pathToFileURL(path.resolve(__dirname,'../ui/index.html')).href); await page.waitForSelector('.record-card');
+  await page.goto(pathToFileURL(appPath('ui/index.html')).href); await page.waitForSelector('.record-card');
   assert.match(await page.locator('#account-caption').innerText(),/过期/);
   await page.locator('#tag-filter-trigger').click(); await page.locator('#tag-picker-dialog-options input[value="甲"]').check(); await page.locator('#tag-picker-dialog-options input[value="乙"]').check(); await page.locator('#tag-picker-confirm').click();
   assert.equal(await page.locator('.record-card').first().getAttribute('data-key'),'two'); assert.match((await page.locator('#tag-filter-trigger').innerText()).trim(),/^标签\s*⌄$/);

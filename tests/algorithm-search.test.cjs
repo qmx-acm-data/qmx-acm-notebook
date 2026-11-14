@@ -1,6 +1,7 @@
 'use strict';
+const { appPath } = require('./app-path.cjs');
 const test=require('node:test'),assert=require('node:assert/strict');
-const api=require('../ui/algorithm-directory.js'),base=require('../ui/algorithm-tree.js');
+const api=require(appPath('ui/algorithm-directory.js')),base=require(appPath('ui/algorithm-tree.js'));
 test('algorithm query normalization preserves symbols and ranks exact aliases over paths',()=>{
  const node={label:'后缀自动机',fullLabel:'后缀自动机（SAM）',aliases:['SAM']};
  assert.ok(api.topicScore(node,['字符串','后缀结构'],'ＳＡＭ'));

@@ -1,4 +1,5 @@
 'use strict';
+const { appPath } = require('./app-path.cjs');
 const { chromium } = require('playwright');
 const { pathToFileURL } = require('node:url');
 const path = require('node:path');
@@ -21,7 +22,7 @@ const assert = require('node:assert/strict');
           onUpdateProgress() {}, onAuthProgress() {}
         };
       }, mode);
-      await page.goto(pathToFileURL(path.resolve('ui/index.html')).href);
+      await page.goto(pathToFileURL(appPath('ui/index.html')).href);
       await page.waitForFunction(() => calls.includes('startup'));
       if (mode === 'latest' || mode === 'offline') {
         await page.waitForTimeout(100); assert.equal(await page.locator('#startup-update-dialog').evaluate(n => n.open), false);

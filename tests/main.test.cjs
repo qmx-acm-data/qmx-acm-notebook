@@ -1,4 +1,5 @@
 'use strict';
+const { appPath } = require('./app-path.cjs');
 const test = require('node:test');
 const assert = require('node:assert/strict');
 const fs = require('node:fs');
@@ -8,10 +9,10 @@ const { EventEmitter } = require('node:events');
 
 // Run the real entry point without loading Electron, touching userData, or using a network.
 // Only app readiness is manually advanced; all behavior goes through registered IPC handlers.
-const MAIN = path.resolve(__dirname, '../electron/main.cjs');
+const MAIN = appPath('electron/main.cjs');
 const SOURCE = fs.readFileSync(MAIN, 'utf8');
 const REPO = 'team/notebook';
-const { normalizeServerUrl, repositoryKey } = require('../electron/github.cjs');
+const { normalizeServerUrl, repositoryKey } = require(appPath('electron/github.cjs'));
 const scoped = record => ({ ...record, repo: REPO, serverUrl: '', sourceKey: repositoryKey(REPO) });
 const UUID = '55c710aa-e083-4b14-94fe-a3a825d17f70';
 const localRecord = (extra = {}) => ({ id: 'local:one', kind: 'local', clientId: UUID, ownerId: '42', title: 'Original local', body: 'local body', ...extra });
@@ -21,7 +22,7 @@ const personal = (records = []) => ({ records, favorites: ['issue:7'], mastery: 
 const clone = value => JSON.parse(JSON.stringify(value));
 function deferred() { let resolve, reject; const promise = new Promise((yes, no) => { resolve = yes; reject = no; }); return { promise, resolve, reject }; }
 
-function harness({ files = {}, account = { id: 42, login: 'alice' }, backend = {}, updaterBackend = {}, upgradeBackend = {}, browserBackend = {}, networkBackend, platform = 'win32', env = {}, switches = {}, isPackaged = true } = {}) {
+function harness({ files = {}, account = { id: 42, login: 'alice' }, backend = {}, updaterBackend = {}, upgradeBackend = {}, browserBackend = {}, networkBackend, exportBackend = {}, platform = 'win32', env = {}, switches = {}, isPackaged = true } = {}) {
   const root = path.resolve('mock-user-data');
   const disk = new Map();
   const writes = [];
@@ -30,7 +31,7 @@ function harness({ files = {}, account = { id: 42, login: 'alice' }, backend = {
   if (account) disk.set(path.join(root, 'auth.json'), JSON.stringify({ encrypted: encrypted(JSON.stringify({ token: 'FAKE_TEST_TOKEN', account })).toString('base64') }));
   const fakeFs = {
     readFileSync(file) { if (!disk.has(file)) throw new Error('ENOENT'); return disk.get(file); },
-    writeFileSync(file, text) { disk.set(file, String(text)); writes.push(file); },
+    writeFileSync(file, text) { exportBackend.beforeWrite?.(file, text); disk.set(file, String(text)); writes.push(file); },
     renameSync(from, to) { if (!disk.has(from)) throw new Error('ENOENT'); disk.set(to, disk.get(from)); disk.delete(from); },
     mkdirSync() {},
     existsSync(file) { return browserBackend.existsSync?.(file) || false; },
@@ -74,6 +75,7 @@ function harness({ files = {}, account = { id: 42, login: 'alice' }, backend = {
     loadFile() {}
   }
   const electron = {
+    dialog: { showSaveDialog: (window, options) => exportBackend.showSaveDialog?.(window, options) ?? Promise.resolve({ canceled: true }) },
     net: { fetch: async (url, options) => { networkCalls.push({ url: String(url), options }); return networkBackend ? networkBackend(url, options) : { url, options }; } },
     app: { isPackaged, disableHardwareAcceleration() {}, commandLine: {
       appendSwitch(name, value) { appendedSwitches.push({ name, value }); commandLineSwitches.set(name, value); },
@@ -95,12 +97,13 @@ function harness({ files = {}, account = { id: 42, login: 'alice' }, backend = {
       if (method === 'deleteDocument') return { id: args[0].id || `document:${args[0].path}`, path: args[0].path, repo: REPO, deleted: true };
       if (method === 'profile' || method === 'identity') return { account: { id: 42, login: 'alice', avatarUrl: '' }, permissions: { repo: this.options.repo, push: true } };
       if (method === 'sync') return { records: [], issues: [], blobs: {}, lastSync: '2026-11-02T00:00:00Z' };
-       if (method === 'getTagCatalog') return require('../ui/tag-presets.js');
+       if (method === 'getTagCatalog') return require(appPath('ui/tag-presets.js'));
        if (method === 'getTagReview') return { canReview: false, requests: [] };
       return [];
     };
   }
-  const context = vm.createContext({ Buffer, URL, AbortSignal, console,
+  const commonJSModule = { exports: {} };
+  const context = vm.createContext({ Buffer, URL, AbortSignal, console, module: commonJSModule, exports: commonJSModule.exports,
     process: { execPath, platform, versions: { electron: '40.0.0' }, argv: [], env: { ELECTRON_RUN_AS_NODE: '1', QMX_TEST_ENV: 'preserved', ...env } },
     Date: class extends Date { static now() { return now; } },
     setTimeout(callback, delay) { const id = ++timerId; timers.set(id, { callback, at: now + delay }); return id; },
@@ -112,13 +115,14 @@ function harness({ files = {}, account = { id: 42, login: 'alice' }, backend = {
       if (name === 'node:path') return path;
       if (name === 'node:crypto') return { randomUUID: () => '00000000-0000-4000-8000-000000000001' };
       if (name === '../package.json') return { version: '0.3.0' };
-      if (name === './auth.cjs') return require('../electron/auth.cjs');
-      if (name === './platform-service.cjs') return require('../electron/platform-service.cjs');
-      if (name === './planner-service.cjs') return require('../electron/planner-service.cjs');
-      if (name === './platform-page.cjs') return require('../electron/platform-page.cjs');
-       if (name === './contests.cjs') return require('../electron/contests.cjs');
+      if (name === './ipc-boundary.cjs') return require(appPath('electron/ipc-boundary.cjs'));
+      if (name === './auth.cjs') return require(appPath('electron/auth.cjs'));
+      if (name === './platform-service.cjs') return require(appPath('electron/platform-service.cjs'));
+      if (name === './planner-service.cjs') return require(appPath('electron/planner-service.cjs'));
+      if (name === './platform-page.cjs') return require(appPath('electron/platform-page.cjs'));
+       if (name === './contests.cjs') return require(appPath('electron/contests.cjs'));
       if (name === '@astral-sh/ruff-wasm-nodejs') return require(name);
-       if (name === '../ui/tag-presets.js') return require('../ui/tag-presets.js');
+       if (name === '../ui/tag-presets.js') return require(appPath('ui/tag-presets.js'));
        if (name === './updater.cjs') return { createUpdater(options) { updaterOptions = options; return updater; } };
       if (name === './update-storage.cjs') return { cleanupUpdateStorage() { return { files: 0, bytes: 0, retained: 0 }; } };
       if (name === './file-upgrade.cjs') return {
@@ -146,6 +150,11 @@ function harness({ files = {}, account = { id: 42, login: 'alice' }, backend = {
         if (browserBackend.spawn) return browserBackend.spawn(file, args, options, child);
         return child;
       } };
+      if (name === './code-formatter.cjs') return require(appPath('electron/code-formatter.cjs'));
+      if (name === './settings.cjs') return require(appPath('electron/settings.cjs'));
+      if (name === './external-links.cjs') return require(appPath('electron/external-links.cjs'));
+      if (name === './ipc-handlers.cjs') return require(appPath('electron/ipc-handlers.cjs'));
+      if (name === './session.cjs') return require(appPath('electron/session.cjs'));
       if (name === './github.cjs') return { GitHub: FakeGitHub, normalizeServerUrl, repositoryKey, repoParts(repo) { if (!/^[\w.-]+\/[\w.-]+$/.test(repo || '')) throw new Error('Invalid repo'); return repo.split('/'); } };
       throw new Error(`Unexpected dependency ${name}`);
     }, __dirname: path.dirname(MAIN),
@@ -169,6 +178,130 @@ function harness({ files = {}, account = { id: 42, login: 'alice' }, backend = {
     get updaterOptions() { return updaterOptions; }, get quitCalls() { return quitCalls; },
     stored: name => JSON.parse(disk.get(path.join(root, name)) || 'null') };
 }
+
+// END_MAIN_HARNESS
+
+test('typed record boundary preserves migrated metadata through updateLocal and a disk-snapshot restart', async () => {
+  const legacy = { id: 'local:legacy', kind: 'local', ownerId: 42, title: 'Legacy draft', opaque: { revisions: [{ body: 'older work', flags: [false, null] }] } };
+  const unbound = localRecord({ id: 'local:unbound', clientId: '00000000-0000-4000-8000-000000000002', ownerId: undefined });
+  const foreign = localRecord({ id: 'local:foreign', clientId: '00000000-0000-4000-8000-000000000099', ownerId: 99, opaque: { attachments: [{ key: 'private', state: { reviewed: false } }] } });
+  const mirror = documentRecord({ opaque: { legacyMirror: true } });
+  const published = { [`${repositoryKey(REPO)}:42:00000000-0000-4000-8000-000000000003`]: 'problems/already-published.md' };
+  const data = {
+    ...personal([legacy, unbound, foreign, mirror]),
+    opaque: { schema: 7, extensions: [{ enabled: false, value: null }] },
+    learningPaths: { graphs: { selected: ['bfs'], progress: { bfs: 'reviewing' }, opaque: { version: 2 } } },
+    published
+  };
+  const h = harness({ files: { 'local.json': data, 'cache.json': { repo: REPO, records: [] } } });
+  const boot = await h.invoke('bootstrap');
+  const migrated = {
+    ...data,
+    records: [
+      { ...legacy, clientId: '00000000-0000-4000-8000-000000000001', ownerId: '42' },
+      { ...unbound, ownerId: null },
+      { ...foreign, ownerId: '99' },
+      mirror
+    ]
+  };
+  assert.deepEqual(boot.local, migrated);
+  assert.deepEqual(h.stored('local.json'), migrated, 'readiness migration must persist nested and root metadata together');
+  await h.invoke('saveSettings', { theme: 'dark' });
+  const saved = await h.invoke('updateLocal', {
+    records: [
+      { ...boot.local.records[0], body: 'edited after migration' },
+      boot.local.records[1], boot.local.records[2], mirror,
+      issueRecord(), { id: 'algorithm-note:legacy', kind: 'algorithm-note', opaque: { retainInCache: true } }
+    ],
+    favorites: ['local:legacy'],
+    extensionAfterUpdate: { checkpoints: [1, { saved: true }] }
+  });
+  const expected = {
+    ...migrated,
+    records: [{ ...migrated.records[0], body: 'edited after migration' }, ...migrated.records.slice(1, 3)],
+    favorites: ['local:legacy'],
+    extensionAfterUpdate: { checkpoints: [1, { saved: true }] }
+  };
+  assert.deepEqual(saved, expected, 'partial updates preserve omitted metadata and filter nonlocal mirrors');
+  assert.deepEqual(h.stored('local.json'), expected);
+  const files = Object.fromEntries(['local.json', 'settings.json', 'cache.json'].map(name => [name, h.stored(name)]));
+  const restarted = harness({ files });
+  const afterRestart = await restarted.invoke('bootstrap');
+  assert.deepEqual(afterRestart.local, saved);
+  assert.deepEqual(afterRestart.settings, (await h.invoke('bootstrap')).settings);
+  assert.deepEqual(restarted.stored('cache.json'), files['cache.json']);
+  assert.equal(restarted.writes.length, 0, 'persisted migration must be stable on a fresh main process');
+  const tampered = clone(afterRestart.local.records);
+  tampered[2].opaque.attachments[0].state.reviewed = true;
+  await assert.rejects(restarted.invoke('updateLocal', { records: tampered }), /其他账号/);
+  assert.deepEqual(restarted.stored('local.json'), saved, 'a nested foreign-record edit must not change persisted metadata');
+});
+
+test('typed record bootstrap annotates sparse cached documents without parsing or dropping unknown metadata', async () => {
+  const doc = { kind: 'document', id: 'document:legacy', opaque: { parserVersion: null, entries: [{ raw: ['kept'] }] } };
+  const issue = { kind: 'issue', id: 'issue:legacy', opaque: { discussion: true } };
+  const note = { kind: 'algorithm-note', id: 'algorithm-note:legacy', opaque: { nested: { selected: false } } };
+  const cache = {
+    repo: REPO, records: [doc, issue, note, localRecord()],
+    algorithmNotes: [note], lastSync: 'legacy-cache-time', opaque: { cacheExtension: [null, 3] }
+  };
+  const h = harness({ files: { 'cache.json': cache, 'local.json': personal([]) } });
+  const boot = await h.invoke('bootstrap');
+  assert.deepEqual(boot.records, [scoped(doc)], 'document-kind cache objects need no parser fields');
+  assert.deepEqual(boot.issues, [scoped(issue)]);
+  assert.deepEqual(boot.algorithmNotes, [scoped(note)]);
+  assert.equal(boot.lastSync, cache.lastSync);
+  assert.deepEqual(h.stored('cache.json'), cache, 'source annotation must not rewrite raw cached metadata');
+  await h.invoke('saveSettings', { theme: 'dark' });
+  const local = await h.invoke('updateLocal', { records: [], draft: { editor: { opaque: { cursor: [2, 5] } } } });
+  const beforeRestart = await h.invoke('bootstrap');
+  const files = Object.fromEntries(['local.json', 'settings.json', 'cache.json'].map(name => [name, h.stored(name)]));
+  const restarted = harness({ files });
+  const afterRestart = await restarted.invoke('bootstrap');
+  for (const key of ['records', 'issues', 'algorithmNotes', 'lastSync', 'settings']) assert.deepEqual(afterRestart[key], beforeRestart[key]);
+  assert.deepEqual(afterRestart.local, local);
+  assert.deepEqual(restarted.stored('cache.json'), cache);
+  assert.equal(h.calls.length + restarted.calls.length, 0, 'raw cache bootstrap and local persistence stay offline');
+});
+
+test('typed record metadata keeps persisted values that overwrite defaults through updateLocal and restart', async () => {
+  const data = { records: [], favorites: null, mastery: false, draft: ['legacy draft'], learningPaths: 'legacy paths', opaque: { retained: true } };
+  const h = harness({ files: { 'local.json': data, 'cache.json': { repo: REPO, records: [] } } });
+  assert.deepEqual((await h.invoke('bootstrap')).local, data);
+  const saved = await h.invoke('updateLocal', { records: [], draft: null });
+  assert.deepEqual(saved, { ...data, draft: null, published: {} });
+  assert.deepEqual(h.stored('local.json'), saved);
+  const files = Object.fromEntries(['local.json', 'settings.json', 'cache.json'].map(name => [name, h.stored(name)]));
+  const restarted = harness({ files });
+  assert.deepEqual((await restarted.invoke('bootstrap')).local, saved);
+  assert.equal(restarted.writes.length, 0);
+});
+
+test('typed boundary preserves exact void returns and export cancellation, writes and errors', async () => {
+  const h = harness({ account: null });
+  const raw = (value, name, ...args) => value.handlers.get(name)({ sender: value.windows[0].webContents }, ...args);
+  assert.equal(await raw(h, 'openExternal', 'https://example.org/'), undefined);
+  assert.equal(await raw(h, 'cancelLogin'), undefined);
+  const before = [...h.writes];
+  assert.equal(await raw(h, 'exportLocal'), false);
+  assert.deepEqual(h.writes, before, 'canceling export must not write');
+  const destination = path.resolve('mock-export.json');
+  const exported = harness({ account: null, exportBackend: { showSaveDialog(window, options) {
+    assert.equal(window, exported.windows[0]);
+    assert.equal(options.defaultPath, '我的题解备份.json');
+    return Promise.resolve({ canceled: false, filePath: destination });
+  } } });
+  assert.equal(await raw(exported, 'exportLocal'), true);
+  assert.ok(exported.writes.includes(destination));
+  const failure = new Error('export failed');
+  const dialogFailure = harness({ exportBackend: { showSaveDialog() { throw failure; } } });
+  await assert.rejects(raw(dialogFailure, 'exportLocal'), error => error === failure);
+  const writeFailure = harness({ exportBackend: {
+    showSaveDialog: async () => ({ canceled: false, filePath: destination }),
+    beforeWrite(file) { if (file === destination) throw failure; }
+  } });
+  await assert.rejects(raw(writeFailure, 'exportLocal'), error => error === failure);
+});
 
 test('planner IPC persists device data across account/repository changes and restart without network', async () => {
   const h = harness({ account: null });
@@ -285,7 +418,7 @@ test('platform IPC shares sender validation and update locks while opening ordin
 test('preload exposes platform IPC alongside existing auth, contest, formatter and update methods', async () => {
   let bridge;
   const calls = [], listeners = new Map();
-  vm.runInNewContext(fs.readFileSync(path.resolve(__dirname, '../electron/preload.cjs'), 'utf8'), { require(name) {
+  vm.runInNewContext(fs.readFileSync(appPath('electron/preload.cjs'), 'utf8'), { require(name) {
     assert.equal(name, 'electron');
     return { contextBridge: { exposeInMainWorld(name, value) { assert.equal(name, 'notebook'); bridge = value; } }, ipcRenderer: {
       invoke(name, ...args) { calls.push({ name, args }); return Promise.resolve(name); },
@@ -999,9 +1132,9 @@ for (const spawnFailure of ['error', 'throw']) test(`main ${spawnFailure} spawn 
   if (process.platform === 'darwin') { t.skip('automatic file upgrades are disabled on macOS'); return; }
   const os = require('node:os');
   const crypto = require('node:crypto');
-  const helper = require('../electron/update-helper.cjs');
-  const upgrade = require('../electron/file-upgrade.cjs');
-  const keyModule = require.resolve('../electron/update-key.cjs');
+  const helper = require(appPath('electron/update-helper.cjs'));
+  const upgrade = require(appPath('electron/file-upgrade.cjs'));
+  const keyModule = require.resolve(appPath('electron/update-key.cjs'));
   const productionKey = require(keyModule);
   const { publicKey, privateKey } = crypto.generateKeyPairSync('ed25519');
   require.cache[keyModule].exports = publicKey.export({ type: 'spki', format: 'pem' });

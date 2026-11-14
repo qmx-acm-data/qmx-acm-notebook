@@ -1,6 +1,7 @@
 'use strict';
+const { appPath } = require('./app-path.cjs');
 const test=require('node:test'),assert=require('node:assert/strict');
-const data=require('../data/algorithm-learning-path.json'),directory=require('../data/algorithm-directory.json'),tree=require('../ui/algorithm-tree.js'),{validate}=require('../tools/build-algorithm-learning-path.cjs');
+const data=require('../data/algorithm-learning-path.json'),directory=require('../data/algorithm-directory.json'),tree=require(appPath('ui/algorithm-tree.js')),{validate}=require('../tools/build-algorithm-learning-path.cjs');
 test('orientation precedes stable chapters without altering existing gate identities',()=>{
  assert.deepEqual(data.stages.map(s=>s.index),Array.from({length:15},(_,i)=>i));
  const zero=data.stages[0];assert.equal(zero.id,'stage-00');assert.equal(zero.type,'orientation');assert.equal(zero.gates.length,1);assert.equal(zero.gates[0].title,'总览算法竞赛');assert.equal(zero.cf,undefined);assert.deepEqual(zero.gates[0].topicIds,['directory-contest-experience']);

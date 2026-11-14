@@ -1,0 +1,4 @@
+{
+  "extends": "./tsconfig.json",
+  "include": ["src/renderer/lib/**/*.ts", "src/renderer/algorithms/**/*.ts", "src/renderer/planner/**/*.ts", "src/renderer/platforms/**/*.ts", "src/renderer/home/**/*.ts", "src/renderer/account/updates.ts", "src/renderer/app/app.ts", "src/renderer/library/filters.ts", "src/renderer/library/editor.ts", "src/renderer/library/reader.ts", "src/renderer/account/settings.ts", "src/renderer/reading/markdown-*.ts", "src/renderer/reading/code-blocks.ts", "types/**/*.ts", "src/shared/**/*.ts", "tests/types/**/*.ts"]
+}

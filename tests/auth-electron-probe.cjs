@@ -1,9 +1,10 @@
 'use strict';
+const { appPath } = require('./app-path.cjs');
 // Run twice with a fresh QMX_AUTH_PROBE_DIR and mode save/restore; never uses real credentials.
 const { app, safeStorage } = require('electron');
 const fs = require('node:fs');
 const path = require('node:path');
-const { createAuth } = require('../electron/auth.cjs');
+const { createAuth } = require(appPath('electron/auth.cjs'));
 const root = process.env.QMX_AUTH_PROBE_DIR;
 if (!root || !path.isAbsolute(root)) throw new Error('Explicit isolated probe directory required');
 app.setPath('userData', root);

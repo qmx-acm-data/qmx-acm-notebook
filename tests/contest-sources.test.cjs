@@ -1,7 +1,8 @@
 'use strict';
+const { appPath } = require('./app-path.cjs');
 const test = require('node:test');
 const assert = require('node:assert/strict');
-const { SOURCES } = require('../electron/contest-sources.cjs');
+const { SOURCES } = require(appPath('electron/contest-sources.cjs'));
 
 const sources = Object.fromEntries(SOURCES.map(source => [source.id, source]));
 const cf = row => JSON.stringify({ status: 'OK', result: row === undefined ? [] : [row] });

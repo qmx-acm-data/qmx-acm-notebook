@@ -1,4 +1,5 @@
 'use strict';
+const { appPath } = require('./app-path.cjs');
 const assert = require('node:assert/strict');
 const { chromium } = require('playwright');
 const { pathToFileURL } = require('node:url');
@@ -17,7 +18,7 @@ const path = require('node:path');
       const persist = value => localStorage.setItem(storageKey, JSON.stringify(value));
       const fixture = window.platformFixture = {
         state: read(), calls: [], links: [], failBind: false, failRefresh: false,
-        holdBind: false, holdRefresh: false, releases: {},
+        holdBind: false, holdRefresh: false, releases: {}, syncs: 0, syncPlatforms: null,
         today: new Intl.DateTimeFormat('en-CA', { timeZone: 'Asia/Shanghai', year: 'numeric', month: '2-digit', day: '2-digit' }).format(new Date()),
         release(code) { this.releases[code]?.(); delete this.releases[code]; },
         persist() { persist(this.state); }
@@ -49,6 +50,12 @@ const path = require('node:path');
       };
       window.notebook = {
         bootstrap: async () => payload(), updateLocal: async () => payload(), saveSettings: async () => ({}),
+        sync: async () => {
+          fixture.syncs++;
+          const response = payload();
+          if (fixture.syncPlatforms !== null) response.platforms = clone(fixture.syncPlatforms);
+          return response;
+        },
         openExternal: async url => { fixture.links.push(url); },
         bindPlatform: async (code, url) => {
           fixture.calls.push(['bind', code, url]);
@@ -73,7 +80,7 @@ const path = require('node:path');
         }
       };
     });
-    const open = () => page.goto(pathToFileURL(path.resolve(__dirname, '../ui/index.html')).href);
+    const open = () => page.goto(pathToFileURL(appPath('ui/index.html')).href);
     const panel = page.locator('.platform-dashboard');
     const row = code => page.locator(`.platform-binding-row[data-platform="${code}"]`);
     const dialog = page.locator('#platform-bind-dialog');
@@ -83,6 +90,12 @@ const path = require('node:path');
     const metric = key => panel.locator(`[data-metric="${key}"]`);
     const tip = page.locator('#platform-floating-tooltip');
     const tipLines = () => tip.locator('.platform-tooltip-line').allTextContents();
+    // Deliver snapshots through the app's bridge so its imported platform instance owns every update.
+    const syncFixture = async () => {
+      const before = await page.evaluate(() => platformFixture.syncs);
+      await page.click('#sync-button');
+      await page.waitForFunction(previous => platformFixture.syncs === previous + 1 && !document.querySelector('#sync-button').disabled, before);
+    };
     const assertTipBounds = async () => {
       const rect = await tip.boundingBox();
       const viewport = page.viewportSize();
@@ -91,7 +104,8 @@ const path = require('node:path');
       assert.equal(await tip.evaluate(node => getComputedStyle(node).position), 'fixed');
     };
     await open();
-    await page.waitForFunction(() => window.NotebookPlatforms && document.querySelector('.platform-dashboard'));
+    await page.waitForFunction(() => document.querySelector('.platform-dashboard') && document.querySelectorAll('.platform-binding-row').length === 5 && !document.querySelector('#sync-button').disabled);
+    assert.equal(await page.evaluate(() => window.NotebookPlatforms), undefined);
     assert.equal(await panel.count(), 1);
     assert.equal(await page.locator('.platform-card').count(), 0);
     assert.equal(await page.locator('#platform-select').inputValue(), 'ALL');
@@ -187,8 +201,8 @@ const path = require('node:path');
     assert.match(await panel.locator('.platform-activity').innerText(), /旧缓存/);
     await page.evaluate(() => {
       platformFixture.state.AT.data.activity = { days: { [platformFixture.today]: 3 }, complete: false, note: '部分历史' };
-      NotebookPlatforms.render(platformFixture.state);
     });
+    await syncFixture();
     assert.equal(await todayCell().getAttribute('data-count'), '3');
     assert.equal(await cells.first().getAttribute('data-level'), 'unknown');
     await page.evaluate(() => {
@@ -237,11 +251,16 @@ const path = require('node:path');
     await page.evaluate(() => { platformFixture.holdRefresh = true; platformFixture.failRefresh = false; });
     await page.click('#platform-refresh-all');
     await page.waitForFunction(() => platformFixture.releases.CF && platformFixture.releases.AT);
-    await page.evaluate(() => NotebookPlatforms.refreshPlatform('CF'));
+    await choose('CF');
+    // A synthetic click reaches the handler even while disabled; pending CF must not request twice.
+    await page.locator('#platform-refresh-all').dispatchEvent('click');
     assert.equal(await page.evaluate(() => platformFixture.calls.filter(call => call[0] === 'refresh' && call[1] === 'CF').length), 1);
     assert.equal(await page.locator('#platform-refresh-all').isDisabled(), true);
+    await choose('ALL');
+    await page.evaluate(() => { platformFixture.syncPlatforms = {}; });
+    await syncFixture();
     await page.evaluate(() => {
-      NotebookPlatforms.render({});
+      platformFixture.syncPlatforms = null;
       platformFixture.release('CF');
     });
     await page.waitForFunction(() => document.querySelector('[data-metric="solved"]').textContent === '11');
@@ -265,8 +284,8 @@ const path = require('node:path');
         binding: { platform: 'LG', id: '1', username: 'general-user', url: 'https://www.luogu.com.cn/user/1' },
         data: { solvedCount: null, submissionCount: null, activity: { days: {}, complete: false, rangeComplete: true, startDate: previous.toISOString().slice(0, 10), endDate: previous.toISOString().slice(0, 10), note: '官方每日通过题数，数据延迟一天' } }
       };
-      NotebookPlatforms.render(platformFixture.state);
     });
+    await syncFixture();
     assert.equal(await panel.locator('svg').count(), 2);
     assert.equal(await todayCell().getAttribute('data-level'), 'unknown');
     await todayCell().hover();
@@ -275,7 +294,8 @@ const path = require('node:path');
     await cells.nth((await cells.count()) - 2).focus();
     assert.equal((await tipLines())[1], '总通过：0道');
     assert.match(await panel.locator('.platform-activity').innerText(), /洛谷采用官方每日通过题数/);
-    await page.evaluate(() => { delete platformFixture.state.LG; NotebookPlatforms.render(platformFixture.state); });
+    await page.evaluate(() => { delete platformFixture.state.LG; });
+    await syncFixture();
     await choose('ALL');
     for (const theme of ['light', 'dark', 'cards']) {
       await page.selectOption('#theme-select', theme);
@@ -287,9 +307,22 @@ const path = require('node:path');
     await page.click('#platform-expand');
     assert.equal(await page.evaluate(() => document.documentElement.scrollWidth > innerWidth), false);
     assert.equal(await panel.locator('.platform-heatmap-scroll').evaluate(node => node.scrollWidth > node.clientWidth), true);
-    await todayCell().scrollIntoViewIfNeeded();
-    await page.evaluate(() => new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve))));
+    // Chromium restores the mouse position after touch compatibility events. Align it
+    // with the tap target so the old expand-button position cannot hover another day.
+    // hover() also waits for the cell to settle after viewport/heatmap scrolling.
+    await todayCell().hover();
+    await page.keyboard.press('Escape');
+    assert.equal(await tip.isVisible(), false);
+    await todayCell().evaluate(cell => {
+      window.platformTouchClick = null;
+      cell.addEventListener('click', event => {
+        window.platformTouchClick = { date: cell.dataset.date, pointerType: event.pointerType };
+      }, { once: true });
+    });
     await todayCell().tap();
+    // tap() can return before the synthesized mouse/focus/click sequence finishes.
+    await page.waitForFunction(() => window.platformTouchClick !== null);
+    assert.deepEqual(await page.evaluate(() => platformTouchClick), { date: today, pointerType: 'touch' });
     assert.deepEqual(await tipLines(), [today, '总通过：5道（已知）']);
     await assertTipBounds();
     await page.evaluate(() => document.querySelector('.platform-heatmap-scroll').dispatchEvent(new Event('scroll')));

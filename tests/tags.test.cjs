@@ -1,9 +1,10 @@
 'use strict';
+const { appPath } = require('./app-path.cjs');
 const test = require('node:test');
 const assert = require('node:assert/strict');
-const { GitHub } = require('../electron/github.cjs');
-const presets = require('../ui/tag-presets.js');
-const { normalizeName } = require('../electron/tags.cjs');
+const { GitHub } = require(appPath('electron/github.cjs'));
+const presets = require(appPath('ui/tag-presets.js'));
+const { normalizeName } = require(appPath('electron/tags.cjs'));
 const category = String(presets.categories[0].id);
 const marker = (name = '自定义测试标签', cat = category) => `<!-- qmx-tag-request ${JSON.stringify({ type: 'qmx-tag-request', category: cat, name })} -->`;
 function fixture(options = {}) {

@@ -1,7 +1,8 @@
+const { appPath } = require('./app-path.cjs');
 const test = require('node:test');
 const assert = require('node:assert/strict');
 const YAML = require('yaml');
-const { GitHub, identify, parseDocument, issueRecord, issueBody, documentContent, repoParts } = require('../electron/github.cjs');
+const { GitHub, identify, parseDocument, issueRecord, issueBody, documentContent, repoParts } = require(appPath('electron/github.cjs'));
 
 const CLIENT_ID = '55c710aa-e083-4b14-94fe-a3a825d17f70';
 const PATH = `problems/qmx/42/${CLIENT_ID}.md`;
@@ -477,7 +478,7 @@ test('custom public Gitea requests never receive GitHub credentials and reject w
 });
 
 test('GitHub aliases normalize safely and authenticated requests refuse redirects', async () => {
-  const { normalizeServerUrl, repositoryKey } = require('../electron/github.cjs');
+  const { normalizeServerUrl, repositoryKey } = require(appPath('electron/github.cjs'));
   for (const serverUrl of ['', 'https://github.com/', 'https://api.github.com/']) {
     const gh = new GitHub({ repo: 'a/b', serverUrl, token: 'SECRET', fetcher: async (url, options) => {
       assert.equal(url, 'https://api.github.com/user');

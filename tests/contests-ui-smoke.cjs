@@ -1,11 +1,12 @@
 'use strict';
+const { appPath } = require('./app-path.cjs');
 
 const assert = require('node:assert/strict');
 const path = require('node:path');
 const { pathToFileURL } = require('node:url');
 const { chromium } = require('playwright');
 
-const url = pathToFileURL(path.resolve(__dirname, '../ui/index.html')).href;
+const url = pathToFileURL(appPath('ui/index.html')).href;
 const instant = Date.parse('2030-01-02T00:00:00Z');
 const iso = offset => new Date(instant + offset).toISOString();
 const hostile = '<img src=x onerror="window.contestInjection=true"> & fixture with a deliberately long contest title to verify single-line truncation in the compact desktop row';

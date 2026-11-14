@@ -1,0 +1,5 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": { "types": ["node"], "lib": ["ES2022", "DOM", "DOM.Iterable", "DOM.AsyncIterable"], "allowJs": false, "checkJs": false },
+  "include": ["src/main/app/**/*.cts", "src/main/records/**/*.cts", "src/main/auth/**/*.cts", "src/main/planner/**/*.cts", "src/main/github/**/*.cts", "src/main/tags/**/*.cts", "src/main/contests/**/*.cts", "src/main/algorithms/**/*.cts", "src/main/platforms/page.cts", "src/main/platforms/service.cts", "src/main/platforms/data.cts", "src/main/links/**/*.cts", "src/main/format/**/*.cts", "src/main/storage/**/*.cts", "src/main/update/delta-codec.cts", "src/main/update/delta-manifest.cts", "src/main/update/delta-chain.cts", "src/main/update/storage.cts", "src/main/update/helper.cts", "src/main/update/file-upgrade.cts", "src/main/update/upgrade.cts", "src/main/update/updater.cts", "src/tools/**/*.cts", "src/server/**/*.cts", "src/shared/**/*.ts", "tests/types/**/*.ts", "tests/types-node/**/*.ts"]
+}

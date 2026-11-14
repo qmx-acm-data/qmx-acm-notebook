@@ -5,10 +5,10 @@ const path = require('node:path');
 const { pathToFileURL } = require('node:url');
 const { chromium } = require('playwright');
 
-async function navigate(page, view) {
+async function navigate(page) {
   await page.locator('.sidebar').hover();
-  await page.locator('.nav-item[data-view="home"]').click();
-  await page.locator(`#home-panel .home-shortcut[data-view="${view}"]`).click();
+  await page.locator('.nav-item[data-view="public"]').click();
+  await page.locator('#library-local-button').click();
 }
 
 (async () => {
@@ -34,8 +34,8 @@ async function navigate(page, view) {
       } }));
     }, aliases);
     await page.goto(pathToFileURL(path.resolve(__dirname, '../ui/index.html')).href);
-    // The demo discussion contains a fenced cpp block.
-    await navigate(page, 'discussion');
+    // The local fixture starts with a fenced cpp block.
+    await navigate(page);
     await page.click('.record-card');
     await page.waitForSelector('.markdown-body pre code .token');
     const colors = {};
@@ -58,7 +58,7 @@ async function navigate(page, view) {
     assert.notEqual(colors.dark.keyword, colors.light.keyword, 'dark theme must restyle syntax colors');
 
     // Aliases are normalized before Prism reads the language, preserving exact source text.
-    await navigate(page, 'mine');
+    await navigate(page);
     const code = page.locator('.markdown-body pre code');
     assert.equal(await code.count(), aliases.length);
     for (let index = 0; index < aliases.length; index++) {

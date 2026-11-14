@@ -1,15 +1,16 @@
 'use strict';
+const { appPath } = require('./app-path.cjs');
 const test = require('node:test');
 const assert = require('node:assert/strict');
 const fs = require('node:fs');
 const path = require('node:path');
 const vm = require('node:vm');
-const search = require('../ui/search.js');
+const search = require(appPath('ui/search.js'));
 const { normalizePlatform, difficulty, match } = search;
 
 test('same API loads in CommonJS and as a browser global without a DOM', () => {
   const context = vm.createContext({ URL });
-  vm.runInContext(fs.readFileSync(path.join(__dirname, '../ui/search.js'), 'utf8'), context);
+  vm.runInContext(fs.readFileSync(appPath('ui/search.js'), 'utf8'), context);
   assert.deepEqual(Object.keys(context.NotebookSearch).sort(), Object.keys(search).sort());
   assert.equal(context.NotebookSearch.match({ pid: 'CF1900D' }, 'CF 1900 D'), match({ pid: 'CF1900D' }, 'CF 1900 D'));
 });

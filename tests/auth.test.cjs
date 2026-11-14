@@ -1,7 +1,8 @@
 'use strict';
+const { appPath } = require('./app-path.cjs');
 const test = require('node:test');
 const assert = require('node:assert/strict');
-const { createAuth, configureUserData } = require('../electron/auth.cjs');
+const { createAuth, configureUserData } = require(appPath('electron/auth.cjs'));
 
 const storage = { isEncryptionAvailable: () => true, encryptString: text => Buffer.from(text), decryptString: bytes => bytes.toString() };
 const alice = { id: 42, login: 'alice', name: 'Alice', avatarData: 'cached' };

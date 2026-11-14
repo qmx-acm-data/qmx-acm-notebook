@@ -5,10 +5,10 @@ const path = require('node:path');
 const { pathToFileURL } = require('node:url');
 const { chromium } = require('playwright');
 
-async function navigate(page, view) {
+async function navigate(page) {
   await page.locator('.sidebar').hover();
-  await page.locator('.nav-item[data-view="home"]').click();
-  await page.locator(`#home-panel .home-shortcut[data-view="${view}"]`).click();
+  await page.locator('.nav-item[data-view="public"]').click();
+  await page.locator('#library-local-button').click();
 }
 
 (async () => {
@@ -19,8 +19,15 @@ async function navigate(page, view) {
     const errors = [];
     page.on('pageerror', error => errors.push(error.message));
     const url = pathToFileURL(path.resolve(__dirname, '../ui/index.html')).href;
+    await page.addInitScript(() => {
+      if (localStorage.getItem('acm-notebook.demo.v1')) return;
+      localStorage.setItem('acm-notebook.demo.v1', JSON.stringify({ local: {
+        records: [{ id: 'reading-fixture', kind: 'local', body: '```cpp\nint answer = 1;\n```' }],
+        favorites: [], mastery: {}, draft: {},
+      } }));
+    });
     await page.goto(url);
-    await navigate(page, 'discussion');
+    await navigate(page);
     await page.waitForSelector('.markdown-body pre code');
     const range = page.locator('#settings-form [name="codeFontSize"]');
     const numbers = page.locator('#settings-form [name="codeLineNumbers"]');
@@ -66,7 +73,7 @@ async function navigate(page, view) {
     const rows = await page.locator('.markdown-body pre .line-numbers-rows').evaluate(node => node.children.length);
     assert.ok(rows >= 1, 'line numbers rendered');
     await page.reload();
-    await navigate(page, 'discussion');
+    await navigate(page);
     await page.waitForSelector('.markdown-body pre.line-numbers .line-numbers-rows');
     assert.equal(await page.locator('.markdown-body pre code').evaluate(node => getComputedStyle(node).fontSize), '16px');
 
@@ -111,7 +118,7 @@ async function navigate(page, view) {
     });
     await desktop.goto(url);
     await desktop.waitForSelector('.rail-nav-item');
-    await navigate(desktop, 'mine');
+    await navigate(desktop);
     await desktop.waitForSelector('.markdown-body pre.line-numbers');
     await desktop.click('#settings-button');
     await desktop.locator('[name="codeFontSize"]').fill('18');

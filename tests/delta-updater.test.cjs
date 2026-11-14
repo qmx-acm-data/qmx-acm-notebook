@@ -1,4 +1,5 @@
 'use strict';
+const { appPath } = require('./app-path.cjs');
 
 const test = require('node:test');
 const assert = require('node:assert/strict');
@@ -7,8 +8,8 @@ const os = require('node:os');
 const path = require('node:path');
 const crypto = require('node:crypto');
 const { Readable } = require('node:stream');
-const createUpdater = require('../electron/updater.cjs');
-const { createDelta } = require('../electron/delta-codec.cjs');
+const createUpdater = require(appPath('electron/updater.cjs'));
+const { createDelta } = require(appPath('electron/delta-codec.cjs'));
 
 const { publicKey, privateKey } = crypto.generateKeyPairSync('ed25519');
 const hash = bytes => crypto.createHash('sha256').update(bytes).digest('hex');

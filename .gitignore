@@ -3,7 +3,9 @@ node_modules/
 .pnpm-store/
 
 # Generated desktop bundles and temporary staging
+/.cache/
 release/
+/build/
 .package-stage/
 .electron-zip/
 .test-profile/
@@ -23,6 +25,12 @@ platforms.json
 # Local handoff artifacts; source lives in the repository, binaries in Releases
 /qmx-acm-notebook-source.zip
 /test-submission.md
+
+# Generated smoke-test screenshots; retain the README theme previews
+/screenshots/*.png
+!/screenshots/preview-light.png
+!/screenshots/preview-dark.png
+!/screenshots/preview-cards.png
 
 *.pem
 *.key

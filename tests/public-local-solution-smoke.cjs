@@ -1,4 +1,5 @@
 'use strict';
+const { appPath } = require('./app-path.cjs');
 // Run with node tests/public-local-solution-smoke.cjs (Playwright + Microsoft Edge).
 const assert = require('node:assert/strict');
 const path = require('node:path');
@@ -23,7 +24,7 @@ async function openPage(browser, signedIn = false) {
     const payload = () => ({ records: [problem], issues: [], account: signedIn ? { id: 101, login: 'reader' } : null, permissions: { repo, push: false, admin: false }, settings: { repo, autoSync: false }, local: fixture.local });
     window.notebook = { bootstrap: async () => structuredClone(payload()), sync: async () => structuredClone(payload()), updateLocal: async data => { fixture.local = structuredClone(data); }, saveDocument: async () => { fixture.remoteCalls++; throw new Error('Local action must not publish'); }, openExternal: async () => {} };
   }, signedIn);
-  await page.goto(pathToFileURL(path.resolve(__dirname, '../ui/index.html')).href);
+  await page.goto(pathToFileURL(appPath('ui/index.html')).href);
   try { await page.locator('.rail-nav-item[data-view="public"]').click(); } catch (error) { console.error('PAGE STARTUP ERRORS', errors); throw error; }
   await page.waitForSelector('#local-solution-button');
   return { page, errors };

@@ -1,4 +1,5 @@
 'use strict';
+const { appPath } = require('./app-path.cjs');
 
 const test = require('node:test');
 const assert = require('node:assert/strict');
@@ -7,8 +8,8 @@ const os = require('node:os');
 const path = require('node:path');
 const crypto = require('node:crypto');
 const { Readable } = require('node:stream');
-const createUpdater = require('../electron/updater.cjs');
-const { createDelta } = require('../electron/delta-codec.cjs');
+const createUpdater = require(appPath('electron/updater.cjs'));
+const { createDelta } = require(appPath('electron/delta-codec.cjs'));
 
 const trusted = crypto.generateKeyPairSync('ed25519');
 const stranger = crypto.generateKeyPairSync('ed25519');
@@ -98,8 +99,10 @@ async function fixture(t, options = {}) {
   await options.configure?.(context);
   function counted(bytes, kind) {
     return response(bytes, { body: (async function* () {
-      for (let offset = 0; offset < bytes.length; offset += 4096) {
-        const chunk = bytes.subarray(offset, offset + 4096);
+      // Even a highly compact random patch must expose an intermediate progress event.
+      const chunkSize = Math.min(4096, Math.max(1, Math.ceil(bytes.length / 2)));
+      for (let offset = 0; offset < bytes.length; offset += chunkSize) {
+        const chunk = bytes.subarray(offset, offset + chunkSize);
         context.bodyBytes[kind] += chunk.length;
         yield chunk;
       }
