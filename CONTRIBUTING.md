@@ -32,6 +32,10 @@ pnpm dist
 
 图形驱动相关启动问题可使用 `--disable-gpu`。当前受管理环境的自动化桌面检查额外使用过 `--no-sandbox`，该参数仅供必要时验证，不能据此宣称默认发行启动已通过；兼容启动的安全取舍见[使用指南](docs/USAGE.md#安装和启动)。
 
+## 渐进式 TypeScript 重构
+
+功能保持基线和迁移约束见 [TypeScript 重构说明](docs/TYPESCRIPT_REFACTOR.md)。`pnpm check:refactor` 汇总类型、语法、生成数据和单元检查；`pnpm test:ui:refactor` 运行现有界面回归组，需要 Playwright 和 Microsoft Edge。首批类型检查覆盖范围以 `tsconfig.json` 为准。
+
 ## 贡献约定
 
 - 每个 PR 说明解决的问题、用户行为变化、验证结果和剩余限制。小范围修改保持职责集中，目录分工见[首页目录图](README.md#源码目录)。

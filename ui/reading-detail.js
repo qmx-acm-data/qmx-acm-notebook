@@ -1,12 +1,15 @@
 /* Expand readers within the learning workspace; preserve each previous view. */
 (function (global) {
   'use strict';
+  /** @type {import('../types/reading-detail').ReadingDetailController[]} */
   const stack = [];
+  /** @type {import('../types/reading-detail').ReadingDetailApi['open']} */
   function open({ content, title = '阅读详情', mount, path = [], onClose } = {}) {
     if (!content?.parentNode) return;
     const doc = content.ownerDocument;
-    mount ||= content.closest('.algorithm-view-content') || doc.querySelector('#algorithm-panel .algorithm-view-content');
+    mount ||= /** @type {HTMLElement | null} */ (content.closest('.algorithm-view-content') || doc.querySelector('#algorithm-panel .algorithm-view-content'));
     if (!mount) return;
+    const mountElement = mount;
     const previousFocus = doc.activeElement, scroll = content.scrollTop, pageScroll = global.scrollY;
     const modes = mount.parentElement?.querySelector('.algorithm-view-modes');
     if (modes) global.scrollTo(0, Math.max(0, global.scrollY + modes.getBoundingClientRect().top - 100));
@@ -14,7 +17,7 @@
     const marker = doc.createComment('reading-detail-return'); content.before(marker);
     const view = doc.createElement('section'); view.className = 'reading-detail-view'; view.setAttribute('aria-label', title);
     function sizeView() {
-      view.style.height = `${Math.max(360, global.innerHeight - Math.max(0, mount.getBoundingClientRect().top) - 24)}px`;
+      view.style.height = `${Math.max(360, global.innerHeight - Math.max(0, mountElement.getBoundingClientRect().top) - 24)}px`;
     }
     sizeView(); global.addEventListener('resize', sizeView);
     const bar = doc.createElement('header'); bar.className = 'reading-detail-bar';
@@ -24,20 +27,22 @@
     const wrapper = doc.createElement('div'); wrapper.className = `${context?.className || ''} reading-expanded`;
     wrapper.append(content); view.append(bar, wrapper);
     // Native forms stay available above the page even when their original preview is hidden.
+    /** @type {{ dialog: HTMLDialogElement, anchor: Comment }[]} */
     const lifted = [];
     for (const dialog of mount.querySelectorAll('dialog')) {
       const anchor = doc.createComment('reading-form-return'); dialog.before(anchor); mount.append(dialog); lifted.push({ dialog, anchor });
     }
-    const hidden = [...mount.children].filter(node => node !== view && node.tagName !== 'DIALOG' && !node.hidden);
+    const hidden = /** @type {HTMLElement[]} */ ([...mount.children]).filter(node => node !== view && node.tagName !== 'DIALOG' && !node.hidden);
     hidden.forEach(node => { node.hidden = true; }); mount.append(view);
     let closed = false;
+    /** @param {import('../types/reading-detail').ReadingPathItem[]} items */
     function setPath(items) {
       nav.replaceChildren();
       const crumbs = items.length ? items : [{ label: title }];
       crumbs.forEach((item, index) => {
         if (index) { const separator = doc.createElement('span'); separator.textContent = '/'; separator.setAttribute('aria-hidden', 'true'); nav.append(separator); }
         const crumb = doc.createElement(item.onClick ? 'button' : 'span'); crumb.textContent = String(item.label || '详情');
-        if (item.onClick) { crumb.type = 'button'; crumb.addEventListener('click', item.onClick); }
+        if (item.onClick) { /** @type {HTMLButtonElement} */ (crumb).type = 'button'; crumb.addEventListener('click', item.onClick); }
         if (index === crumbs.length - 1) crumb.setAttribute('aria-current', 'page'); nav.append(crumb);
       });
     }
@@ -54,9 +59,10 @@
         doc.removeEventListener('keydown', onKey); global.removeEventListener('resize', sizeView);
         onClose?.();
         const focus = previousFocus?.isConnected && !previousFocus.closest('[hidden]') ? previousFocus : content.querySelector('.reading-detail-trigger');
-        focus?.focus({ preventScroll: true }); global.scrollTo(0, pageScroll);
+        /** @type {HTMLElement | null} */ (focus)?.focus({ preventScroll: true }); global.scrollTo(0, pageScroll);
       }
     };
+    /** @param {KeyboardEvent} event */
     function onKey(event) {
       if (event.key !== 'Escape' || event.defaultPrevented || stack[stack.length - 1] !== controller || doc.querySelector('dialog[open]')) return;
       event.preventDefault(); controller.close();
