@@ -175,6 +175,102 @@ function harness({ files = {}, account = { id: 42, login: 'alice' }, backend = {
 
 // END_MAIN_HARNESS
 
+test('typed record boundary preserves migrated metadata through updateLocal and a disk-snapshot restart', async () => {
+  const legacy = { id: 'local:legacy', kind: 'local', ownerId: 42, title: 'Legacy draft', opaque: { revisions: [{ body: 'older work', flags: [false, null] }] } };
+  const unbound = localRecord({ id: 'local:unbound', clientId: '00000000-0000-4000-8000-000000000002', ownerId: undefined });
+  const foreign = localRecord({ id: 'local:foreign', clientId: '00000000-0000-4000-8000-000000000099', ownerId: 99, opaque: { attachments: [{ key: 'private', state: { reviewed: false } }] } });
+  const mirror = documentRecord({ opaque: { legacyMirror: true } });
+  const published = { [`${repositoryKey(REPO)}:42:00000000-0000-4000-8000-000000000003`]: 'problems/already-published.md' };
+  const data = {
+    ...personal([legacy, unbound, foreign, mirror]),
+    opaque: { schema: 7, extensions: [{ enabled: false, value: null }] },
+    learningPaths: { graphs: { selected: ['bfs'], progress: { bfs: 'reviewing' }, opaque: { version: 2 } } },
+    published
+  };
+  const h = harness({ files: { 'local.json': data, 'cache.json': { repo: REPO, records: [] } } });
+  const boot = await h.invoke('bootstrap');
+  const migrated = {
+    ...data,
+    records: [
+      { ...legacy, clientId: '00000000-0000-4000-8000-000000000001', ownerId: '42' },
+      { ...unbound, ownerId: null },
+      { ...foreign, ownerId: '99' },
+      mirror
+    ]
+  };
+  assert.deepEqual(boot.local, migrated);
+  assert.deepEqual(h.stored('local.json'), migrated, 'readiness migration must persist nested and root metadata together');
+  await h.invoke('saveSettings', { theme: 'dark' });
+  const saved = await h.invoke('updateLocal', {
+    records: [
+      { ...boot.local.records[0], body: 'edited after migration' },
+      boot.local.records[1], boot.local.records[2], mirror,
+      issueRecord(), { id: 'algorithm-note:legacy', kind: 'algorithm-note', opaque: { retainInCache: true } }
+    ],
+    favorites: ['local:legacy'],
+    extensionAfterUpdate: { checkpoints: [1, { saved: true }] }
+  });
+  const expected = {
+    ...migrated,
+    records: [{ ...migrated.records[0], body: 'edited after migration' }, ...migrated.records.slice(1, 3)],
+    favorites: ['local:legacy'],
+    extensionAfterUpdate: { checkpoints: [1, { saved: true }] }
+  };
+  assert.deepEqual(saved, expected, 'partial updates preserve omitted metadata and filter nonlocal mirrors');
+  assert.deepEqual(h.stored('local.json'), expected);
+  const files = Object.fromEntries(['local.json', 'settings.json', 'cache.json'].map(name => [name, h.stored(name)]));
+  const restarted = harness({ files });
+  const afterRestart = await restarted.invoke('bootstrap');
+  assert.deepEqual(afterRestart.local, saved);
+  assert.deepEqual(afterRestart.settings, (await h.invoke('bootstrap')).settings);
+  assert.deepEqual(restarted.stored('cache.json'), files['cache.json']);
+  assert.equal(restarted.writes.length, 0, 'persisted migration must be stable on a fresh main process');
+  const tampered = clone(afterRestart.local.records);
+  tampered[2].opaque.attachments[0].state.reviewed = true;
+  await assert.rejects(restarted.invoke('updateLocal', { records: tampered }), /其他账号/);
+  assert.deepEqual(restarted.stored('local.json'), saved, 'a nested foreign-record edit must not change persisted metadata');
+});
+
+test('typed record bootstrap annotates sparse cached documents without parsing or dropping unknown metadata', async () => {
+  const doc = { kind: 'document', id: 'document:legacy', opaque: { parserVersion: null, entries: [{ raw: ['kept'] }] } };
+  const issue = { kind: 'issue', id: 'issue:legacy', opaque: { discussion: true } };
+  const note = { kind: 'algorithm-note', id: 'algorithm-note:legacy', opaque: { nested: { selected: false } } };
+  const cache = {
+    repo: REPO, records: [doc, issue, note, localRecord()],
+    algorithmNotes: [note], lastSync: 'legacy-cache-time', opaque: { cacheExtension: [null, 3] }
+  };
+  const h = harness({ files: { 'cache.json': cache, 'local.json': personal([]) } });
+  const boot = await h.invoke('bootstrap');
+  assert.deepEqual(boot.records, [scoped(doc)], 'document-kind cache objects need no parser fields');
+  assert.deepEqual(boot.issues, [scoped(issue)]);
+  assert.deepEqual(boot.algorithmNotes, [scoped(note)]);
+  assert.equal(boot.lastSync, cache.lastSync);
+  assert.deepEqual(h.stored('cache.json'), cache, 'source annotation must not rewrite raw cached metadata');
+  await h.invoke('saveSettings', { theme: 'dark' });
+  const local = await h.invoke('updateLocal', { records: [], draft: { editor: { opaque: { cursor: [2, 5] } } } });
+  const beforeRestart = await h.invoke('bootstrap');
+  const files = Object.fromEntries(['local.json', 'settings.json', 'cache.json'].map(name => [name, h.stored(name)]));
+  const restarted = harness({ files });
+  const afterRestart = await restarted.invoke('bootstrap');
+  for (const key of ['records', 'issues', 'algorithmNotes', 'lastSync', 'settings']) assert.deepEqual(afterRestart[key], beforeRestart[key]);
+  assert.deepEqual(afterRestart.local, local);
+  assert.deepEqual(restarted.stored('cache.json'), cache);
+  assert.equal(h.calls.length + restarted.calls.length, 0, 'raw cache bootstrap and local persistence stay offline');
+});
+
+test('typed record metadata keeps persisted values that overwrite defaults through updateLocal and restart', async () => {
+  const data = { records: [], favorites: null, mastery: false, draft: ['legacy draft'], learningPaths: 'legacy paths', opaque: { retained: true } };
+  const h = harness({ files: { 'local.json': data, 'cache.json': { repo: REPO, records: [] } } });
+  assert.deepEqual((await h.invoke('bootstrap')).local, data);
+  const saved = await h.invoke('updateLocal', { records: [], draft: null });
+  assert.deepEqual(saved, { ...data, draft: null, published: {} });
+  assert.deepEqual(h.stored('local.json'), saved);
+  const files = Object.fromEntries(['local.json', 'settings.json', 'cache.json'].map(name => [name, h.stored(name)]));
+  const restarted = harness({ files });
+  assert.deepEqual((await restarted.invoke('bootstrap')).local, saved);
+  assert.equal(restarted.writes.length, 0);
+});
+
 test('typed boundary preserves exact void returns and export cancellation, writes and errors', async () => {
   const h = harness({ account: null });
   const raw = (value, name, ...args) => value.handlers.get(name)({ sender: value.windows[0].webContents }, ...args);

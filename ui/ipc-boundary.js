@@ -7,6 +7,8 @@
         openAuthUrl: (...args) => bridge.openAuthUrl(...args),
         formatCode: (...args) => bridge.formatCode(...args),
         cancelLogin: (...args) => bridge.cancelLogin(...args),
-        exportLocal: (...args) => bridge.exportLocal(...args)
+        exportLocal: (...args) => bridge.exportLocal(...args),
+        bootstrap: (...args) => bridge.bootstrap(...args),
+        updateLocal: (...args) => bridge.updateLocal(...args)
     });
 })();

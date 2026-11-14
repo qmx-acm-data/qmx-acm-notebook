@@ -137,7 +137,7 @@ for (const [label, readCode] of implementations) {
   });
 }
 
-const boundaryMethods = ['openExternal', 'openAuthUrl', 'formatCode', 'cancelLogin', 'exportLocal'];
+const boundaryMethods = ['openExternal', 'openAuthUrl', 'formatCode', 'cancelLogin', 'exportLocal', 'bootstrap', 'updateLocal'];
 
 function loadBoundaryRegistration() {
   const module = { exports: {} };
@@ -156,7 +156,7 @@ function loadRendererFactory(window = {}) {
   return window.NotebookIPC;
 }
 
-test('compiled main boundary registers the five original operations without transforming arguments or results', async () => {
+test('compiled main boundary registers the migrated operations without transforming arguments or results', async () => {
   const registerBoundary = loadBoundaryRegistration();
   const registrations = [], calls = [], operations = {};
   let result;

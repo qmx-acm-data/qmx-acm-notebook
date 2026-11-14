@@ -6,7 +6,8 @@ const root = path.resolve(__dirname, '..');
 function main(check = process.argv.includes('--check')) {
   for (const [sourceName, target, commonjs] of [
     ['src/main/ipc/boundary.ts', 'electron/ipc-boundary.cjs', true],
-    ['src/renderer/ipc/boundary.ts', 'ui/ipc-boundary.js', false]
+    ['src/renderer/ipc/boundary.ts', 'ui/ipc-boundary.js', false],
+    ['src/renderer/records/local.ts', 'ui/local-records.js', false]
   ]) {
     const output = compileTarget({ configName: 'tsconfig.boundary.json', sourceName,
       header: `// Generated from ${sourceName}; run pnpm ipc:build.\n`,

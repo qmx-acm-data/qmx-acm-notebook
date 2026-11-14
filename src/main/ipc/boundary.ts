@@ -18,6 +18,8 @@ declare const module: {
     register('formatCode', operations.formatCode);
     register('cancelLogin', operations.cancelLogin);
     register('exportLocal', operations.exportLocal);
+    register('bootstrap', operations.bootstrap);
+    register('updateLocal', operations.updateLocal);
   }
 
   module.exports = { registerBoundary };

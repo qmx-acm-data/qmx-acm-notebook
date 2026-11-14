@@ -1,19 +1,24 @@
+import type { BootstrapPayload } from '../models/bootstrap';
+import type { LocalDataSnapshot, LocalUpdate } from '../models/records';
+
 /** IPC contracts are types only. Main-process validation remains authoritative. */
 export interface FormatCodeResult { code: string; error?: string }
 
-/** First migrated group. Other methods remain explicitly untyped until their services migrate. */
+/** Migrated boundary and local-data methods; other services remain explicitly untyped. */
 export interface BoundaryMethods {
   openExternal(url: string): Promise<void>;
   openAuthUrl(url: string): Promise<boolean>;
   formatCode(source: string, language: string): Promise<FormatCodeResult>;
   cancelLogin(): Promise<void>;
   exportLocal(): Promise<boolean>;
+  bootstrap(): Promise<BootstrapPayload>;
+  updateLocal(data: LocalUpdate): Promise<LocalDataSnapshot>;
 }
 
 export type LegacyMethodName =
   | 'plannerAction' | 'bindPlatform' | 'refreshPlatform' | 'unbindPlatform' | 'getContests'
-  | 'bootstrap' | 'sync' | 'submit' | 'comment' | 'saveSettings' | 'login' | 'logout'
-  | 'getComments' | 'propose' | 'updateLocal' | 'saveDocument' | 'saveAlgorithmTopic'
+  | 'sync' | 'submit' | 'comment' | 'saveSettings' | 'login' | 'logout'
+  | 'getComments' | 'propose' | 'saveDocument' | 'saveAlgorithmTopic'
   | 'saveAlgorithmNote' | 'deleteDocument' | 'deleteIssue' | 'refreshAccount'
   | 'checkStartupUpdates' | 'checkForUpdates' | 'downloadUpdate' | 'installUpdate'
   | 'getTagCatalog' | 'requestTag' | 'getTagReview' | 'reviewTag';

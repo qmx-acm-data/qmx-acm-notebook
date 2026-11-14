@@ -1,0 +1,33 @@
+// Generated from src/renderer/records/local.ts; run pnpm ipc:build.
+"use strict";
+(() => {
+    window.NotebookLocal = {
+        createNormalizer(uuid) {
+            const migratedClientIds = new Map();
+            return function normalizeLocal(local) {
+                // Optional property access also boxes primitive legacy roots and entries.
+                const raw = local;
+                return {
+                    records: (Array.isArray(raw?.records) ? raw.records : [])
+                        .filter((record) => record?.kind === 'local')
+                        .map(record => {
+                        const legacyKey = record.id == null ? null : String(record.id);
+                        const clientId = record.clientId || (legacyKey && migratedClientIds.get(legacyKey)) || uuid();
+                        if (legacyKey)
+                            migratedClientIds.set(legacyKey, clientId);
+                        return {
+                            ...record,
+                            clientId,
+                            id: record.id ?? `local:${clientId}`,
+                            ownerId: record.ownerId == null ? null : String(record.ownerId)
+                        };
+                    }),
+                    favorites: Array.isArray(raw?.favorites) ? raw.favorites : [],
+                    mastery: raw?.mastery && typeof raw.mastery === 'object' ? raw.mastery : {},
+                    draft: raw?.draft && typeof raw.draft === 'object' ? raw.draft : {},
+                    learningPaths: raw?.learningPaths && typeof raw.learningPaths === 'object' && !Array.isArray(raw.learningPaths) ? raw.learningPaths : {}
+                };
+            };
+        }
+    };
+})();

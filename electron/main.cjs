@@ -374,7 +374,6 @@ function setup() {
   platforms = createPlatformService({ read, save, fetcher: networkFetch, readPage: createPublicPageReader({ BrowserWindow }) });
   // Public schedules use stateless Node fetch, separate from Chromium session cookies.
   contestService = createContestService({ fetcher: (url, options) => fetch(url, options), readCache: () => read('contests.json', null), writeCache: value => save('contests.json', value) });
-  handle('bootstrap', () => state());
   handle('plannerAction', (action, payload) => planner.action(action, payload));
   handle('getContests', force => contestService.get(force));
   handle('bindPlatform', (platform, url) => platforms.bind(platform, url));
@@ -551,7 +550,7 @@ function setup() {
     if (next.clientId !== old.clientId || next.repo !== old.repo || next.serverUrl !== old.serverUrl) loginGeneration++;
     save('settings.json', next); return state();
   });
-  handle('updateLocal', data => {
+  const updateLocal = data => {
     if (writeBusy || syncBusy) throw new Error('线上操作进行中，请稍后保存本地内容');
     if (!data || typeof data !== 'object' || !Array.isArray(data.records)) throw new Error('本地数据格式错误');
     if (JSON.stringify(data).length > 20000000) throw new Error('本地内容过大');
@@ -583,7 +582,7 @@ function setup() {
       return !published[`${scope.sourceKey}:${owner}:${r.clientId}`] && !(!scope.serverUrl && published[`${scope.repo}:${owner}:${r.clientId}`]);
     });
     save('local.json', { ...old, ...data, records, published }); return local();
-  });
+  };
   handle('login', login);
   handle('logout', () => {
     if (writeBusy || syncBusy) throw new Error('请等待当前操作完成后再退出');
@@ -646,6 +645,8 @@ function setup() {
   }));
   handle('getComments', async number => (await client().comments(number)).map(x => ({ id: x.id, body: x.body, author: x.user?.login || '', createdAt: x.created_at, url: x.html_url })));
   require('./ipc-boundary.cjs').registerBoundary(handle, {
+    bootstrap: () => state(),
+    updateLocal,
     openExternal: external,
     openAuthUrl,
     formatCode: (source, lang) => formatCode(source, lang).catch(error => ({ code: source, error: error.message })),

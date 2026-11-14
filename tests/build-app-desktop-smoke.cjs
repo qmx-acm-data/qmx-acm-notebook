@@ -26,8 +26,13 @@ const { _electron: electron } = require('playwright');
     assert.equal(info.version, require('../package.json').version);
     const loaded = await page.evaluate(async () => {
       if (typeof window.require !== 'undefined' || typeof window.process !== 'undefined') throw new Error('Renderer must remain isolated from Node');
-      const bootstrap = await window.notebook.bootstrap();
       const boundary = window.NotebookIPC(window.notebook);
+      const bootstrap = await boundary.bootstrap();
+      const record = { id: 'local:ts-record', kind: 'local', clientId: '5c07e37b-b6bb-4ded-a27b-da13cc897bee', ownerId: null, title: 'TypeScript persistence check', opaque: { legacy: ['keep', 0, null] } };
+      const saved = await boundary.updateLocal({ records: [record], favorites: [record.id], mastery: {}, draft: { extra: { preserved: true } }, learningPaths: { legacy: { progress: 0 } }, customRoot: { unknown: true } });
+      if (JSON.stringify(saved.records) !== JSON.stringify([record]) || !saved.customRoot?.unknown) throw new Error('Local IPC must retain unknown metadata');
+      const normalized = window.NotebookLocal.createNormalizer(() => 'unused')(saved);
+      if (normalized.records[0].clientId !== record.clientId || normalized.records[0].opaque.legacy[1] !== 0) throw new Error('Typed normalization must preserve local fields');
       await boundary.cancelLogin();
       const stopAuth = window.notebook.onAuthProgress(() => {});
       const stopUpdate = window.notebook.onUpdateProgress(() => {});
@@ -48,4 +53,16 @@ const { _electron: electron } = require('playwright');
     for (const excluded of ['src', 'types', 'tests', 'docs', 'auth.json', 'local.json', 'node_modules/typescript']) assert.equal(fs.existsSync(path.join(built, excluded)), false, excluded);
     console.log('PASS built Electron app: real preload, bootstrap, staged root, C++/Python/Rust offline formatters, production-only dependencies');
   } finally { await app.close(); }
+  const restarted = await electron.launch({ executablePath: packaged || require('electron'), args: packaged ? ['--disable-gpu'] : [built, '--disable-gpu'], env });
+  try {
+    const page = await restarted.firstWindow();
+    await page.waitForFunction(() => window.notebook && window.NotebookIPC && window.NotebookLocal);
+    const restored = await page.evaluate(async () => (await window.NotebookIPC(window.notebook).bootstrap()).local);
+    assert.equal(restored.records[0].id, 'local:ts-record');
+    assert.deepEqual(restored.records[0].opaque, { legacy: ['keep', 0, null] });
+    assert.deepEqual(restored.customRoot, { unknown: true });
+    assert.deepEqual(restored.draft, { extra: { preserved: true } });
+    assert.deepEqual(restored.learningPaths, { legacy: { progress: 0 } });
+    console.log('PASS typed local IPC: unknown metadata, normalization, disk save and real restart');
+  } finally { await restarted.close(); }
 })().catch(error => { console.error(error); process.exitCode = 1; });

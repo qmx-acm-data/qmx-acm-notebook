@@ -16,6 +16,15 @@ function contractAssertions(invoke: Invoke, register: BoundaryRegister, subscrib
   const opened: Promise<void> = invoke('openExternal', 'https://example.org/');
   const chromeLaunched: Promise<boolean> = invoke('openAuthUrl', 'https://github.com/login/device');
   const formatted: Promise<{ code: string; error?: string }> = bridge.formatCode('int main(){}', 'cpp');
+  const loaded: Promise<import('../../src/shared/models/bootstrap').BootstrapPayload> = bridge.bootstrap();
+  const saved = bridge.updateLocal({ records: [{ id: 'local:old', kind: 'local', extra: { old: true } }], draft: null });
+  void [loaded, saved];
+  // @ts-expect-error Local writes require records.
+  bridge.updateLocal({ favorites: [] });
+  // @ts-expect-error updateLocal rejects non-string incoming IDs at runtime.
+  bridge.updateLocal({ records: [{ id: 42 }] });
+  // @ts-expect-error Bootstrap has no caller-selected repository argument.
+  bridge.bootstrap('other/repo');
   const canceled: Promise<void> = bridge.cancelLogin();
   const exported: Promise<boolean> = bridge.exportLocal();
   void [opened, chromeLaunched, formatted, canceled, exported];
@@ -43,12 +52,14 @@ function contractAssertions(invoke: Invoke, register: BoundaryRegister, subscrib
     openAuthUrl: (_url) => false,
     formatCode: (source, _language) => ({ code: source }),
     cancelLogin: () => {},
-    exportLocal: async () => true
+    exportLocal: async () => true,
+    bootstrap: async () => { throw new Error('compile-only fixture'); },
+    updateLocal: data => ({ records: data.records, favorites: [], mastery: {}, draft: {} })
   };
   register('openExternal', operations.openExternal);
   register('formatCode', operations.formatCode);
   register('cancelLogin', operations.cancelLogin);
-  // @ts-expect-error Only the first migrated group may use this registration wrapper.
+  // @ts-expect-error Bootstrap must return the actual state envelope, not an empty object.
   register('bootstrap', () => ({}));
   // @ts-expect-error Main auth operations must return a boolean or thenable boolean.
   register('openAuthUrl', (_url: string) => 'chrome');
