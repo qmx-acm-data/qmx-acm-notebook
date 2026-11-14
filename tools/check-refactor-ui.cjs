@@ -4,6 +4,7 @@ const { spawnSync } = require('node:child_process');
 const fs = require('node:fs');
 const path = require('node:path');
 const root = path.resolve(__dirname, '..');
+const built = require('./build-app.cjs').main();
 const suites = [
   'navigation-smoke.cjs',
   'repositories-ui-smoke.cjs',
@@ -23,7 +24,7 @@ fs.mkdirSync(path.join(root, 'release'), { recursive: true });
 for (const suite of suites) {
   console.log(`\nBehavior regression: ${suite}`);
   const child = spawnSync(process.execPath, [path.join(root, 'tests', suite)], {
-    cwd: root, stdio: 'inherit', env: process.env
+    cwd: root, stdio: 'inherit', env: { ...process.env, QMX_APP_ROOT: built }
   });
   if (child.error) { console.error(child.error.message); process.exit(1); }
   if (child.status !== 0) process.exit(child.status || 1);

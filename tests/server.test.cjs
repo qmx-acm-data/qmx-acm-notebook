@@ -1,3 +1,4 @@
+const { appPath } = require('./app-path.cjs');
 const test = require('node:test');
 const assert = require('node:assert/strict');
 const http = require('node:http');
@@ -9,7 +10,7 @@ const { spawn, spawnSync } = require('node:child_process');
 const { createServer } = require('../server.js');
 
 async function preview(t, options = {}) {
-  const server = createServer({ host: '127.0.0.1', ...options });
+  const server = createServer({ baseDir: appPath('.'), host: '127.0.0.1', ...options });
   server.listen(0, '127.0.0.1');
   await once(server, 'listening');
   t.after(() => new Promise(resolve => server.close(resolve)));
@@ -57,7 +58,7 @@ test('importing the preview server starts no listener', () => {
 
 test('command-line preview binds loopback by default and honors explicit HOST', async () => {
   for (const host of [undefined, '0.0.0.0']) {
-    const env = { ...process.env, PORT: '0' };
+    const env = { ...process.env, QMX_APP_ROOT: appPath('.'), PORT: '0' };
     if (host === undefined) delete env.HOST;
     else env.HOST = host;
     const child = spawn(process.execPath, ['server.js'], { cwd: path.resolve(__dirname, '..'), env, stdio: ['ignore', 'pipe', 'pipe'] });

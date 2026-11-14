@@ -1,4 +1,5 @@
 'use strict';
+const { appPath } = require('./app-path.cjs');
 
 const test = require('node:test');
 const assert = require('node:assert/strict');
@@ -8,8 +9,8 @@ const path = require('node:path');
 const vm = require('node:vm');
 const crypto = require('node:crypto');
 const { createRequire } = require('node:module');
-const helper = require('../electron/update-helper.cjs');
-const { prepareUpgrade } = require('../electron/upgrade.cjs');
+const helper = require(appPath('electron/update-helper.cjs'));
+const { prepareUpgrade } = require(appPath('electron/upgrade.cjs'));
 
 // Evaluate the real entry points with a platform override, without changing the
 // host process, launching an application, or touching any real installation.
@@ -67,7 +68,7 @@ test('Unix backups require the allowlisted executable without a Windows uninstal
 
 test('Linux helper validates signed jobs without an uninstaller and rejects executable or resource escapes', t => {
   const f = fixture(t);
-  const linuxHelper = loadForPlatform(require.resolve('../electron/update-helper.cjs'), 'linux');
+  const linuxHelper = loadForPlatform(require.resolve(appPath('electron/update-helper.cjs')), 'linux');
   const { publicKey, privateKey } = crypto.generateKeyPairSync('ed25519');
   const pem = publicKey.export({ type: 'spki', format: 'pem' });
   const id = 'a'.repeat(32);
@@ -104,8 +105,8 @@ test('Linux helper validates signed jobs without an uninstaller and rejects exec
 });
 
 test('macOS entry points refuse ASAR mutation with Chinese manual installation guidance before IO', async () => {
-  const macHelper = loadForPlatform(require.resolve('../electron/update-helper.cjs'), 'darwin');
-  const fileUpgrade = loadForPlatform(require.resolve('../electron/file-upgrade.cjs'), 'darwin', { './update-helper.cjs': macHelper });
+  const macHelper = loadForPlatform(require.resolve(appPath('electron/update-helper.cjs')), 'darwin');
+  const fileUpgrade = loadForPlatform(require.resolve(appPath('electron/file-upgrade.cjs')), 'darwin', { './update-helper.cjs': macHelper });
   const capability = fileUpgrade.getFileUpgradeCapability();
   assert.equal(capability.supported, false);
   assert.match(capability.reason, /macOS.*app\.asar.*签名.*手动安装/);

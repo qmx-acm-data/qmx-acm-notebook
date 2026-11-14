@@ -11,12 +11,18 @@ const { _electron: electron } = require('playwright');
   const profile = fs.mkdtempSync(path.join(os.tmpdir(), 'qmx-ts-build-'));
   fs.writeFileSync(path.join(profile, 'settings.json'), JSON.stringify({ autoSync: false }));
   const env = { ...process.env, QMX_USER_DATA_DIR: profile }; delete env.ELECTRON_RUN_AS_NODE;
-  const app = await electron.launch({ executablePath: require('electron'), args: [built, '--disable-gpu'], env });
+  const packaged = process.env.QMX_PACKAGED_EXE;
+  const app = await electron.launch({ executablePath: packaged || require('electron'), args: packaged ? ['--disable-gpu'] : [built, '--disable-gpu'], env });
   try {
     const page = await app.firstWindow();
     await page.waitForFunction(() => typeof window.NotebookReadingDetail?.open === 'function' && window.notebook);
     const info = await app.evaluate(({ app }) => ({ root: app.getAppPath(), version: app.getVersion() }));
-    assert.equal(path.resolve(info.root), built);
+    const expectedRoot = packaged ? path.join(path.dirname(packaged), 'resources/app.asar') : built;
+    assert.equal(path.resolve(info.root), path.resolve(expectedRoot));
+    const reader = packaged
+      ? require(require.resolve('@electron/asar', { paths: [require.resolve('@electron/packager')] })).extractFile(expectedRoot, 'ui/reading-detail.js').toString('utf8')
+      : fs.readFileSync(path.join(info.root, 'ui/reading-detail.js'), 'utf8');
+    assert.equal(reader, fs.readFileSync(path.join(built, 'ui/reading-detail.js'), 'utf8'), 'desktop and tests run identical compiled reader');
     assert.equal(info.version, require('../package.json').version);
     const loaded = await page.evaluate(async () => {
       const bootstrap = await window.notebook.bootstrap();

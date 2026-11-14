@@ -16,7 +16,11 @@ pnpm test:ui:refactor
 
 首批 `tsconfig.json` 严格检查 `src/renderer/reading/reading-detail.ts` 与其 API 类型，其他业务 JS 尚未迁移。`ui/reading-detail.js` 是受版本控制的生成兼容产物，禁止手改；修改 TS 后运行 `pnpm reader:build`，`pnpm typecheck` 会检查产物是否一致并拒绝 CommonJS 浏览器输出。每迁移一个模块，将其加入检查范围；禁止以 `any`、`@ts-nocheck` 或大范围忽略错误作为迁移完成标准。
 
-`pnpm build:app` 生成独立 `build/app` 副本，保留现有 Electron/UI 相对布局并收集生产依赖；构建前先检查生成产物一致性。`pnpm preview:app` 构建后启动该副本，`pnpm test:build:desktop` 验证真实 preload、版本与离线格式化器。阅读详情 UI 检查可用 `QMX_APP_ROOT` 指定副本根目录。当前 `pnpm start`、`serve:web` 和正式打包入口继续使用原路径，统一切换属于下一批 P1b；不要把新构建副本已通过验收描述为正式打包入口已经切换。
+`pnpm build:app` 生成独立 `build/app` 副本，保留现有 Electron/UI 相对布局并收集生产依赖；构建前先检查生成产物一致性。`pnpm start` / `preview:app` 构建并启动该副本，`pnpm serve:web` 默认先构建并从副本提供页面与匿名同步后端。导入 server 模块不会启动构建或监听。
+
+`pnpm test` 先构建，再用统一 `appPath` 定位运行时模块、VM 入口、缓存覆盖和浏览器资源；源码数据、生成工具及可信签名工具仍按用途单独验证。`test:ui:refactor` 也先构建并显式传入同一根目录，避免继承的环境变量把检查指向旧副本。直接运行单个测试前先 `pnpm build:app`；`QMX_APP_ROOT` 可用于指定单个测试的已构建应用。
+
+未签名打包（`QMX_BUILD_UPDATE_FEED=1` 或没有 feed）先调用同一构建器，再复制到全新暂存目录。存在有效 signed feed 的正式打包直接验证并使用已接受的 app.asar，不重新编译；该归档必须来自此前未签名构建和签名验收流程。`pnpm test:build:desktop` 验证真实 preload、版本与离线格式化器；设置 `QMX_PACKAGED_EXE` 可检查本地便携包及其阅读脚本与构建脚本字节一致。正式签名归档和本次未发布的源码改动属于不同构建，不可混淆。
 
 ## 行为保持矩阵
 

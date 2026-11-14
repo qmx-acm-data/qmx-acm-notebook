@@ -1,4 +1,5 @@
 'use strict';
+const { appPath } = require('./app-path.cjs');
 // Run with: node tests/algorithm-notes-ui-smoke.cjs (Playwright + Microsoft Edge).
 const assert = require('node:assert/strict');
 const directory = require('../data/algorithm-directory.json');
@@ -6,7 +7,7 @@ const legacy = require('../docs/algorithm-research/legacy-node-map.json');
 const path = require('node:path');
 const { pathToFileURL } = require('node:url');
 const { chromium } = require('playwright');
-const tree = require('../ui/algorithm-tree.js');
+const tree = require(appPath('ui/algorithm-tree.js'));
 
 const nodes = []; (function walk(node) { nodes.push(node); (node.children || []).forEach(walk); })(tree);
 const byId = new Map(nodes.flatMap(node => [node.id, ...(node.legacyIds || [])].map(id => [id, node])));
@@ -65,7 +66,7 @@ async function openAlgorithms(browser, errors, { signedIn = true, push = true, a
       updateLocal: async () => {}, saveSettings: async settings => settings, openExternal: async () => {},
     };
   }, { notes: NOTES, signedIn, push, admin });
-  await page.goto(pathToFileURL(path.resolve(__dirname, '../ui/index.html')).href);
+  await page.goto(pathToFileURL(appPath('ui/index.html')).href);
   await page.locator('.rail-nav-item[data-view="algorithms"]').click();
   await page.waitForSelector('#algorithm-panel .alg-browser');
   await page.mouse.move(Math.max(300, width - 80), 800);

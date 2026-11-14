@@ -1,4 +1,5 @@
 'use strict';
+const { appPath } = require('./app-path.cjs');
 const assert = require('node:assert/strict');
 const { chromium } = require('playwright');
 const { pathToFileURL } = require('node:url');
@@ -73,7 +74,7 @@ const path = require('node:path');
         }
       };
     });
-    const open = () => page.goto(pathToFileURL(path.resolve(__dirname, '../ui/index.html')).href);
+    const open = () => page.goto(pathToFileURL(appPath('ui/index.html')).href);
     const panel = page.locator('.platform-dashboard');
     const row = code => page.locator(`.platform-binding-row[data-platform="${code}"]`);
     const dialog = page.locator('#platform-bind-dialog');

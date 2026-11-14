@@ -1,7 +1,8 @@
 'use strict';
+const { appPath } = require('./app-path.cjs');
 const test = require('node:test');
 const assert = require('node:assert/strict');
-const { createContestService, normalizeContests, CACHE_TTL, RETRY_DELAY } = require('../electron/contests.cjs');
+const { createContestService, normalizeContests, CACHE_TTL, RETRY_DELAY } = require(appPath('electron/contests.cjs'));
 const TIME = Date.parse('2026-11-07T04:00:00Z');
 const item = (patch = {}) => ({ id: '1', title: 'Round 1', url: 'https://codeforces.com/contest/1', startTime: '2026-11-07T06:00:00Z', endTime: '2026-11-07T08:00:00Z', ...patch });
 const source = (id = 'codeforces') => ({ id, name: id, url: id === 'codeforces' ? 'https://codeforces.com/contests' : 'https://atcoder.jp/contests/', endpoint: 'https://example.test/' + id, parse: text => JSON.parse(text) });

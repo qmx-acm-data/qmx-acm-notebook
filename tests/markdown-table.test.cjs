@@ -1,8 +1,9 @@
 'use strict';
+const { appPath } = require('./app-path.cjs');
 const test = require('node:test');
 const assert = require('node:assert/strict');
 const { Marked } = require('marked');
-const { tokenize } = require('../ui/markdown-table.js');
+const { tokenize } = require(appPath('ui/markdown-table.js'));
 // The table helper receives the production formula scanner; this fixture isolates
 // table splitting with complete delimited spans and leaves TeX content untouched.
 function formula(source) {

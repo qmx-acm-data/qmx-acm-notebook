@@ -1,9 +1,10 @@
 'use strict';
+const { appPath } = require('./app-path.cjs');
 
 const assert = require('node:assert/strict');
 const test = require('node:test');
 const { brotliCompressSync, brotliDecompressSync, constants } = require('node:zlib');
-const { createDelta, applyDelta } = require('../electron/delta-codec.cjs');
+const { createDelta, applyDelta } = require(appPath('electron/delta-codec.cjs'));
 
 const MiB = 1024 * 1024;
 

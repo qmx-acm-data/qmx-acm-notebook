@@ -1,6 +1,7 @@
 'use strict';
+const { appPath } = require('./app-path.cjs');
 const {test}=require('node:test'); const assert=require('node:assert/strict');
-const {createPlatformService}=require('../electron/platform-service.cjs');
+const {createPlatformService}=require(appPath('electron/platform-service.cjs'));
 function harness(fetcher){let store={};return {service:createPlatformService({read:()=>structuredClone(store),save:(_n,v)=>{store=structuredClone(v);},fetcher,now:()=> '2026-11-08T08:00:00Z'}),get:()=>store};}
 function cfFetch({fail=false,rating=1061}={}){return async url=>{if(fail)throw new Error('network offline');const u=String(url);return {ok:true,json:async()=>u.includes('user.info')?{status:'OK',result:[{handle:'time-lo',rating,maxRating:rating}]}:u.includes('user.rating')?{status:'OK',result:[]}:{status:'OK',result:[]}};};}
 test('binding persists verified account and zero is a valid public solved count',async()=>{const h=harness(cfFetch());await h.service.bind('CF','https://codeforces.com/profile/time-lo');const entry=h.get().CF;assert.equal(entry.binding.username,'time-lo');assert.equal(entry.data.solvedCount,0);assert.equal(entry.updatedAt,'2026-11-08T08:00:00Z');assert.equal(h.service.isBusy(),false);});

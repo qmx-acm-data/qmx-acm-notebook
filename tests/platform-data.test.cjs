@@ -1,6 +1,7 @@
+const { appPath } = require('./app-path.cjs');
 const test = require('node:test');
 const assert = require('node:assert/strict');
-const { PLATFORMS, parseProfileLink, fetchPlatform: fetchPublicPlatform } = require('../electron/platform-data.cjs');
+const { PLATFORMS, parseProfileLink, fetchPlatform: fetchPublicPlatform } = require(appPath('electron/platform-data.cjs'));
 const fetchPlatform = (binding, options = {}) => fetchPublicPlatform(binding, { cfRequestInterval: 0, ...options });
 
 const response = (data, status = 200) => ({ ok: status >= 200 && status < 300, status, json: async () => data });

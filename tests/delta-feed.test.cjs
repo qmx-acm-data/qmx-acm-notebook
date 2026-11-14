@@ -1,4 +1,5 @@
 'use strict';
+const { appPath } = require('./app-path.cjs');
 
 const test = require('node:test');
 const assert = require('node:assert/strict');
@@ -9,7 +10,7 @@ const crypto = require('node:crypto');
 const { buildManifest, canonical } = require('../tools/update-manifest.cjs');
 const { verifyFeed } = require('../tools/release-feed.cjs');
 const { buildDeltaFeed, listAssets, installFeed, main } = require('../tools/delta-feed.cjs');
-const { applyDelta } = require('../electron/delta-codec.cjs');
+const { applyDelta } = require(appPath('electron/delta-codec.cjs'));
 
 function fixture(t) {
   const directory = fs.mkdtempSync(path.join(os.tmpdir(), 'qmx-delta-feed-'));
@@ -65,8 +66,10 @@ test('delta feed binds signed base and target and reconstructs insertion changes
 test('CLI build, release verification, asset listing and install work in fresh processes', t => {
   const f = fixture(t);
   const preload = path.join(f.directory, 'fixture-public-key.cjs');
-  const pinned = require.resolve('../electron/update-key.cjs');
-  fs.writeFileSync(preload, `require.cache[${JSON.stringify(pinned)}] = { exports: ${JSON.stringify(f.publicKey)} };`);
+  const pinned = require.resolve(appPath('electron/update-key.cjs'));
+  // Signing tools still run from source; override their key separately from the runtime graph.
+  const toolKey = path.resolve(__dirname, '../electron/update-key.cjs');
+  fs.writeFileSync(preload, [pinned, toolKey].map(filename => `require.cache[${JSON.stringify(filename)}] = { exports: ${JSON.stringify(f.publicKey)} };`).join('\n'));
   const root = path.resolve(__dirname, '..');
   const { spawnSync } = require('node:child_process');
   const run = (tool, args) => {

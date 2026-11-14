@@ -1,4 +1,5 @@
 'use strict';
+const { appPath } = require('./app-path.cjs');
 
 const test = require('node:test');
 const assert = require('node:assert/strict');
@@ -6,7 +7,7 @@ const fs = require('node:fs');
 const os = require('node:os');
 const path = require('node:path');
 const crypto = require('node:crypto');
-const { prepareUpgrade: nativePrepareUpgrade } = require('../electron/upgrade.cjs');
+const { prepareUpgrade: nativePrepareUpgrade } = require(appPath('electron/upgrade.cjs'));
 // Existing cases exercise the Windows installer contract on every test host.
 const prepareUpgrade = (options, dependencies) => nativePrepareUpgrade(options, { platform: 'win32', ...dependencies });
 

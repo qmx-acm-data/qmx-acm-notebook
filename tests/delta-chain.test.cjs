@@ -1,9 +1,10 @@
 'use strict';
+const { appPath } = require('./app-path.cjs');
 
 const test = require('node:test');
 const assert = require('node:assert/strict');
 const crypto = require('node:crypto');
-const { verifyHistoricalDelta, planDeltaChain } = require('../electron/delta-chain.cjs');
+const { verifyHistoricalDelta, planDeltaChain } = require(appPath('electron/delta-chain.cjs'));
 
 const keys = crypto.generateKeyPairSync('ed25519');
 const options = { publicKey: keys.publicKey, runtimeVersion: '40.2.1' };

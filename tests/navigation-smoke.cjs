@@ -1,4 +1,5 @@
 'use strict';
+const { appPath } = require('./app-path.cjs');
 
 const assert=require('node:assert/strict');
 const path=require('node:path');
@@ -9,7 +10,7 @@ const {chromium}=require('playwright');
 try{const page=await browser.newPage({viewport:{width:1440,height:940}});
 const errors=[];
 page.on('pageerror',e=>errors.push(e.message));
-const url=pathToFileURL(path.resolve(__dirname,'../ui/index.html')).href;
+const url=pathToFileURL(appPath('ui/index.html')).href;
 await page.goto(url);
 await page.waitForSelector('#home-panel:not([hidden])');
 await page.mouse.move(700,200);

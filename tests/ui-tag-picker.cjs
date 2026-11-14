@@ -1,4 +1,5 @@
 'use strict';
+const { appPath } = require('./app-path.cjs');
 const assert = require('node:assert/strict');
 const path = require('node:path');
 const { pathToFileURL } = require('node:url');
@@ -13,7 +14,7 @@ const { chromium } = require('playwright');
       const docs = [{ id:'d1',title:'one',tags:['甲'],body:'# one' },{ id:'d2',title:'two',tags:['乙'],body:'# two' }].map(r => ({kind:'document',repo,path:r.id+'.md',sha:'sha',authorId:1,author:'user',problemUrl:'https://example.com',...r}));
       window.notebook = { bootstrap: async()=>({records:docs,local:{records:[],favorites:[],mastery:{},draft:{}},settings:{autoSync:false},account:{id:1,login:'user'},permissions:{repo,push:true},tagCatalog:{categories:[{id:'dp',name:'动态规划',tags:[{id:'a',name:'甲'},{id:'b',name:'乙'}]}]}}), updateLocal:async()=>{} };
     });
-    await page.goto(pathToFileURL(path.resolve(__dirname,'../ui/index.html')).href);
+    await page.goto(pathToFileURL(appPath('ui/index.html')).href);
     await page.waitForSelector('.record-card');
     assert.match((await page.locator('#tag-filter-trigger').innerText()).trim(), /^标签\s*⌄$/);
     assert.equal(await page.locator('#tag-filter-trigger').evaluate(el => {

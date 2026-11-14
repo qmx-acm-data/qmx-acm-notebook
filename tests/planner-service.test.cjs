@@ -1,11 +1,12 @@
 'use strict';
+const { appPath } = require('./app-path.cjs');
 const test = require('node:test');
 const assert = require('node:assert/strict');
 const fs = require('node:fs');
 const os = require('node:os');
 const path = require('node:path');
-const { createPlannerService } = require('../electron/planner-service.cjs');
-const { prepareUpgrade } = require('../electron/upgrade.cjs');
+const { createPlannerService } = require(appPath('electron/planner-service.cjs'));
+const { prepareUpgrade } = require(appPath('electron/upgrade.cjs'));
 
 const FIRST = '2026-11-10T04:00:00.000Z';
 const LATER = '2026-11-10T05:00:00.000Z';

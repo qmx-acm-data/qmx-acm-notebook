@@ -1,4 +1,5 @@
 'use strict';
+const { appPath } = require('./app-path.cjs');
 // Run with: node tests/update-ui-smoke.cjs (requires Playwright and Microsoft Edge).
 const assert = require('node:assert/strict');
 const path = require('node:path');
@@ -33,7 +34,7 @@ const { chromium } = require('playwright');
         installUpdate: async () => { fixture.calls.push('install'); if (fixture.failInstall) throw new Error('Installer failed'); return { installing: true }; }
       };
     }, options);
-    await page.goto(pathToFileURL(path.resolve(__dirname, '../ui/index.html')).href);
+    await page.goto(pathToFileURL(appPath('ui/index.html')).href);
     await page.waitForFunction(() => document.querySelector('#sync-status').textContent === '尚未同步');
     await page.click('.sidebar-rail .sidebar-bottom');
     assert.equal(await page.locator('#app-version').innerText(), '1.2.3');
@@ -129,7 +130,7 @@ const { chromium } = require('playwright');
     page.on('pageerror', error => errors.push(error.message));
     let networkRequests = 0;
     page.on('request', request => { if (/^https?:/.test(request.url())) networkRequests++; });
-    await page.goto(pathToFileURL(path.resolve(__dirname, '../ui/index.html')).href);
+    await page.goto(pathToFileURL(appPath('ui/index.html')).href);
     await page.click('.sidebar-rail .sidebar-bottom'); await page.click('#check-update-button');
     assert.match(await page.locator('#app-version').innerText(), /浏览器预览/);
     assert.match(await page.locator('#update-status').innerText(), /桌面客户端/);

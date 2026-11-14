@@ -1,4 +1,5 @@
 'use strict';
+const { appPath } = require('./app-path.cjs');
 const test = require('node:test');
 const assert = require('node:assert/strict');
 const fs = require('node:fs');
@@ -8,10 +9,10 @@ const { EventEmitter } = require('node:events');
 
 // Run the real entry point without loading Electron, touching userData, or using a network.
 // Only app readiness is manually advanced; all behavior goes through registered IPC handlers.
-const MAIN = path.resolve(__dirname, '../electron/main.cjs');
+const MAIN = appPath('electron/main.cjs');
 const SOURCE = fs.readFileSync(MAIN, 'utf8');
 const REPO = 'team/notebook';
-const { normalizeServerUrl, repositoryKey } = require('../electron/github.cjs');
+const { normalizeServerUrl, repositoryKey } = require(appPath('electron/github.cjs'));
 const scoped = record => ({ ...record, repo: REPO, serverUrl: '', sourceKey: repositoryKey(REPO) });
 const UUID = '55c710aa-e083-4b14-94fe-a3a825d17f70';
 const localRecord = (extra = {}) => ({ id: 'local:one', kind: 'local', clientId: UUID, ownerId: '42', title: 'Original local', body: 'local body', ...extra });
@@ -95,7 +96,7 @@ function harness({ files = {}, account = { id: 42, login: 'alice' }, backend = {
       if (method === 'deleteDocument') return { id: args[0].id || `document:${args[0].path}`, path: args[0].path, repo: REPO, deleted: true };
       if (method === 'profile' || method === 'identity') return { account: { id: 42, login: 'alice', avatarUrl: '' }, permissions: { repo: this.options.repo, push: true } };
       if (method === 'sync') return { records: [], issues: [], blobs: {}, lastSync: '2026-11-02T00:00:00Z' };
-       if (method === 'getTagCatalog') return require('../ui/tag-presets.js');
+       if (method === 'getTagCatalog') return require(appPath('ui/tag-presets.js'));
        if (method === 'getTagReview') return { canReview: false, requests: [] };
       return [];
     };
@@ -112,13 +113,13 @@ function harness({ files = {}, account = { id: 42, login: 'alice' }, backend = {
       if (name === 'node:path') return path;
       if (name === 'node:crypto') return { randomUUID: () => '00000000-0000-4000-8000-000000000001' };
       if (name === '../package.json') return { version: '0.3.0' };
-      if (name === './auth.cjs') return require('../electron/auth.cjs');
-      if (name === './platform-service.cjs') return require('../electron/platform-service.cjs');
-      if (name === './planner-service.cjs') return require('../electron/planner-service.cjs');
-      if (name === './platform-page.cjs') return require('../electron/platform-page.cjs');
-       if (name === './contests.cjs') return require('../electron/contests.cjs');
+      if (name === './auth.cjs') return require(appPath('electron/auth.cjs'));
+      if (name === './platform-service.cjs') return require(appPath('electron/platform-service.cjs'));
+      if (name === './planner-service.cjs') return require(appPath('electron/planner-service.cjs'));
+      if (name === './platform-page.cjs') return require(appPath('electron/platform-page.cjs'));
+       if (name === './contests.cjs') return require(appPath('electron/contests.cjs'));
       if (name === '@astral-sh/ruff-wasm-nodejs') return require(name);
-       if (name === '../ui/tag-presets.js') return require('../ui/tag-presets.js');
+       if (name === '../ui/tag-presets.js') return require(appPath('ui/tag-presets.js'));
        if (name === './updater.cjs') return { createUpdater(options) { updaterOptions = options; return updater; } };
       if (name === './update-storage.cjs') return { cleanupUpdateStorage() { return { files: 0, bytes: 0, retained: 0 }; } };
       if (name === './file-upgrade.cjs') return {
@@ -285,7 +286,7 @@ test('platform IPC shares sender validation and update locks while opening ordin
 test('preload exposes platform IPC alongside existing auth, contest, formatter and update methods', async () => {
   let bridge;
   const calls = [], listeners = new Map();
-  vm.runInNewContext(fs.readFileSync(path.resolve(__dirname, '../electron/preload.cjs'), 'utf8'), { require(name) {
+  vm.runInNewContext(fs.readFileSync(appPath('electron/preload.cjs'), 'utf8'), { require(name) {
     assert.equal(name, 'electron');
     return { contextBridge: { exposeInMainWorld(name, value) { assert.equal(name, 'notebook'); bridge = value; } }, ipcRenderer: {
       invoke(name, ...args) { calls.push({ name, args }); return Promise.resolve(name); },
@@ -999,9 +1000,9 @@ for (const spawnFailure of ['error', 'throw']) test(`main ${spawnFailure} spawn 
   if (process.platform === 'darwin') { t.skip('automatic file upgrades are disabled on macOS'); return; }
   const os = require('node:os');
   const crypto = require('node:crypto');
-  const helper = require('../electron/update-helper.cjs');
-  const upgrade = require('../electron/file-upgrade.cjs');
-  const keyModule = require.resolve('../electron/update-key.cjs');
+  const helper = require(appPath('electron/update-helper.cjs'));
+  const upgrade = require(appPath('electron/file-upgrade.cjs'));
+  const keyModule = require.resolve(appPath('electron/update-key.cjs'));
   const productionKey = require(keyModule);
   const { publicKey, privateKey } = crypto.generateKeyPairSync('ed25519');
   require.cache[keyModule].exports = publicKey.export({ type: 'spki', format: 'pem' });

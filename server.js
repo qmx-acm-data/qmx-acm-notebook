@@ -69,7 +69,7 @@ function requestOrigin(req, server, host) {
 }
 
 function createServer({ host = process.env.HOST || DEFAULT_HOST,
-  baseDir = __dirname, allowedOrigins = process.env.SYNC_ALLOWED_ORIGINS,
+  baseDir = process.env.QMX_APP_ROOT || __dirname, backendDir = baseDir, allowedOrigins = process.env.SYNC_ALLOWED_ORIGINS,
   fetcher = globalThis.fetch } = {}) {
   const syncOrigins = configuredOrigins(allowedOrigins);
   const base = path.resolve(baseDir);
@@ -133,7 +133,7 @@ function createServer({ host = process.env.HOST || DEFAULT_HOST,
           return response;
         };
         try {
-          const { GitHub } = require('./electron/github.cjs');
+          const { GitHub } = require(path.join(path.resolve(backendDir), 'electron/github.cjs'));
           const result = await new GitHub({ repo, serverUrl: upstream.origin, token: '', fetcher: anonymousFetch }).sync();
           res.writeHead(200, { 'Content-Type': 'application/json; charset=utf-8' });
           res.end(JSON.stringify(result));
@@ -179,7 +179,8 @@ function createServer({ host = process.env.HOST || DEFAULT_HOST,
 
 if (require.main === module) {
   const host = process.env.HOST || DEFAULT_HOST;
-  const server = createServer({ host });
+  const built = process.env.QMX_APP_ROOT || require('./tools/build-app.cjs').main();
+  const server = createServer({ host, baseDir: built, backendDir: built });
   server.listen(process.env.PORT || 3001, host, () => {
     const address = server.address();
     const displayHost = host.includes(':') ? `[${host}]` : host;

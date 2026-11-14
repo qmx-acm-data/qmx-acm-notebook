@@ -28,13 +28,13 @@ pnpm package
 pnpm dist
 ```
 
-`pnpm package` 仅生成便携目录 `release/QMX-Notebook-win32-x64`；`pnpm dist` 先构建该目录，再通过 electron-builder 生成当前用户 NSIS 安装程序 `release/installer/QMX-Notebook-Setup-<version>.exe`。打包使用独立暂存目录收集运行依赖。发布工作流与成品验收见[维护与发布](docs/RELEASING.md)。
+`pnpm package` 仅生成便携目录 `release/QMX-Notebook-win32-x64`；`pnpm dist` 再通过 electron-builder 生成当前用户 NSIS 安装程序 `release/installer/QMX-Notebook-Setup-<version>.exe`。未签名构建先生成与开发/测试相同的 `build/app`，然后复制到独立暂存目录。存在有效 feed 时默认包装已签名归档，不能用它验证尚未发布的源码改动。本地验证新源码需显式设置 `QMX_BUILD_UPDATE_FEED=1`；此输出仅用于本地验收，不激活更新通道。发布工作流与成品验收见[维护与发布](docs/RELEASING.md)。
 
 图形驱动相关启动问题可使用 `--disable-gpu`。当前受管理环境的自动化桌面检查额外使用过 `--no-sandbox`，该参数仅供必要时验证，不能据此宣称默认发行启动已通过；兼容启动的安全取舍见[使用指南](docs/USAGE.md#安装和启动)。
 
 ## 渐进式 TypeScript 重构
 
-功能保持基线和迁移约束见 [TypeScript 重构说明](docs/TYPESCRIPT_REFACTOR.md)。`pnpm check:refactor` 汇总类型、语法、生成数据和单元检查；`pnpm test:ui:refactor` 运行现有界面回归组，需要 Playwright 和 Microsoft Edge。首批类型检查覆盖范围以 `tsconfig.json` 为准。阅读详情源码位于 `src/renderer/reading/reading-detail.ts`，修改后运行 `pnpm reader:build` 更新生成脚本。`pnpm build:app` 构建独立应用副本，`pnpm preview:app` 启动副本，`pnpm test:build:desktop` 验证真实桌面与离线格式化器；正式启动与发布入口将在后续 P1b 切换。
+功能保持基线和迁移约束见 [TypeScript 重构说明](docs/TYPESCRIPT_REFACTOR.md)。`pnpm check:refactor` 汇总类型、语法、生成数据和单元检查；`pnpm test:ui:refactor` 运行现有界面回归组，需要 Playwright 和 Microsoft Edge。首批类型检查覆盖范围以 `tsconfig.json` 为准。阅读详情源码位于 `src/renderer/reading/reading-detail.ts`，修改后运行 `pnpm reader:build` 更新生成脚本。`pnpm build:app` 构建独立应用副本，`pnpm preview:app` 启动副本，`pnpm test:build:desktop` 验证真实桌面与离线格式化器；开发启动、单元/界面测试及未签名打包已统一使用构建副本；正式签名包装仍复用已验收归档。直接运行单个测试前先执行 `pnpm build:app`。
 
 ## 贡献约定
 

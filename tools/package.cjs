@@ -7,38 +7,21 @@ const root = path.resolve(__dirname, '..');
 const platform = process.env.QMX_PLATFORM || process.platform;
 const arch = process.env.QMX_ARCH || process.arch;
 if (!['win32', 'linux', 'darwin'].includes(platform) || !['x64', 'arm64'].includes(arch)) throw new Error('Unsupported QMX_PLATFORM or QMX_ARCH');
-// Preserve each package's own dependency resolution, including pnpm's indirect links.
-function stageDependency(name, from, destination, ancestors = new Set()) {
-  let search = from, manifest;
-  while (true) {
-    const candidate = path.join(search, 'node_modules', name, 'package.json');
-    if (fs.existsSync(candidate)) { manifest = candidate; break; }
-    const parent = path.dirname(search);
-    if (parent === search) throw new Error(`Missing production dependency: ${name}`);
-    search = parent;
-  }
-  const source = fs.realpathSync(manifest);
-  const sourceDir = path.dirname(source);
-  if (ancestors.has(sourceDir)) throw new Error(`Cyclic production dependency: ${name}`);
-  fs.cpSync(sourceDir, destination, { recursive: true, dereference: true, filter: file => path.basename(file) !== 'node_modules' });
-  const metadata = JSON.parse(fs.readFileSync(source, 'utf8'));
-  const next = new Set(ancestors).add(sourceDir);
-  for (const child of Object.keys(metadata.dependencies || {})) {
-    stageDependency(child, sourceDir, path.join(destination, 'node_modules', child), next);
-  }
-}
 async function main() {
   // A fresh temporary directory prevents old source or private data entering releases.
   const stage = fs.mkdtempSync(path.join(os.tmpdir(), 'qmx-notebook-build-'));
   const pkg = require('../package.json');
-  for (const name of ['electron', 'ui']) {
-    fs.cpSync(path.join(root, name), path.join(stage, name), { recursive: true });
-  }
-  fs.writeFileSync(path.join(stage, 'package.json'), JSON.stringify({
-    name: pkg.name, version: pkg.version, main: pkg.main, dependencies: pkg.dependencies
-  }, null, 2));
-  for (const name of Object.keys(pkg.dependencies)) {
-    stageDependency(name, root, path.join(stage, 'node_modules', name));
+  const manifestPath = path.join(root, 'feed', 'manifest.json');
+  const useSignedArchive = fs.existsSync(manifestPath) && process.env.QMX_BUILD_UPDATE_FEED !== '1';
+  if (!useSignedArchive) {
+    // Dev, tests and the unsigned release archive all consume the same build layout.
+    const built = require('./build-app.cjs').main();
+    fs.cpSync(built, stage, { recursive: true });
+  } else {
+    // Signed packaging never recompiles or repacks the accepted archive.
+    fs.writeFileSync(path.join(stage, 'package.json'), JSON.stringify({
+      name: pkg.name, version: pkg.version, main: pkg.main, dependencies: pkg.dependencies
+    }, null, 2));
   }
   const version = require('electron/package.json').version;
   const archiveDir = path.join(root, '.electron-zip');
@@ -53,9 +36,8 @@ async function main() {
   if (fs.existsSync(archive)) options.electronZipDir = archiveDir;
   // Supply signed bytes before packager computes macOS/Windows ASAR integrity metadata.
   // Replacing app.asar after packager returns leaves embedded integrity hashes stale.
-  const manifestPath = path.join(root, 'feed', 'manifest.json');
   let signedHash;
-  if (fs.existsSync(manifestPath) && process.env.QMX_BUILD_UPDATE_FEED !== '1') {
+  if (useSignedArchive) {
     const { manifest, file, archivePath } = require('./release-feed.cjs').verifyFeed(root);
     if (manifest.version !== pkg.version) throw new Error('Update feed version differs from package version; build a fresh feed first');
     options.prebuiltAsar = archivePath;

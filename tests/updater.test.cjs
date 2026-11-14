@@ -1,4 +1,5 @@
 'use strict';
+const { appPath } = require('./app-path.cjs');
 
 const test = require('node:test');
 const assert = require('node:assert/strict');
@@ -7,7 +8,7 @@ const os = require('node:os');
 const path = require('node:path');
 const crypto = require('node:crypto');
 const { Readable } = require('node:stream');
-const createUpdater = require('../electron/updater.cjs');
+const createUpdater = require(appPath('electron/updater.cjs'));
 
 const bytes = Buffer.from('verified ASAR application bytes');
 const sha256 = data => crypto.createHash('sha256').update(data).digest('hex');

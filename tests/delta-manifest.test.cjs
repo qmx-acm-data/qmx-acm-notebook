@@ -1,9 +1,10 @@
 'use strict';
+const { appPath } = require('./app-path.cjs');
 
 const test = require('node:test');
 const assert = require('node:assert/strict');
 const crypto = require('node:crypto');
-const { verifyDeltaManifest } = require('../electron/delta-manifest.cjs');
+const { verifyDeltaManifest } = require(appPath('electron/delta-manifest.cjs'));
 
 const trusted = crypto.generateKeyPairSync('ed25519');
 const untrusted = crypto.generateKeyPairSync('ed25519');
