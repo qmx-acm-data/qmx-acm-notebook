@@ -51,7 +51,7 @@ jobs:
           git rev-parse -q --verify "refs/tags/$TAG_INPUT^{commit}" >/dev/null || { echo 'Requested tag does not exist'; exit 1; }
           TAG_COMMIT=$(git rev-parse "refs/tags/$TAG_INPUT^{commit}")
           git merge-base --is-ancestor "$TAG_COMMIT" origin/main || { echo 'Release tag must point to reviewed source already in main'; exit 1; }
-          for TOOL in tools/package.cjs tools/installer.cjs tools/update-manifest.cjs tools/release-feed.cjs tools/delta-feed.cjs electron/updater.cjs electron/update-key.cjs electron/delta-codec.cjs electron/delta-manifest.cjs; do
+          for TOOL in tools/package.cjs tools/installer.cjs tools/update-manifest.cjs tools/release-feed.cjs tools/delta-feed.cjs electron/updater.cjs electron/update-key.cjs electron/delta-codec.cjs electron/delta-manifest.cjs electron/delta-chain.cjs; do
             git diff --quiet "$GITHUB_SHA" "$TAG_COMMIT" -- "$TOOL" || { echo "Release tag must contain the reviewed release tooling: $TOOL"; exit 1; }
           done
           VERSION=$(git show "$TAG_COMMIT:package.json" | node -e "let s='';process.stdin.on('data',c=>s+=c).on('end',()=>process.stdout.write(JSON.parse(s).version))")
@@ -100,6 +100,13 @@ jobs:
           cache: pnpm
       - run: pnpm install --frozen-lockfile
       - run: pnpm check
+      - name: Load reviewed chained-update test from trusted workflow commit
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          gh api "repos/$GITHUB_REPOSITORY/contents/tests/delta-chain-updater.test.cjs?ref=$GITHUB_SHA" --header 'Accept: application/vnd.github.raw+json' > tests/delta-chain-updater.test.cjs
       - run: pnpm test
       - name: Cache verified official Electron runtime via release API
         shell: bash
@@ -255,6 +262,13 @@ jobs:
           cache: pnpm
       - run: pnpm install --frozen-lockfile
       - run: pnpm check
+      - name: Load reviewed chained-update test from trusted workflow commit
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          gh api "repos/$GITHUB_REPOSITORY/contents/tests/delta-chain-updater.test.cjs?ref=$GITHUB_SHA" --header 'Accept: application/vnd.github.raw+json' > tests/delta-chain-updater.test.cjs
       - run: pnpm test
       - name: Cache verified official Electron runtime via release API
         shell: bash

@@ -238,3 +238,5 @@ body:is(.sidebar-open,.sidebar-pinned) .sidebar-rail .rail-nav-item,body:is(.sid
 .markdown-body .katex-display>.katex{white-space:nowrap;overflow-wrap:normal}
 .markdown-body .katex,.markdown-body .katex *{overflow-wrap:normal}
 .markdown-body .notebook-math-error{font-family:Consolas,monospace;color:var(--tone-red,var(--text));white-space:pre-wrap;overflow-wrap:anywhere;border-bottom:1px dotted currentColor}
+.repo-control{min-width:0;max-width:240px}.repo-control select{min-width:0;max-width:100%;text-overflow:ellipsis}.repo-card-item>div:first-child{overflow-wrap:anywhere}.repo-card-item>div:last-child{flex:none}
+@media(max-width:650px){.repo-control{flex:1 1 100%;max-width:100%}.repo-control select{width:100%;max-width:100%}}

@@ -70,9 +70,14 @@ macOS 将 DMG 中的应用拖入“应用程序”再运行。当前构建未签
 
 更新影响：Windows 保持现有签名文件更新链路；Linux 使用相同签名清单及应用包，在可写、非符号链接的解压目录内备份替换并重启，不会安装 Windows EXE。macOS 可以检查更新，但禁止自动改写应用包，以免破坏代码签名；出现新版提示后需手动安装完整应用。文件升级不替换 Electron 运行时，运行时版本不匹配仍需完整安装包。
 
-## 首次设置与 GitHub 登录
+## 首次设置与代码仓库配置
 
-未登录也可查看公开资料、保存和编辑未绑定账号的本地题解。默认资料库是 `qmx-acm-data/2026`，程序源码库是 `qmx-acm-data/qmx-acm-notebook`。
+未登录也可查看公开资料、保存和编辑未绑定账号的本地题解。默认资料库保持 GitHub 的 `qmx-acm-data/2026`，已有仓库设置保留。设置中的“题解仓库管理”支持添加、删除和选择仓库，顶部下拉框可快速切换，切换后自动同步。缓存按服务地址与仓库路径隔离。
+
+- **GitHub**：服务地址留空或填写 `https://github.com`，仓库填写 `owner/repo`。GitHub 登录与授权写入仅用于 GitHub。
+- **Gitea 公开仓库**：填写 HTTP/HTTPS 服务地址和 `owner/repo`，也可使用以 `/api/v1` 结尾的 API 地址。内置校内示例 `http://172.25.5.128:3000`、`ctguacm/2026`，需在对应网络中使用。当前自建服务只支持匿名读取，不会转发 GitHub 凭据；不支持 GitLab API、私有仓库认证和自建服务写入。
+
+浏览器预览可运行 `pnpm serve:web`，默认仅监听 `127.0.0.1:3001`。需在局域网访问时显式设置 `HOST=0.0.0.0`；服务器同步仅允许预设 GitHub/校内来源，可通过逗号分隔的 `SYNC_ALLOWED_ORIGINS` 显式配置允许的服务来源。浏览器本地保存和桌面数据各自独立。
 
 0.3.3 起内置队伍公开 OAuth Client ID，队员无需注册 OAuth App 或填写 Client ID；旧设置缺失、为空或无效类型时自动使用队伍配置。点击左下角账号入口，选择登录，在 [GitHub 官方设备授权页面](https://github.com/login/device)输入客户端显示的验证码并授权。每人仍使用自己的 GitHub 账号。Linux 客户端使用系统钥匙环保存登录；GNOME/KDE 保留系统检测，在 niri、sway 等未自动识别后端的桌面默认尝试 libsecret，需要安装并运行兼容的 Secret Service（如 gnome-keyring）。使用 KWallet 时可通过 Chromium 的 `--password-store=kwallet6`（按已安装版本选择）指定后端，显式设置会被保留。设置中的“高级：自定义 GitHub 登录应用”仅供自建应用使用，清空保存恢复默认。不要填写 GitHub 密码、Client Secret 或个人 Token。
 

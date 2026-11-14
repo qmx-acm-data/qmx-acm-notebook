@@ -85,6 +85,7 @@ async function setup(t, options = {}) {
     fetcher: async (url, opts) => {
       calls.push({ url, opts });
       if (url === commitUrl) return response({ sha: commit });
+      if (url === commitUrl.replace('/commits/main', `/commits?sha=${commit}&path=feed%2Fdelta.json&per_page=8`)) return response([]);
       if (sources('feed/manifest.json').includes(url)) return options.legacyResponse ? options.legacyResponse(url, context) : response(legacy);
       if (sources('feed/delta.json').includes(url)) return options.deltaResponse ? options.deltaResponse(url, context) : response(delta);
       if (sources(patchPath).includes(url)) return options.patchResponse ? options.patchResponse(url, context) : counted(options.patchBytes ?? patch, 'patch');
