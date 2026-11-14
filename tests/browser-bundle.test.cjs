@@ -9,7 +9,7 @@ const { SourceMap } = require('node:module');
 const { bundle } = require('../tools/browser-bundle.cjs');
 
 function fixture(t) {
-  const root = fs.mkdtempSync(path.join(os.tmpdir(), 'qmx-browser-bundle-'));
+  const root = fs.realpathSync(fs.mkdtempSync(path.join(os.tmpdir(), 'qmx-browser-bundle-')));
   t.after(() => fs.rmSync(root, { recursive: true, force: true }));
   const sources = {
     'src/normalize.ts': `globalThis.initializations = (globalThis.initializations || 0) + 1;

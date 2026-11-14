@@ -26,7 +26,7 @@ test('compiled reader loads as a classic browser script with no CommonJS globals
 });
 
 test('build staging preserves scoped and nested dependency versions and assets without links', t => {
-  const fixture = fs.mkdtempSync(path.join(os.tmpdir(), 'qmx-stage-'));
+  const fixture = fs.realpathSync(fs.mkdtempSync(path.join(os.tmpdir(), 'qmx-stage-')));
   t.after(() => fs.rmSync(fixture, { recursive: true, force: true }));
   function pkg(relative, metadata, files = {}) {
     const dir = path.join(fixture, relative); fs.mkdirSync(dir, { recursive: true });
@@ -92,7 +92,7 @@ test('development reader and sandbox preload maps resolve original TypeScript at
 });
 
 test('application staging emits development maps only in output and drops them for release', t => {
-  const fixture = fs.mkdtempSync(path.join(os.tmpdir(), 'qmx-build-map-'));
+  const fixture = fs.realpathSync(fs.mkdtempSync(path.join(os.tmpdir(), 'qmx-build-map-')));
   t.after(() => fs.rmSync(fixture, { recursive: true, force: true }));
   const root = path.resolve(__dirname, '..');
   const outputRoot = path.join(fixture, 'app');

@@ -38,7 +38,7 @@ function main({ sourceMaps = process.env.QMX_SOURCE_MAPS === '1', outputRoot } =
   // Allow the normal build target or a named child in an isolated temporary fixture.
   if (output !== path.join(root, 'build/app')) {
     const relative = path.relative(root, output);
-    const temporary = path.relative(path.resolve(os.tmpdir()), output);
+    const temporary = path.relative(fs.realpathSync(os.tmpdir()), output);
     if (!relative || (!relative.startsWith('..' + path.sep) && !path.isAbsolute(relative))
       || temporary.startsWith('..' + path.sep) || path.isAbsolute(temporary) || temporary.split(path.sep).length < 2) {
       throw new Error('Unexpected build target');
