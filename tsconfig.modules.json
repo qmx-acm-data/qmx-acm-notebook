@@ -1,0 +1,4 @@
+{
+  "extends": "./tsconfig.json",
+  "include": ["src/renderer/lib/**/*.ts", "src/renderer/algorithms/**/*.ts", "src/renderer/planner/**/*.ts", "src/renderer/reading/markdown-*.ts", "types/**/*.ts", "src/shared/**/*.ts", "tests/types/**/*.ts"]
+}

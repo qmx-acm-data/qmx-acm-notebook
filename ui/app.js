@@ -27,7 +27,7 @@
   s.appVersion = ''; s.update = null;
   window.NotebookPlatforms?.init({ bridge, onSettings: () => $('#settings-button').click() });
   s.planner = { problems: [], tasks: [], layout: 'balanced' };
-  window.NotebookPlanner?.init({ bridge, onChange: value => { s.planner = value; } });
+  window.NotebookPlanner?.init({ bridge: bridge ? window.NotebookIPC(bridge) : bridge, onChange: value => { s.planner = value; } });
   let updateRunning = false;
   let updateReady = false;
   let toastTimer;

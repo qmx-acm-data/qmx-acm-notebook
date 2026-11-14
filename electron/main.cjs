@@ -374,7 +374,6 @@ function setup() {
   platforms = createPlatformService({ read, save, fetcher: networkFetch, readPage: createPublicPageReader({ BrowserWindow }) });
   // Public schedules use stateless Node fetch, separate from Chromium session cookies.
   contestService = createContestService({ fetcher: (url, options) => fetch(url, options), readCache: () => read('contests.json', null), writeCache: value => save('contests.json', value) });
-  handle('plannerAction', (action, payload) => planner.action(action, payload));
   handle('getContests', force => contestService.get(force));
   handle('bindPlatform', (platform, url) => platforms.bind(platform, url));
   handle('refreshPlatform', platform => platforms.refresh(platform));
@@ -645,6 +644,7 @@ function setup() {
   }));
   handle('getComments', async number => (await client().comments(number)).map(x => ({ id: x.id, body: x.body, author: x.user?.login || '', createdAt: x.created_at, url: x.html_url })));
   require('./ipc-boundary.cjs').registerBoundary(handle, {
+    plannerAction: (action, payload) => planner.action(action, payload),
     bootstrap: () => state(),
     updateLocal,
     openExternal: external,

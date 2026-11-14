@@ -288,9 +288,22 @@ const path = require('node:path');
     await page.click('#platform-expand');
     assert.equal(await page.evaluate(() => document.documentElement.scrollWidth > innerWidth), false);
     assert.equal(await panel.locator('.platform-heatmap-scroll').evaluate(node => node.scrollWidth > node.clientWidth), true);
-    await todayCell().scrollIntoViewIfNeeded();
-    await page.evaluate(() => new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve))));
+    // Chromium restores the mouse position after touch compatibility events. Align it
+    // with the tap target so the old expand-button position cannot hover another day.
+    // hover() also waits for the cell to settle after viewport/heatmap scrolling.
+    await todayCell().hover();
+    await page.keyboard.press('Escape');
+    assert.equal(await tip.isVisible(), false);
+    await todayCell().evaluate(cell => {
+      window.platformTouchClick = null;
+      cell.addEventListener('click', event => {
+        window.platformTouchClick = { date: cell.dataset.date, pointerType: event.pointerType };
+      }, { once: true });
+    });
     await todayCell().tap();
+    // tap() can return before the synthesized mouse/focus/click sequence finishes.
+    await page.waitForFunction(() => window.platformTouchClick !== null);
+    assert.deepEqual(await page.evaluate(() => platformTouchClick), { date: today, pointerType: 'touch' });
     assert.deepEqual(await tipLines(), [today, '总通过：5道（已知）']);
     await assertTipBounds();
     await page.evaluate(() => document.querySelector('.platform-heatmap-scroll').dispatchEvent(new Event('scroll')));

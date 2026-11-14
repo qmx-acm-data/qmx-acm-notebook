@@ -1,0 +1,5 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": { "types": ["node"], "allowJs": false, "checkJs": false },
+  "include": ["src/main/records/**/*.cts", "src/main/auth/**/*.cts", "src/main/planner/**/*.cts", "src/main/github/**/*.cts", "src/main/tags/**/*.cts", "src/main/contests/**/*.cts", "src/main/algorithms/**/*.cts", "src/main/platforms/page.cts", "src/main/platforms/service.cts", "src/shared/**/*.ts", "tests/types/**/*.ts", "tests/types-node/**/*.ts"]
+}

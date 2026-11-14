@@ -37,6 +37,7 @@ function main() {
   const reader = buildReader(true); // Drift checks do not rewrite source-tree output.
   const preload = buildPreload(true);
   require('./build-ipc-boundary.cjs').main(true);
+  require('./build-modules.cjs').main(true);
   const pkg = JSON.parse(fs.readFileSync(path.join(root, 'package.json'), 'utf8'));
   fs.rmSync(output, { recursive: true, force: true });
   fs.mkdirSync(output, { recursive: true });

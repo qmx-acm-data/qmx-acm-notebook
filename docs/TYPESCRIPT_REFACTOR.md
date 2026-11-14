@@ -14,7 +14,7 @@ pnpm test:ui:refactor
 
 `check:refactor` 汇总严格类型检查、现有语法检查、生成数据一致性检查和所有 Node 单元测试。`test:ui:refactor` 顺序运行现有 13 个界面回归脚本（含多仓库管理），遇到失败立即停止；需要 Playwright 和 Microsoft Edge，使用隔离浏览器与模拟 bridge，不写入正式资料库。截图继续输出到已忽略的目录。
 
-`tsconfig.json` 严格检查阅读详情与共享类型；`tsconfig.preload.json` 检查 preload，`tsconfig.boundary.json` 检查五项 IPC 主进程注册/页面适配器及类型反例。其余业务 JS 尚未迁移。`ui/reading-detail.js` 是受版本控制的生成兼容产物，禁止手改；修改 TS 后运行 `pnpm reader:build`，`pnpm typecheck` 会检查产物是否一致并拒绝 CommonJS 浏览器输出。每迁移一个模块，将其加入检查范围；禁止以 `any`、`@ts-nocheck` 或大范围忽略错误作为迁移完成标准。
+`tsconfig.json` 严格检查阅读详情与共享类型；`tsconfig.preload.json` 检查 preload，`tsconfig.boundary.json` 检查已迁移 IPC 注册/页面适配器及类型反例。`tsconfig.modules.json` 检查浏览器纯逻辑、Markdown、算法目录和计划组件，`tsconfig.node.json` 检查已迁移服务及 Node 类型反例；浏览器配置不引入 Node 全局。其他尚未列入配置的业务 JS 待继续迁移。`ui/reading-detail.js` 是受版本控制的生成兼容产物，禁止手改；修改 TS 后运行 `pnpm reader:build`，`pnpm typecheck` 会检查产物是否一致并拒绝 CommonJS 浏览器输出。每迁移一个模块，将其加入检查范围；禁止以 `any`、`@ts-nocheck` 或大范围忽略错误作为迁移完成标准。
 
 `pnpm build:app` 生成独立 `build/app` 副本，保留现有 Electron/UI 相对布局并收集生产依赖；构建前先检查生成产物一致性。`pnpm start` / `preview:app` 构建并启动该副本，`pnpm serve:web` 默认先构建并从副本提供页面与匿名同步后端。导入 server 模块不会启动构建或监听。
 
@@ -24,9 +24,9 @@ pnpm test:ui:refactor
 
 ## 首批 IPC 契约
 
-共享类型来源为 `src/shared/contracts/notebook.ts`。已细化 `openExternal`、`openAuthUrl`、`formatCode`、`cancelLogin`、`exportLocal`、`bootstrap`、`updateLocal` 的参数与返回值，以及 auth/update 事件。其余 27 项仍以 `unknown` 参数/结果标注为待迁移，不代表已经完成业务类型建模。原有 34 项方法和两项订阅保持可用。
+共享类型来源为 `src/shared/contracts/notebook.ts`。已细化 `openExternal`、`openAuthUrl`、`formatCode`、`cancelLogin`、`exportLocal`、`bootstrap`、`updateLocal`、`plannerAction` 的参数与返回值，以及 auth/update 事件。其余 26 项仍以 `unknown` 参数/结果标注为待迁移，不代表已经完成业务类型建模。原有 34 项方法和两项订阅保持可用。
 
-`src/preload/preload.ts` 编译为独立 `electron/preload.cjs`，运行时只加载 Electron；`src/main/ipc/boundary.ts` 和 `src/renderer/ipc/boundary.ts` 分别生成注册器与页面适配器。主进程仍使用原 `handle` sender/更新锁校验及原业务实现，尚未整体经过 TS 检查。页面迁移的七项调用真实经过已检查适配器，保留格式化器对实时 bridge 和浏览器回退的选择。类型不替代不可信 IPC 入参校验。
+`src/preload/preload.ts` 编译为独立 `electron/preload.cjs`，运行时只加载 Electron；`src/main/ipc/boundary.ts` 和 `src/renderer/ipc/boundary.ts` 分别生成注册器与页面适配器。主进程仍使用原 `handle` sender/更新锁校验及原业务实现，尚未整体经过 TS 检查。页面迁移的八项调用真实经过已检查适配器，保留格式化器对实时 bridge 和浏览器回退的选择。类型不替代不可信 IPC 入参校验。
 
 修改后运行 `pnpm preload:build` / `pnpm ipc:build` 更新对应产物；`typecheck` 和构建均检查生成一致性。类型反例在 `tests/types/ipc-contracts.ts`，会拒绝错误频道、参数、返回类型和事件字段。授权返回 false 代表默认浏览器回退成功；格式化错误返回原代码；auth 事件字段保留 unknown，因为 OAuth JSON 尚无对应运行时格式校验。更新事件的可选字段保留首次状态缺失的情况。
 
@@ -34,7 +34,11 @@ pnpm test:ui:refactor
 
 `src/shared/models/records.ts` 区分原始 JSON、主进程快照、页面归一化结果、新建本地记录和解析器领域记录。旧字段与未知元数据保持 unknown；存储默认值可以被历史数据覆盖，不把缓存对象声明为完整解析结果。`bootstrap` 的其他尚未迁移服务保持 unknown，`updateLocal` 只约束已有运行时检查的 records/字符串 ID，其他字段保留浅合并语义。
 
-`src/renderer/records/local.ts` 提取原页面归一化实现，生成 `ui/local-records.js`，由 `pnpm ipc:build` 一起更新。保留旧 ID/clientId 的宽松规则、账号归属转换、引用和迁移 ID 缓存；归一化不等于写入验证。解析器领域类型已定义，但 GitHub 解析器、主进程业务和页面大型入口尚未整体迁到 TS。兼容测试对照冻结的原函数，并验证存盘和重启后的未知字段与账号隔离。
+`src/renderer/records/local.ts` 提取原页面归一化实现，生成 `ui/local-records.js`，由 `pnpm ipc:build` 一起更新。保留旧 ID/clientId 的宽松规则、账号归属转换、引用和迁移 ID 缓存；归一化不等于写入验证。GitHub 解析器及客户端已迁移，额外属性按最后一次 spread 覆盖建模；主进程大型入口和页面大型入口仍待拆分。兼容测试对照冻结的原函数，并验证存盘和重启后的未知字段与账号隔离。
+
+## 实现模块的统一生成
+
+`pnpm modules:build` 统一生成已迁移的搜索、目录 hydrate、Markdown、计划页面/日期组件、GitHub 解析/客户端、认证、标签、算法目录和比赛服务。浏览器保留独立 classic/UMD 输出，Node 服务使用可导入的 `.cts` 模块；共享模型只作为类型依赖。`typecheck` 与 `build:app` 均只检查生成一致性，不悄悄覆盖手改产物。新增模块必须登记到 `tools/build-modules.cjs`，并保持原运行时依赖路径。
 
 ## 行为保持矩阵
 

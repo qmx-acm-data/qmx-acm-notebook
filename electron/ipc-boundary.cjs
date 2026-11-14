@@ -10,6 +10,7 @@
         register('exportLocal', operations.exportLocal);
         register('bootstrap', operations.bootstrap);
         register('updateLocal', operations.updateLocal);
+        register('plannerAction', operations.plannerAction);
     }
     module.exports = { registerBoundary };
 })();

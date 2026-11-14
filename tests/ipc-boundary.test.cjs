@@ -137,7 +137,7 @@ for (const [label, readCode] of implementations) {
   });
 }
 
-const boundaryMethods = ['openExternal', 'openAuthUrl', 'formatCode', 'cancelLogin', 'exportLocal', 'bootstrap', 'updateLocal'];
+const boundaryMethods = ['openExternal', 'openAuthUrl', 'formatCode', 'cancelLogin', 'exportLocal', 'bootstrap', 'updateLocal', 'plannerAction'];
 
 function loadBoundaryRegistration() {
   const module = { exports: {} };

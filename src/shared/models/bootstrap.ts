@@ -1,4 +1,6 @@
 import type { LocalDataSnapshot } from './records';
+import type { AuthStatus } from './auth';
+import type { PlannerSnapshot } from './planner';
 import type { UpdateProgress } from '../contracts/notebook';
 
 /** state() annotates cached objects without reparsing their persisted fields. */
@@ -17,13 +19,13 @@ export interface BootstrapPayload {
   tagCatalogError: unknown;
   settings: Record<string, unknown>;
   account: unknown;
-  authStatus: unknown;
+  authStatus: AuthStatus;
   appVersion: string;
   update: UpdateProgress | undefined;
   updateCapability: unknown;
   permissions: unknown;
   contests: unknown;
   platforms: unknown;
-  planner: unknown;
+  planner: PlannerSnapshot;
   error: string | null;
 }

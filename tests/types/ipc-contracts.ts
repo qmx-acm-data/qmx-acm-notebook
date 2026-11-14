@@ -25,6 +25,13 @@ function contractAssertions(invoke: Invoke, register: BoundaryRegister, subscrib
   bridge.updateLocal({ records: [{ id: 42 }] });
   // @ts-expect-error Bootstrap has no caller-selected repository argument.
   bridge.bootstrap('other/repo');
+  const planned = bridge.plannerAction('addTask', { title: '复习', dueAt: '' });
+  const layout = bridge.plannerAction('setLayout', { layout: 'compact' });
+  // @ts-expect-error Action name and payload must match.
+  bridge.plannerAction('setLayout', { title: 'wrong' });
+  // @ts-expect-error Problem creation requires an official URL.
+  bridge.plannerAction('addProblem', { title: 'wrong' });
+  void [planned, layout];
   const canceled: Promise<void> = bridge.cancelLogin();
   const exported: Promise<boolean> = bridge.exportLocal();
   void [opened, chromeLaunched, formatted, canceled, exported];
@@ -54,7 +61,8 @@ function contractAssertions(invoke: Invoke, register: BoundaryRegister, subscrib
     cancelLogin: () => {},
     exportLocal: async () => true,
     bootstrap: async () => { throw new Error('compile-only fixture'); },
-    updateLocal: data => ({ records: data.records, favorites: [], mastery: {}, draft: {} })
+    updateLocal: data => ({ records: data.records, favorites: [], mastery: {}, draft: {} }),
+    plannerAction: (..._args) => ({ problems: [], tasks: [], layout: 'compact' })
   };
   register('openExternal', operations.openExternal);
   register('formatCode', operations.formatCode);

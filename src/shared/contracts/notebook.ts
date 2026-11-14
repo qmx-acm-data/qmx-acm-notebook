@@ -1,5 +1,6 @@
 import type { BootstrapPayload } from '../models/bootstrap';
 import type { LocalDataSnapshot, LocalUpdate } from '../models/records';
+import type { PlannerActionArgs, PlannerSnapshot } from '../models/planner';
 
 /** IPC contracts are types only. Main-process validation remains authoritative. */
 export interface FormatCodeResult { code: string; error?: string }
@@ -13,10 +14,11 @@ export interface BoundaryMethods {
   exportLocal(): Promise<boolean>;
   bootstrap(): Promise<BootstrapPayload>;
   updateLocal(data: LocalUpdate): Promise<LocalDataSnapshot>;
+  plannerAction(...args: PlannerActionArgs): Promise<PlannerSnapshot>;
 }
 
 export type LegacyMethodName =
-  | 'plannerAction' | 'bindPlatform' | 'refreshPlatform' | 'unbindPlatform' | 'getContests'
+  | 'bindPlatform' | 'refreshPlatform' | 'unbindPlatform' | 'getContests'
   | 'sync' | 'submit' | 'comment' | 'saveSettings' | 'login' | 'logout'
   | 'getComments' | 'propose' | 'saveDocument' | 'saveAlgorithmTopic'
   | 'saveAlgorithmNote' | 'deleteDocument' | 'deleteIssue' | 'refreshAccount'
