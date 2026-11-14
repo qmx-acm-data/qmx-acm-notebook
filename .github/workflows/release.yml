@@ -100,6 +100,13 @@ jobs:
           cache: pnpm
       - run: pnpm install --frozen-lockfile
       - run: pnpm check
+      - name: Load reviewed chained-update test from trusted workflow commit
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          gh api "repos/$GITHUB_REPOSITORY/contents/tests/delta-chain-updater.test.cjs?ref=$GITHUB_SHA" --header 'Accept: application/vnd.github.raw+json' > tests/delta-chain-updater.test.cjs
       - run: pnpm test
       - name: Cache verified official Electron runtime via release API
         shell: bash
@@ -255,6 +262,13 @@ jobs:
           cache: pnpm
       - run: pnpm install --frozen-lockfile
       - run: pnpm check
+      - name: Load reviewed chained-update test from trusted workflow commit
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          gh api "repos/$GITHUB_REPOSITORY/contents/tests/delta-chain-updater.test.cjs?ref=$GITHUB_SHA" --header 'Accept: application/vnd.github.raw+json' > tests/delta-chain-updater.test.cjs
       - run: pnpm test
       - name: Cache verified official Electron runtime via release API
         shell: bash

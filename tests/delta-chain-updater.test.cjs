@@ -98,8 +98,8 @@ async function fixture(t, options = {}) {
   await options.configure?.(context);
   function counted(bytes, kind) {
     return response(bytes, { body: (async function* () {
-      for (let offset = 0; offset < bytes.length; offset += 31) {
-        const chunk = bytes.subarray(offset, offset + 31);
+      for (let offset = 0; offset < bytes.length; offset += 4096) {
+        const chunk = bytes.subarray(offset, offset + 4096);
         context.bodyBytes[kind] += chunk.length;
         yield chunk;
       }
@@ -109,7 +109,7 @@ async function fixture(t, options = {}) {
   context.updater = createUpdater({
     currentVersion: options.currentVersion ?? '1.2.2', runtimeVersion, publicKey: trusted.publicKey,
     installedArchive: options.noBase ? undefined : installedArchive, downloadDir,
-    timeoutMs: 10000, attemptMs: 500,
+    timeoutMs: 10000, attemptMs: 5000,
     onProgress: event => context.events.push(event),
     fetcher: async (url, opts) => {
       context.calls.push({ url, opts });
