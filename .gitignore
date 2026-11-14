@@ -4,6 +4,7 @@ node_modules/
 
 # Generated desktop bundles and temporary staging
 release/
+/build/
 .package-stage/
 .electron-zip/
 .test-profile/

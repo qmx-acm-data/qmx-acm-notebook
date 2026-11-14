@@ -3,6 +3,7 @@
     "target": "ES2022",
     "module": "NodeNext",
     "moduleResolution": "NodeNext",
+    "moduleDetection": "legacy",
     "lib": ["ES2022", "DOM", "DOM.Iterable"],
     "types": [],
     "strict": true,
@@ -12,5 +13,5 @@
     "forceConsistentCasingInFileNames": true,
     "skipLibCheck": false
   },
-  "include": ["types/**/*.ts", "ui/reading-detail.js"]
+  "include": ["types/**/*.ts", "src/renderer/reading/reading-detail.ts"]
 }

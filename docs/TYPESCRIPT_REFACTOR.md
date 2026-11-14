@@ -1,6 +1,6 @@
 # TypeScript 渐进重构与功能基线
 
-基线：v1.2.4，主分支提交 `273648b`。重构期间保持版本号、界面、操作流程、存储格式、默认值、权限判断及更新协议的现有行为。新需求与重构分开提交。
+当前基线：v1.2.5，主分支提交 `30698d8`，包含多仓库管理与连续差分更新。重构期间保持版本号、界面、操作流程、存储格式、默认值、权限判断及更新协议的现有行为。新需求与重构分开提交。
 
 逐批文件范围、依赖顺序、验收门槛、回退方式与工作量评估见 [TypeScript 重构实施计划](TYPESCRIPT_REFACTOR_PLAN.md)。
 
@@ -12,9 +12,11 @@ pnpm check:refactor
 pnpm test:ui:refactor
 ```
 
-`check:refactor` 汇总严格类型检查、现有语法检查、生成数据一致性检查和所有 Node 单元测试。`test:ui:refactor` 顺序运行现有 12 个界面回归脚本，遇到失败立即停止；需要 Playwright 和 Microsoft Edge，使用隔离浏览器与模拟 bridge，不写入正式资料库。截图继续输出到已忽略的目录。
+`check:refactor` 汇总严格类型检查、现有语法检查、生成数据一致性检查和所有 Node 单元测试。`test:ui:refactor` 顺序运行现有 13 个界面回归脚本（含多仓库管理），遇到失败立即停止；需要 Playwright 和 Microsoft Edge，使用隔离浏览器与模拟 bridge，不写入正式资料库。截图继续输出到已忽略的目录。
 
-首批 `tsconfig.json` 只覆盖阅读详情模块与其真实 API 类型，采用 `strict + checkJs + noEmit`。它不代表其他 JS 已经经过类型检查。每迁移一个模块，将其加入检查范围并移除旧实现；禁止以 `any`、`@ts-nocheck` 或大范围忽略错误作为迁移完成标准。注释中的类型导入不产生运行时依赖。
+首批 `tsconfig.json` 严格检查 `src/renderer/reading/reading-detail.ts` 与其 API 类型，其他业务 JS 尚未迁移。`ui/reading-detail.js` 是受版本控制的生成兼容产物，禁止手改；修改 TS 后运行 `pnpm reader:build`，`pnpm typecheck` 会检查产物是否一致并拒绝 CommonJS 浏览器输出。每迁移一个模块，将其加入检查范围；禁止以 `any`、`@ts-nocheck` 或大范围忽略错误作为迁移完成标准。
+
+`pnpm build:app` 生成独立 `build/app` 副本，保留现有 Electron/UI 相对布局并收集生产依赖；构建前先检查生成产物一致性。`pnpm preview:app` 构建后启动该副本，`pnpm test:build:desktop` 验证真实 preload、版本与离线格式化器。阅读详情 UI 检查可用 `QMX_APP_ROOT` 指定副本根目录。当前 `pnpm start`、`serve:web` 和正式打包入口继续使用原路径，统一切换属于下一批 P1b；不要把新构建副本已通过验收描述为正式打包入口已经切换。
 
 ## 行为保持矩阵
 

@@ -90,7 +90,7 @@ test('preview serves UI and production browser dependencies without CORS exposur
   const root = await request('/');
   assert.equal(root.status, 302);
   assert.equal(root.headers.location, '/ui/');
-  for (const target of ['/ui', '/ui/', '/ui/app.js',
+  for (const target of ['/ui', '/ui/', '/ui/app.js', '/ui/reading-detail.js',
     '/node_modules/marked/lib/marked.umd.js', '/node_modules/dompurify/dist/purify.min.js',
     '/node_modules/katex/dist/katex.min.css', '/node_modules/katex/dist/katex.min.js',
     '/node_modules/katex/dist/fonts/KaTeX_Main-Regular.woff2',

@@ -6,6 +6,7 @@ const path = require('node:path');
 const root = path.resolve(__dirname, '..');
 const suites = [
   'navigation-smoke.cjs',
+  'repositories-ui-smoke.cjs',
   'public-local-solution-smoke.cjs',
   'search-ui-smoke.cjs',
   'algorithm-notes-ui-smoke.cjs',

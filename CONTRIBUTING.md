@@ -34,7 +34,7 @@ pnpm dist
 
 ## 渐进式 TypeScript 重构
 
-功能保持基线和迁移约束见 [TypeScript 重构说明](docs/TYPESCRIPT_REFACTOR.md)。`pnpm check:refactor` 汇总类型、语法、生成数据和单元检查；`pnpm test:ui:refactor` 运行现有界面回归组，需要 Playwright 和 Microsoft Edge。首批类型检查覆盖范围以 `tsconfig.json` 为准。
+功能保持基线和迁移约束见 [TypeScript 重构说明](docs/TYPESCRIPT_REFACTOR.md)。`pnpm check:refactor` 汇总类型、语法、生成数据和单元检查；`pnpm test:ui:refactor` 运行现有界面回归组，需要 Playwright 和 Microsoft Edge。首批类型检查覆盖范围以 `tsconfig.json` 为准。阅读详情源码位于 `src/renderer/reading/reading-detail.ts`，修改后运行 `pnpm reader:build` 更新生成脚本。`pnpm build:app` 构建独立应用副本，`pnpm preview:app` 启动副本，`pnpm test:build:desktop` 验证真实桌面与离线格式化器；正式启动与发布入口将在后续 P1b 切换。
 
 ## 贡献约定
 
