@@ -59,6 +59,8 @@ jobs:
             electron/updater.cjs electron/update-key.cjs electron/delta-codec.cjs electron/delta-manifest.cjs electron/delta-chain.cjs
             # Sources, tracked runtime output, generators and executed test helpers.
             src electron ui server.js tools types tests data
+            # The workflow regression executes Bash extracted from release.yml.
+            .github/workflows
             # Root configs include inherited compiler settings and future tsconfigs.
             ':(top,glob)tsconfig*.json'
             package.json pnpm-lock.yaml pnpm-workspace.yaml .npmrc

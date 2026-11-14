@@ -74,6 +74,7 @@ test('the workflow comparison rejects source, generator, config and dependency d
   git(['config', 'user.name', 'Release trust test']);
   git(['config', 'user.email', 'release-trust@example.invalid']);
   const guarded = [
+    '.github/workflows/release.yml', '.github/workflows/ci.yml', '.github/workflows/activate-update.yml',
     'src/main/update/updater.cts', 'src/main/app/main.cts', 'src/renderer/reading/reading-detail.ts',
     'src/preload/preload.ts', 'src/shared/models/delta.ts', 'src/tools/package.cts', 'src/server/server.cts',
     'tools/build-app.cjs', 'tools/build-modules.cjs', 'tools/build-reading-detail.cjs',
@@ -112,7 +113,7 @@ test('the workflow comparison rejects source, generator, config and dependency d
     git(['add', '--', file]);
   }
   // Directory and glob pathspecs must catch additions and deletions in either tree.
-  for (const file of ['src/main/update/new-helper.cts', 'tools/new-generator.cjs', 'tsconfig.future.json', 'types/new-global.d.ts']) {
+  for (const file of ['.github/workflows/new-workflow.yml', 'src/main/update/new-helper.cts', 'tools/new-generator.cjs', 'tsconfig.future.json', 'types/new-global.d.ts']) {
     write(file, 'new unreviewed input\n');
     git(['add', '--', file]);
     assert.equal(compare(git(['write-tree'])).status, 1, `new ${file}`);
