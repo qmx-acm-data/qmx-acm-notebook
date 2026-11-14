@@ -2,7 +2,7 @@
 
 面向 ACM 集训队的 Windows、Linux 与 macOS 本地错题与算法资料客户端，无需自建服务器、数据库或域名。默认资料来源：[qmx-acm-data/2026](https://github.com/qmx-acm-data/2026)。
 
-**[下载 Windows x64 安装包 v1.2.5](https://github.com/qmx-acm-data/qmx-acm-notebook/releases/download/v1.2.5/QMX-Notebook-Setup-1.2.5.exe)** · [所有版本](https://github.com/qmx-acm-data/qmx-acm-notebook/releases) · [v1.2.5 更新说明](docs/releases/v1.2.5.md)
+**[下载 Windows x64 安装包 v1.2.6](https://github.com/qmx-acm-data/qmx-acm-notebook/releases/download/v1.2.6/QMX-Notebook-Setup-1.2.6.exe)** · [所有版本](https://github.com/qmx-acm-data/qmx-acm-notebook/releases) · [v1.2.6 更新说明](docs/releases/v1.2.6.md)
 
 下载后运行安装程序。首次配置、登录、数据备份与已知限制见 [使用指南](docs/USAGE.md)。客户端 OAuth 的真实设备授权、组织访问和在线写入仍需按实际账号验收，本地测试不代替这些验证。
 
@@ -53,11 +53,13 @@
 
 | 目录 | 职责 |
 | --- | --- |
-| `electron/` | 主进程、GitHub API、凭据与 IPC |
-| `ui/` | 无 Node 权限的中文界面 |
-| `tests/` | 数据处理与界面验证脚本 |
-| `tools/` | Windows 打包工具 |
-| `.github/workflows/` | 源码检查、Windows 构建与草稿发布 |
+| `src/` | TypeScript 业务源码、共享模型与 IPC 契约，按 main/renderer/preload/tools/server 分工 |
+| `electron/` | 受版本控制的主进程运行产物及独立运行边界 |
+| `ui/` | 界面样式、静态数据与生成的浏览器应用包，无 Node 权限 |
+| `tests/` | 数据处理、界面、桌面及更新验证脚本 |
+| `tools/` | 构建引导与生成的发布、打包和数据工具 |
+| `.github/workflows/` | 源码检查、五平台构建与可信签名草稿发布 |
+| `AGENTS.md` | AI 修改 TypeScript、生成产物与验证的维护规则 |
 | `docs/` | 使用与维护文档 |
 
 客户端发布仓库为 [qmx-acm-data/qmx-acm-notebook](https://github.com/qmx-acm-data/qmx-acm-notebook)。许可证状态与维护责任见 [维护与发布](docs/RELEASING.md#归属与许可证)。
