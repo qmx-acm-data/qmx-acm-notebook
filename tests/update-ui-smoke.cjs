@@ -48,8 +48,22 @@ const { chromium } = require('playwright');
   try {
     let page = await fixturePage({ available: false });
     await page.click('#check-update-button'); await settled(page);
-    assert.match(await page.locator('#update-status').innerText(), /最新版本/);
+    assert.match(await page.locator('#update-status').innerText(), /当前版本 1\.2\.3，暂无可用更新/);
     assert.deepEqual(await calls(page), ['check']);
+    await page.evaluate(() => fixture.progress({ phase: 'idle', available: false, currentVersion: '1.2.3', latestVersion: '1.2.2', message: 'Already up to date' }));
+    assert.match(await page.locator('#update-status').innerText(), /当前版本 1\.2\.3，暂无可用更新/);
+    assert.doesNotMatch(await page.locator('#update-status').innerText(), /最新版本 1\.2\.2/);
+    await page.close();
+
+    page = await fixturePage();
+    await page.evaluate(() => fixture.progress({ phase: 'available', downloadKind: 'delta', deltaSteps: 2, total: 272526, fullSize: 29150955, available: true }));
+    assert.match(await page.locator('#update-status').innerText(), /差分下载 0\.26 MB.*连续应用 2 个补丁，完成后统一安装/);
+    for (const [reason, expected] of [['no-patch-path', /完整补丁链/], ['base-mismatch', /基础包不匹配/], ['metadata-unavailable', /历史记录暂不可用/], ['patch-failed', /重建或校验失败/]]) {
+      await page.evaluate(reason => fixture.progress({ phase: 'downloading', downloadKind: 'full', deltaSteps: 0, deltaReason: reason, total: 29150955 }), reason);
+      const status = await page.locator('#update-status').innerText();
+      assert.match(status, expected);
+      assert.doesNotMatch(status, /连续应用/);
+    }
     await page.close();
 
     page = await fixturePage({ holdDownload: true });

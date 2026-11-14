@@ -1487,7 +1487,7 @@
     if (s.updateCapability?.supported === false) $('#update-notice').textContent = s.updateCapability.reason;
     const latest = update.latestVersion ? ` ${update.latestVersion}` : '';
     const labels = { checking: '正在检查更新…', available: `发现新版本${latest}，可点击检查更新进行升级。`, downloading: `正在下载新版本${latest}…`, ready: `新版本${latest}的签名和文件已校验，正在准备更新。`, installing: '本地记录已备份，退出后将备份并替换程序文件，完成后自动重启。', error: '更新失败，请点击检查更新重试。' };
-    let text = labels[update.phase] || (update.available === false && !!update.message ? `当前已是最新版本${latest}。` : '可随时检查更新，无需登录 GitHub。');
+    let text = labels[update.phase] || (update.available === false && !!update.message ? `当前版本 ${s.appVersion || update.currentVersion || '未知'}，暂无可用更新。` : '可随时检查更新，无需登录 GitHub。');
     if (update.phase === 'checking' || update.phase === 'available' || update.phase === 'downloading' || update.phase === 'ready' || update.phase === 'installing' || update.phase === 'error' || update.available === false) {
       if (update.message) text += ` ${update.message}`;
     }
@@ -1498,6 +1498,11 @@
     if (!progress.hidden && Number.isFinite(update.downloaded) && Number.isFinite(update.total) && update.total > 0) text += `（${(update.downloaded / 1048576).toFixed(1)} / ${(update.total / 1048576).toFixed(1)} MB）`;
     if (update.downloadKind === 'delta' && Number.isFinite(update.total) && Number.isFinite(update.fullSize) && update.fullSize > update.total) {
       text += ` 差分下载 ${(update.total / 1048576).toFixed(2)} MB，完整包 ${(update.fullSize / 1048576).toFixed(1)} MB。`;
+    }
+    if (update.downloadKind === 'delta' && update.deltaSteps > 1) text += ` 连续应用 ${update.deltaSteps} 个补丁，完成后统一安装。`;
+    if (update.downloadKind === 'full' && ['available', 'downloading', 'ready'].includes(update.phase)) {
+      const reasons = { 'no-patch-path': '未找到从当前版本到新版的完整补丁链', 'base-mismatch': '本机应用文件与补丁基础包不匹配', 'metadata-unavailable': '差分清单或历史记录暂不可用', 'patch-failed': '补丁下载、重建或校验失败' };
+      if (reasons[update.deltaReason]) text += ` 使用完整包：${reasons[update.deltaReason]}。`;
     }
     $('#update-status').textContent = text;
     $('#update-status').classList.toggle('update-error', update.phase === 'error');

@@ -6,6 +6,8 @@ const path = require('node:path');
 const crypto = require('node:crypto');
 const { verifyDeltaManifest } = require('./delta-manifest.cjs');
 const { applyDelta } = require('./delta-codec.cjs');
+const { planDeltaChain } = require('./delta-chain.cjs');
+const HISTORY_LIMIT = 8;
 
 const COMMIT_URL = 'https://api.github.com/repos/qmx-acm-data/qmx-acm-notebook/commits/main';
 const RAW_ROOT = 'https://raw.githubusercontent.com/qmx-acm-data/qmx-acm-notebook/';
@@ -219,7 +221,7 @@ function createUpdater({ currentVersion, downloadDir, fetcher = globalThis.fetch
   }
   function validateManifest(manifest) { return verifyManifest(manifest, { publicKey, runtimeVersion }); }
   async function checkInternal() {
-    emit({ phase: 'checking', available: false, latestVersion: null, version: null, releaseUrl: null, downloadKind: 'full', fullSize: 0, message: 'Checking for updates', downloaded: 0, total: 0, percent: 0 });
+    emit({ phase: 'checking', available: false, latestVersion: null, version: null, releaseUrl: null, downloadKind: 'full', fullSize: 0, deltaSteps: 0, deltaReason: null, message: 'Checking for updates', downloaded: 0, total: 0, percent: 0 });
     selected = null;
     ready = null;
     try {
@@ -232,33 +234,77 @@ function createUpdater({ currentVersion, downloadDir, fetcher = globalThis.fetch
       const selection = await candidates(sourceUrls(commit.sha, 'feed/manifest.json'), deadline, async (url, signal) => {
         const manifest = await json(url, signal);
         const file = validateManifest(manifest);
-        return { manifest, file, commit: commit.sha, urls: sourceUrls(commit.sha, 'resources/app.asar'), patch: null };
+        return { manifest, file, commit: commit.sha, urls: sourceUrls(commit.sha, 'resources/app.asar'), patch: null, chain: null };
       });
       const { manifest, file } = selection;
       if (compare(versionParts(manifest.version), current) <= 0) return emit({ phase: 'idle', version: manifest.version, latestVersion: manifest.version, message: 'Already up to date' });
       // Separate metadata keeps legacy clients compatible with the original signed feed.
       // Missing/invalid optional metadata only disables the optimization.
+      let deltaReason = 'base-unavailable';
       if (typeof installedArchive === 'string' && path.isAbsolute(installedArchive)) {
         try {
           const patches = await candidates(sourceUrls(commit.sha, 'feed/delta.json'), Math.min(deadline, Date.now() + 15000), async (url, signal) => {
             const delta = await json(url, signal);
             return verifyDeltaManifest(delta, { publicKey, runtimeVersion, targetVersion: manifest.version, targetFile: file });
           });
-          for (const patch of patches.filter(p => p.fromVersion === currentVersion)) {
+          deltaReason = 'no-patch-path';
+          for (const patch of patches.filter(p => p.fromVersion === currentVersion).sort((a, b) => a.size - b.size)) {
             try {
               await verifyFile(installedArchive, { size: patch.fromSize, sha256: patch.fromSha256 });
               selection.patch = patch;
+              selection.chain = [{ patch, version: manifest.version, target: { size: file.size, sha256: file.sha256.toLowerCase() }, commit: commit.sha }];
               break;
-            } catch { /* A modified installation uses the complete signed archive. */ }
+            } catch { deltaReason = 'base-mismatch'; }
           }
-        } catch { /* Older channels do not publish delta metadata. */ }
+          if (!selection.chain && deltaReason === 'no-patch-path') {
+            selection.chain = await discoverChain(selection, patches, deadline);
+            if (selection.chain) selection.patch = selection.chain[0].patch;
+          }
+        } catch { deltaReason = 'metadata-unavailable'; }
       }
       selected = selection;
-      const total = selection.patch ? selection.patch.size : file.size;
+      const total = selection.chain ? selection.chain.reduce((n, edge) => n + edge.patch.size, 0) : file.size;
       return emit({ phase: 'available', available: true, version: manifest.version, latestVersion: manifest.version, total,
-        fullSize: file.size, downloadKind: selection.patch ? 'delta' : 'full',
+        fullSize: file.size, downloadKind: selection.chain ? 'delta' : 'full', deltaSteps: selection.chain?.length || 0, deltaReason: selection.chain ? null : deltaReason,
         message: `Version ${manifest.version} is available` });
     } catch (error) { return failure(error); }
+  }
+  async function discoverChain(selection, patches, deadline) {
+    // History discovers locations only: every edge still requires both pinned signatures.
+    const budget = Math.min(deadline, Date.now() + 20000);
+    const historyUrl = 'https://api.github.com/repos/qmx-acm-data/qmx-acm-notebook/commits?sha=' + selection.commit + '&path=feed%2Fdelta.json&per_page=' + HISTORY_LIMIT;
+    const history = await candidates([historyUrl], budget, json);
+    if (!Array.isArray(history) || history.length > HISTORY_LIMIT || history.some(item => !item || typeof item.sha !== 'string' || !/^[a-f0-9]{40}$/.test(item.sha))) throw new Error('Invalid update history');
+    const edges = patches.map(patch => ({ patch, version: selection.manifest.version, target: { size: selection.file.size, sha256: selection.file.sha256.toLowerCase() }, commit: selection.commit }));
+    const seen = new Set([selection.commit]);
+    for (const { sha } of history) {
+      if (seen.has(sha) || Date.now() >= budget) continue;
+      seen.add(sha);
+      try {
+        const old = await candidates(sourceUrls(sha, 'feed/manifest.json'), budget, async (url, signal) => {
+          const manifest = await json(url, signal);
+          const file = validateManifest(manifest);
+          return { manifest, file };
+        });
+        if (compare(versionParts(old.manifest.version), current) <= 0 || compare(versionParts(old.manifest.version), versionParts(selection.manifest.version)) > 0) continue;
+        const oldPatches = await candidates(sourceUrls(sha, 'feed/delta.json'), budget, async (url, signal) => {
+          const delta = await json(url, signal);
+          return verifyDeltaManifest(delta, { publicKey, runtimeVersion, targetVersion: old.manifest.version, targetFile: old.file });
+        });
+        for (const patch of oldPatches) edges.push({ patch, version: old.manifest.version, target: { size: old.file.size, sha256: old.file.sha256.toLowerCase() }, commit: sha });
+      } catch { /* A bad/missing historic release is never a trusted graph edge. */ }
+    }
+    const info = await fs.lstat(installedArchive);
+    if (!info.isFile() || info.isSymbolicLink() || info.nlink !== 1 || info.size <= 0 || info.size > MAX_FILE) throw new Error('Invalid installed base');
+    await verifyDirectories(path.dirname(installedArchive));
+    // Read only the checked maximum, even if the file grows concurrently.
+    const handle = await fs.open(installedArchive, 'r');
+    const hash = crypto.createHash('sha256'); let size = 0;
+    try { for await (const chunk of handle.createReadStream({ autoClose: false })) { size += chunk.length; if (size > info.size) throw new Error('Installed base changed'); hash.update(chunk); } }
+    finally { await handle.close(); }
+    const base = { size, sha256: hash.digest('hex') };
+    await verifyFile(installedArchive, base);
+    return planDeltaChain(edges, { currentVersion, base, targetVersion: selection.manifest.version, target: { size: selection.file.size, sha256: selection.file.sha256.toLowerCase() }, maxSteps: HISTORY_LIMIT });
   }
   function check() {
     if (checkPromise) return checkPromise;
@@ -311,14 +357,15 @@ function createUpdater({ currentVersion, downloadDir, fetcher = globalThis.fetch
     })().finally(() => { verifyPromise = null; });
     return verifyPromise;
   }
-  async function transfer(urls, destination, metadata, kind) {
+  async function transfer(urls, destination, metadata, kind, progress = {}) {
+    const offsetBytes = progress.offset || 0, totalBytes = progress.total || metadata.size;
     const handle = await fs.open(destination, 'wx', 0o600);
     try {
-      emit({ phase: 'downloading', downloadKind: kind, downloaded: 0, total: metadata.size, percent: 0,
-        message: kind === 'delta' ? '正在下载差分更新' : '正在下载完整应用更新' });
-      await candidates(urls, Date.now() + timeoutMs, async (url, signal) => {
+      emit({ phase: 'downloading', downloadKind: kind, downloaded: offsetBytes, total: totalBytes, percent: Math.floor(offsetBytes / totalBytes * 100),
+        message: progress.message || (kind === 'delta' ? '正在下载差分更新' : '正在下载完整应用更新') });
+      await candidates(urls, progress.deadline || Date.now() + timeoutMs, async (url, signal) => {
         await handle.truncate(0);
-        emit({ downloaded: 0, percent: 0 });
+        emit({ downloaded: offsetBytes, percent: Math.floor(offsetBytes / totalBytes * 100) });
         const response = await request(url, signal);
         const hash = crypto.createHash('sha256');
         await streamResponse(response, metadata.size, signal, async (chunk, downloaded) => {
@@ -331,7 +378,7 @@ function createUpdater({ currentVersion, downloadDir, fetcher = globalThis.fetch
             offset += bytesWritten;
           }
           aborted(signal);
-          emit({ downloaded, percent: Math.floor(downloaded / metadata.size * 100) });
+          emit({ downloaded: offsetBytes + downloaded, percent: Math.floor((offsetBytes + downloaded) / totalBytes * 100) });
         }, metadata.size);
         if (hash.digest('hex') !== metadata.sha256.toLowerCase()) throw new Error('Update SHA-256 verification failed');
       });
@@ -340,25 +387,34 @@ function createUpdater({ currentVersion, downloadDir, fetcher = globalThis.fetch
     await verifyFile(destination, metadata);
   }
   async function reconstructDelta(selection, ownDir) {
-    const patch = selection.patch;
-    const baseMetadata = { size: patch.fromSize, sha256: patch.fromSha256 };
-    await verifyFile(installedArchive, baseMetadata);
+    const chain = selection.chain;
+    const first = chain[0].patch;
+    const initialBase = { size: first.fromSize, sha256: first.fromSha256 };
+    await verifyFile(installedArchive, initialBase);
+    let base = await fs.readFile(installedArchive);
     const patchPath = path.join(ownDir, 'patch.qmxdelta');
-    await transfer(sourceUrls(selection.commit, patch.path), patchPath, patch, 'delta');
-    emit({ message: '正在重建并校验新版应用' });
-    // Recheck bytes read, not only the path previously verified: never apply to a changed base.
-    await verifyFile(installedArchive, baseMetadata);
-    await verifyFile(patchPath, patch);
-    const base = await fs.readFile(installedArchive);
-    if (base.length !== patch.fromSize || crypto.createHash('sha256').update(base).digest('hex') !== patch.fromSha256) throw new Error('Delta base changed');
-    const patchBytes = await fs.readFile(patchPath);
-    if (patchBytes.length !== patch.size || crypto.createHash('sha256').update(patchBytes).digest('hex') !== patch.sha256) throw new Error('Delta patch changed');
-    const rebuilt = applyDelta(base, patchBytes, selection.file.size);
-    if (rebuilt.length !== selection.file.size || crypto.createHash('sha256').update(rebuilt).digest('hex') !== selection.file.sha256.toLowerCase()) throw new Error('Reconstructed application SHA-256 verification failed');
+    const total = chain.reduce((n, edge) => n + edge.patch.size, 0);
+    const deadline = Date.now() + timeoutMs;
+    let completed = 0;
+    for (let index = 0; index < chain.length; index++) {
+      const { patch, target, version, commit } = chain[index];
+      if (base.length !== patch.fromSize || crypto.createHash('sha256').update(base).digest('hex') !== patch.fromSha256) throw new Error('Delta base changed');
+      await transfer(sourceUrls(commit, patch.path), patchPath, patch, 'delta', { offset: completed, total, deadline, message: chain.length > 1 ? '正在下载连续差分（' + (index + 1) + '/' + chain.length + '，目标 ' + version + '）' : '正在下载差分更新' });
+      emit({ message: '正在重建并校验 ' + version + (chain.length > 1 ? '（' + (index + 1) + '/' + chain.length + '）' : '') });
+      await verifyFile(installedArchive, initialBase);
+      await verifyFile(patchPath, patch);
+      const patchBytes = await fs.readFile(patchPath);
+      if (patchBytes.length !== patch.size || crypto.createHash('sha256').update(patchBytes).digest('hex') !== patch.sha256) throw new Error('Delta patch changed');
+      const rebuilt = applyDelta(base, patchBytes, target.size);
+      if (rebuilt.length !== target.size || crypto.createHash('sha256').update(rebuilt).digest('hex') !== target.sha256) throw new Error('Reconstructed application SHA-256 verification failed');
+      base = rebuilt;
+      completed += patch.size;
+      await fs.unlink(patchPath);
+    }
+    await verifyFile(installedArchive, initialBase);
     const temporary = path.join(ownDir, 'app.asar.part');
-    await fs.writeFile(temporary, rebuilt, { flag: 'wx', mode: 0o600 });
+    await fs.writeFile(temporary, base, { flag: 'wx', mode: 0o600 });
     await verifyFile(temporary, selection.file);
-    await fs.unlink(patchPath);
     return temporary;
   }
   function download() {
@@ -398,8 +454,8 @@ function createUpdater({ currentVersion, downloadDir, fetcher = globalThis.fetch
                 await fs.unlink(file);
               } catch (error) { if (error.code !== 'ENOENT') throw error; }
             }
-            selection.patch = null;
-            emit({ message: '差分更新不可用，正在切换完整应用包', downloadKind: 'full' });
+            selection.patch = null; selection.chain = null;
+            emit({ message: '差分更新不可用，正在切换完整应用包', downloadKind: 'full', deltaReason: 'patch-failed', deltaSteps: 0 });
           }
         }
         if (!temporary) {
@@ -411,7 +467,7 @@ function createUpdater({ currentVersion, downloadDir, fetcher = globalThis.fetch
         temporary = null;
         await verifyFile(finalPath, metadata);
         ready = { version: selection.manifest.version, path: finalPath, manifest: clone(selection.manifest) };
-        const transferred = selection.patch ? selection.patch.size : metadata.size;
+        const transferred = selection.chain ? selection.chain.reduce((n, edge) => n + edge.patch.size, 0) : metadata.size;
         emit({ phase: 'ready', downloaded: transferred, total: transferred, fullSize: metadata.size, percent: 100, message: 'Update verified and ready' });
         return clone(ready);
       } catch (error) {
