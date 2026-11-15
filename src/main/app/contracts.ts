@@ -43,6 +43,7 @@ export interface SettingsUpdateView {
   serverUrl?: unknown;
   clientId?: unknown;
   theme?: unknown;
+  palette?: unknown;
   displayName?: unknown;
   autoSync?: unknown;
   codeFontSize?: unknown;

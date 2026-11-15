@@ -7,20 +7,41 @@ type AppAuthProgress = import('../../../types/app').AppAuthProgress;
 type AppControl = import('../../../types/app').AppControl;
 type AppQuery = import('../../../types/app').AppQuery;
 type AppSelectorMap = import('../../../types/app').AppSelectorMap;
+type ThemeMode = import('../../shared/models/settings').ThemeMode;
+type Palette = import('../../shared/models/settings').Palette;
 
 export function createSettings(options: Options): Controller {
-  const { demo, bridge, themeStorage, getBusy, setBusy, getSettings, setSettings, getAccount, getAuthStatus, getPermissions, setPermissionsRepo, getError, setError, getLocal, repo, repoSource, quotaBlocked, reauthNeeded, call, applyPayload, resetRepositoryData, resetSourceView, clearComments, refreshFilters, render, renderUpdate, updateStatus, sync, writeDemo, toast, errorMessage } = options;
+  const { demo, bridge, themeStorage, paletteStorage, getBusy, setBusy, getSettings, setSettings, getAccount, getAuthStatus, getPermissions, setPermissionsRepo, getError, setError, getLocal, repo, repoSource, quotaBlocked, reauthNeeded, call, applyPayload, resetRepositoryData, resetSourceView, clearComments, refreshFilters, render, renderUpdate, updateStatus, sync, writeDemo, toast, errorMessage } = options;
   const $: AppQuery = <T extends Element = HTMLElement>(selector: string, root: ParentNode = document) => root.querySelector<T>(selector);
   function element<K extends keyof HTMLElementTagNameMap>(tag: K, className?: string, text?: unknown): HTMLElementTagNameMap[K] { const node = document.createElement(tag); if (className) node.className = className; if (text !== undefined) node.textContent = String(text); return node; }
   function append<T extends HTMLElement>(parent: T, ...children: (Node | null | undefined | false)[]): T { children.filter(Boolean).forEach(child => parent.append(child as Node)); return parent; }
   const escapeHtml = (value: unknown) => String(value ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;');
   let settingsPreview: AppSettings | null = null;
+  let appearanceBeforePreview: { theme: ThemeMode; palette: Palette } | null = null;
   let editingRepos: AppRepository[] = [];
   let editingActiveId = '';
   let authUrl = '';
 
+  function normalizeTheme(theme: unknown): ThemeMode { return theme === 'dark' ? 'dark' : 'light'; }
+  function normalizePalette(palette: unknown, fallback: Palette = 'porcelain'): Palette {
+    switch (palette) {
+      case 'porcelain': case 'blue': case 'violet': case 'rose': case 'amber': case 'teal': return palette;
+      default: return fallback;
+    }
+  }
   function readTheme() { try { return localStorage.getItem(themeStorage) || 'light'; } catch (_) { return 'light'; } }
-  function applyTheme(theme: string) { theme = ['light', 'dark', 'cards'].includes(theme) ? theme : 'light'; document.body.dataset.theme = theme; $('#theme-select')!.value = theme; try { localStorage.setItem(themeStorage, theme); } catch (_) {} }
+  function readPalette(): Palette {
+    try { const palette = localStorage.getItem(paletteStorage); return normalizePalette(palette, palette === null && readTheme() === 'cards' ? 'amber' : 'porcelain'); }
+    catch (_) { return 'porcelain'; }
+  }
+  function applyTheme(theme: unknown) { const mode = normalizeTheme(theme); document.body.dataset.theme = mode; $('#theme-select')!.value = mode; try { localStorage.setItem(themeStorage, mode); } catch (_) {} }
+  function applyPalette(palette: unknown) { const value = normalizePalette(palette); document.body.dataset.palette = value; $('#palette-select')!.value = value; try { localStorage.setItem(paletteStorage, value); } catch (_) {} }
+  function applyAppearance(settings: AppSettings) {
+    const theme = normalizeTheme(settings.theme);
+    const palette = normalizePalette(settings.palette, settings.theme === 'cards' && settings.palette === undefined ? 'amber' : 'porcelain');
+    settings.theme = theme; settings.palette = palette;
+    applyTheme(theme); applyPalette(palette);
+  }
   function applyCodeSettings(settings = settingsPreview || getSettings()) { const size = Math.round(Number(settings.codeFontSize)); document.body.style.setProperty('--code-font-size', (Number.isFinite(size) && size >= 10 && size <= 18 ? size : 11) + 'px'); }
 
   function renderRepoSelector() {
@@ -140,22 +161,36 @@ export function createSettings(options: Options): Controller {
     toast('已添加仓库：' + (name || repoPath));
   }
 
-  async function changeTheme(event: Event) {
+  async function changeAppearance(field: 'theme' | 'palette', event: Event) {
+    if (getBusy()) return;
     const previous = { ...getSettings() };
     const settings = getSettings();
-    settings.theme = (event.target as AppControl).value;
-    applyTheme(settings.theme);
-    try { if (demo) writeDemo(); else await call('saveSettings', { ...getSettings() }); }
-    catch (error) { setSettings(previous); toast(`当前风格已预览，设置未保存：${errorMessage(error)}`); }
+    if (field === 'theme') { settings.theme = normalizeTheme((event.target as AppControl).value); applyTheme(settings.theme); }
+    else { settings.palette = normalizePalette((event.target as AppControl).value); applyPalette(settings.palette); }
+    setBusy(true);
+    try { if (demo) writeDemo(); else await call('saveSettings', { [field]: settings[field] }); }
+    catch (error) { setSettings(previous); toast(`当前外观已预览，设置未保存：${errorMessage(error)}`); }
+    finally { setBusy(false); }
+  }
+  function changeTheme(event: Event) { return changeAppearance('theme', event); }
+  function changePalette(event: Event) { return changeAppearance('palette', event); }
+  function previewAppearance() {
+    if (!settingsPreview) return;
+    const form = $('#settings-form')!;
+    settingsPreview.theme = normalizeTheme(form.elements.theme.value);
+    settingsPreview.palette = normalizePalette(form.elements.palette.value);
+    applyTheme(settingsPreview.theme); applyPalette(settingsPreview.palette);
   }
 
   function openSettings() {
     if (getBusy() || $('#submit-dialog')!.open) { toast('请先完成或关闭编辑'); return; }
     try {
       const settings = getSettings();
-      settingsPreview = { ...settings, theme: document.body.dataset.theme };
+      appearanceBeforePreview = { theme: normalizeTheme(document.body.dataset.theme), palette: normalizePalette(document.body.dataset.palette) };
+      settingsPreview = { ...settings, ...appearanceBeforePreview };
       const form = $('#settings-form')!;
       if (form.elements.theme) form.elements.theme.value = settingsPreview.theme!;
+      if (form.elements.palette) form.elements.palette.value = settingsPreview.palette!;
       editingRepos = (Array.isArray(settings.repositories) && settings.repositories.length) ? structuredClone(settings.repositories) : [
         { id: 'repo-current', name: '当前题库', serverUrl: settings.serverUrl || '', repo: settings.repo || 'qmx-acm-data/2026' }
       ];
@@ -182,7 +217,8 @@ export function createSettings(options: Options): Controller {
     const currentSettings = getSettings();
     const settings = {
       ...currentSettings,
-      theme: form.elements.theme.value,
+      theme: normalizeTheme(form.elements.theme.value),
+      palette: normalizePalette(form.elements.palette.value),
       repositories: editingRepos,
       activeRepoId: editingActiveId,
       serverUrl: activeRepoObj ? activeRepoObj.serverUrl : (currentSettings.serverUrl || ''),
@@ -206,8 +242,9 @@ export function createSettings(options: Options): Controller {
       if (previousSource !== repoSource()) resetSourceView();
       saved = true;
       settingsPreview = null;
+      appearanceBeforePreview = null;
       applyCodeSettings();
-      applyTheme(settings.theme);
+      applyAppearance(getSettings());
       renderRepoSelector();
       writeDemo();
       $('#settings-dialog')!.close();
@@ -223,7 +260,13 @@ export function createSettings(options: Options): Controller {
   }
   function previewCodeFontSize() { if (!settingsPreview) return; const size = Number($('#settings-form')!.elements.codeFontSize.value); settingsPreview.codeFontSize = size; applyCodeSettings(); $('#code-font-size-value')!.textContent = size + 'px'; }
   function previewCodeLineNumbers() { if (!settingsPreview) return; settingsPreview.codeLineNumbers = $('#settings-form')!.elements.codeLineNumbers.checked; render(); }
-  function closeSettings() { if (!settingsPreview) return; settingsPreview = null; applyCodeSettings(); render(); }
+  function closeSettings() {
+    if (!settingsPreview) return;
+    settingsPreview = null;
+    if (appearanceBeforePreview) { applyTheme(appearanceBeforePreview.theme); applyPalette(appearanceBeforePreview.palette); }
+    appearanceBeforePreview = null;
+    applyCodeSettings(); render();
+  }
 
   function renderAccount() {
     renderUpdate();
@@ -306,6 +349,9 @@ export function createSettings(options: Options): Controller {
   $('#repo-select')?.addEventListener('change', switchRepository);
   $('#new-repo-add-btn')?.addEventListener('click', addRepository);
   $('#theme-select')!.addEventListener('change', changeTheme);
+  $('#palette-select')!.addEventListener('change', changePalette);
+  $('#settings-form')!.elements.theme.addEventListener('change', previewAppearance);
+  $('#settings-form')!.elements.palette.addEventListener('change', previewAppearance);
   $('#settings-button')!.addEventListener('click', openSettings);
   $('#settings-form')!.addEventListener('submit', saveSettings);
   $('#settings-form')!.elements.codeFontSize.addEventListener('input', previewCodeFontSize);
@@ -321,6 +367,6 @@ export function createSettings(options: Options): Controller {
   $('#auth-dialog')!.addEventListener('cancel', event => { event.preventDefault(); void cancelLogin(); });
   $('#export-local-button')!.addEventListener('click', exportLocal);
 
-  return { readTheme, applyTheme, applyCodeSettings, renderRepoSelector, renderSettingsRepoList, switchRepository, addRepository, changeTheme, openSettings, saveSettings, previewCodeFontSize, previewCodeLineNumbers, closeSettings, renderAccount, openAccount, startLoginFromBanner, accountAction, receiveAuthProgress, openAuthUrl, copyAuthUrl, cancelLogin, loginFromSettings, exportLocal,
+  return { readTheme, readPalette, applyTheme, applyPalette, applyAppearance, applyCodeSettings, renderRepoSelector, renderSettingsRepoList, switchRepository, addRepository, changeTheme, changePalette, previewAppearance, openSettings, saveSettings, previewCodeFontSize, previewCodeLineNumbers, closeSettings, renderAccount, openAccount, startLoginFromBanner, accountAction, receiveAuthProgress, openAuthUrl, copyAuthUrl, cancelLogin, loginFromSettings, exportLocal,
     get settingsPreview() { return settingsPreview; }, get editingRepos() { return editingRepos; }, get editingActiveId() { return editingActiveId; }, get authUrl() { return authUrl; } };
 }

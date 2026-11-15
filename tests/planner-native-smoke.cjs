@@ -140,13 +140,13 @@ const builtAppRoot = appPath('');
     assert.equal((await page.evaluate(() => window.notebook.bootstrap())).planner.tasks.length, 1);
     await page.locator('.planner-tasks [data-action=delete]').click();
     await page.waitForFunction(async () => !(await window.notebook.bootstrap()).planner.tasks.length);
-    for (const theme of ['light', 'dark', 'cards']) {
+    for (const theme of ['light', 'dark']) {
       await page.selectOption('#theme-select', theme);
       await page.setViewportSize({ width: 390, height: 844 });
       assert.equal(await page.evaluate(() => document.documentElement.scrollWidth > innerWidth), false);
     }
     assert.deepEqual(errors, []);
-    console.log('NATIVE PLANNER PASS: compiled app, quick add, duplicate keeps draft, deadline timezone, details edit, complete/restore, compact board, navigation + algorithms, restart, delete confirmation, three themes 390px');
+    console.log('NATIVE PLANNER PASS: compiled app, quick add, duplicate keeps draft, deadline timezone, details edit, complete/restore, compact board, navigation + algorithms, restart, delete confirmation, two themes 390px');
   } finally {
     await app.close();
   }

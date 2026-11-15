@@ -1,5 +1,5 @@
 import type { LocalDataSnapshot } from '../../shared/models/records.js';
-import type { NormalizedRepositories, RawSettings, RepositorySettings, Settings, SettingsDefaults } from '../../shared/models/settings.js';
+import type { NormalizedRepositories, Palette, RawSettings, RepositorySettings, Settings, SettingsDefaults } from '../../shared/models/settings.js';
 
 export interface SettingsDependencies {
   read(name: string, fallback: unknown): unknown;
@@ -30,7 +30,8 @@ export function createSettingsStore({ read, repoParts, normalizeServerUrl, repos
     ],
     activeRepoId: 'qmx-official',
     clientId: TEAM_CLIENT_ID,
-    theme: 'light'
+    theme: 'light',
+    palette: 'porcelain'
   };
 
   function normalizeRepositories(input: unknown, fallbackRepo = defaults.repo, fallbackServerUrl = defaults.serverUrl): NormalizedRepositories {
@@ -80,6 +81,13 @@ export function createSettingsStore({ read, repoParts, normalizeServerUrl, repos
     return { repositories: validRepos, activeRepoId: active.id, repo: active.repo, serverUrl: active.serverUrl };
   }
 
+  function normalizePalette(value: unknown, fallback: Palette): Palette {
+    switch (value) {
+      case 'porcelain': case 'blue': case 'violet': case 'rose': case 'amber': case 'teal': return value;
+      default: return fallback;
+    }
+  }
+
   function settings(): Settings {
     // Do not guard null: the legacy reader throws on stored.repo after spreading it.
     const stored = read('settings.json', {}) as RawSettings;
@@ -89,6 +97,8 @@ export function createSettingsStore({ read, repoParts, normalizeServerUrl, repos
     const normalized = normalizeRepositories({ ...raw, repo: requestedRepo, activeRepoId: requestedActiveId }, defaults.repo, defaults.serverUrl);
     const value = {
       ...raw,
+      theme: raw.theme === 'cards' ? 'light' : raw.theme,
+      palette: normalizePalette(stored.palette, stored.theme === 'cards' && stored.palette === undefined ? 'amber' : defaults.palette),
       repositories: normalized.repositories,
       activeRepoId: normalized.activeRepoId,
       repo: normalized.repo,

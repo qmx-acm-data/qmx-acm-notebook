@@ -2,7 +2,7 @@
 
 面向 ACM 集训队的 Windows、Linux 与 macOS 本地错题与算法资料客户端，无需自建服务器、数据库或域名。默认资料来源：[qmx-acm-data/2026](https://github.com/qmx-acm-data/2026)。
 
-**[下载 Windows x64 安装包 v1.2.6](https://github.com/qmx-acm-data/qmx-acm-notebook/releases/download/v1.2.6/QMX-Notebook-Setup-1.2.6.exe)** · [所有版本](https://github.com/qmx-acm-data/qmx-acm-notebook/releases) · [v1.2.6 更新说明](docs/releases/v1.2.6.md)
+**[Windows x64 安装包 v1.3.0（发布后可下载）](https://github.com/qmx-acm-data/qmx-acm-notebook/releases/download/v1.3.0/QMX-Notebook-Setup-1.3.0.exe)** · [所有版本](https://github.com/qmx-acm-data/qmx-acm-notebook/releases) · [v1.3.0 更新说明](docs/releases/v1.3.0.md)
 
 下载后运行安装程序。首次配置、登录、数据备份与已知限制见 [使用指南](docs/USAGE.md)。客户端 OAuth 的真实设备授权、组织访问和在线写入仍需按实际账号验收，本地测试不代替这些验证。
 
@@ -17,10 +17,10 @@
 - 旧版无法使用应用内更新或 Electron 运行时不匹配时，从 Releases 下载当前完整安装包升级。
 - 启动进入紧凑主页，集中展示比赛提醒、待做题目、学习任务与平台统计；主页不再显示六项快捷入口，tricks、公共题库、算法笔记与个人收藏通过侧边栏访问，导航支持悬浮展开与固定。
 - 待做题目可粘贴受支持平台的题目链接并选填名称；学习任务支持完成、编辑、删除与可选截止时间弹窗，点击任务标题查看只读详情，补充说明通过“编辑”填写。计划只保存在本机，不随 GitHub 同步。
-- 算法笔记提供 578 节点的知识树和 15 章、169 关的闯关学习，支持搜索、筛选、精选笔记优先展示与页内详情；路径导航可返回知识点或关卡，已有学习进度保持兼容。
+- 算法笔记提供 578 节点的知识树和新版闯关学习：15 章（含导览）、58 个非导览学习段或独立路线、201 关，区分核心与选修并按路线记录完成度。支持笔记学习与题单练习任务、个人题单和管理员公共关卡编辑；旧路线第 1–14 章进度保留为历史，不计入新课程分母。
 - 主页统一展示洛谷、Codeforces、AtCoder、牛客比赛提醒，独立缓存、北京时间倒计时与赛时；支持“不参加”和勾选恢复，AtCoder 显示 ABC、ARC、AGC、AHC 类型标签。
 - 设置绑定 CF、AtCoder、洛谷、牛客和力扣公开主页，主页统一展示做题与提交统计、最近比赛、CF/AtCoder Rating 图及每日做题热图；支持局部平台切换和悬停详情，新用户无默认绑定。
-- 展示 Markdown、公式、代码与平台原生难度，提供三种界面风格；代码支持高亮、复制和离线格式化（含 Rust），阅读字号与行号可设置。
+- 展示 Markdown、公式、代码与平台原生难度，提供瓷白、晴空蓝、雾紫、樱粉、暖杏、海盐青六套配色，独立切换浅色与深色，卡片布局大小适中；设置支持即时预览、取消恢复与保存。平台和语义颜色保留；代码支持高亮、复制和离线格式化（含 Rust），阅读字号与行号可设置。
 
 ## 文档
 

@@ -69,7 +69,7 @@
 .planner-dialog-footer .planner-add-button{padding:8px 19px;font-size:12px}
 .planner-editor .planner-error{margin:0}
 body[data-theme="dark"] .planner-input{color-scheme:dark}
-body[data-theme="dark"] .planner-add-button{background:#527e64;border-color:#527e64;color:#f3fff5}
+
 body[data-theme="cards"] .planner-card{border-top:3px solid var(--accent-soft);padding-top:14px}
 @container(max-width:360px){.planner-caption{display:none}.planner-add-tasks{grid-template-columns:minmax(0,1fr) auto}.planner-add-tasks .planner-field:first-child{grid-column:1 / -1}.planner-deadline-field{grid-column:1}.planner-add-problems{grid-template-columns:minmax(0,1fr) auto}.planner-add-problems .planner-field:first-child{grid-column:1 / -1}.planner-row{gap:8px}.planner-row-actions{max-width:100px}.planner-row-button{padding-left:4px;padding-right:4px}}
 @media(max-width:650px){.planner-card{padding:15px}.planner-dialog{padding:19px}.planner-heading{margin-bottom:12px}}

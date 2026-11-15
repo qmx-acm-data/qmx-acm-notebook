@@ -1,3 +1,7 @@
+/** Appearance choices are independent: theme controls brightness, palette controls accents. */
+export type ThemeMode = 'light' | 'dark';
+export type Palette = 'porcelain' | 'blue' | 'violet' | 'rose' | 'amber' | 'teal';
+
 /** Repository fields produced by main's repository normalization. */
 export interface RepositorySettings {
   id: string;
@@ -14,6 +18,7 @@ export interface RawSettings extends Record<string, unknown> {
   serverUrl?: unknown;
   clientId?: unknown;
   theme?: unknown;
+  palette?: unknown;
 }
 
 export interface NormalizedRepositories {
@@ -23,13 +28,14 @@ export interface NormalizedRepositories {
   serverUrl: string;
 }
 
-/** Only repository fields and clientId are normalized; other disk fields survive. */
+/** Repositories, clientId and palette are normalized; legacy cards maps to light. */
 export interface Settings extends Record<string, unknown>, NormalizedRepositories {
   clientId: string;
   theme: unknown;
+  palette: Palette;
 }
 
 /** Mutable defaults belong to one main-process store lifecycle. */
 export interface SettingsDefaults extends Settings {
-  theme: string;
+  theme: ThemeMode;
 }

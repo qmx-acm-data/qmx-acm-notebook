@@ -13,7 +13,7 @@ export interface AppRecord extends Record<string, unknown> {
 export interface AppComment { author?: unknown; user?: unknown; body?: unknown }
 export interface AppRepository { id: string; name?: string; repo: string; serverUrl?: string }
 export interface AppSettings extends Record<string, unknown> {
-  repo?: string; serverUrl?: string; theme?: string; displayName?: string; clientId?: string;
+  repo?: string; serverUrl?: string; theme?: string; palette?: import('../src/shared/models/settings').Palette; displayName?: string; clientId?: string;
   codeFontSize?: unknown; codeLineNumbers?: unknown; autoSync?: unknown;
   repositories?: AppRepository[]; activeRepoId?: string;
 }
@@ -87,6 +87,7 @@ export interface AppSelectorMap {
   '#repo-control': HTMLElementTagNameMap['label'];
   '#repo-select': HTMLElementTagNameMap['select'];
   '#theme-select': HTMLElementTagNameMap['select'];
+  '#palette-select': HTMLElementTagNameMap['select'];
   '#sync-button': HTMLElementTagNameMap['button'];
   '#submit-button': HTMLElementTagNameMap['button'];
   '#settings-button': HTMLElementTagNameMap['button'];
@@ -223,7 +224,7 @@ export interface AppSelectorMap {
 
 export type AppForm<Fields> = HTMLFormElement & { elements: Omit<HTMLFormControlsCollection, 'namedItem'> & Fields & { namedItem(name: string): AppControl | null } };
 export type AppSubmitForm = AppForm<Record<'url' | 'title' | 'pid' | 'tags' | 'rating' | 'difficulty' | 'luoguDifficulty', HTMLInputElement> & Record<'reason' | 'body' | 'trick', HTMLTextAreaElement> & { platform: HTMLSelectElement }>;
-export type AppSettingsForm = AppForm<Record<'clientId' | 'displayName' | 'autoSync' | 'codeFontSize' | 'codeLineNumbers', HTMLInputElement> & { theme: HTMLSelectElement }>;
+export type AppSettingsForm = AppForm<Record<'clientId' | 'displayName' | 'autoSync' | 'codeFontSize' | 'codeLineNumbers', HTMLInputElement> & { theme: HTMLSelectElement; palette: HTMLSelectElement }>;
 export type AppTopicForm = AppForm<Record<'parentId' | 'label' | 'fullLabel' | 'scope', HTMLInputElement> & Record<'kind' | 'color', HTMLSelectElement>>;
 export type AppNoteForm = AppForm<Record<'nodeId' | 'noteScope', HTMLSelectElement>>;
 export interface AppFormDraft extends Record<string, string> { url: string; title: string; pid: string; platform: string; tags: string; reason: string; body: string; trick: string; rating: string; difficulty: string; luoguDifficulty: string }

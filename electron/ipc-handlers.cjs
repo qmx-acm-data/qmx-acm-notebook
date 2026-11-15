@@ -142,8 +142,27 @@ function registerSettingsHandlers({ handle, isWriteBusy, isSyncBusy, settings, n
                 throw new Error('Client ID 格式不正确');
             next.clientId = data.clientId.trim() || TEAM_CLIENT_ID;
         }
-        if (data.theme !== undefined)
-            next.theme = String(data.theme);
+        if (data.theme !== undefined) {
+            next.theme = String(data.theme) === 'cards' ? 'light' : String(data.theme);
+            if (String(data.theme) === 'cards' && data.palette === undefined)
+                next.palette = 'amber';
+        }
+        if (data.palette !== undefined) {
+            const palette = data.palette;
+            if (typeof palette !== 'string')
+                throw new Error('配色方案不正确');
+            switch (palette) {
+                case 'porcelain':
+                case 'blue':
+                case 'violet':
+                case 'rose':
+                case 'amber':
+                case 'teal':
+                    next.palette = palette;
+                    break;
+                default: throw new Error('配色方案不正确');
+            }
+        }
         if (data.displayName !== undefined)
             next.displayName = String(data.displayName).slice(0, 40);
         if (data.autoSync !== undefined)

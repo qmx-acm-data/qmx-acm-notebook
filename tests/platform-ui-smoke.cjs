@@ -297,7 +297,7 @@ const path = require('node:path');
     await page.evaluate(() => { delete platformFixture.state.LG; });
     await syncFixture();
     await choose('ALL');
-    for (const theme of ['light', 'dark', 'cards']) {
+    for (const theme of ['light', 'dark']) {
       await page.selectOption('#theme-select', theme);
       assert.equal(await panel.isVisible(), true);
       assert.equal(await page.evaluate(() => document.documentElement.scrollWidth > innerWidth), false);
@@ -357,7 +357,7 @@ const path = require('node:path');
     await page.waitForFunction(() => document.querySelector('.platform-dashboard'));
     assert.equal(await panel.locator('.platform-username').innerText(), 'AT · at-user');
     assert.deepEqual(errors, []);
-    console.log('PLATFORM UI PASS: scoped totals/activity/latest with stable global charts/history/accounts/sources; minimalist floating daily/contest tooltips, exact lines and bold names, rating transitions and valid solved/total, hover/focus/click/touch, dismissal and 390px clamping; zero vs unknown, independent SVG scales, heatmap coverage/keyboard/year controls, safe text/links, username settings, URL validation, pending/concurrent lifecycle, refresh/error/reload/unbind, three themes and expandable panel');
+    console.log('PLATFORM UI PASS: scoped totals/activity/latest with stable global charts/history/accounts/sources; minimalist floating daily/contest tooltips, exact lines and bold names, rating transitions and valid solved/total, hover/focus/click/touch, dismissal and 390px clamping; zero vs unknown, independent SVG scales, heatmap coverage/keyboard/year controls, safe text/links, username settings, URL validation, pending/concurrent lifecycle, refresh/error/reload/unbind, two themes and expandable panel');
   } finally {
     await browser.close();
   }

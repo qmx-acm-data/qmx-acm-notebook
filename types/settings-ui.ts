@@ -9,6 +9,7 @@ export interface SettingsUIOptions {
   demo: boolean;
   bridge?: SettingsUIBridge;
   themeStorage: string;
+  paletteStorage: string;
   getBusy(): boolean;
   setBusy(value: boolean): void;
   getSettings(): AppSettings;
@@ -47,13 +48,18 @@ export interface SettingsUIController {
   readonly editingActiveId: string;
   readonly authUrl: string;
   readTheme(): string;
-  applyTheme(theme: string): void;
+  readPalette(): import('../src/shared/models/settings').Palette;
+  applyTheme(theme: unknown): void;
+  applyPalette(palette: unknown): void;
+  applyAppearance(settings: AppSettings): void;
   applyCodeSettings(settings?: AppSettings): void;
   renderRepoSelector(): void;
   renderSettingsRepoList(): void;
   switchRepository(event: Event): Promise<void>;
   addRepository(): void;
   changeTheme(event: Event): Promise<void>;
+  changePalette(event: Event): Promise<void>;
+  previewAppearance(): void;
   openSettings(): void;
   saveSettings(event: Event): Promise<void>;
   previewCodeFontSize(): void;

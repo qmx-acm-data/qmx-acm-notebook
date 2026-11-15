@@ -3988,7 +3988,7 @@ ${data.trick.trim()}` : ""].filter(Boolean).join("\n\n") : data.body;
 
   // src/renderer/account/settings.ts
   function createSettings(options) {
-    const { demo, bridge: bridge3, themeStorage, getBusy, setBusy, getSettings, setSettings, getAccount, getAuthStatus, getPermissions, setPermissionsRepo, getError, setError, getLocal, repo, repoSource, quotaBlocked, reauthNeeded, call, applyPayload, resetRepositoryData, resetSourceView, clearComments, refreshFilters, render: render6, renderUpdate, updateStatus, sync, writeDemo, toast, errorMessage: errorMessage2 } = options;
+    const { demo, bridge: bridge3, themeStorage, paletteStorage, getBusy, setBusy, getSettings, setSettings, getAccount, getAuthStatus, getPermissions, setPermissionsRepo, getError, setError, getLocal, repo, repoSource, quotaBlocked, reauthNeeded, call, applyPayload, resetRepositoryData, resetSourceView, clearComments, refreshFilters, render: render6, renderUpdate, updateStatus, sync, writeDemo, toast, errorMessage: errorMessage2 } = options;
     const $ = (selector, root2 = document) => root2.querySelector(selector);
     function element3(tag, className, text3) {
       const node2 = document.createElement(tag);
@@ -4002,9 +4002,26 @@ ${data.trick.trim()}` : ""].filter(Boolean).join("\n\n") : data.body;
     }
     const escapeHtml2 = (value) => String(value ?? "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#39;");
     let settingsPreview = null;
+    let appearanceBeforePreview = null;
     let editingRepos = [];
     let editingActiveId = "";
     let authUrl = "";
+    function normalizeTheme(theme) {
+      return theme === "dark" ? "dark" : "light";
+    }
+    function normalizePalette(palette, fallback = "porcelain") {
+      switch (palette) {
+        case "porcelain":
+        case "blue":
+        case "violet":
+        case "rose":
+        case "amber":
+        case "teal":
+          return palette;
+        default:
+          return fallback;
+      }
+    }
     function readTheme() {
       try {
         return localStorage.getItem(themeStorage) || "light";
@@ -4012,14 +4029,39 @@ ${data.trick.trim()}` : ""].filter(Boolean).join("\n\n") : data.body;
         return "light";
       }
     }
-    function applyTheme(theme) {
-      theme = ["light", "dark", "cards"].includes(theme) ? theme : "light";
-      document.body.dataset.theme = theme;
-      $("#theme-select").value = theme;
+    function readPalette() {
       try {
-        localStorage.setItem(themeStorage, theme);
+        const palette = localStorage.getItem(paletteStorage);
+        return normalizePalette(palette, palette === null && readTheme() === "cards" ? "amber" : "porcelain");
+      } catch (_) {
+        return "porcelain";
+      }
+    }
+    function applyTheme(theme) {
+      const mode = normalizeTheme(theme);
+      document.body.dataset.theme = mode;
+      $("#theme-select").value = mode;
+      try {
+        localStorage.setItem(themeStorage, mode);
       } catch (_) {
       }
+    }
+    function applyPalette(palette) {
+      const value = normalizePalette(palette);
+      document.body.dataset.palette = value;
+      $("#palette-select").value = value;
+      try {
+        localStorage.setItem(paletteStorage, value);
+      } catch (_) {
+      }
+    }
+    function applyAppearance(settings) {
+      const theme = normalizeTheme(settings.theme);
+      const palette = normalizePalette(settings.palette, settings.theme === "cards" && settings.palette === void 0 ? "amber" : "porcelain");
+      settings.theme = theme;
+      settings.palette = palette;
+      applyTheme(theme);
+      applyPalette(palette);
     }
     function applyCodeSettings(settings = settingsPreview || getSettings()) {
       const size = Math.round(Number(settings.codeFontSize));
@@ -4155,18 +4197,41 @@ ${data.trick.trim()}` : ""].filter(Boolean).join("\n\n") : data.body;
       renderSettingsRepoList();
       toast("已添加仓库：" + (name || repoPath));
     }
-    async function changeTheme(event) {
+    async function changeAppearance(field2, event) {
+      if (getBusy()) return;
       const previous = { ...getSettings() };
       const settings = getSettings();
-      settings.theme = event.target.value;
-      applyTheme(settings.theme);
+      if (field2 === "theme") {
+        settings.theme = normalizeTheme(event.target.value);
+        applyTheme(settings.theme);
+      } else {
+        settings.palette = normalizePalette(event.target.value);
+        applyPalette(settings.palette);
+      }
+      setBusy(true);
       try {
         if (demo) writeDemo();
-        else await call("saveSettings", { ...getSettings() });
+        else await call("saveSettings", { [field2]: settings[field2] });
       } catch (error) {
         setSettings(previous);
-        toast(`当前风格已预览，设置未保存：${errorMessage2(error)}`);
+        toast(`当前外观已预览，设置未保存：${errorMessage2(error)}`);
+      } finally {
+        setBusy(false);
       }
+    }
+    function changeTheme(event) {
+      return changeAppearance("theme", event);
+    }
+    function changePalette(event) {
+      return changeAppearance("palette", event);
+    }
+    function previewAppearance() {
+      if (!settingsPreview) return;
+      const form = $("#settings-form");
+      settingsPreview.theme = normalizeTheme(form.elements.theme.value);
+      settingsPreview.palette = normalizePalette(form.elements.palette.value);
+      applyTheme(settingsPreview.theme);
+      applyPalette(settingsPreview.palette);
     }
     function openSettings() {
       if (getBusy() || $("#submit-dialog").open) {
@@ -4175,9 +4240,11 @@ ${data.trick.trim()}` : ""].filter(Boolean).join("\n\n") : data.body;
       }
       try {
         const settings = getSettings();
-        settingsPreview = { ...settings, theme: document.body.dataset.theme };
+        appearanceBeforePreview = { theme: normalizeTheme(document.body.dataset.theme), palette: normalizePalette(document.body.dataset.palette) };
+        settingsPreview = { ...settings, ...appearanceBeforePreview };
         const form = $("#settings-form");
         if (form.elements.theme) form.elements.theme.value = settingsPreview.theme;
+        if (form.elements.palette) form.elements.palette.value = settingsPreview.palette;
         editingRepos = Array.isArray(settings.repositories) && settings.repositories.length ? structuredClone(settings.repositories) : [
           { id: "repo-current", name: "当前题库", serverUrl: settings.serverUrl || "", repo: settings.repo || "qmx-acm-data/2026" }
         ];
@@ -4204,7 +4271,8 @@ ${data.trick.trim()}` : ""].filter(Boolean).join("\n\n") : data.body;
       const currentSettings = getSettings();
       const settings = {
         ...currentSettings,
-        theme: form.elements.theme.value,
+        theme: normalizeTheme(form.elements.theme.value),
+        palette: normalizePalette(form.elements.palette.value),
         repositories: editingRepos,
         activeRepoId: editingActiveId,
         serverUrl: activeRepoObj ? activeRepoObj.serverUrl : currentSettings.serverUrl || "",
@@ -4229,8 +4297,9 @@ ${data.trick.trim()}` : ""].filter(Boolean).join("\n\n") : data.body;
         if (previousSource !== repoSource()) resetSourceView();
         saved = true;
         settingsPreview = null;
+        appearanceBeforePreview = null;
         applyCodeSettings();
-        applyTheme(settings.theme);
+        applyAppearance(getSettings());
         renderRepoSelector();
         writeDemo();
         $("#settings-dialog").close();
@@ -4259,6 +4328,11 @@ ${data.trick.trim()}` : ""].filter(Boolean).join("\n\n") : data.body;
     function closeSettings() {
       if (!settingsPreview) return;
       settingsPreview = null;
+      if (appearanceBeforePreview) {
+        applyTheme(appearanceBeforePreview.theme);
+        applyPalette(appearanceBeforePreview.palette);
+      }
+      appearanceBeforePreview = null;
       applyCodeSettings();
       render6();
     }
@@ -4414,6 +4488,9 @@ ${data.trick.trim()}` : ""].filter(Boolean).join("\n\n") : data.body;
     $("#repo-select")?.addEventListener("change", switchRepository);
     $("#new-repo-add-btn")?.addEventListener("click", addRepository);
     $("#theme-select").addEventListener("change", changeTheme);
+    $("#palette-select").addEventListener("change", changePalette);
+    $("#settings-form").elements.theme.addEventListener("change", previewAppearance);
+    $("#settings-form").elements.palette.addEventListener("change", previewAppearance);
     $("#settings-button").addEventListener("click", openSettings);
     $("#settings-form").addEventListener("submit", saveSettings);
     $("#settings-form").elements.codeFontSize.addEventListener("input", previewCodeFontSize);
@@ -4435,13 +4512,18 @@ ${data.trick.trim()}` : ""].filter(Boolean).join("\n\n") : data.body;
     $("#export-local-button").addEventListener("click", exportLocal);
     return {
       readTheme,
+      readPalette,
       applyTheme,
+      applyPalette,
+      applyAppearance,
       applyCodeSettings,
       renderRepoSelector,
       renderSettingsRepoList,
       switchRepository,
       addRepository,
       changeTheme,
+      changePalette,
+      previewAppearance,
       openSettings,
       saveSettings,
       previewCodeFontSize,
@@ -4748,6 +4830,63 @@ ${data.trick.trim()}` : ""].filter(Boolean).join("\n\n") : data.body;
     let matchingNotes = [];
     let focusedId = state3.selectedNode;
     let disposed = false, expandedReader = null;
+    const treeItems = /* @__PURE__ */ new Map();
+    const tooltip = element2("div", "alg-tooltip");
+    tooltip.id = `${uid}-tooltip`;
+    tooltip.setAttribute("role", "tooltip");
+    tooltip.hidden = true;
+    document.body.append(tooltip);
+    const tooltipEvents = new AbortController();
+    let tooltipTarget = null;
+    function hideTooltip() {
+      if (tooltipTarget) {
+        const ids = (tooltipTarget.getAttribute("aria-describedby") || "").split(/\s+/).filter((id) => id && id !== tooltip.id);
+        if (ids.length) tooltipTarget.setAttribute("aria-describedby", ids.join(" "));
+        else tooltipTarget.removeAttribute("aria-describedby");
+      }
+      tooltipTarget = null;
+      tooltip.hidden = true;
+    }
+    function tooltipFor(target) {
+      if (!(target instanceof Element)) return null;
+      const item = target.closest("[data-alg-tooltip]") || target.closest(".alg-tree-item")?.querySelector(":scope > .alg-tree-row[data-alg-tooltip]");
+      return item && (shell.contains(item) || pane.contains(item)) ? item : null;
+    }
+    function showTooltip(target) {
+      if (target === tooltipTarget) return;
+      hideTooltip();
+      if (!target?.dataset.algTooltip) return;
+      tooltipTarget = target;
+      tooltip.textContent = target.dataset.algTooltip;
+      target.setAttribute("aria-describedby", [target.getAttribute("aria-describedby"), tooltip.id].filter(Boolean).join(" "));
+      tooltip.hidden = false;
+      const viewport = window.visualViewport;
+      const left = viewport?.offsetLeft || 0, top2 = viewport?.offsetTop || 0;
+      const width = viewport?.width || innerWidth, height = viewport?.height || innerHeight;
+      tooltip.style.maxWidth = `${Math.min(420, Math.max(0, width - 16))}px`;
+      tooltip.style.maxHeight = `${Math.max(0, height - 16)}px`;
+      const anchor = target.getBoundingClientRect(), rect = tooltip.getBoundingClientRect();
+      tooltip.style.left = `${Math.max(left + 8, Math.min(anchor.left, left + width - rect.width - 8))}px`;
+      const below = anchor.bottom + 8;
+      tooltip.style.top = `${Math.max(top2 + 8, Math.min(below + rect.height <= top2 + height - 8 ? below : anchor.top - rect.height - 8, top2 + height - rect.height - 8))}px`;
+    }
+    document.addEventListener("pointerover", (event) => {
+      if (event.pointerType !== "touch") showTooltip(tooltipFor(event.target));
+    }, { signal: tooltipEvents.signal });
+    document.addEventListener("pointerout", (event) => {
+      if (tooltipTarget && !tooltipTarget.contains(event.relatedTarget)) showTooltip(tooltipFor(event.relatedTarget));
+    }, { signal: tooltipEvents.signal });
+    document.addEventListener("focusin", (event) => showTooltip(tooltipFor(event.target)), { signal: tooltipEvents.signal });
+    document.addEventListener("focusout", (event) => {
+      if (tooltipTarget && !tooltipTarget.contains(event.relatedTarget)) hideTooltip();
+    }, { signal: tooltipEvents.signal });
+    document.addEventListener("scroll", hideTooltip, { capture: true, passive: true, signal: tooltipEvents.signal });
+    document.addEventListener("keydown", (event) => {
+      if (event.key === "Escape") hideTooltip();
+    }, { signal: tooltipEvents.signal });
+    document.addEventListener("pointerdown", hideTooltip, { signal: tooltipEvents.signal });
+    window.addEventListener("resize", hideTooltip, { passive: true, signal: tooltipEvents.signal });
+    window.addEventListener("blur", hideTooltip, { signal: tooltipEvents.signal });
     function detailPath() {
       const reading = state3.reading && notes.find((note) => noteKey(note) === state3.reading);
       const entries = [];
@@ -4773,7 +4912,7 @@ ${data.trick.trim()}` : ""].filter(Boolean).join("\n\n") : data.body;
     function badge(node2) {
       if (isDirectory(node2)) {
         const directory = element2("span", "alg-node-kind", "目录");
-        directory.title = "目录可保存说明和笔记，具体算法在子节点中分级";
+        directory.dataset.algTooltip = "目录可保存说明和笔记，具体算法在子节点中分级";
         return directory;
       }
       const level = levelOf(node2);
@@ -4781,7 +4920,7 @@ ${data.trick.trim()}` : ""].filter(Boolean).join("\n\n") : data.body;
       const origin = node2.difficultySource?.kind === "user-md" ? "用户颜色文档" : node2.rating?.type === "category" ? "分类基础门槛" : node2.rating?.type === "entry" ? "入口或任务形式" : "本项目逐项定稿";
       const range = node2.rating?.range;
       const coverage2 = range && node2.children?.length ? `；覆盖 D${range.min}–D${range.max}` : "";
-      el3.title = level ? `学习难度：${level.label}；依据：${origin}${coverage2}${node2.scope ? `。学习范围：${node2.scope}` : ""}${node2.rationale ? `。${node2.rationale}` : ""}` : node2.color === "parent" ? "目录" : "未指定难度";
+      el3.dataset.algTooltip = level ? `学习难度：${level.label}；依据：${origin}${coverage2}${node2.scope ? `。学习范围：${node2.scope}` : ""}${node2.rationale ? `。${node2.rationale}` : ""}` : node2.color === "parent" ? "目录" : "未指定难度";
       return el3;
     }
     function attributeBadge(node2) {
@@ -4829,14 +4968,26 @@ ${data.trick.trim()}` : ""].filter(Boolean).join("\n\n") : data.body;
     function selectNode(id, focusPane) {
       if (!byId.has(id)) return;
       expandedReader?.close();
+      hideTooltip();
+      const previous = state3.selectedNode;
       state3.selectedNode = id;
       state3.reading = null;
       state3.listScroll = 0;
       state3.paneScroll = 0;
+      const previousFocus = focusedId;
       focusedId = id;
       expandAncestors(id);
       const oldScroll = treeScroller.scrollTop;
-      renderTree();
+      if (treeItems.has(id)) {
+        if (previous) treeItems.get(previous)?.setAttribute("aria-selected", "false");
+        if (previousFocus) {
+          const row3 = treeItems.get(previousFocus);
+          if (row3) row3.tabIndex = -1;
+        }
+        const row2 = treeItems.get(id);
+        row2.setAttribute("aria-selected", "true");
+        row2.tabIndex = 0;
+      } else renderTree();
       treeScroller.scrollTop = oldScroll;
       renderPane();
       pane.scrollTop = 0;
@@ -4845,10 +4996,11 @@ ${data.trick.trim()}` : ""].filter(Boolean).join("\n\n") : data.body;
     }
     function focusRow(id) {
       focusedId = id;
-      tree.querySelectorAll('[role="treeitem"]').forEach((row2) => {
-        row2.tabIndex = row2.dataset.nodeId === id ? 0 : -1;
+      treeItems.forEach((row2, nodeId) => {
+        if (row2.tabIndex === 0 && nodeId !== id) row2.tabIndex = -1;
       });
-      const target = Array.from(tree.querySelectorAll('[role="treeitem"]')).find((row2) => row2.dataset.nodeId === id);
+      const target = treeItems.get(id);
+      if (target) target.tabIndex = 0;
       if (target) {
         target.focus({ preventScroll: true });
         target.scrollIntoView({ block: "nearest", inline: "nearest" });
@@ -4870,6 +5022,8 @@ ${data.trick.trim()}` : ""].filter(Boolean).join("\n\n") : data.body;
       focusRow(id);
     }
     function renderTree() {
+      hideTooltip();
+      treeItems.clear();
       tree.replaceChildren();
       visible = [];
       const hasResults = included.size > 0;
@@ -4882,6 +5036,7 @@ ${data.trick.trim()}` : ""].filter(Boolean).join("\n\n") : data.body;
           const item = element2("div", "alg-tree-item");
           item.setAttribute("role", "treeitem");
           item.dataset.nodeId = entry2.node.id;
+          treeItems.set(entry2.node.id, item);
           item.dataset.depth = String(entry2.depth);
           item.dataset.kind = entry2.node.color === "parent" ? "directory" : "topic";
           item.setAttribute("aria-level", String(entry2.depth + 1));
@@ -4917,7 +5072,7 @@ ${data.trick.trim()}` : ""].filter(Boolean).join("\n\n") : data.body;
           const count = element2("span", "alg-node-count", counts.get(entry2.node.id));
           count.title = "当前范围内含子目录的笔记总数";
           row2.append(count);
-          row2.title = `${entry2.path.join(" / ")}${entry2.node.fullLabel && entry2.node.fullLabel !== entry2.node.label ? `
+          row2.dataset.algTooltip = `${entry2.path.join(" / ")}${entry2.node.fullLabel && entry2.node.fullLabel !== entry2.node.label ? `
 ${entry2.node.fullLabel}` : ""}`;
           if (opts.canManage && typeof opts.onAddTopic === "function") {
             const add2 = button3("＋", "alg-add-topic", (event) => {
@@ -5053,6 +5208,7 @@ ${entry2.node.fullLabel}` : ""}`;
       return card;
     }
     function renderPane() {
+      hideTooltip();
       expandedReader?.setPath(detailPath());
       pane.replaceChildren();
       const selected2 = byId.get(state3.selectedNode);
@@ -5271,6 +5427,10 @@ ${entry2.node.fullLabel}` : ""}`;
       destroy() {
         if (disposed) return;
         expandedReader?.close();
+        hideTooltip();
+        tooltipEvents.abort();
+        tooltip.remove();
+        treeItems.clear();
         state3.treeScroll = treeScroller.scrollTop;
         state3.paneScroll = pane.scrollTop;
         disposed = true;
@@ -6671,6 +6831,7 @@ ${entry2.node.fullLabel}` : ""}`;
     const webPreview = demo && ["http:", "https:"].includes(location.protocol);
     const STORAGE = "acm-notebook.demo.v1";
     const THEME_STORAGE = "acm-notebook.theme";
+    const PALETTE_STORAGE = "acm-notebook.palette";
     const SIDEBAR_STORAGE = "acm-notebook.sidebar";
     const stateLabels = { unreviewed: "待复习", reviewing: "复习中", mastered: "已掌握" };
     const views2 = {
@@ -6842,7 +7003,7 @@ ${entry2.node.fullLabel}` : ""}`;
       s.account = payload.account || null;
       s.lastSync = payload.lastSync || null;
       s.error = payload.error ? errorMessage2(payload.error) : "";
-      applyTheme(s.settings.theme || readTheme());
+      applyAppearance(s.settings);
       applyCodeSettings();
       renderRepoSelector();
     }
@@ -7127,7 +7288,7 @@ ${entry2.node.fullLabel}` : ""}`;
         updateLockedControls = null;
       }
       s.busy = value;
-      ["sync-button", "account-button", "settings-button", "theme-select", "submit-button", "save-local-button", "publish-button", "account-login", "account-logout", "account-switch", "account-refresh", "banner-login-button"].forEach((id) => {
+      ["sync-button", "account-button", "settings-button", "theme-select", "palette-select", "submit-button", "save-local-button", "publish-button", "account-login", "account-logout", "account-switch", "account-refresh", "banner-login-button"].forEach((id) => {
         const node2 = document.getElementById(id);
         if (node2) node2.disabled = value;
       });
@@ -7415,7 +7576,7 @@ ${entry2.node.fullLabel}` : ""}`;
       event.preventDefault();
       saveRecord(true);
     });
-    const settingsUI = createSettings({ demo, bridge: bridge3, themeStorage: THEME_STORAGE, getBusy: () => s.busy, setBusy, getSettings: () => s.settings, setSettings: (value) => {
+    const settingsUI = createSettings({ demo, bridge: bridge3, themeStorage: THEME_STORAGE, paletteStorage: PALETTE_STORAGE, getBusy: () => s.busy, setBusy, getSettings: () => s.settings, setSettings: (value) => {
       s.settings = value;
     }, getAccount: () => s.account, getAuthStatus: () => s.authStatus, getPermissions: () => s.permissions, setPermissionsRepo: (value) => {
       s.permissions.repo = value;
@@ -7434,7 +7595,7 @@ ${entry2.node.fullLabel}` : ""}`;
       s.selected = null;
       reader.resetDetail();
     }, clearComments: () => s.comments.clear(), refreshFilters, render: render6, renderUpdate: () => updates.renderUpdate(), updateStatus, sync, writeDemo, toast, errorMessage: errorMessage2 });
-    const { readTheme, applyTheme, applyCodeSettings, renderRepoSelector, renderSettingsRepoList, renderAccount, startLoginFromBanner, accountAction, cancelLogin } = settingsUI;
+    const { readTheme, readPalette, applyTheme, applyPalette, applyAppearance, applyCodeSettings, renderRepoSelector, renderSettingsRepoList, renderAccount, startLoginFromBanner, accountAction, cancelLogin } = settingsUI;
     $("#sidebar-toggle").addEventListener("click", (event) => {
       const wasPinned = sidebarPinned;
       applySidebar(!wasPinned);
@@ -7555,11 +7716,13 @@ ${entry2.node.fullLabel}` : ""}`;
       }
     });
     async function bootstrap() {
-      applyTheme(readTheme());
+      const initialTheme = readTheme(), initialPalette = readPalette();
+      applyTheme(initialTheme);
+      applyPalette(initialPalette);
       applySidebar(readSidebar());
       render6();
       if (demo) {
-        s.settings = cached?.settings || {};
+        s.settings = cached?.settings || { theme: initialTheme, palette: initialPalette };
         if (!Array.isArray(s.settings.repositories) || !s.settings.repositories.length) {
           s.settings.repositories = [
             { id: "ctgu-2026", name: "三峡大学 2026 题解库 (校内)", repo: "ctguacm/2026", serverUrl: "http://172.25.5.128:3000" },
@@ -7574,7 +7737,7 @@ ${entry2.node.fullLabel}` : ""}`;
         s.issues = examples.filter((record) => record.kind === "issue").map((record) => ({ ...record, repo: s.permissions.repo }));
         s.local = normalizeLocal(cached?.local || { records: [examples[2]], favorites: [key(examples[1])], mastery: { [key(examples[1])]: "reviewing" }, draft: {} });
         s.local.records = s.local.records.map((record) => record.id === "demo-local-3" && record.pid === "dp_f" && record.rating == null ? { ...examples[2] } : record);
-        applyTheme(s.settings.theme || readTheme());
+        applyAppearance(s.settings);
         applyCodeSettings();
         renderRepoSelector();
       } else {

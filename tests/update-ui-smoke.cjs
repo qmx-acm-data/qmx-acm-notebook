@@ -73,7 +73,7 @@ const { chromium } = require('playwright');
     await page.waitForFunction(() => !!fixture.finishDownload);
     assert.match(await page.locator('#update-status').innerText(), /50%/);
     assert.equal(await page.locator('#update-progress').evaluate(node => node.value), 50);
-    for (const selector of ['#account-login', '#submit-button', '#settings-button', '#theme-select', '[data-close="account-dialog"]']) assert(await page.locator(selector).isDisabled(), selector);
+    for (const selector of ['#account-login', '#submit-button', '#settings-button', '#theme-select', '#palette-select', '[data-close="account-dialog"]']) assert(await page.locator(selector).isDisabled(), selector);
     await page.keyboard.press('Escape');
     assert(await page.locator('#account-dialog').isVisible(), 'busy dialog cannot close');
     assert.equal(await page.locator('#account-error').innerText(), 'Existing account error');
