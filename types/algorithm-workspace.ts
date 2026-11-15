@@ -2,6 +2,9 @@
 export interface AlgorithmWorkspaceOptions {
   getAlgorithmNotes(): import('./app').AppState['algorithmNotes'];
   setAlgorithmNotes(notes: import('./app').AppState['algorithmNotes']): void;
+  getLearningGateContents(): import('../src/shared/models/learning-content').LearningGateContent[];
+  setLearningGateContents(contents: import('../src/shared/models/learning-content').LearningGateContent[]): void;
+  saveLearningGate(input: import('../src/shared/models/learning-content').SaveLearningGateInput): Promise<import('../src/shared/models/learning-content').LearningGateContent>;
   getAlgorithmTopics(): import('./app').AppState['algorithmTopics'];
   setAlgorithmTopics(topics: import('./app').AppState['algorithmTopics']): void;
   getAlgorithmTree(): import('./app').AppState['algorithmTree'];
@@ -17,6 +20,7 @@ export interface AlgorithmWorkspaceOptions {
   setBusy(value: boolean): void;
   persistLocal(): Promise<unknown>;
   call(operation: 'saveAlgorithmTopic' | 'saveAlgorithmNote', argument: Record<string, unknown>): Promise<import('./app').AppResponse>;
+  openExternal(url: unknown): Promise<void>;
   render(): void;
   renderMarkdown(container: HTMLElement, body: unknown): void;
   authorName(author: unknown): string;

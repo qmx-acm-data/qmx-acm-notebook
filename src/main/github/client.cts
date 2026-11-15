@@ -1,4 +1,5 @@
 import * as YAML from 'yaml';
+import type { LearningGateContent, LearningPracticeList } from '../../shared/models/learning-content.js';
 import { Buffer } from 'node:buffer';
 import type { AlgorithmTopicsModule, ContentFields, ErrorFields, Fetcher, Fields, GitHubOptions, GraphQLDataFields, GraphQLFields, IssueFields, PermissionFields, RepositoryFields, RequestOptions, RequestResult, SyncInput, TagsModule, TreeEntry, TreeFields, UserFields, WriteFields } from './contracts.js';
 const { Tags } = require('./tags.cjs') as TagsModule;
@@ -6,6 +7,49 @@ const { AlgorithmTopics, TOPICS_PATH, parseTopics } = require('./algorithm-topic
 
 const API = 'https://api.github.com';
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+export const LEARNING_GATES_PREFIX = 'algorithms/learning-path/gates/';
+// Relative to emitted electron/github.cjs; only the validated formal curriculum may define identities.
+const learningCurriculum = require('../ui/algorithm-learning-path-data.js') as { stages: { gates: { id: string }[] }[] };
+const learningGateIds = new Set(learningCurriculum.stages.flatMap(stage => stage.gates.map(gate => gate.id)));
+function learningFields(value: unknown): Record<string, unknown> {
+  if (!value || typeof value !== 'object' || Array.isArray(value)) throw new Error('公共关卡内容格式错误');
+  return value as Record<string, unknown>;
+}
+function learningText(value: unknown, name: string, max: number, multiline = false): string {
+  if (typeof value !== 'string' || (multiline ? /[\u0000-\u0008\u000b\u000c\u000e-\u001f\u007f]/ : /[\u0000-\u001f\u007f]/).test(value)) throw new Error(`${name}必须是有效文本`);
+  const clean = value.trim(); if (!clean || clean.length > max) throw new Error(`${name}长度须为1-${max}个字符`); return clean;
+}
+function learningContentFields(value: unknown) {
+  const fields = learningFields(value);
+  const gateId = learningText(fields.gateId, '关卡标识', 200);
+  if (!learningGateIds.has(gateId)) throw new Error('关卡标识不在正式学习路径中');
+  const description = learningText(fields.description, '关卡说明', 6000, true);
+  if (!Array.isArray(fields.goals) || !fields.goals.length || fields.goals.length > 20) throw new Error('学习目标须为1-20项');
+  const goals = fields.goals.map(goal => learningText(goal, '学习目标', 500));
+  if (goals.join('\n').length > 6000) throw new Error('学习目标总长度不能超过6000字符');
+  let practiceList: LearningPracticeList | null = null;
+  if (fields.practiceList !== null) {
+    const practice = learningFields(fields.practiceList), title = learningText(practice.title, '题单标题', 120), raw = learningText(practice.url, '题单链接', 2000);
+    let url: URL; try { url = new URL(raw); } catch { throw new Error('题单链接必须是有效HTTP或HTTPS地址'); }
+    if (!['http:', 'https:'].includes(url.protocol) || url.username || url.password || /[\u0000-\u0020\u007f\\]/.test(raw)) throw new Error('题单链接必须是有效HTTP或HTTPS地址，且不能包含凭据');
+    practiceList = { title, url: url.href };
+  }
+  return { gateId, description, goals, practiceList };
+}
+export function parseLearningGateContent(value: unknown, expectedId: string, sha: unknown): LearningGateContent {
+  const fields = learningFields(value), content = learningContentFields(value), author = learningFields(fields.author);
+  if (fields.schema !== 1 || content.gateId !== expectedId) throw new Error('公共关卡版本或文件标识不匹配');
+  if (typeof sha !== 'string' || !/^[A-Za-z0-9_-]{1,200}$/.test(sha)) throw new Error('公共关卡缺少有效SHA');
+  if (!Number.isSafeInteger(author.id) || (author.id as number) < 1) throw new Error('公共关卡缺少可信作者');
+  const login = learningText(author.login, '作者', 100);
+  if (typeof fields.updatedAt !== 'string' || !Number.isFinite(Date.parse(fields.updatedAt))) throw new Error('公共关卡缺少有效更新时间');
+  return { ...content, sha, updatedAt: fields.updatedAt, author: { id: author.id as number, login } };
+}
+export function parseLearningGateText(text: unknown, expectedId: string, sha: unknown): LearningGateContent {
+  if (typeof text !== 'string' || Buffer.byteLength(text, 'utf8') > 64000) throw new Error('公共关卡文件过大');
+  let value: unknown; try { value = JSON.parse(text); } catch { throw new Error('公共关卡JSON无法解析'); }
+  return parseLearningGateContent(value, expectedId, sha);
+}
 
 export function normalizeServerUrl(value: unknown = '') {
   if (typeof value !== 'string') throw new Error('Git 服务地址格式不正确');
@@ -179,6 +223,28 @@ export class GitHub {
       const text = `---\n${YAML.stringify(meta)}---\n${parsed.body}`;
       await this.request(this.contentEndpoint(target.path as string), { method: 'PUT', body: JSON.stringify({ message: `取消精选算法笔记：${meta.title || target.path}`, content: Buffer.from(text).toString('base64'), branch, sha: current.sha }) });
     }
+  }
+
+  async saveLearningGate(input: unknown): Promise<LearningGateContent> {
+    const fields = learningFields(input);
+    if (typeof fields.repo !== 'string') throw new Error('公共关卡必须指定当前仓库');
+    this.checkScope(fields);
+    const clean = learningContentFields(fields);
+    if (fields.sha !== null && (typeof fields.sha !== 'string' || !/^[A-Za-z0-9_-]{1,200}$/.test(fields.sha))) throw new Error('请显式提供新增null或编辑SHA');
+    if (!this.token) throw new Error('请先登录GitHub');
+    const { user, branch } = await this.writeContext();
+    const { data: repository } = await this.request(`/repos/${this.repo}`);
+    if ((repository as RepositoryFields).permissions === null || typeof (repository as RepositoryFields).permissions !== 'object' || ((repository as RepositoryFields).permissions as PermissionFields).admin !== true) throw new Error('只有仓库管理员（admin）可以修改公共关卡');
+    if (!Number.isSafeInteger(user.id) || (user.id as number) < 1 || typeof user.login !== 'string') throw new Error('无法确认GitHub登录用户身份');
+    const path = `${LEARNING_GATES_PREFIX}${clean.gateId}.json`, current = await this.currentDocument(path, branch);
+    if (fields.sha === null ? current !== null : !current || current.sha !== fields.sha) throw new Error('公共关卡SHA冲突，请先同步后重新编辑');
+    const payload = { schema: 1, ...clean, updatedAt: new Date().toISOString(), author: { id: user.id as number, login: user.login } };
+    // Validate exactly what will be committed; never replace a supplied SHA with a fresh one.
+    const provisional = parseLearningGateContent(payload, clean.gateId, fields.sha || 'pending');
+    const { data } = await this.request(this.contentEndpoint(path), { method: 'PUT', body: JSON.stringify({ message: `更新公共学习关卡：${clean.gateId}`, content: Buffer.from(JSON.stringify(payload, null, 2) + '\n').toString('base64'), branch, ...(fields.sha === null ? {} : { sha: fields.sha }) }) });
+    const savedSha = ((data as WriteFields).content as ContentFields | null | undefined)?.sha;
+    if (typeof savedSha !== 'string' || !/^[A-Za-z0-9_-]{1,200}$/.test(savedSha)) throw new Error('公共关卡写入结果未知，请先同步核实');
+    return { ...provisional, sha: savedSha, repo: this.repo, serverUrl: this.serverUrl, sourceKey: repositoryKey(this.repo, this.serverUrl) };
   }
 
   async saveAlgorithmTopic(record: unknown) {
@@ -378,12 +444,32 @@ export class GitHub {
     }
     const additions = (tree.tree as TreeEntry[]).find(item => item.type === 'blob' && item.path === TOPICS_PATH);
     const algorithmTopics = additions ? parseTopics((await this.currentDocument(TOPICS_PATH, branch))?.text).map(topic => ({ ...topic, ...scope })) : [];
+    const gateFiles = (tree.tree as TreeEntry[]).filter(item => item.type === 'blob' && typeof item.path === 'string' && item.path.startsWith(LEARNING_GATES_PREFIX) && item.path.endsWith('.json'));
+    if (gateFiles.length > learningGateIds.size) throw new Error('公共关卡文件数量超过正式课程范围');
+    const learningGateContents: LearningGateContent[] = [], seenGates = new Set<string>();
+    for (const item of gateFiles) {
+      const gateId = (item.path as string).slice(LEARNING_GATES_PREFIX.length, -5);
+      if (!learningGateIds.has(gateId) || seenGates.has(gateId)) throw new Error('公共关卡文件标识无效或重复');
+      seenGates.add(gateId);
+      const sha = item.sha;
+      if (typeof sha !== 'string' || !/^[A-Za-z0-9_-]{1,200}$/.test(sha)) throw new Error('公共关卡缺少有效SHA');
+      let text = blobs[sha];
+      if (text === undefined) {
+        const { data } = await this.request(`/repos/${this.repo}/git/blobs/${sha}`);
+        const blob = data as ContentFields;
+        if (typeof blob.content !== 'string' || (blob.encoding !== 'base64' && !(this.serverUrl && !blob.encoding))) throw new Error('Git 服务未返回完整公共关卡文件');
+        text = Buffer.from(blob.content, 'base64').toString('utf8');
+        blobs[sha] = text;
+      }
+      // Revalidate cached bytes too; disk cache is not a trusted input boundary.
+      learningGateContents.push({ ...parseLearningGateText(text, gateId, sha), ...scope });
+    }
     return {
-      algorithmTopics,
+      algorithmTopics, learningGateContents,
       records: records.filter(r => r.kind === 'document'),
       algorithmNotes: records.filter(r => r.kind === 'algorithm-note'),
       issues: issues.filter(x => !x.pull_request && !/<!--\s*qmx-tag-request\s+[\s\S]*?-->/i.test(String(x.body || ''))).map(x => ({ ...issueRecord(x as Parameters<typeof issueRecord>[0]), ...scope })),
-      blobs: Object.fromEntries(docs.map(d => [d.sha, blobs[d.sha as string]])), branch, lastSync: new Date().toISOString(),
+      blobs: Object.fromEntries([...docs, ...gateFiles].map(d => [d.sha, blobs[d.sha as string]])), branch, lastSync: new Date().toISOString(),
     };
   }
 

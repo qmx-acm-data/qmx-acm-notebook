@@ -7,20 +7,864 @@
   return {
   "schema": 1,
   "id": "xcpc-breadth-first-v1",
-  "title": "先广后深 · C++ 竞赛闯关",
-  "description": "以阶段综合做题能力为目标，基础工具交错学习，再按先修深入专题。",
+  "title": "主干知识 · C++ 竞赛闯关",
+  "description": "依据完善稿B，以14章58学习段或路线组织；每段混练验收，基础完整收尾，高级方向分别形成成果。",
+  "curriculumVersion": 2,
+  "legacyFile": "data/algorithm-learning-path-legacy.json",
+  "frameworkSource": "chapter-framework-v2.json",
+  "legacyGates": [
+    {
+      "id": "stage-01-gate-01",
+      "title": "C++ 输入输出、分支循环与整数范围",
+      "stageTitle": "写稳 C++ 与 STL 基础"
+    },
+    {
+      "id": "stage-01-gate-02",
+      "title": "函数与数组初始化",
+      "stageTitle": "写稳 C++ 与 STL 基础"
+    },
+    {
+      "id": "stage-01-gate-03",
+      "title": "vector 与 string：序列存取",
+      "stageTitle": "写稳 C++ 与 STL 基础"
+    },
+    {
+      "id": "stage-01-gate-04",
+      "title": "混练：函数、vector 与 string",
+      "stageTitle": "写稳 C++ 与 STL 基础"
+    },
+    {
+      "id": "stage-01-gate-05",
+      "title": "pair 与 sort：比较和排序",
+      "stageTitle": "写稳 C++ 与 STL 基础"
+    },
+    {
+      "id": "stage-01-gate-06",
+      "title": "枚举与模拟：逐步执行题意",
+      "stageTitle": "写稳 C++ 与 STL 基础"
+    },
+    {
+      "id": "stage-01-gate-07",
+      "title": "复杂度分析：从范围选择循环",
+      "stageTitle": "写稳 C++ 与 STL 基础"
+    },
+    {
+      "id": "stage-01-gate-08",
+      "title": "混练：sort、枚举与模拟",
+      "stageTitle": "写稳 C++ 与 STL 基础"
+    },
+    {
+      "id": "stage-01-gate-09",
+      "title": "引用与结构体：组织题目数据",
+      "stageTitle": "写稳 C++ 与 STL 基础"
+    },
+    {
+      "id": "stage-01-gate-10",
+      "title": "递推与迭代：维护简单状态",
+      "stageTitle": "写稳 C++ 与 STL 基础"
+    },
+    {
+      "id": "stage-01-gate-11",
+      "title": "对拍：用枚举检查边界",
+      "stageTitle": "写稳 C++ 与 STL 基础"
+    },
+    {
+      "id": "stage-01-gate-12",
+      "title": "挑战：STL 排序、枚举与模拟综合",
+      "stageTitle": "写稳 C++ 与 STL 基础"
+    },
+    {
+      "id": "stage-02-gate-01",
+      "title": "map：离散键与频次统计",
+      "stageTitle": "用 STL 维护计数与顺序"
+    },
+    {
+      "id": "stage-02-gate-02",
+      "title": "set / multiset：集合与重复元素",
+      "stageTitle": "用 STL 维护计数与顺序"
+    },
+    {
+      "id": "stage-02-gate-03",
+      "title": "stack / queue：处理顺序",
+      "stageTitle": "用 STL 维护计数与顺序"
+    },
+    {
+      "id": "stage-02-gate-04",
+      "title": "混练：map 计数与排序",
+      "stageTitle": "用 STL 维护计数与顺序"
+    },
+    {
+      "id": "stage-02-gate-05",
+      "title": "priority_queue：每次取最值",
+      "stageTitle": "用 STL 维护计数与顺序"
+    },
+    {
+      "id": "stage-02-gate-06",
+      "title": "deque：两端存取与操作模拟",
+      "stageTitle": "用 STL 维护计数与顺序"
+    },
+    {
+      "id": "stage-02-gate-07",
+      "title": "string：截取、查找与字符统计",
+      "stageTitle": "用 STL 维护计数与顺序"
+    },
+    {
+      "id": "stage-02-gate-08",
+      "title": "混练：队列、堆与模拟",
+      "stageTitle": "用 STL 维护计数与顺序"
+    },
+    {
+      "id": "stage-02-gate-09",
+      "title": "GCD 与 LCM：简单整除关系",
+      "stageTitle": "用 STL 维护计数与顺序"
+    },
+    {
+      "id": "stage-02-gate-10",
+      "title": "贪心：排序后选择与反例",
+      "stageTitle": "用 STL 维护计数与顺序"
+    },
+    {
+      "id": "stage-02-gate-11",
+      "title": "unordered_map：哈希接口与退化",
+      "stageTitle": "用 STL 维护计数与顺序"
+    },
+    {
+      "id": "stage-02-gate-12",
+      "title": "挑战：map、优先队列与贪心综合",
+      "stageTitle": "用 STL 维护计数与顺序"
+    },
+    {
+      "id": "stage-03-gate-01",
+      "title": "一维前缀和：区间统计",
+      "stageTitle": "用预处理消除重复计算"
+    },
+    {
+      "id": "stage-03-gate-02",
+      "title": "一维差分：批量修改",
+      "stageTitle": "用预处理消除重复计算"
+    },
+    {
+      "id": "stage-03-gate-03",
+      "title": "二分查找：有序数组的边界",
+      "stageTitle": "用预处理消除重复计算"
+    },
+    {
+      "id": "stage-03-gate-04",
+      "title": "混练：排序、前缀和与二分查找",
+      "stageTitle": "用预处理消除重复计算"
+    },
+    {
+      "id": "stage-03-gate-05",
+      "title": "双指针：有序配对与区间移动",
+      "stageTitle": "用预处理消除重复计算"
+    },
+    {
+      "id": "stage-03-gate-06",
+      "title": "构造：奇偶与可行性",
+      "stageTitle": "用预处理消除重复计算"
+    },
+    {
+      "id": "stage-03-gate-07",
+      "title": "快速幂：重复乘法的缩减",
+      "stageTitle": "用预处理消除重复计算"
+    },
+    {
+      "id": "stage-03-gate-08",
+      "title": "混练：构造、枚举与快速幂",
+      "stageTitle": "用预处理消除重复计算"
+    },
+    {
+      "id": "stage-03-gate-09",
+      "title": "桶排序：值域计数",
+      "stageTitle": "用预处理消除重复计算"
+    },
+    {
+      "id": "stage-03-gate-10",
+      "title": "二维前缀和：矩形信息",
+      "stageTitle": "用预处理消除重复计算"
+    },
+    {
+      "id": "stage-03-gate-11",
+      "title": "对拍：前缀统计与暴力验证",
+      "stageTitle": "用预处理消除重复计算"
+    },
+    {
+      "id": "stage-03-gate-12",
+      "title": "挑战：前缀和、双指针与构造综合",
+      "stageTitle": "用预处理消除重复计算"
+    },
+    {
+      "id": "stage-04-gate-01",
+      "title": "二分答案：构造单调判定",
+      "stageTitle": "比较暴力、贪心与搜索"
+    },
+    {
+      "id": "stage-04-gate-02",
+      "title": "DFS 与回溯：枚举选择",
+      "stageTitle": "比较暴力、贪心与搜索"
+    },
+    {
+      "id": "stage-04-gate-03",
+      "title": "BFS：网格上的最短步数",
+      "stageTitle": "比较暴力、贪心与搜索"
+    },
+    {
+      "id": "stage-04-gate-04",
+      "title": "混练：二分答案与贪心判定",
+      "stageTitle": "比较暴力、贪心与搜索"
+    },
+    {
+      "id": "stage-04-gate-05",
+      "title": "位运算：状态与奇偶信息",
+      "stageTitle": "比较暴力、贪心与搜索"
+    },
+    {
+      "id": "stage-04-gate-06",
+      "title": "埃式筛与线性筛：素数预处理",
+      "stageTitle": "比较暴力、贪心与搜索"
+    },
+    {
+      "id": "stage-04-gate-07",
+      "title": "递归与搜索剪枝：边界和撤销",
+      "stageTitle": "比较暴力、贪心与搜索"
+    },
+    {
+      "id": "stage-04-gate-08",
+      "title": "混练：DFS、枚举与数论",
+      "stageTitle": "比较暴力、贪心与搜索"
+    },
+    {
+      "id": "stage-04-gate-09",
+      "title": "贪心：交换顺序与局部选择",
+      "stageTitle": "比较暴力、贪心与搜索"
+    },
+    {
+      "id": "stage-04-gate-10",
+      "title": "离散化：保留相对大小",
+      "stageTitle": "比较暴力、贪心与搜索"
+    },
+    {
+      "id": "stage-04-gate-11",
+      "title": "双指针与差分：一次扫描的选择",
+      "stageTitle": "比较暴力、贪心与搜索"
+    },
+    {
+      "id": "stage-04-gate-12",
+      "title": "挑战：二分、搜索与贪心综合",
+      "stageTitle": "比较暴力、贪心与搜索"
+    },
+    {
+      "id": "stage-05-gate-01",
+      "title": "状态与转移：定义 DP 含义",
+      "stageTitle": "把重复子问题写成状态"
+    },
+    {
+      "id": "stage-05-gate-02",
+      "title": "线性 DP：递推与最优子结构",
+      "stageTitle": "把重复子问题写成状态"
+    },
+    {
+      "id": "stage-05-gate-03",
+      "title": "LIS：子序列与转移顺序",
+      "stageTitle": "把重复子问题写成状态"
+    },
+    {
+      "id": "stage-05-gate-04",
+      "title": "混练：贪心、二分与线性 DP",
+      "stageTitle": "把重复子问题写成状态"
+    },
+    {
+      "id": "stage-05-gate-05",
+      "title": "01背包：选择与容量",
+      "stageTitle": "把重复子问题写成状态"
+    },
+    {
+      "id": "stage-05-gate-06",
+      "title": "完全背包：复用与循环方向",
+      "stageTitle": "把重复子问题写成状态"
+    },
+    {
+      "id": "stage-05-gate-07",
+      "title": "记忆化搜索：缓存子问题",
+      "stageTitle": "把重复子问题写成状态"
+    },
+    {
+      "id": "stage-05-gate-08",
+      "title": "混练：背包与记忆化搜索",
+      "stageTitle": "把重复子问题写成状态"
+    },
+    {
+      "id": "stage-05-gate-09",
+      "title": "图的遍历：连通分量",
+      "stageTitle": "把重复子问题写成状态"
+    },
+    {
+      "id": "stage-05-gate-10",
+      "title": "基础并查集：关系合并",
+      "stageTitle": "把重复子问题写成状态"
+    },
+    {
+      "id": "stage-05-gate-11",
+      "title": "基础计数 DP：方案数与边界",
+      "stageTitle": "把重复子问题写成状态"
+    },
+    {
+      "id": "stage-05-gate-12",
+      "title": "挑战：线性 DP、BFS 与集合关系综合",
+      "stageTitle": "把重复子问题写成状态"
+    },
+    {
+      "id": "stage-06-gate-01",
+      "title": "拓扑排序：依赖与 DAG",
+      "stageTitle": "在序列、图和计数间选模型"
+    },
+    {
+      "id": "stage-06-gate-02",
+      "title": "Dijkstra：非负边最短路",
+      "stageTitle": "在序列、图和计数间选模型"
+    },
+    {
+      "id": "stage-06-gate-03",
+      "title": "Floyd–Warshall：多源路径",
+      "stageTitle": "在序列、图和计数间选模型"
+    },
+    {
+      "id": "stage-06-gate-04",
+      "title": "混练：BFS、Dijkstra 与拓扑排序",
+      "stageTitle": "在序列、图和计数间选模型"
+    },
+    {
+      "id": "stage-06-gate-05",
+      "title": "树的遍历：子树信息",
+      "stageTitle": "在序列、图和计数间选模型"
+    },
+    {
+      "id": "stage-06-gate-06",
+      "title": "基础区间 DP：枚举分割点",
+      "stageTitle": "在序列、图和计数间选模型"
+    },
+    {
+      "id": "stage-06-gate-07",
+      "title": "LCS：二维状态与匹配",
+      "stageTitle": "在序列、图和计数间选模型"
+    },
+    {
+      "id": "stage-06-gate-08",
+      "title": "混练：区间 DP、LCS 与序列转化",
+      "stageTitle": "在序列、图和计数间选模型"
+    },
+    {
+      "id": "stage-06-gate-09",
+      "title": "排列组合与杨辉三角",
+      "stageTitle": "在序列、图和计数间选模型"
+    },
+    {
+      "id": "stage-06-gate-10",
+      "title": "逆元：模除法的存在条件",
+      "stageTitle": "在序列、图和计数间选模型"
+    },
+    {
+      "id": "stage-06-gate-11",
+      "title": "容斥原理：去除重复计数",
+      "stageTitle": "在序列、图和计数间选模型"
+    },
+    {
+      "id": "stage-06-gate-12",
+      "title": "挑战：图路径、DP 与组合计数综合",
+      "stageTitle": "在序列、图和计数间选模型"
+    },
+    {
+      "id": "stage-07-gate-01",
+      "title": "基础树状数组：前缀查询与修改",
+      "stageTitle": "维护动态信息并解释正确性"
+    },
+    {
+      "id": "stage-07-gate-02",
+      "title": "基础线段树：区间合并",
+      "stageTitle": "维护动态信息并解释正确性"
+    },
+    {
+      "id": "stage-07-gate-03",
+      "title": "单调栈：最近更大或更小",
+      "stageTitle": "维护动态信息并解释正确性"
+    },
+    {
+      "id": "stage-07-gate-04",
+      "title": "混练：树状数组、离散化与逆序对",
+      "stageTitle": "维护动态信息并解释正确性"
+    },
+    {
+      "id": "stage-07-gate-05",
+      "title": "单调队列：滑动窗口最值",
+      "stageTitle": "维护动态信息并解释正确性"
+    },
+    {
+      "id": "stage-07-gate-06",
+      "title": "Kruskal：连通成本与贪心",
+      "stageTitle": "维护动态信息并解释正确性"
+    },
+    {
+      "id": "stage-07-gate-07",
+      "title": "基础树形 DP：由子树合并",
+      "stageTitle": "维护动态信息并解释正确性"
+    },
+    {
+      "id": "stage-07-gate-08",
+      "title": "混练：生成树、图遍历与树形 DP",
+      "stageTitle": "维护动态信息并解释正确性"
+    },
+    {
+      "id": "stage-07-gate-09",
+      "title": "字符串哈希：比较与碰撞风险",
+      "stageTitle": "维护动态信息并解释正确性"
+    },
+    {
+      "id": "stage-07-gate-10",
+      "title": "KMP：前缀信息与匹配",
+      "stageTitle": "维护动态信息并解释正确性"
+    },
+    {
+      "id": "stage-07-gate-11",
+      "title": "Trie：前缀集合",
+      "stageTitle": "维护动态信息并解释正确性"
+    },
+    {
+      "id": "stage-07-gate-12",
+      "title": "挑战：动态统计、图与字符串综合",
+      "stageTitle": "维护动态信息并解释正确性"
+    },
+    {
+      "id": "stage-08-gate-01",
+      "title": "懒标记线段树：区间更新",
+      "stageTitle": "从基础模型走向多步组合"
+    },
+    {
+      "id": "stage-08-gate-02",
+      "title": "LCA：树上路径的交汇点",
+      "stageTitle": "从基础模型走向多步组合"
+    },
+    {
+      "id": "stage-08-gate-03",
+      "title": "dfn：子树转区间",
+      "stageTitle": "从基础模型走向多步组合"
+    },
+    {
+      "id": "stage-08-gate-04",
+      "title": "混练：dfn、树状数组与子树统计",
+      "stageTitle": "从基础模型走向多步组合"
+    },
+    {
+      "id": "stage-08-gate-05",
+      "title": "基础状压 DP：集合编码",
+      "stageTitle": "从基础模型走向多步组合"
+    },
+    {
+      "id": "stage-08-gate-06",
+      "title": "基础数位 DP：位置与限制",
+      "stageTitle": "从基础模型走向多步组合"
+    },
+    {
+      "id": "stage-08-gate-07",
+      "title": "多重背包与二进制分组",
+      "stageTitle": "从基础模型走向多步组合"
+    },
+    {
+      "id": "stage-08-gate-08",
+      "title": "混练：背包、状压 DP 与计数",
+      "stageTitle": "从基础模型走向多步组合"
+    },
+    {
+      "id": "stage-08-gate-09",
+      "title": "Manacher：回文半径",
+      "stageTitle": "从基础模型走向多步组合"
+    },
+    {
+      "id": "stage-08-gate-10",
+      "title": "矩阵快速幂：递推加速",
+      "stageTitle": "从基础模型走向多步组合"
+    },
+    {
+      "id": "stage-08-gate-11",
+      "title": "基础概率 DP 与期望线性性",
+      "stageTitle": "从基础模型走向多步组合"
+    },
+    {
+      "id": "stage-08-gate-12",
+      "title": "挑战：区间维护、状态设计与字符串综合",
+      "stageTitle": "从基础模型走向多步组合"
+    },
+    {
+      "id": "stage-09-gate-01",
+      "title": "换根 DP：子树内外贡献",
+      "stageTitle": "组合工具处理非直接应用"
+    },
+    {
+      "id": "stage-09-gate-02",
+      "title": "Tarjan 强连通与缩点",
+      "stageTitle": "组合工具处理非直接应用"
+    },
+    {
+      "id": "stage-09-gate-03",
+      "title": "带权并查集：差值关系",
+      "stageTitle": "组合工具处理非直接应用"
+    },
+    {
+      "id": "stage-09-gate-04",
+      "title": "混练：缩点、DAG 与 DP",
+      "stageTitle": "组合工具处理非直接应用"
+    },
+    {
+      "id": "stage-09-gate-05",
+      "title": "单调队列优化：证明淘汰条件",
+      "stageTitle": "组合工具处理非直接应用"
+    },
+    {
+      "id": "stage-09-gate-06",
+      "title": "数据结构优化 DP：维护候选转移",
+      "stageTitle": "组合工具处理非直接应用"
+    },
+    {
+      "id": "stage-09-gate-07",
+      "title": "容斥原理与基础计数 DP",
+      "stageTitle": "组合工具处理非直接应用"
+    },
+    {
+      "id": "stage-09-gate-08",
+      "title": "混练：DP、队列与区间维护",
+      "stageTitle": "组合工具处理非直接应用"
+    },
+    {
+      "id": "stage-09-gate-09",
+      "title": "二分图判定与匈牙利算法",
+      "stageTitle": "组合工具处理非直接应用"
+    },
+    {
+      "id": "stage-09-gate-10",
+      "title": "ST 表与离线查询顺序",
+      "stageTitle": "组合工具处理非直接应用"
+    },
+    {
+      "id": "stage-09-gate-11",
+      "title": "树的直径与树上路径信息",
+      "stageTitle": "组合工具处理非直接应用"
+    },
+    {
+      "id": "stage-09-gate-12",
+      "title": "挑战：树、缩点与优化 DP 综合",
+      "stageTitle": "组合工具处理非直接应用"
+    },
+    {
+      "id": "stage-10-gate-01",
+      "title": "重链剖分：路径转区间",
+      "stageTitle": "以结构分解降低建模难度"
+    },
+    {
+      "id": "stage-10-gate-02",
+      "title": "割点、割边与边双连通",
+      "stageTitle": "以结构分解降低建模难度"
+    },
+    {
+      "id": "stage-10-gate-03",
+      "title": "Dinic：残量网络与最大流",
+      "stageTitle": "以结构分解降低建模难度"
+    },
+    {
+      "id": "stage-10-gate-04",
+      "title": "混练：匹配、最大流与建模",
+      "stageTitle": "以结构分解降低建模难度"
+    },
+    {
+      "id": "stage-10-gate-05",
+      "title": "AC 自动机：多模式匹配",
+      "stageTitle": "以结构分解降低建模难度"
+    },
+    {
+      "id": "stage-10-gate-06",
+      "title": "Z 函数：前缀匹配信息",
+      "stageTitle": "以结构分解降低建模难度"
+    },
+    {
+      "id": "stage-10-gate-07",
+      "title": "莫队：离线区间迁移",
+      "stageTitle": "以结构分解降低建模难度"
+    },
+    {
+      "id": "stage-10-gate-08",
+      "title": "混练：字符串匹配与离线统计",
+      "stageTitle": "以结构分解降低建模难度"
+    },
+    {
+      "id": "stage-10-gate-09",
+      "title": "高斯消元：方程组与秩",
+      "stageTitle": "以结构分解降低建模难度"
+    },
+    {
+      "id": "stage-10-gate-10",
+      "title": "线性基：异或向量空间",
+      "stageTitle": "以结构分解降低建模难度"
+    },
+    {
+      "id": "stage-10-gate-11",
+      "title": "点积、叉积与凸包",
+      "stageTitle": "以结构分解降低建模难度"
+    },
+    {
+      "id": "stage-10-gate-12",
+      "title": "挑战：树链、离线与线性代数综合",
+      "stageTitle": "以结构分解降低建模难度"
+    },
+    {
+      "id": "stage-11-gate-01",
+      "title": "斜率优化：转移的几何表达",
+      "stageTitle": "深入专题并迁移到新约束"
+    },
+    {
+      "id": "stage-11-gate-02",
+      "title": "分治 DP：决策单调性前提",
+      "stageTitle": "深入专题并迁移到新约束"
+    },
+    {
+      "id": "stage-11-gate-03",
+      "title": "主席树：历史版本与区间第 k 小",
+      "stageTitle": "深入专题并迁移到新约束"
+    },
+    {
+      "id": "stage-11-gate-04",
+      "title": "混练：离散化、主席树与二分",
+      "stageTitle": "深入专题并迁移到新约束"
+    },
+    {
+      "id": "stage-11-gate-05",
+      "title": "点分治：树上路径分解",
+      "stageTitle": "深入专题并迁移到新约束"
+    },
+    {
+      "id": "stage-11-gate-06",
+      "title": "启发式合并：小并大代价分析",
+      "stageTitle": "深入专题并迁移到新约束"
+    },
+    {
+      "id": "stage-11-gate-07",
+      "title": "后缀数组：排序与 LCP",
+      "stageTitle": "深入专题并迁移到新约束"
+    },
+    {
+      "id": "stage-11-gate-08",
+      "title": "混练：后缀数组、哈希与二分",
+      "stageTitle": "深入专题并迁移到新约束"
+    },
+    {
+      "id": "stage-11-gate-09",
+      "title": "最小割模型：目标函数等价",
+      "stageTitle": "深入专题并迁移到新约束"
+    },
+    {
+      "id": "stage-11-gate-10",
+      "title": "CRT 与扩展欧几里得",
+      "stageTitle": "深入专题并迁移到新约束"
+    },
+    {
+      "id": "stage-11-gate-11",
+      "title": "旋转卡壳：凸包上的指针",
+      "stageTitle": "深入专题并迁移到新约束"
+    },
+    {
+      "id": "stage-11-gate-12",
+      "title": "挑战：DP 优化、树分解与建模综合",
+      "stageTitle": "深入专题并迁移到新约束"
+    },
+    {
+      "id": "stage-12-gate-01",
+      "title": "CDQ 分治：偏序与处理顺序",
+      "stageTitle": "突破离线、代数与结构瓶颈"
+    },
+    {
+      "id": "stage-12-gate-02",
+      "title": "整体二分：答案分治与撤销",
+      "stageTitle": "突破离线、代数与结构瓶颈"
+    },
+    {
+      "id": "stage-12-gate-03",
+      "title": "可撤销并查集：时间维维护",
+      "stageTitle": "突破离线、代数与结构瓶颈"
+    },
+    {
+      "id": "stage-12-gate-04",
+      "title": "混练：CDQ、树状数组与离散化",
+      "stageTitle": "突破离线、代数与结构瓶颈"
+    },
+    {
+      "id": "stage-12-gate-05",
+      "title": "虚树：关键点与树压缩",
+      "stageTitle": "突破离线、代数与结构瓶颈"
+    },
+    {
+      "id": "stage-12-gate-06",
+      "title": "Treap：随机平衡与维护",
+      "stageTitle": "突破离线、代数与结构瓶颈"
+    },
+    {
+      "id": "stage-12-gate-07",
+      "title": "FFT/NTT：卷积模型与变换条件",
+      "stageTitle": "突破离线、代数与结构瓶颈"
+    },
+    {
+      "id": "stage-12-gate-08",
+      "title": "混练：卷积、组合数与计数 DP",
+      "stageTitle": "突破离线、代数与结构瓶颈"
+    },
+    {
+      "id": "stage-12-gate-09",
+      "title": "莫比乌斯反演与整除分块",
+      "stageTitle": "突破离线、代数与结构瓶颈"
+    },
+    {
+      "id": "stage-12-gate-10",
+      "title": "最小费用流：带代价的选择",
+      "stageTitle": "突破离线、代数与结构瓶颈"
+    },
+    {
+      "id": "stage-12-gate-11",
+      "title": "构造与贪心：充分条件和反例",
+      "stageTitle": "突破离线、代数与结构瓶颈"
+    },
+    {
+      "id": "stage-12-gate-12",
+      "title": "挑战：离线、树压缩与数学转化综合",
+      "stageTitle": "突破离线、代数与结构瓶颈"
+    },
+    {
+      "id": "stage-13-gate-01",
+      "title": "线段树合并：聚合与复杂度",
+      "stageTitle": "在选定主线形成高级解法"
+    },
+    {
+      "id": "stage-13-gate-02",
+      "title": "李超线段树：直线集合维护",
+      "stageTitle": "在选定主线形成高级解法"
+    },
+    {
+      "id": "stage-13-gate-03",
+      "title": "后缀自动机：状态与 endpos（选修）",
+      "stageTitle": "在选定主线形成高级解法"
+    },
+    {
+      "id": "stage-13-gate-04",
+      "title": "混练：离线、线段树与树上合并",
+      "stageTitle": "在选定主线形成高级解法"
+    },
+    {
+      "id": "stage-13-gate-05",
+      "title": "生成函数：计数的代数表达",
+      "stageTitle": "在选定主线形成高级解法"
+    },
+    {
+      "id": "stage-13-gate-06",
+      "title": "拉格朗日插值：多项式求值",
+      "stageTitle": "在选定主线形成高级解法"
+    },
+    {
+      "id": "stage-13-gate-07",
+      "title": "回文自动机：不同回文的状态（选修）",
+      "stageTitle": "在选定主线形成高级解法"
+    },
+    {
+      "id": "stage-13-gate-08",
+      "title": "混练：生成函数、NTT 与计数",
+      "stageTitle": "在选定主线形成高级解法"
+    },
+    {
+      "id": "stage-13-gate-09",
+      "title": "最小割与最大权闭合子图",
+      "stageTitle": "在选定主线形成高级解法"
+    },
+    {
+      "id": "stage-13-gate-10",
+      "title": "回滚莫队：撤销与区间组织",
+      "stageTitle": "在选定主线形成高级解法"
+    },
+    {
+      "id": "stage-13-gate-11",
+      "title": "半平面交：可行域与凸性",
+      "stageTitle": "在选定主线形成高级解法"
+    },
+    {
+      "id": "stage-13-gate-12",
+      "title": "挑战：数据结构、数学与构造综合",
+      "stageTitle": "在选定主线形成高级解法"
+    },
+    {
+      "id": "stage-14-gate-01",
+      "title": "多项式求逆与 Newton 迭代（选修）",
+      "stageTitle": "开放挑战与个人专题路线"
+    },
+    {
+      "id": "stage-14-gate-02",
+      "title": "多项式 ln / exp（选修）",
+      "stageTitle": "开放挑战与个人专题路线"
+    },
+    {
+      "id": "stage-14-gate-03",
+      "title": "FWT：异或与位运算卷积（选修）",
+      "stageTitle": "开放挑战与个人专题路线"
+    },
+    {
+      "id": "stage-14-gate-04",
+      "title": "混练：DP 状态、代数转化与证明",
+      "stageTitle": "开放挑战与个人专题路线"
+    },
+    {
+      "id": "stage-14-gate-05",
+      "title": "Burnside / Pólya：等价类计数（选修）",
+      "stageTitle": "开放挑战与个人专题路线"
+    },
+    {
+      "id": "stage-14-gate-06",
+      "title": "集合幂级数：子集卷积（选修）",
+      "stageTitle": "开放挑战与个人专题路线"
+    },
+    {
+      "id": "stage-14-gate-07",
+      "title": "动态树：树上结构的变化（选修）",
+      "stageTitle": "开放挑战与个人专题路线"
+    },
+    {
+      "id": "stage-14-gate-08",
+      "title": "混练：树、离线与动态图关系",
+      "stageTitle": "开放挑战与个人专题路线"
+    },
+    {
+      "id": "stage-14-gate-09",
+      "title": "支配树或一般图匹配（选修）",
+      "stageTitle": "开放挑战与个人专题路线"
+    },
+    {
+      "id": "stage-14-gate-10",
+      "title": "Lyndon 分解与字符串结构（选修）",
+      "stageTitle": "开放挑战与个人专题路线"
+    },
+    {
+      "id": "stage-14-gate-11",
+      "title": "构造、贪心与 DP：多解重建",
+      "stageTitle": "开放挑战与个人专题路线"
+    },
+    {
+      "id": "stage-14-gate-12",
+      "title": "挑战：自选两条主线的陌生综合题",
+      "stageTitle": "开放挑战与个人专题路线"
+    }
+  ],
   "policy": {
-    "version": 1,
-    "prerequisiteRule": "prerequisites 表示推荐学习与回补顺序，不是锁关条件；满足具体知识先修即可跳学。",
-    "languagePrelude": "第1章第1关补齐C++变量、标准输入输出、分支与循环，第2关补函数、数组与初始化；已有语法基础可直接练习。",
-    "stageRule": "阶段采用0至2500+的紧凑训练区间，相邻端点允许衔接；0表示零基础起点，不表示存在CF 0分题目。区间用于选题与学习顺序，不是能力认证；CF题目Rating不等同选手Rating。",
-    "difficultyRule": "知识难度通过topicIds从知识树实时读取；不把D1–D5换算成CF或洛谷分数。",
-    "luoguRule": "洛谷难度为独立选题标签，与CF区间不存在固定等价换算。",
-    "completionRule": "学习完成与独立解题通关分开记录；阶段挑战应包含无标签新题、完整实现和复盘。",
-    "optionalRule": "标记optional的专题可跳学，不作为达到任一CF区间的必要清单；expert知识点仅出现在后期选修。",
-    "problemRule": "此路线尚未绑定真实题目，不提供未经核实的题号或自动判题结果。",
-    "learningThreadRule": "学习脉络描述算法的初识、进阶与组合关系，threadGateIds用于回顾和延伸，不构成额外先修或锁关条件。",
-    "orientationPrelude": "第0章为竞赛认识导览，首关“总览算法竞赛”关联知识树“算法竞赛经验与游记”；不绑定题目或评级，可按需跳学。"
+    "version": 2,
+    "prerequisiteRule": "直接先修表示知识依赖与推荐回补顺序，不是界面锁关条件；各高级路线按具体分支进入。",
+    "languagePrelude": "第1章收齐竞赛常用C++与STL基础，第2章结束基础实现，第3章完成入门优化。",
+    "stageRule": "按主干知识与可验证成果划章，不按CF分数划阶段，不固定关卡数。",
+    "difficultyRule": "知识难度实时来自真实知识树；不复制为关卡分数或换算CF/洛谷。",
+    "completionRule": "区分学习完成、独立实现、无标签应用；每段混练与验收，章末综合仅依赖已学核心。",
+    "optionalRule": "core为基础必修；recommended为推荐进阶；elective为选修；route按具体路线记录，不以任一路线代替全部高级方向。专题难度与课程scope独立；按已认可范围标注advanced选修，expert保持非核心，不受旧章号规则限制。",
+    "problemRule": "尚未绑定核实的真实题单；不提供虚构题号、自动评测或CF分数。",
+    "learningThreadRule": "threadGateIds是回顾和延伸导航，不是先修，不用于锁关。",
+    "legacyRule": "路线id保留历史进度命名空间；新gate使用lp2语义ID，旧gate只在legacy中解释。第0章身份保留。"
   },
   "sources": [
     {
@@ -72,492 +916,789 @@
             "topicIds": []
           },
           "optional": false,
-          "scope": "竞赛认识与训练方法导览；不绑定练习题，不进行 CF Rating 或洛谷难度评级。",
+          "scope": "core",
           "learningTitle": "认识比赛 · 找到自己的起点",
           "learningDescription": "算法竞赛把问题理解、数学推理、算法设计和程序实现放在一起。先了解赛制和评测，建立“独立思考—实现验证—赛后补题—记录复盘”的训练循环。游记可以帮助认识赛场、分工与心态，但每个人的基础和路径不同；读完导览后，从第1章写稳 C++，已有基础则按需跳学。",
           "threadGateIds": [
-            "stage-01-gate-01"
-          ]
+            "lp2-cpp-toolkit-program-flow-types-io"
+          ],
+          "sectionId": "lp2-sec-orientation",
+          "sectionTitle": "竞赛认识",
+          "routeId": null,
+          "scopeDescription": "竞赛认识与训练方法导览；不绑定练习题，不进行 CF Rating 或洛谷难度评级。"
         }
-      ]
-    },
-    {
-      "id": "stage-01",
-      "index": 1,
-      "title": "写稳 C++ 与 STL 基础",
-      "description": "准确读懂约束并实现基础程序，能检查边界与整数范围。",
-      "goal": "准确读懂约束并实现基础程序，能检查边界与整数范围。",
-      "cf": {
-        "min": 0,
-        "max": 800
-      },
-      "luoguDifficulty": [
-        "入门"
       ],
-      "rationale": "本章按综合做题能力组织，不要求区间中的每道题都使用这些算法，也不要求学完所有专题才进入下一章。",
-      "completionCriteria": [
-        "独立完成本章综合题组中的新题",
-        "覆盖至少两种已学方法；后续阶段回收前面基础工具",
-        "说明正确性、复杂度，并记录一次完整复盘"
-      ],
-      "prerequisites": {
-        "stageIds": []
-      },
-      "gates": [
+      "sections": [
         {
-          "id": "stage-01-gate-01",
-          "index": 1,
-          "title": "C++ 输入输出、分支循环与整数范围",
-          "kind": "learning",
-          "topicIds": [
-            "algorithm-万能头文件与标准库使用",
-            "algorithm-int128-与整数溢出"
+          "id": "lp2-sec-orientation",
+          "title": "竞赛认识",
+          "scope": "core",
+          "routeId": null,
+          "description": "从比赛是什么、怎样训练开始，建立对赛制、评测、协作和复盘的整体认识。",
+          "completionCriteria": [
+            "用自己的话描述解题与提交评测的流程",
+            "阅读一篇经验或游记，记录值得借鉴的做法与适用条件",
+            "写下下一步训练安排或尚待解答的问题"
           ],
-          "cf": {
-            "min": 0,
-            "max": 800
-          },
-          "luoguDifficulty": [
-            "入门"
-          ],
-          "description": "从变量、cin/cout、if/else、for/while 起步；按约束选择 int/long long，识别输入、溢出与精度边界。",
-          "goals": [
-            "独立写出变量、分支、循环与标准输入输出",
-            "根据约束判断整型范围与乘法溢出",
-            "完成语言基础小练习后，再独立实现基础模拟题"
+          "gateIds": [
+            "stage-00-gate-01"
           ],
           "prerequisites": {
             "gateIds": [],
             "topicIds": []
-          },
+          }
+        }
+      ],
+      "completionMode": "core",
+      "entryText": "无需算法先修，可按需跳学。"
+    },
+    {
+      "id": "stage-01",
+      "index": 1,
+      "title": "C++ 与 STL：一次备齐竞赛工具",
+      "description": "拿到一道基础题，能独立完成输入、处理、输出，并正确使用常用 STL；之后的章节不再补基础语法。",
+      "goal": "拿到一道基础题，能独立完成输入、处理、输出，并正确使用常用 STL；之后的章节不再补基础语法。",
+      "rationale": "把原第 2 章常用 STL 接口并入第 1 章；增加四段可验收里程碑，章长不等于一次学完。",
+      "entryText": "零基础可进入；先完成第 0 章导览或知道编译、提交、评测的基本流程。",
+      "completionMode": "core",
+      "completionCriteria": [
+        "不看模板完成记录排序、词频统计和操作模拟；允许查标准库文档。",
+        "解释所用容器的时间复杂度、整数范围和比较器规则。",
+        "独立修复包含越界、溢出或清空遗漏的程序，并记录原因。"
+      ],
+      "scopeDescription": "tuple、稳定排序与容器接口完整列入速查；基础指针讲地址、解引用和生命周期，不要求手写内存管理。类继承、模板元编程、智能指针另留语言拓展。",
+      "prerequisites": {
+        "stageIds": []
+      },
+      "luoguDifficulty": [],
+      "sections": [
+        {
+          "id": "lp2-sec-cpp-toolkit-program-flow",
+          "title": "A · 程序能跑通",
+          "scope": "core",
+          "routeId": null,
+          "description": "写出第一个可靠的程序：编译与提交；变量、类型、常量；表达式、运算优先级、类型转换；整数范围、溢出；标准输入输出与多组数据。\n控制流程与数据访问：if / switch；for / while；数组、一维与二维存储；下标和边界；字符、字符串；范围 for。",
+          "completionCriteria": [
+            "独立处理多组输入、分支与循环，覆盖空边界、极值和二维下标。"
+          ],
+          "gateIds": [
+            "lp2-cpp-toolkit-program-flow-types-io",
+            "lp2-cpp-toolkit-program-flow-branches-loops",
+            "lp2-cpp-toolkit-program-flow-practice-assessment"
+          ],
+          "prerequisites": {
+            "gateIds": [],
+            "topicIds": []
+          }
+        },
+        {
+          "id": "lp2-sec-cpp-toolkit-data-organization",
+          "title": "B · 数据能组织",
+          "scope": "core",
+          "routeId": null,
+          "description": "函数与代码组织：参数、返回值、作用域；值传递与引用；const；struct；基本地址与指针概念。讲清后续实现需要的语法。；容器作为函数参数、避免返回悬垂引用；简单 lambda / 比较器语法在本章讲齐。\n序列工具：vector、string、array、pair / tuple；初始化、遍历、增删、查找；迭代器与失效的基础规则。",
+          "completionCriteria": [
+            "用函数和结构体整理记录；能说明值传递、引用、生命周期及序列操作代价。"
+          ],
+          "gateIds": [
+            "lp2-cpp-toolkit-data-organization-functions-records",
+            "lp2-cpp-toolkit-data-organization-addresses",
+            "lp2-cpp-toolkit-data-organization-sequences",
+            "lp2-cpp-toolkit-data-organization-practice-assessment"
+          ],
+          "prerequisites": {
+            "gateIds": [
+              "lp2-cpp-toolkit-program-flow-practice-assessment"
+            ],
+            "topicIds": []
+          }
+        },
+        {
+          "id": "lp2-sec-cpp-toolkit-stl-selection",
+          "title": "C · 工具能选对",
+          "scope": "core",
+          "routeId": null,
+          "description": "排序与标准算法：sort / stable_sort；自定义比较、简单 lambda；reverse、unique、min / max；lower_bound / upper_bound 的调用与返回值。；accumulate、count / find、next_permutation；明确 binary_search 以及二分接口只讲使用条件，第 3 章推导算法。\n关联容器与容器适配器：map、set、multiset、unordered_map / set；stack、queue、deque、priority_queue；操作复杂度、空容器与删除规则。",
+          "completionCriteria": [
+            "独立选择排序、映射、集合或队列；比较器满足严格弱序，不对空容器取值。"
+          ],
+          "gateIds": [
+            "lp2-cpp-toolkit-stl-selection-sorting-interfaces",
+            "lp2-cpp-toolkit-stl-selection-ordered-containers",
+            "lp2-cpp-toolkit-stl-selection-hash-containers",
+            "lp2-cpp-toolkit-stl-selection-adapters",
+            "lp2-cpp-toolkit-stl-selection-binary-search-interface",
+            "lp2-cpp-toolkit-stl-selection-practice-assessment"
+          ],
+          "prerequisites": {
+            "gateIds": [
+              "lp2-cpp-toolkit-data-organization-practice-assessment"
+            ],
+            "topicIds": []
+          }
+        },
+        {
+          "id": "lp2-sec-cpp-toolkit-reliable-code",
+          "title": "D · 程序能写稳",
+          "scope": "core",
+          "routeId": null,
+          "description": "写稳与调试：二进制与常用位运算语法；复杂度和数据规模；样例、极值、重复值；断言与调试；对拍的基本流程。",
+          "completionCriteria": [
+            "能从规模估算复杂度，排查溢出、越界、失效迭代器和多组数据未清空。"
+          ],
+          "gateIds": [
+            "lp2-cpp-toolkit-reliable-code-bits-complexity",
+            "lp2-cpp-toolkit-reliable-code-debugging",
+            "lp2-cpp-toolkit-reliable-code-practice-assessment"
+          ],
+          "prerequisites": {
+            "gateIds": [
+              "lp2-cpp-toolkit-stl-selection-practice-assessment"
+            ],
+            "topicIds": []
+          }
+        }
+      ],
+      "gates": [
+        {
+          "id": "lp2-cpp-toolkit-program-flow-types-io",
+          "index": 1,
+          "title": "类型、输入输出与整数范围",
+          "kind": "learning",
+          "sectionId": "lp2-sec-cpp-toolkit-program-flow",
+          "sectionTitle": "A · 程序能跑通",
+          "routeId": null,
+          "scope": "core",
           "optional": false,
-          "scope": "语言补课入口包含变量、分支、循环、数组与输入输出；当前知识树未单列全部语法点，关联标准库使用和整数范围节点。已具备语法基础可直接进行练习。",
-          "learningTitle": "初识 C++ · 把题意写成程序",
-          "learningDescription": "先用输入输出、分支和循环把题意逐步执行，再检查整数范围。写稳这些基本动作，后面的模拟、容器和算法才有可靠的落脚点。",
+          "topicIds": [
+            "algorithm-万能头文件与标准库使用",
+            "algorithm-int128-与整数溢出"
+          ],
+          "luoguDifficulty": [],
+          "description": "从编译与提交开始，学习变量、表达式、类型转换、多组输入输出；用约束决定整数类型。",
+          "goals": [
+            "选择能够容纳题设最大值的整数类型",
+            "独立读入多组数据并按格式输出",
+            "用极值说明隐式转换或乘法何时溢出"
+          ],
+          "learningTitle": "类型、输入输出与整数范围",
+          "learningDescription": "从编译与提交开始，学习变量、表达式、类型转换、多组输入输出；用约束决定整数类型。",
+          "prerequisites": {
+            "gateIds": [],
+            "topicIds": []
+          },
           "threadGateIds": [
-            "stage-01-gate-06",
-            "stage-01-gate-07",
-            "stage-02-gate-07"
+            "lp2-cpp-toolkit-program-flow-branches-loops"
           ]
         },
         {
-          "id": "stage-01-gate-02",
+          "id": "lp2-cpp-toolkit-program-flow-branches-loops",
           "index": 2,
-          "title": "函数与数组初始化",
+          "title": "分支、循环与数组边界",
           "kind": "learning",
-          "topicIds": [
-            "xcpc-函数-1",
-            "algorithm-数组初始化与-memset"
-          ],
-          "cf": {
-            "min": 0,
-            "max": 800
-          },
-          "luoguDifficulty": [
-            "入门"
-          ],
-          "description": "用数组、函数与初始化组织程序，区分局部变量、下标范围与每组数据的清空。",
-          "goals": [
-            "把求解步骤拆为可调用函数",
-            "正确初始化数组并覆盖端点和空情况",
-            "多组数据运行时没有残留状态"
-          ],
-          "prerequisites": {
-            "gateIds": [
-              "stage-01-gate-01"
-            ],
-            "topicIds": []
-          },
+          "sectionId": "lp2-sec-cpp-toolkit-program-flow",
+          "sectionTitle": "A · 程序能跑通",
+          "routeId": null,
+          "scope": "core",
           "optional": false,
-          "scope": "题目难度仅为本关迁移练习的选题窗口；初学专项题可低于此区间。",
-          "learningTitle": "初识函数 · 给重复步骤一个名字",
-          "learningDescription": "把重复步骤封装成函数，用数组保存一批数据，并明确每次初始化的范围。这种输入、处理、输出的拆分方式，也会帮助你写清后面的二分判定与搜索过程。",
-          "threadGateIds": [
-            "stage-01-gate-04",
-            "stage-04-gate-01",
-            "stage-04-gate-02"
-          ]
-        },
-        {
-          "id": "stage-01-gate-03",
-          "index": 3,
-          "title": "vector 与 string：序列存取",
-          "kind": "learning",
           "topicIds": [
-            "xcpc-vector-1",
-            "algorithm-string"
-          ],
-          "cf": {
-            "min": 0,
-            "max": 800
-          },
-          "luoguDifficulty": [
-            "入门"
-          ],
-          "description": "使用 vector 的长度、下标、push_back 与 string 的字符访问，避免迭代器和下标越界。",
-          "goals": [
-            "独立完成动态数组的读入与遍历",
-            "完成字符统计、拼接与区间访问",
-            "解释容器大小与合法下标的关系"
-          ],
-          "prerequisites": {
-            "gateIds": [
-              "stage-01-gate-02"
-            ],
-            "topicIds": []
-          },
-          "optional": false,
-          "scope": "题目难度仅为本关迁移练习的选题窗口；初学专项题可低于此区间。",
-          "learningTitle": "初识 STL（一）· 存好一串数据",
-          "learningDescription": "从固定数组走向 vector 与 string，练习按下标访问、遍历和增删。先熟悉容器怎样保存序列，再学习排序与查找，避免把算法错误和接口错误混在一起。",
-          "threadGateIds": [
-            "stage-01-gate-05",
-            "stage-02-gate-07",
-            "stage-03-gate-03"
-          ]
-        },
-        {
-          "id": "stage-01-gate-04",
-          "index": 4,
-          "title": "混练：函数、vector 与 string",
-          "kind": "mixed",
-          "topicIds": [
-            "xcpc-函数-1",
-            "xcpc-vector-1",
-            "algorithm-string"
-          ],
-          "cf": {
-            "min": 0,
-            "max": 800
-          },
-          "luoguDifficulty": [
-            "入门"
-          ],
-          "description": "混合使用函数、vector、string；选题时隐藏专题标签，先独立辨型再实现。",
-          "goals": [
-            "在不看标签与题解的情况下提出完整思路",
-            "独立实现并通过所选平台的评测",
-            "复盘关键转化、错误解法与复杂度瓶颈"
-          ],
-          "prerequisites": {
-            "gateIds": [
-              "stage-01-gate-03"
-            ],
-            "topicIds": []
-          },
-          "optional": false,
-          "scope": "区间只用于选择综合新题，不保证单题涵盖列出的所有算法。",
-          "learningTitle": "串联 STL · 函数处理序列",
-          "learningDescription": "用函数接收 vector 或 string，把读入、统计与结果输出连成完整流程。这里检验的不是记住几个接口，而是能否在一道题里稳定组织序列数据和处理步骤。",
-          "threadGateIds": [
-            "stage-01-gate-02",
-            "stage-01-gate-03",
-            "stage-02-gate-07"
-          ]
-        },
-        {
-          "id": "stage-01-gate-05",
-          "index": 5,
-          "title": "pair 与 sort：比较和排序",
-          "kind": "learning",
-          "topicIds": [
-            "xcpc-pair-1",
-            "algorithm-常用算法函数与迭代器"
-          ],
-          "cf": {
-            "min": 0,
-            "max": 800
-          },
-          "luoguDifficulty": [
-            "入门"
-          ],
-          "description": "使用 pair 表达双关键字，用 sort 默认顺序与比较器完成排序。",
-          "goals": [
-            "正确读写 first/second 并解释默认字典序",
-            "编写满足严格弱序的比较器",
-            "说明 sort 的复杂度并处理相等关键字"
-          ],
-          "prerequisites": {
-            "gateIds": [
-              "stage-01-gate-04"
-            ],
-            "topicIds": []
-          },
-          "optional": false,
-          "scope": "题目难度仅为本关迁移练习的选题窗口；初学专项题可低于此区间。",
-          "learningTitle": "初识 STL（二）· 排好数据再观察",
-          "learningDescription": "用 pair 表达两个相关属性，用 sort 按明确规则排列。排序既改变处理顺序，也可能显露原来藏在题面里的结构，是后面贪心、二分与双指针的常用准备。",
-          "threadGateIds": [
-            "stage-02-gate-10",
-            "stage-03-gate-03",
-            "stage-03-gate-05"
-          ]
-        },
-        {
-          "id": "stage-01-gate-06",
-          "index": 6,
-          "title": "枚举与模拟：逐步执行题意",
-          "kind": "learning",
-          "topicIds": [
-            "algorithm-content-feishu-part-1-1",
-            "algorithm-枚举"
-          ],
-          "cf": {
-            "min": 0,
-            "max": 800
-          },
-          "luoguDifficulty": [
-            "入门"
-          ],
-          "description": "把自然语言规则翻译成枚举范围、状态更新和合法性判断。",
-          "goals": [
-            "列出枚举对象并说明是否遗漏或重复",
-            "逐步模拟题意，处理多组和边界数据",
-            "用手算样例与反例定位实现错误"
-          ],
-          "prerequisites": {
-            "gateIds": [
-              "stage-01-gate-05"
-            ],
-            "topicIds": []
-          },
-          "optional": false,
-          "scope": "题目难度仅为本关迁移练习的选题窗口；初学专项题可低于此区间。",
-          "learningTitle": "初识枚举 · 先把可能性走一遍",
-          "learningDescription": "把模拟写成按规则变化的状态，把枚举写成候选方案与合法性检查。朴素做法能先给出正确答案，也会成为之后复杂度优化和对拍验证的参照。",
-          "threadGateIds": [
-            "stage-01-gate-07",
-            "stage-01-gate-11",
-            "stage-04-gate-02"
-          ]
-        },
-        {
-          "id": "stage-01-gate-07",
-          "index": 7,
-          "title": "复杂度分析：从范围选择循环",
-          "kind": "learning",
-          "topicIds": [
-            "xcpc-时空复杂度分析-1",
-            "algorithm-枚举"
-          ],
-          "cf": {
-            "min": 0,
-            "max": 800
-          },
-          "luoguDifficulty": [
-            "入门"
-          ],
-          "description": "从 n 的范围判断 O(n)、O(n log n)、O(n²) 等方案，注意循环嵌套与容器操作成本。",
-          "goals": [
-            "估算时间和空间消耗",
-            "排除明显不可行的暴力方案",
-            "说明最终实现在哪个数据范围内可运行"
-          ],
-          "prerequisites": {
-            "gateIds": [
-              "stage-01-gate-06"
-            ],
-            "topicIds": []
-          },
-          "optional": false,
-          "scope": "题目难度仅为本关迁移练习的选题窗口；初学专项题可低于此区间。",
-          "learningTitle": "初识复杂度 · 循环能跑多远",
-          "learningDescription": "接着观察枚举会执行多少次，用数据范围估算时间和空间。先知道哪里做了重复工作，才有理由选择排序、预处理或更紧凑的搜索，而不是只凭模板猜解法。",
-          "threadGateIds": [
-            "stage-01-gate-06",
-            "stage-03-gate-01",
-            "stage-04-gate-07"
-          ]
-        },
-        {
-          "id": "stage-01-gate-08",
-          "index": 8,
-          "title": "混练：sort、枚举与模拟",
-          "kind": "mixed",
-          "topicIds": [
-            "algorithm-常用算法函数与迭代器",
+            "algorithm-数组初始化与-memset",
             "algorithm-content-feishu-part-1-1"
           ],
-          "cf": {
-            "min": 0,
-            "max": 800
-          },
-          "luoguDifficulty": [
-            "入门"
-          ],
-          "description": "混合使用算法函数与迭代器、枚举与模拟；选题时隐藏专题标签，先独立辨型再实现。",
+          "luoguDifficulty": [],
+          "description": "用分支和循环表达操作顺序，维护一维、二维数组和字符串下标；检查初始化与多组数据重置。",
           "goals": [
-            "在不看标签与题解的情况下提出完整思路",
-            "独立实现并通过所选平台的评测",
-            "复盘关键转化、错误解法与复杂度瓶颈"
+            "将题意步骤写成正确的分支与循环",
+            "检查数组首尾、空范围和二维下标",
+            "多组输入之间正确重置状态"
           ],
+          "learningTitle": "分支、循环与数组边界",
+          "learningDescription": "用分支和循环表达操作顺序，维护一维、二维数组和字符串下标；检查初始化与多组数据重置。",
           "prerequisites": {
             "gateIds": [
-              "stage-01-gate-07"
+              "lp2-cpp-toolkit-program-flow-types-io"
             ],
-            "topicIds": []
+            "topicIds": [
+              "algorithm-万能头文件与标准库使用",
+              "algorithm-int128-与整数溢出"
+            ]
           },
-          "optional": false,
-          "scope": "区间只用于选择综合新题，不保证单题涵盖列出的所有算法。",
-          "learningTitle": "串联排序 · 让枚举更有条理",
-          "learningDescription": "先考虑直接模拟与枚举，再判断排序能否简化处理顺序。用这一组题练习从题意到数据、从数据到步骤的完整过程，并解释每一步对答案有什么作用。",
           "threadGateIds": [
-            "stage-01-gate-05",
-            "stage-01-gate-06",
-            "stage-02-gate-04"
+            "lp2-cpp-toolkit-program-flow-types-io",
+            "lp2-cpp-toolkit-program-flow-practice-assessment"
           ]
         },
         {
-          "id": "stage-01-gate-09",
-          "index": 9,
-          "title": "引用与结构体：组织题目数据",
-          "kind": "learning",
+          "id": "lp2-cpp-toolkit-program-flow-practice-assessment",
+          "index": 3,
+          "title": "混练验收：程序能跑通",
+          "kind": "challenge",
+          "sectionId": "lp2-sec-cpp-toolkit-program-flow",
+          "sectionTitle": "A · 程序能跑通",
+          "routeId": null,
+          "scope": "core",
+          "optional": false,
           "topicIds": [
+            "algorithm-万能头文件与标准库使用",
+            "algorithm-int128-与整数溢出",
+            "algorithm-数组初始化与-memset",
+            "algorithm-content-feishu-part-1-1"
+          ],
+          "luoguDifficulty": [],
+          "description": "围绕程序能跑通完成变化任务与独立应用，核对方法选择、实现和边界。",
+          "goals": [
+            "独立处理多组输入、分支与循环，覆盖空边界、极值和二维下标。",
+            "独立完成程序能跑通的变化任务，说明选择方法的理由",
+            "检查边界或用小规模对照验证，并记录本段的一次错误与修正"
+          ],
+          "learningTitle": "程序能跑通 · 独立验收",
+          "learningDescription": "组合运用类型、输入输出与整数范围、分支、循环与数组边界，先比较不同方法，再独立完成无标签任务并记录验证结果。",
+          "prerequisites": {
+            "gateIds": [
+              "lp2-cpp-toolkit-program-flow-types-io",
+              "lp2-cpp-toolkit-program-flow-branches-loops"
+            ],
+            "topicIds": [
+              "algorithm-万能头文件与标准库使用",
+              "algorithm-int128-与整数溢出",
+              "algorithm-数组初始化与-memset",
+              "algorithm-content-feishu-part-1-1"
+            ]
+          },
+          "threadGateIds": [
+            "lp2-cpp-toolkit-program-flow-branches-loops",
+            "lp2-cpp-toolkit-data-organization-functions-records"
+          ]
+        },
+        {
+          "id": "lp2-cpp-toolkit-data-organization-functions-records",
+          "index": 4,
+          "title": "函数、引用与结构体",
+          "kind": "learning",
+          "sectionId": "lp2-sec-cpp-toolkit-data-organization",
+          "sectionTitle": "B · 数据能组织",
+          "routeId": null,
+          "scope": "core",
+          "optional": false,
+          "topicIds": [
+            "xcpc-函数-1",
             "xcpc-引用-1",
             "xcpc-结构体-类-1"
           ],
-          "cf": {
-            "min": 0,
-            "max": 800
-          },
-          "luoguDifficulty": [
-            "入门"
-          ],
-          "description": "用引用传参和结构体保存关联数据，理解值拷贝、修改与对象生命周期。",
+          "luoguDifficulty": [],
+          "description": "定义参数与返回值，用结构体组织记录；区分值传递、引用、作用域和生命周期。",
           "goals": [
-            "区分值传递与引用传递",
-            "用结构体组织一条记录并参与排序",
-            "避免返回局部引用或使用失效对象"
+            "把记录处理拆成参数与职责清楚的函数",
+            "选择值传递或引用并解释修改是否影响调用者",
+            "用结构体保存关联字段且不混淆作用域"
           ],
+          "learningTitle": "函数、引用与结构体",
+          "learningDescription": "定义参数与返回值，用结构体组织记录；区分值传递、引用、作用域和生命周期。",
           "prerequisites": {
             "gateIds": [
-              "stage-01-gate-08"
+              "lp2-cpp-toolkit-program-flow-practice-assessment"
             ],
-            "topicIds": []
+            "topicIds": [
+              "algorithm-万能头文件与标准库使用",
+              "algorithm-int128-与整数溢出",
+              "algorithm-数组初始化与-memset",
+              "algorithm-content-feishu-part-1-1"
+            ]
           },
-          "optional": false,
-          "scope": "题目难度仅为本关迁移练习的选题窗口；初学专项题可低于此区间。",
-          "learningTitle": "组织数据 · 引用与结构体",
-          "learningDescription": "当一条记录有多个属性时，用结构体让含义更清楚；传递与修改数据时，分清值和引用。配合已经学过的排序，你就能处理带编号、名称和数值的完整记录。",
           "threadGateIds": [
-            "stage-01-gate-02",
-            "stage-01-gate-05",
-            "stage-01-gate-12"
+            "lp2-cpp-toolkit-program-flow-practice-assessment",
+            "lp2-cpp-toolkit-data-organization-addresses"
           ]
         },
         {
-          "id": "stage-01-gate-10",
-          "index": 10,
-          "title": "递推与迭代：维护简单状态",
+          "id": "lp2-cpp-toolkit-data-organization-addresses",
+          "index": 5,
+          "title": "地址、指针与悬垂引用",
           "kind": "learning",
+          "sectionId": "lp2-sec-cpp-toolkit-data-organization",
+          "sectionTitle": "B · 数据能组织",
+          "routeId": null,
+          "scope": "core",
+          "optional": false,
           "topicIds": [
-            "xcpc-递推-1",
-            "algorithm-迭代基础"
+            "xcpc-指针-1",
+            "xcpc-引用-1"
           ],
-          "cf": {
-            "min": 0,
-            "max": 800
-          },
-          "luoguDifficulty": [
-            "入门"
-          ],
-          "description": "用递推式和循环维护简单状态，正确设置初值、顺序与终止条件。",
+          "luoguDifficulty": [],
+          "description": "理解地址与解引用、对象生命周期；不返回局部对象引用，不要求手动内存管理。",
           "goals": [
-            "解释每轮循环保存的状态",
-            "根据递推关系写出迭代实现",
-            "检查最小规模、单元素与边界输入"
+            "画出变量、地址与引用的对应关系",
+            "识别局部对象失效后的悬垂访问",
+            "用小程序验证解引用与对象修改"
           ],
+          "learningTitle": "地址、指针与悬垂引用",
+          "learningDescription": "理解地址与解引用、对象生命周期；不返回局部对象引用，不要求手动内存管理。",
           "prerequisites": {
             "gateIds": [
-              "stage-01-gate-09"
+              "lp2-cpp-toolkit-data-organization-functions-records"
             ],
-            "topicIds": []
+            "topicIds": [
+              "xcpc-函数-1",
+              "xcpc-引用-1",
+              "xcpc-结构体-类-1"
+            ]
           },
-          "optional": false,
-          "scope": "题目难度仅为本关迁移练习的选题窗口；初学专项题可低于此区间。",
-          "learningTitle": "初识递推 · 从已知走向下一步",
-          "learningDescription": "用少量已知量逐步算出后续结果，写清每轮迭代保存什么。递推不一定是动态规划，但这种状态含义与更新顺序的意识，会在后面的 DP 中继续发挥作用。",
           "threadGateIds": [
-            "stage-05-gate-01",
-            "stage-05-gate-02",
-            "stage-08-gate-10"
+            "lp2-cpp-toolkit-data-organization-functions-records",
+            "lp2-cpp-toolkit-data-organization-sequences"
           ]
         },
         {
-          "id": "stage-01-gate-11",
-          "index": 11,
-          "title": "对拍：用枚举检查边界",
+          "id": "lp2-cpp-toolkit-data-organization-sequences",
+          "index": 6,
+          "title": "vector、string 与 pair",
           "kind": "learning",
-          "topicIds": [
-            "xcpc-对拍-1",
-            "algorithm-枚举"
-          ],
-          "cf": {
-            "min": 0,
-            "max": 800
-          },
-          "luoguDifficulty": [
-            "入门"
-          ],
-          "description": "用小规模枚举实现可信暴力，与待测程序对比并缩小错误样例。",
-          "goals": [
-            "写出独立的暴力参考解",
-            "生成小范围合法数据并比较输出",
-            "记录最小反例和具体错误原因"
-          ],
-          "prerequisites": {
-            "gateIds": [
-              "stage-01-gate-10"
-            ],
-            "topicIds": []
-          },
+          "sectionId": "lp2-sec-cpp-toolkit-data-organization",
+          "sectionTitle": "B · 数据能组织",
+          "routeId": null,
+          "scope": "core",
           "optional": false,
-          "scope": "题目难度仅为本关迁移练习的选题窗口；初学专项题可低于此区间。",
-          "learningTitle": "初识对拍 · 用朴素答案查错误",
-          "learningDescription": "保留简单枚举作为参照，把待检查程序与它的输出逐组比较。发现不同后缩小数据、寻找最小反例，让之前学过的边界与复杂度分析真正参与调试。",
-          "threadGateIds": [
-            "stage-01-gate-06",
-            "stage-03-gate-11",
-            "stage-02-gate-10"
-          ]
-        },
-        {
-          "id": "stage-01-gate-12",
-          "index": 12,
-          "title": "挑战：STL 排序、枚举与模拟综合",
-          "kind": "challenge",
           "topicIds": [
             "xcpc-vector-1",
-            "algorithm-常用算法函数与迭代器",
-            "algorithm-content-feishu-part-1-1"
+            "algorithm-string",
+            "xcpc-pair-1"
           ],
-          "cf": {
-            "min": 0,
-            "max": 800
-          },
-          "luoguDifficulty": [
-            "入门"
-          ],
-          "description": "本阶段以vector、算法函数与迭代器、枚举与模拟等已学方法为参考，混排新题，检验独立推导与组合能力。",
+          "luoguDifficulty": [],
+          "description": "初始化、遍历、增删和查找序列；掌握pair与tuple表达组合数据及迭代器失效基础规则。",
           "goals": [
-            "在不看标签与题解的情况下提出完整思路",
-            "独立实现并通过所选平台的评测",
-            "复盘关键转化、错误解法与复杂度瓶颈"
+            "独立完成序列与字符串的增删查找",
+            "用pair表达关联值并正确访问成员",
+            "指出一次扩容后哪些迭代器不能继续使用"
           ],
+          "learningTitle": "vector、string 与 pair",
+          "learningDescription": "初始化、遍历、增删和查找序列；掌握pair与tuple表达组合数据及迭代器失效基础规则。",
           "prerequisites": {
             "gateIds": [
-              "stage-01-gate-11"
+              "lp2-cpp-toolkit-data-organization-addresses"
             ],
-            "topicIds": []
+            "topicIds": [
+              "xcpc-指针-1",
+              "xcpc-引用-1"
+            ]
           },
-          "optional": false,
-          "scope": "区间只用于选择综合新题，不保证单题涵盖列出的所有算法。",
-          "learningTitle": "基础合流 · STL、枚举与模拟",
-          "learningDescription": "不按单个知识点给提示，把容器存储、排序和逐步执行题意组合起来。做完后回看：哪些步骤负责正确性，哪些步骤只是整理数据，为下一章选择容器打好基础。",
           "threadGateIds": [
-            "stage-01-gate-05",
-            "stage-01-gate-06",
-            "stage-02-gate-12"
+            "lp2-cpp-toolkit-data-organization-addresses",
+            "lp2-cpp-toolkit-data-organization-practice-assessment"
+          ]
+        },
+        {
+          "id": "lp2-cpp-toolkit-data-organization-practice-assessment",
+          "index": 7,
+          "title": "混练验收：数据能组织",
+          "kind": "challenge",
+          "sectionId": "lp2-sec-cpp-toolkit-data-organization",
+          "sectionTitle": "B · 数据能组织",
+          "routeId": null,
+          "scope": "core",
+          "optional": false,
+          "topicIds": [
+            "xcpc-函数-1",
+            "xcpc-引用-1",
+            "xcpc-结构体-类-1",
+            "xcpc-指针-1",
+            "xcpc-vector-1",
+            "algorithm-string"
+          ],
+          "luoguDifficulty": [],
+          "description": "围绕数据能组织完成变化任务与独立应用，核对方法选择、实现和边界。",
+          "goals": [
+            "用函数和结构体整理记录；能说明值传递、引用、生命周期及序列操作代价。",
+            "独立完成数据能组织的变化任务，说明选择方法的理由",
+            "检查边界或用小规模对照验证，并记录本段的一次错误与修正"
+          ],
+          "learningTitle": "数据能组织 · 独立验收",
+          "learningDescription": "组合运用函数、引用与结构体、地址、指针与悬垂引用、vector、string 与 pair，先比较不同方法，再独立完成无标签任务并记录验证结果。",
+          "prerequisites": {
+            "gateIds": [
+              "lp2-cpp-toolkit-data-organization-functions-records",
+              "lp2-cpp-toolkit-data-organization-addresses",
+              "lp2-cpp-toolkit-data-organization-sequences"
+            ],
+            "topicIds": [
+              "xcpc-函数-1",
+              "xcpc-引用-1",
+              "xcpc-结构体-类-1",
+              "xcpc-指针-1",
+              "xcpc-vector-1",
+              "algorithm-string"
+            ]
+          },
+          "threadGateIds": [
+            "lp2-cpp-toolkit-data-organization-sequences",
+            "lp2-cpp-toolkit-stl-selection-sorting-interfaces"
+          ]
+        },
+        {
+          "id": "lp2-cpp-toolkit-stl-selection-sorting-interfaces",
+          "index": 8,
+          "title": "排序、比较器与标准算法接口",
+          "kind": "learning",
+          "sectionId": "lp2-sec-cpp-toolkit-stl-selection",
+          "sectionTitle": "C · 工具能选对",
+          "routeId": null,
+          "scope": "core",
+          "optional": false,
+          "topicIds": [
+            "algorithm-常用算法函数与迭代器",
+            "xcpc-pair-1"
+          ],
+          "luoguDifficulty": [],
+          "description": "学习sort、stable_sort、reverse、unique、accumulate、count/find、next_permutation；比较器遵守严格弱序，简单lambda语法在此结束。",
+          "goals": [
+            "编写多关键字比较器并测试相等元素",
+            "完成排序去重和排列遍历",
+            "解释unique返回值与真正删除元素的区别"
+          ],
+          "learningTitle": "排序、比较器与标准算法接口",
+          "learningDescription": "学习sort、stable_sort、reverse、unique、accumulate、count/find、next_permutation；比较器遵守严格弱序，简单lambda语法在此结束。",
+          "prerequisites": {
+            "gateIds": [
+              "lp2-cpp-toolkit-data-organization-practice-assessment"
+            ],
+            "topicIds": [
+              "xcpc-函数-1",
+              "xcpc-引用-1",
+              "xcpc-结构体-类-1",
+              "xcpc-指针-1",
+              "xcpc-vector-1",
+              "algorithm-string"
+            ]
+          },
+          "threadGateIds": [
+            "lp2-cpp-toolkit-data-organization-practice-assessment",
+            "lp2-cpp-toolkit-stl-selection-ordered-containers"
+          ]
+        },
+        {
+          "id": "lp2-cpp-toolkit-stl-selection-ordered-containers",
+          "index": 9,
+          "title": "map、set 与 multiset",
+          "kind": "learning",
+          "sectionId": "lp2-sec-cpp-toolkit-stl-selection",
+          "sectionTitle": "C · 工具能选对",
+          "routeId": null,
+          "scope": "core",
+          "optional": false,
+          "topicIds": [
+            "xcpc-map-1",
+            "xcpc-set-1",
+            "xcpc-multiset-1"
+          ],
+          "luoguDifficulty": [],
+          "description": "维护键值、去重与重复元素；区分find/count和下标访问，解释操作复杂度与删除规则。",
+          "goals": [
+            "根据是否允许重复选择set或multiset",
+            "实现词频统计且避免查询时意外插入",
+            "安全删除元素并说明查找与修改开销"
+          ],
+          "learningTitle": "map、set 与 multiset",
+          "learningDescription": "维护键值、去重与重复元素；区分find/count和下标访问，解释操作复杂度与删除规则。",
+          "prerequisites": {
+            "gateIds": [
+              "lp2-cpp-toolkit-stl-selection-sorting-interfaces"
+            ],
+            "topicIds": [
+              "algorithm-常用算法函数与迭代器",
+              "xcpc-pair-1"
+            ]
+          },
+          "threadGateIds": [
+            "lp2-cpp-toolkit-stl-selection-sorting-interfaces",
+            "lp2-cpp-toolkit-stl-selection-hash-containers"
+          ]
+        },
+        {
+          "id": "lp2-cpp-toolkit-stl-selection-hash-containers",
+          "index": 10,
+          "title": "unordered 容器与退化",
+          "kind": "learning",
+          "sectionId": "lp2-sec-cpp-toolkit-stl-selection",
+          "sectionTitle": "C · 工具能选对",
+          "routeId": null,
+          "scope": "core",
+          "optional": false,
+          "topicIds": [
+            "xcpc-unordered-map-1",
+            "xcpc-unordered-set-1"
+          ],
+          "luoguDifficulty": [],
+          "description": "正确调用哈希容器并说明平均复杂度、最坏退化与不保证顺序，避免把其迭代顺序当作答案。",
+          "goals": [
+            "实现哈希计数且不依赖遍历顺序",
+            "说明平均复杂度与最坏退化的差别",
+            "比较有序与无序容器的适用需求"
+          ],
+          "learningTitle": "unordered 容器与退化",
+          "learningDescription": "正确调用哈希容器并说明平均复杂度、最坏退化与不保证顺序，避免把其迭代顺序当作答案。",
+          "prerequisites": {
+            "gateIds": [
+              "lp2-cpp-toolkit-stl-selection-ordered-containers"
+            ],
+            "topicIds": [
+              "xcpc-map-1",
+              "xcpc-set-1",
+              "xcpc-multiset-1"
+            ]
+          },
+          "threadGateIds": [
+            "lp2-cpp-toolkit-stl-selection-ordered-containers",
+            "lp2-cpp-toolkit-stl-selection-adapters"
+          ]
+        },
+        {
+          "id": "lp2-cpp-toolkit-stl-selection-adapters",
+          "index": 11,
+          "title": "栈、队列、双端队列与堆接口",
+          "kind": "learning",
+          "sectionId": "lp2-sec-cpp-toolkit-stl-selection",
+          "sectionTitle": "C · 工具能选对",
+          "routeId": null,
+          "scope": "core",
+          "optional": false,
+          "topicIds": [
+            "algorithm-stack-queue",
+            "algorithm-deque",
+            "xcpc-priority-queue-1"
+          ],
+          "luoguDifficulty": [],
+          "description": "按处理顺序选择容器适配器，掌握top/front/pop与空容器条件；本章只学习使用接口。",
+          "goals": [
+            "按后进先出、先进先出或最值需求选容器",
+            "正确配对读取和弹出操作",
+            "覆盖空容器与重复优先级的测试"
+          ],
+          "learningTitle": "栈、队列、双端队列与堆接口",
+          "learningDescription": "按处理顺序选择容器适配器，掌握top/front/pop与空容器条件；本章只学习使用接口。",
+          "prerequisites": {
+            "gateIds": [
+              "lp2-cpp-toolkit-stl-selection-hash-containers"
+            ],
+            "topicIds": [
+              "xcpc-unordered-map-1",
+              "xcpc-unordered-set-1"
+            ]
+          },
+          "threadGateIds": [
+            "lp2-cpp-toolkit-stl-selection-hash-containers",
+            "lp2-cpp-toolkit-stl-selection-binary-search-interface"
+          ]
+        },
+        {
+          "id": "lp2-cpp-toolkit-stl-selection-binary-search-interface",
+          "index": 12,
+          "title": "二分接口与返回迭代器",
+          "kind": "learning",
+          "sectionId": "lp2-sec-cpp-toolkit-stl-selection",
+          "sectionTitle": "C · 工具能选对",
+          "routeId": null,
+          "scope": "core",
+          "optional": false,
+          "topicIds": [
+            "algorithm-常用算法函数与迭代器",
+            "algorithm-二分查找"
+          ],
+          "luoguDifficulty": [],
+          "description": "调用lower_bound、upper_bound和binary_search，验证有序前提、返回末尾与距离换算；边界不变量在第3章推导。",
+          "goals": [
+            "在有序序列中找到首个不小于与大于目标的位置",
+            "正确判断返回end的情况",
+            "把迭代器位置转为计数或下标并处理重复值"
+          ],
+          "learningTitle": "二分接口与返回迭代器",
+          "learningDescription": "调用lower_bound、upper_bound和binary_search，验证有序前提、返回末尾与距离换算；边界不变量在第3章推导。",
+          "prerequisites": {
+            "gateIds": [
+              "lp2-cpp-toolkit-stl-selection-adapters"
+            ],
+            "topicIds": [
+              "algorithm-stack-queue",
+              "algorithm-deque",
+              "xcpc-priority-queue-1"
+            ]
+          },
+          "threadGateIds": [
+            "lp2-cpp-toolkit-stl-selection-adapters",
+            "lp2-cpp-toolkit-stl-selection-practice-assessment"
+          ]
+        },
+        {
+          "id": "lp2-cpp-toolkit-stl-selection-practice-assessment",
+          "index": 13,
+          "title": "混练验收：工具能选对",
+          "kind": "challenge",
+          "sectionId": "lp2-sec-cpp-toolkit-stl-selection",
+          "sectionTitle": "C · 工具能选对",
+          "routeId": null,
+          "scope": "core",
+          "optional": false,
+          "topicIds": [
+            "algorithm-常用算法函数与迭代器",
+            "xcpc-pair-1",
+            "xcpc-map-1",
+            "xcpc-set-1",
+            "xcpc-multiset-1",
+            "xcpc-unordered-map-1"
+          ],
+          "luoguDifficulty": [],
+          "description": "围绕工具能选对完成变化任务与独立应用，核对方法选择、实现和边界。",
+          "goals": [
+            "独立选择排序、映射、集合或队列；比较器满足严格弱序，不对空容器取值。",
+            "独立完成工具能选对的变化任务，说明选择方法的理由",
+            "检查边界或用小规模对照验证，并记录本段的一次错误与修正"
+          ],
+          "learningTitle": "工具能选对 · 独立验收",
+          "learningDescription": "组合运用排序、比较器与标准算法接口、map、set 与 multiset、unordered 容器与退化、栈、队列、双端队列与堆接口、二分接口与返回迭代器，先比较不同方法，再独立完成无标签任务并记录验证结果。",
+          "prerequisites": {
+            "gateIds": [
+              "lp2-cpp-toolkit-stl-selection-sorting-interfaces",
+              "lp2-cpp-toolkit-stl-selection-ordered-containers",
+              "lp2-cpp-toolkit-stl-selection-hash-containers",
+              "lp2-cpp-toolkit-stl-selection-adapters",
+              "lp2-cpp-toolkit-stl-selection-binary-search-interface"
+            ],
+            "topicIds": [
+              "algorithm-常用算法函数与迭代器",
+              "xcpc-pair-1",
+              "xcpc-map-1",
+              "xcpc-set-1",
+              "xcpc-multiset-1",
+              "xcpc-unordered-map-1"
+            ]
+          },
+          "threadGateIds": [
+            "lp2-cpp-toolkit-stl-selection-binary-search-interface",
+            "lp2-cpp-toolkit-reliable-code-bits-complexity"
+          ]
+        },
+        {
+          "id": "lp2-cpp-toolkit-reliable-code-bits-complexity",
+          "index": 14,
+          "title": "位运算、复杂度与可靠实现",
+          "kind": "learning",
+          "sectionId": "lp2-sec-cpp-toolkit-reliable-code",
+          "sectionTitle": "D · 程序能写稳",
+          "routeId": null,
+          "scope": "core",
+          "optional": false,
+          "topicIds": [
+            "algorithm-content-feishu-part-5-1",
+            "xcpc-时空复杂度分析-1",
+            "algorithm-int128-与整数溢出"
+          ],
+          "luoguDifficulty": [],
+          "description": "掌握二进制、按位运算和移位边界；根据规模估算时间空间，排查溢出、越界、未清空和迭代器失效。",
+          "goals": [
+            "手算按位与、或、异或及合法移位的结果",
+            "从输入规模估计循环次数和数组空间",
+            "用边界数据暴露溢出或越界"
+          ],
+          "learningTitle": "位运算、复杂度与可靠实现",
+          "learningDescription": "掌握二进制、按位运算和移位边界；根据规模估算时间空间，排查溢出、越界、未清空和迭代器失效。",
+          "prerequisites": {
+            "gateIds": [
+              "lp2-cpp-toolkit-stl-selection-practice-assessment"
+            ],
+            "topicIds": [
+              "algorithm-常用算法函数与迭代器",
+              "xcpc-pair-1",
+              "xcpc-map-1",
+              "xcpc-set-1",
+              "xcpc-multiset-1",
+              "xcpc-unordered-map-1"
+            ]
+          },
+          "threadGateIds": [
+            "lp2-cpp-toolkit-stl-selection-practice-assessment",
+            "lp2-cpp-toolkit-reliable-code-debugging"
+          ]
+        },
+        {
+          "id": "lp2-cpp-toolkit-reliable-code-debugging",
+          "index": 15,
+          "title": "调试、边界与对拍流程",
+          "kind": "learning",
+          "sectionId": "lp2-sec-cpp-toolkit-reliable-code",
+          "sectionTitle": "D · 程序能写稳",
+          "routeId": null,
+          "scope": "core",
+          "optional": false,
+          "topicIds": [
+            "xcpc-对拍-1",
+            "xcpc-时空复杂度分析-1"
+          ],
+          "luoguDifficulty": [],
+          "description": "用断言、最小失败样例和边界检查定位错误，认识对拍工作流；真正设计暴力对照在第2章完成。",
+          "goals": [
+            "保留能重现错误的最小输入",
+            "使用断言定位首次出现错误的状态",
+            "区分编译、运行、边界与算法逻辑错误"
+          ],
+          "learningTitle": "调试、边界与对拍流程",
+          "learningDescription": "用断言、最小失败样例和边界检查定位错误，认识对拍工作流；真正设计暴力对照在第2章完成。",
+          "prerequisites": {
+            "gateIds": [
+              "lp2-cpp-toolkit-reliable-code-bits-complexity"
+            ],
+            "topicIds": [
+              "algorithm-content-feishu-part-5-1",
+              "xcpc-时空复杂度分析-1",
+              "algorithm-int128-与整数溢出"
+            ]
+          },
+          "threadGateIds": [
+            "lp2-cpp-toolkit-reliable-code-bits-complexity",
+            "lp2-cpp-toolkit-reliable-code-practice-assessment"
+          ]
+        },
+        {
+          "id": "lp2-cpp-toolkit-reliable-code-practice-assessment",
+          "index": 16,
+          "title": "混练验收：程序能写稳",
+          "kind": "challenge",
+          "sectionId": "lp2-sec-cpp-toolkit-reliable-code",
+          "sectionTitle": "D · 程序能写稳",
+          "routeId": null,
+          "scope": "core",
+          "optional": false,
+          "topicIds": [
+            "algorithm-content-feishu-part-5-1",
+            "xcpc-时空复杂度分析-1",
+            "algorithm-int128-与整数溢出",
+            "xcpc-对拍-1"
+          ],
+          "luoguDifficulty": [],
+          "description": "围绕程序能写稳完成变化任务与独立应用，核对方法选择、实现和边界。",
+          "goals": [
+            "不看模板完成记录排序、词频统计和操作模拟；允许查标准库文档。",
+            "解释所用容器的时间复杂度、整数范围和比较器规则。",
+            "独立修复包含越界、溢出或清空遗漏的程序，并记录原因。"
+          ],
+          "learningTitle": "程序能写稳 · 独立验收",
+          "learningDescription": "组合运用位运算、复杂度与可靠实现、调试、边界与对拍流程，先比较不同方法，再独立完成无标签任务并记录验证结果。",
+          "prerequisites": {
+            "gateIds": [
+              "lp2-cpp-toolkit-reliable-code-bits-complexity",
+              "lp2-cpp-toolkit-reliable-code-debugging",
+              "lp2-cpp-toolkit-program-flow-practice-assessment",
+              "lp2-cpp-toolkit-data-organization-practice-assessment",
+              "lp2-cpp-toolkit-stl-selection-practice-assessment"
+            ],
+            "topicIds": [
+              "algorithm-content-feishu-part-5-1",
+              "xcpc-时空复杂度分析-1",
+              "algorithm-int128-与整数溢出",
+              "xcpc-对拍-1",
+              "algorithm-万能头文件与标准库使用",
+              "algorithm-数组初始化与-memset"
+            ]
+          },
+          "threadGateIds": [
+            "lp2-cpp-toolkit-reliable-code-debugging"
           ]
         }
       ]
@@ -565,490 +1706,604 @@
     {
       "id": "stage-02",
       "index": 2,
-      "title": "用 STL 维护计数与顺序",
-      "description": "用容器维护计数、顺序与最值，独立解决多步骤基础题。",
-      "goal": "用容器维护计数、顺序与最值，独立解决多步骤基础题。",
-      "cf": {
-        "min": 800,
-        "max": 900
-      },
-      "luoguDifficulty": [
-        "入门",
-        "普及−"
-      ],
-      "rationale": "本章按综合做题能力组织，不要求区间中的每道题都使用这些算法，也不要求学完所有专题才进入下一章。",
+      "title": "枚举、模拟与构造：把题意变成程序",
+      "description": "不用算法标签提示，也能把题意拆成状态、条件和操作，写出正确的暴力基线，并解释为什么没有漏解。",
+      "goal": "不用算法标签提示，也能把题意拆成状态、条件和操作，写出正确的暴力基线，并解释为什么没有漏解。",
+      "rationale": "基础实现与整数小工具集中闭合；筛法按核心 / 选学区分，避免为追求齐全增加入门门槛。",
+      "entryText": "能使用函数、数组、字符串、常用容器；理解循环复杂度和位运算语法。",
+      "completionMode": "core",
       "completionCriteria": [
-        "独立完成本章综合题组中的新题",
-        "覆盖至少两种已学方法；后续阶段回收前面基础工具",
-        "说明正确性、复杂度，并记录一次完整复盘"
+        "完成模拟、枚举、基础构造三类陌生任务，解释不重不漏或构造充分性。",
+        "独立实现递归枚举和一种基础整数预处理，并处理 0、1、负数约定与乘法溢出。",
+        "对拍工具能打印并保留失败输入；题目正确性不能只凭随机测试。"
       ],
+      "scopeDescription": "线性筛在本章同单元提供完整选学：不作为入门基础验收条件；后续若选线性筛扩展需先完成该单元。归并排序用于说明分治，搜索空间剪枝留第 4 章。",
       "prerequisites": {
         "stageIds": [
           "stage-01"
         ]
       },
+      "luoguDifficulty": [],
+      "sections": [
+        {
+          "id": "lp2-sec-brute-models-simulation",
+          "title": "A · 忠实执行题意",
+          "scope": "core",
+          "routeId": null,
+          "description": "模拟与状态：流程模拟、日期与网格、操作序列；状态不变量、执行顺序和边界。",
+          "completionCriteria": [
+            "能明确状态、操作先后和边界，用手算轨迹核对程序。"
+          ],
+          "gateIds": [
+            "lp2-brute-models-simulation-state-simulation",
+            "lp2-brute-models-simulation-practice-assessment"
+          ],
+          "prerequisites": {
+            "gateIds": [
+              "lp2-cpp-toolkit-reliable-code-bits-complexity"
+            ],
+            "topicIds": []
+          }
+        },
+        {
+          "id": "lp2-sec-brute-models-complete-enumeration",
+          "title": "B · 不重不漏地枚举",
+          "scope": "core",
+          "routeId": null,
+          "description": "完整枚举：枚举对象与范围；排列、子集与组合；重复和遗漏；位掩码枚举。\n递归与分治入门：递归出口、参数、调用栈；递归枚举；用归并排序理解分治、合并与复杂度。",
+          "completionCriteria": [
+            "讲清枚举对象与完整性，能写递归出口并跟踪调用栈。"
+          ],
+          "gateIds": [
+            "lp2-brute-models-complete-enumeration-enumeration",
+            "lp2-brute-models-complete-enumeration-recursion",
+            "lp2-brute-models-complete-enumeration-divide-merge",
+            "lp2-brute-models-complete-enumeration-practice-assessment"
+          ],
+          "prerequisites": {
+            "gateIds": [
+              "lp2-brute-models-simulation-practice-assessment"
+            ],
+            "topicIds": []
+          }
+        },
+        {
+          "id": "lp2-sec-brute-models-construction-integers",
+          "title": "C · 构造与整数工具",
+          "scope": "core",
+          "routeId": null,
+          "description": "基础构造：奇偶、余数、配对和不变量；必要条件与充分条件；构造解并验证。\n基础整数工具：整除与余数；GCD / LCM；试除判素、质因数分解、约数枚举；埃式筛核心，线性筛本章选学。边界与乘法溢出一并讲清。",
+          "completionCriteria": [
+            "给出构造的可行条件；独立完成 GCD、试除、质因数分解和埃式筛。"
+          ],
+          "gateIds": [
+            "lp2-brute-models-construction-integers-constructive-invariants",
+            "lp2-brute-models-construction-integers-gcd-factorization",
+            "lp2-brute-models-construction-integers-prime-sieve",
+            "lp2-brute-models-construction-integers-linear-sieve",
+            "lp2-brute-models-construction-integers-practice-assessment"
+          ],
+          "prerequisites": {
+            "gateIds": [
+              "lp2-brute-models-complete-enumeration-practice-assessment"
+            ],
+            "topicIds": []
+          }
+        },
+        {
+          "id": "lp2-sec-brute-models-brute-validation",
+          "title": "D · 证明与验证闭合",
+          "scope": "core",
+          "routeId": null,
+          "description": "暴力验证与复盘：给优化算法写暴力对照；随机与边界数据；从 WA 定位到模型或实现问题。",
+          "completionCriteria": [
+            "为一个解法建立小规模暴力对照，并解释反例定位结果。"
+          ],
+          "gateIds": [
+            "lp2-brute-models-brute-validation-build-oracle",
+            "lp2-brute-models-brute-validation-practice-assessment"
+          ],
+          "prerequisites": {
+            "gateIds": [
+              "lp2-brute-models-construction-integers-practice-assessment"
+            ],
+            "topicIds": []
+          }
+        }
+      ],
       "gates": [
         {
-          "id": "stage-02-gate-01",
+          "id": "lp2-brute-models-simulation-state-simulation",
           "index": 1,
-          "title": "map：离散键与频次统计",
+          "title": "模拟中的状态与执行顺序",
           "kind": "learning",
-          "topicIds": [
-            "xcpc-map-1"
-          ],
-          "cf": {
-            "min": 800,
-            "max": 900
-          },
-          "luoguDifficulty": [
-            "入门",
-            "普及−"
-          ],
-          "description": "map：插入、查询、频次更新与删除",
-          "goals": [
-            "正确使用 find、count 与 operator[]，理解意外插入",
-            "用 map 维护频次并正确清空多组数据",
-            "说明有序键查询与插入的对数复杂度"
-          ],
-          "prerequisites": {
-            "gateIds": [],
-            "topicIds": []
-          },
+          "sectionId": "lp2-sec-brute-models-simulation",
+          "sectionTitle": "A · 忠实执行题意",
+          "routeId": null,
+          "scope": "core",
           "optional": false,
-          "scope": "题目难度仅为本关迁移练习的选题窗口；初学专项题可低于此区间。",
-          "learningTitle": "初识 STL（三）· 给频次安上键",
-          "learningDescription": "数组计数依赖合适的下标，map 则让字符串或离散数值也能对应频次。先分清键与值，再观察题目是否真正需要有序访问，后面才能比较不同映射容器。",
-          "threadGateIds": [
-            "stage-02-gate-04",
-            "stage-02-gate-07",
-            "stage-02-gate-11"
-          ]
-        },
-        {
-          "id": "stage-02-gate-02",
-          "index": 2,
-          "title": "set / multiset：集合与重复元素",
-          "kind": "learning",
           "topicIds": [
-            "xcpc-set-1",
-            "xcpc-multiset-1"
-          ],
-          "cf": {
-            "min": 800,
-            "max": 900
-          },
-          "luoguDifficulty": [
-            "入门",
-            "普及−"
-          ],
-          "description": "set / multiset：唯一键、重复元素与边界迭代器",
-          "goals": [
-            "区分 set 与 multiset 的去重语义",
-            "正确执行 lower_bound 和删除单个重复元素",
-            "检查 end() 与空集合边界"
-          ],
-          "prerequisites": {
-            "gateIds": [
-              "stage-02-gate-01"
-            ],
-            "topicIds": []
-          },
-          "optional": false,
-          "scope": "题目难度仅为本关迁移练习的选题窗口；初学专项题可低于此区间。",
-          "learningTitle": "初识 STL（四）· 集合里的重复",
-          "learningDescription": "从 map 的键转向 set 与 multiset，区分去重集合和允许重复的集合。通过插入、查找与删除维护当前元素，为后面动态窗口和顺序处理积累容器选择经验。",
-          "threadGateIds": [
-            "stage-02-gate-01",
-            "stage-02-gate-11",
-            "stage-03-gate-05"
-          ]
-        },
-        {
-          "id": "stage-02-gate-03",
-          "index": 3,
-          "title": "stack / queue：处理顺序",
-          "kind": "learning",
-          "topicIds": [
-            "algorithm-stack-queue"
-          ],
-          "cf": {
-            "min": 800,
-            "max": 900
-          },
-          "luoguDifficulty": [
-            "入门",
-            "普及−"
-          ],
-          "description": "stack / queue：后进先出和先进先出",
-          "goals": [
-            "用栈或队列表达正确的处理顺序",
-            "在 pop/top/front 前检查非空",
-            "完成括号或事件处理等基础模拟"
-          ],
-          "prerequisites": {
-            "gateIds": [
-              "stage-02-gate-02"
-            ],
-            "topicIds": []
-          },
-          "optional": false,
-          "scope": "题目难度仅为本关迁移练习的选题窗口；初学专项题可低于此区间。",
-          "learningTitle": "初识 STL（五）· 先来还是后到",
-          "learningDescription": "同样是一批待处理元素，栈与队列约定了不同的取出顺序。把这种顺序直接对应到题意中的等待和撤销，之后理解 BFS 的层次扩展会更自然。",
-          "threadGateIds": [
-            "stage-02-gate-06",
-            "stage-04-gate-03",
-            "stage-07-gate-03"
-          ]
-        },
-        {
-          "id": "stage-02-gate-04",
-          "index": 4,
-          "title": "混练：map 计数与排序",
-          "kind": "mixed",
-          "topicIds": [
-            "xcpc-map-1",
-            "algorithm-常用算法函数与迭代器"
-          ],
-          "cf": {
-            "min": 800,
-            "max": 900
-          },
-          "luoguDifficulty": [
-            "入门",
-            "普及−"
-          ],
-          "description": "混合使用map、算法函数与迭代器；选题时隐藏专题标签，先独立辨型再实现。",
-          "goals": [
-            "在不看标签与题解的情况下提出完整思路",
-            "独立实现并通过所选平台的评测",
-            "复盘关键转化、错误解法与复杂度瓶颈"
-          ],
-          "prerequisites": {
-            "gateIds": [
-              "stage-02-gate-03"
-            ],
-            "topicIds": []
-          },
-          "optional": false,
-          "scope": "区间只用于选择综合新题，不保证单题涵盖列出的所有算法。",
-          "learningTitle": "串联计数 · map 与排序分工",
-          "learningDescription": "把频次统计交给 map，把记录的处理顺序交给排序。练习判断题目需要的是按键合并、按值排序，还是两者共同完成，避免见到计数就只用一种容器。",
-          "threadGateIds": [
-            "stage-02-gate-01",
-            "stage-01-gate-05",
-            "stage-03-gate-09"
-          ]
-        },
-        {
-          "id": "stage-02-gate-05",
-          "index": 5,
-          "title": "priority_queue：每次取最值",
-          "kind": "learning",
-          "topicIds": [
-            "xcpc-priority-queue-1"
-          ],
-          "cf": {
-            "min": 800,
-            "max": 900
-          },
-          "luoguDifficulty": [
-            "入门",
-            "普及−"
-          ],
-          "description": "priority_queue：大根堆、小根堆与延迟删除",
-          "goals": [
-            "独立声明大根堆与小根堆",
-            "用 top/push/pop 维护当前候选最值",
-            "理解堆不提供整体有序遍历"
-          ],
-          "prerequisites": {
-            "gateIds": [
-              "stage-02-gate-04"
-            ],
-            "topicIds": []
-          },
-          "optional": false,
-          "scope": "题目难度仅为本关迁移练习的选题窗口；初学专项题可低于此区间。",
-          "learningTitle": "初识 STL（六）· 每次取出最值",
-          "learningDescription": "队列固定先后，priority_queue 则按优先级取出当前最值。理解堆维护的是可用候选集合，而不是完整排序，后面就能把它用于贪心选择和最短路扩展。",
-          "threadGateIds": [
-            "stage-02-gate-08",
-            "stage-02-gate-12",
-            "stage-06-gate-02"
-          ]
-        },
-        {
-          "id": "stage-02-gate-06",
-          "index": 6,
-          "title": "deque：两端存取与操作模拟",
-          "kind": "learning",
-          "topicIds": [
-            "algorithm-deque"
-          ],
-          "cf": {
-            "min": 800,
-            "max": 900
-          },
-          "luoguDifficulty": [
-            "入门",
-            "普及−"
-          ],
-          "description": "deque：从两端维护序列",
-          "goals": [
-            "正确使用 push_front/back 和 pop_front/back",
-            "解释与 vector、queue 的适用差异",
-            "完成双端操作模拟并处理空容器"
-          ],
-          "prerequisites": {
-            "gateIds": [
-              "stage-02-gate-05"
-            ],
-            "topicIds": []
-          },
-          "optional": false,
-          "scope": "题目难度仅为本关迁移练习的选题窗口；初学专项题可低于此区间。",
-          "learningTitle": "初识 STL（七）· 两端都能操作",
-          "learningDescription": "在栈和队列之后，用 deque 表达两端插入、两端删除的操作规则。先写对题目要求的顺序，再看哪些操作可以省去，为后面的单调队列准备容器基础。",
-          "threadGateIds": [
-            "stage-02-gate-03",
-            "stage-02-gate-08",
-            "stage-07-gate-05"
-          ]
-        },
-        {
-          "id": "stage-02-gate-07",
-          "index": 7,
-          "title": "string：截取、查找与字符统计",
-          "kind": "learning",
-          "topicIds": [
-            "algorithm-string",
-            "xcpc-map-1"
-          ],
-          "cf": {
-            "min": 800,
-            "max": 900
-          },
-          "luoguDifficulty": [
-            "入门",
-            "普及−"
-          ],
-          "description": "string：按字符与子串进行处理",
-          "goals": [
-            "正确使用 substr、find 与 npos",
-            "避免把字节下标误当作通用文字位置",
-            "结合 map 完成字符或字符串频次统计"
-          ],
-          "prerequisites": {
-            "gateIds": [
-              "stage-02-gate-06"
-            ],
-            "topicIds": []
-          },
-          "optional": false,
-          "scope": "题目难度仅为本关迁移练习的选题窗口；初学专项题可低于此区间。",
-          "learningTitle": "进阶 string · 从存取到处理",
-          "learningDescription": "回到第一章的 string，这次用截取、查找和字符统计组合处理文本。分清每个操作的代价，后面学习哈希与 KMP 时，才能看见专门匹配算法解决的重复工作。",
-          "threadGateIds": [
-            "stage-01-gate-03",
-            "stage-07-gate-09",
-            "stage-07-gate-10"
-          ]
-        },
-        {
-          "id": "stage-02-gate-08",
-          "index": 8,
-          "title": "混练：队列、堆与模拟",
-          "kind": "mixed",
-          "topicIds": [
-            "algorithm-stack-queue",
-            "xcpc-priority-queue-1",
             "algorithm-content-feishu-part-1-1"
           ],
-          "cf": {
-            "min": 800,
-            "max": 900
-          },
-          "luoguDifficulty": [
-            "入门",
-            "普及−"
-          ],
-          "description": "混合使用stack / queue、priority_queue、枚举与模拟；选题时隐藏专题标签，先独立辨型再实现。",
+          "luoguDifficulty": [],
+          "description": "定义状态、操作与不变量；用日期、网格或操作序列手算验证执行先后和边界。",
           "goals": [
-            "在不看标签与题解的情况下提出完整思路",
-            "独立实现并通过所选平台的评测",
-            "复盘关键转化、错误解法与复杂度瓶颈"
+            "列出每个时刻必须保存的状态",
+            "手算一组操作并逐步核对程序",
+            "覆盖操作先后、越界与终止条件"
           ],
+          "learningTitle": "模拟中的状态与执行顺序",
+          "learningDescription": "定义状态、操作与不变量；用日期、网格或操作序列手算验证执行先后和边界。",
           "prerequisites": {
             "gateIds": [
-              "stage-02-gate-07"
+              "lp2-cpp-toolkit-reliable-code-bits-complexity"
             ],
-            "topicIds": []
+            "topicIds": [
+              "algorithm-content-feishu-part-5-1",
+              "xcpc-时空复杂度分析-1",
+              "algorithm-int128-与整数溢出"
+            ]
           },
-          "optional": false,
-          "scope": "区间只用于选择综合新题，不保证单题涵盖列出的所有算法。",
-          "learningTitle": "串联容器 · 等待队列与优先选择",
-          "learningDescription": "面对一段连续发生的操作，判断哪些元素按到达顺序处理，哪些元素应优先取出。把队列、堆和模拟组合起来，练习用不同容器表达同一个流程的不同部分。",
           "threadGateIds": [
-            "stage-02-gate-03",
-            "stage-02-gate-05",
-            "stage-02-gate-12"
+            "lp2-brute-models-simulation-practice-assessment"
           ]
         },
         {
-          "id": "stage-02-gate-09",
-          "index": 9,
-          "title": "GCD 与 LCM：简单整除关系",
-          "kind": "learning",
-          "topicIds": [
-            "algorithm-content-feishu-part-5-2-2"
-          ],
-          "cf": {
-            "min": 800,
-            "max": 900
-          },
-          "luoguDifficulty": [
-            "入门",
-            "普及−"
-          ],
-          "description": "学习GCD 与 LCM的适用条件、基本实现与复杂度，再用独立练习验证。",
-          "goals": [
-            "解释GCD 与 LCM的核心不变量与适用边界",
-            "独立写出实现并说明时间与空间复杂度",
-            "完成基础练习与一道迁移题，记录失败原因"
-          ],
-          "prerequisites": {
-            "gateIds": [
-              "stage-02-gate-08"
-            ],
-            "topicIds": []
-          },
-          "optional": false,
-          "scope": "题目难度仅为本关迁移练习的选题窗口；初学专项题可低于此区间。",
-          "learningTitle": "初识数论 · GCD 与整除关系",
-          "learningDescription": "从逐个检查整除走向 GCD 与 LCM，理解它们分别描述怎样的公共关系。注意乘除顺序和溢出，再把这些关系带进枚举与搜索题，而不是只背求值函数。",
-          "threadGateIds": [
-            "stage-03-gate-07",
-            "stage-04-gate-06",
-            "stage-11-gate-10"
-          ]
-        },
-        {
-          "id": "stage-02-gate-10",
-          "index": 10,
-          "title": "贪心：排序后选择与反例",
-          "kind": "learning",
-          "topicIds": [
-            "algorithm-content-feishu-part-1-5",
-            "algorithm-常用算法函数与迭代器"
-          ],
-          "cf": {
-            "min": 800,
-            "max": 900
-          },
-          "luoguDifficulty": [
-            "入门",
-            "普及−"
-          ],
-          "description": "学习贪心、算法函数与迭代器的适用条件、基本实现与复杂度，再用独立练习验证。",
-          "goals": [
-            "解释贪心、算法函数与迭代器的核心不变量与适用边界",
-            "独立写出实现并说明时间与空间复杂度",
-            "完成基础练习与一道迁移题，记录失败原因"
-          ],
-          "prerequisites": {
-            "gateIds": [
-              "stage-02-gate-09"
-            ],
-            "topicIds": []
-          },
-          "optional": false,
-          "scope": "题目难度仅为本关迁移练习的选题窗口；初学专项题可低于此区间。",
-          "learningTitle": "初识贪心（一）· 排序后的选择",
-          "learningDescription": "排序让候选方案有了顺序，但当前最优选择未必带来整体最优。先尝试局部规则，再用反例检查；之后学习交换论证，给真正成立的规则补上理由。",
-          "threadGateIds": [
-            "stage-01-gate-05",
-            "stage-04-gate-09",
-            "stage-07-gate-06"
-          ]
-        },
-        {
-          "id": "stage-02-gate-11",
-          "index": 11,
-          "title": "unordered_map：哈希接口与退化",
-          "kind": "learning",
-          "topicIds": [
-            "xcpc-unordered-map-1",
-            "xcpc-unordered-set-1"
-          ],
-          "cf": {
-            "min": 800,
-            "max": 900
-          },
-          "luoguDifficulty": [
-            "入门",
-            "普及−"
-          ],
-          "description": "unordered_map / unordered_set：哈希容器的语义与风险",
-          "goals": [
-            "区分哈希容器与有序 map/set 的迭代顺序",
-            "说明平均复杂度与碰撞退化风险",
-            "选择适合题目需求的键类型与容器"
-          ],
-          "prerequisites": {
-            "gateIds": [
-              "stage-02-gate-10"
-            ],
-            "topicIds": []
-          },
-          "optional": false,
-          "scope": "题目难度仅为本关迁移练习的选题窗口；初学专项题可低于此区间。",
-          "learningTitle": "容器对照 · 有序映射与哈希映射",
-          "learningDescription": "已经会用 map 与 set，再比较 unordered_map、unordered_set 的接口和代价。把是否需要有序性、平均性能与退化风险一起考虑，按数据和操作选择容器。",
-          "threadGateIds": [
-            "stage-02-gate-01",
-            "stage-02-gate-02",
-            "stage-07-gate-09"
-          ]
-        },
-        {
-          "id": "stage-02-gate-12",
-          "index": 12,
-          "title": "挑战：map、优先队列与贪心综合",
+          "id": "lp2-brute-models-simulation-practice-assessment",
+          "index": 2,
+          "title": "混练验收：忠实执行题意",
           "kind": "challenge",
+          "sectionId": "lp2-sec-brute-models-simulation",
+          "sectionTitle": "A · 忠实执行题意",
+          "routeId": null,
+          "scope": "core",
+          "optional": false,
           "topicIds": [
-            "xcpc-map-1",
-            "xcpc-priority-queue-1",
-            "algorithm-content-feishu-part-1-5"
+            "algorithm-content-feishu-part-1-1"
           ],
-          "cf": {
-            "min": 800,
-            "max": 900
-          },
-          "luoguDifficulty": [
-            "入门",
-            "普及−"
-          ],
-          "description": "本阶段以map、priority_queue、贪心等已学方法为参考，混排新题，检验独立推导与组合能力。",
+          "luoguDifficulty": [],
+          "description": "围绕忠实执行题意完成变化任务与独立应用，核对方法选择、实现和边界。",
           "goals": [
-            "在不看标签与题解的情况下提出完整思路",
-            "独立实现并通过所选平台的评测",
-            "复盘关键转化、错误解法与复杂度瓶颈"
+            "能明确状态、操作先后和边界，用手算轨迹核对程序。",
+            "独立完成忠实执行题意的变化任务，说明选择方法的理由",
+            "检查边界或用小规模对照验证，并记录本段的一次错误与修正"
           ],
+          "learningTitle": "忠实执行题意 · 独立验收",
+          "learningDescription": "组合运用模拟中的状态与执行顺序，先比较不同方法，再独立完成无标签任务并记录验证结果。",
           "prerequisites": {
             "gateIds": [
-              "stage-02-gate-11"
+              "lp2-brute-models-simulation-state-simulation"
             ],
-            "topicIds": []
+            "topicIds": [
+              "algorithm-content-feishu-part-1-1"
+            ]
           },
-          "optional": false,
-          "scope": "区间只用于选择综合新题，不保证单题涵盖列出的所有算法。",
-          "learningTitle": "工具合流 · 计数、堆与贪心",
-          "learningDescription": "用 map 管理频次，用优先队列管理候选，再验证每一步贪心选择是否合理。把容器的维护规则和算法的正确性分开说明，检验能否在新题中自行组合工具。",
           "threadGateIds": [
-            "stage-02-gate-01",
-            "stage-02-gate-05",
-            "stage-02-gate-10"
+            "lp2-brute-models-simulation-state-simulation",
+            "lp2-brute-models-complete-enumeration-enumeration"
+          ]
+        },
+        {
+          "id": "lp2-brute-models-complete-enumeration-enumeration",
+          "index": 3,
+          "title": "完整枚举与位掩码",
+          "kind": "learning",
+          "sectionId": "lp2-sec-brute-models-complete-enumeration",
+          "sectionTitle": "B · 不重不漏地枚举",
+          "routeId": null,
+          "scope": "core",
+          "optional": false,
+          "topicIds": [
+            "algorithm-枚举",
+            "algorithm-content-feishu-part-5-1"
+          ],
+          "luoguDifficulty": [],
+          "description": "确定枚举对象与范围，处理排列、组合、子集、重复和遗漏；位掩码只是状态编码。",
+          "goals": [
+            "明确全部候选的生成范围",
+            "证明生成过程没有漏解且正确去重",
+            "估算排列或子集枚举的运行上限"
+          ],
+          "learningTitle": "完整枚举与位掩码",
+          "learningDescription": "确定枚举对象与范围，处理排列、组合、子集、重复和遗漏；位掩码只是状态编码。",
+          "prerequisites": {
+            "gateIds": [
+              "lp2-brute-models-simulation-practice-assessment"
+            ],
+            "topicIds": [
+              "algorithm-content-feishu-part-1-1"
+            ]
+          },
+          "threadGateIds": [
+            "lp2-brute-models-simulation-practice-assessment",
+            "lp2-brute-models-complete-enumeration-recursion"
+          ]
+        },
+        {
+          "id": "lp2-brute-models-complete-enumeration-recursion",
+          "index": 4,
+          "title": "递归、调用栈与出口",
+          "kind": "learning",
+          "sectionId": "lp2-sec-brute-models-complete-enumeration",
+          "sectionTitle": "B · 不重不漏地枚举",
+          "routeId": null,
+          "scope": "core",
+          "optional": false,
+          "topicIds": [
+            "xcpc-递归-回溯-1",
+            "algorithm-枚举"
+          ],
+          "luoguDifficulty": [],
+          "description": "通过参数跟踪每层选择、出口和返回值；说明递归栈深度与局部数据何时有效。",
+          "goals": [
+            "写清递归参数和停止条件",
+            "跟踪调用栈中各层的局部状态",
+            "根据输入范围判断递归深度是否安全"
+          ],
+          "learningTitle": "递归、调用栈与出口",
+          "learningDescription": "通过参数跟踪每层选择、出口和返回值；说明递归栈深度与局部数据何时有效。",
+          "prerequisites": {
+            "gateIds": [
+              "lp2-brute-models-complete-enumeration-enumeration"
+            ],
+            "topicIds": [
+              "algorithm-枚举",
+              "algorithm-content-feishu-part-5-1"
+            ]
+          },
+          "threadGateIds": [
+            "lp2-brute-models-complete-enumeration-enumeration",
+            "lp2-brute-models-complete-enumeration-divide-merge"
+          ]
+        },
+        {
+          "id": "lp2-brute-models-complete-enumeration-divide-merge",
+          "index": 5,
+          "title": "分治与归并排序",
+          "kind": "learning",
+          "sectionId": "lp2-sec-brute-models-complete-enumeration",
+          "sectionTitle": "B · 不重不漏地枚举",
+          "routeId": null,
+          "scope": "core",
+          "optional": false,
+          "topicIds": [
+            "xcpc-归并排序-1",
+            "xcpc-递归-回溯-1"
+          ],
+          "luoguDifficulty": [],
+          "description": "用归并排序认识分割、递归解决与合并，分析递推复杂度并覆盖空区间和相等元素。",
+          "goals": [
+            "独立实现分割、排序与合并",
+            "解释相等元素的处理及稳定性",
+            "写出归并排序的递推式并估计辅助空间"
+          ],
+          "learningTitle": "分治与归并排序",
+          "learningDescription": "用归并排序认识分割、递归解决与合并，分析递推复杂度并覆盖空区间和相等元素。",
+          "prerequisites": {
+            "gateIds": [
+              "lp2-brute-models-complete-enumeration-recursion"
+            ],
+            "topicIds": [
+              "xcpc-递归-回溯-1",
+              "algorithm-枚举"
+            ]
+          },
+          "threadGateIds": [
+            "lp2-brute-models-complete-enumeration-recursion",
+            "lp2-brute-models-complete-enumeration-practice-assessment"
+          ]
+        },
+        {
+          "id": "lp2-brute-models-complete-enumeration-practice-assessment",
+          "index": 6,
+          "title": "混练验收：不重不漏地枚举",
+          "kind": "challenge",
+          "sectionId": "lp2-sec-brute-models-complete-enumeration",
+          "sectionTitle": "B · 不重不漏地枚举",
+          "routeId": null,
+          "scope": "core",
+          "optional": false,
+          "topicIds": [
+            "algorithm-枚举",
+            "algorithm-content-feishu-part-5-1",
+            "xcpc-递归-回溯-1",
+            "xcpc-归并排序-1"
+          ],
+          "luoguDifficulty": [],
+          "description": "围绕不重不漏地枚举完成变化任务与独立应用，核对方法选择、实现和边界。",
+          "goals": [
+            "讲清枚举对象与完整性，能写递归出口并跟踪调用栈。",
+            "独立完成不重不漏地枚举的变化任务，说明选择方法的理由",
+            "检查边界或用小规模对照验证，并记录本段的一次错误与修正"
+          ],
+          "learningTitle": "不重不漏地枚举 · 独立验收",
+          "learningDescription": "组合运用完整枚举与位掩码、递归、调用栈与出口、分治与归并排序，先比较不同方法，再独立完成无标签任务并记录验证结果。",
+          "prerequisites": {
+            "gateIds": [
+              "lp2-brute-models-complete-enumeration-enumeration",
+              "lp2-brute-models-complete-enumeration-recursion",
+              "lp2-brute-models-complete-enumeration-divide-merge"
+            ],
+            "topicIds": [
+              "algorithm-枚举",
+              "algorithm-content-feishu-part-5-1",
+              "xcpc-递归-回溯-1",
+              "xcpc-归并排序-1"
+            ]
+          },
+          "threadGateIds": [
+            "lp2-brute-models-complete-enumeration-divide-merge",
+            "lp2-brute-models-construction-integers-constructive-invariants"
+          ]
+        },
+        {
+          "id": "lp2-brute-models-construction-integers-constructive-invariants",
+          "index": 7,
+          "title": "构造、奇偶与充分条件",
+          "kind": "learning",
+          "sectionId": "lp2-sec-brute-models-construction-integers",
+          "sectionTitle": "C · 构造与整数工具",
+          "routeId": null,
+          "scope": "core",
+          "optional": false,
+          "topicIds": [
+            "algorithm-content-feishu-part-1-6"
+          ],
+          "luoguDifficulty": [],
+          "description": "从奇偶、配对和不变量找必要条件；给出构造并证明所有合法输入都成立，主动寻找反例。",
+          "goals": [
+            "从不变量推出无解的必要条件",
+            "给出对所有合法输入成立的构造",
+            "用反例检查条件是否充分"
+          ],
+          "learningTitle": "构造、奇偶与充分条件",
+          "learningDescription": "从奇偶、配对和不变量找必要条件；给出构造并证明所有合法输入都成立，主动寻找反例。",
+          "prerequisites": {
+            "gateIds": [
+              "lp2-brute-models-complete-enumeration-practice-assessment"
+            ],
+            "topicIds": [
+              "algorithm-枚举",
+              "algorithm-content-feishu-part-5-1",
+              "xcpc-递归-回溯-1",
+              "xcpc-归并排序-1"
+            ]
+          },
+          "threadGateIds": [
+            "lp2-brute-models-complete-enumeration-practice-assessment",
+            "lp2-brute-models-construction-integers-gcd-factorization"
+          ]
+        },
+        {
+          "id": "lp2-brute-models-construction-integers-gcd-factorization",
+          "index": 8,
+          "title": "GCD、LCM 与整数分解",
+          "kind": "learning",
+          "sectionId": "lp2-sec-brute-models-construction-integers",
+          "sectionTitle": "C · 构造与整数工具",
+          "routeId": null,
+          "scope": "core",
+          "optional": false,
+          "topicIds": [
+            "algorithm-content-feishu-part-5-2-2",
+            "algorithm-lcm"
+          ],
+          "luoguDifficulty": [],
+          "description": "实现欧几里得算法、试除判素、质因数分解和约数枚举；处理0、1、负数约定与LCM乘法溢出。",
+          "goals": [
+            "正确求GCD与LCM并控制乘法范围",
+            "独立列出质因子及其指数",
+            "用小整数核对约数枚举并处理0和1"
+          ],
+          "learningTitle": "GCD、LCM 与整数分解",
+          "learningDescription": "实现欧几里得算法、试除判素、质因数分解和约数枚举；处理0、1、负数约定与LCM乘法溢出。",
+          "prerequisites": {
+            "gateIds": [
+              "lp2-brute-models-construction-integers-constructive-invariants"
+            ],
+            "topicIds": [
+              "algorithm-content-feishu-part-1-6"
+            ]
+          },
+          "threadGateIds": [
+            "lp2-brute-models-construction-integers-constructive-invariants",
+            "lp2-brute-models-construction-integers-prime-sieve"
+          ]
+        },
+        {
+          "id": "lp2-brute-models-construction-integers-prime-sieve",
+          "index": 9,
+          "title": "埃式筛与素数预处理",
+          "kind": "learning",
+          "sectionId": "lp2-sec-brute-models-construction-integers",
+          "sectionTitle": "C · 构造与整数工具",
+          "routeId": null,
+          "scope": "core",
+          "optional": false,
+          "topicIds": [
+            "xcpc-埃式筛-1"
+          ],
+          "luoguDifficulty": [],
+          "description": "从标记合数推导埃式筛，确定起点和边界，说明预处理与单次试除的取舍。",
+          "goals": [
+            "独立生成指定上界内的素数表",
+            "解释合数标记的起点与循环边界",
+            "比较多次判素时筛法与试除的成本"
+          ],
+          "learningTitle": "埃式筛与素数预处理",
+          "learningDescription": "从标记合数推导埃式筛，确定起点和边界，说明预处理与单次试除的取舍。",
+          "prerequisites": {
+            "gateIds": [
+              "lp2-brute-models-construction-integers-gcd-factorization"
+            ],
+            "topicIds": [
+              "algorithm-content-feishu-part-5-2-2",
+              "algorithm-lcm"
+            ]
+          },
+          "threadGateIds": [
+            "lp2-brute-models-construction-integers-gcd-factorization",
+            "lp2-brute-models-construction-integers-linear-sieve"
+          ]
+        },
+        {
+          "id": "lp2-brute-models-construction-integers-linear-sieve",
+          "index": 10,
+          "title": "线性筛的唯一标记",
+          "kind": "learning",
+          "sectionId": "lp2-sec-brute-models-construction-integers",
+          "sectionTitle": "C · 构造与整数工具",
+          "routeId": null,
+          "scope": "elective",
+          "optional": true,
+          "topicIds": [
+            "algorithm-线性筛-素数"
+          ],
+          "luoguDifficulty": [],
+          "description": "本章选学线性筛，解释每个合数被最小质因子标记一次；不列为基础整数验收条件。",
+          "goals": [
+            "指出合数被哪一个最小质因子标记",
+            "解释内层循环的退出条件",
+            "与埃式筛逐项比较素数输出"
+          ],
+          "learningTitle": "线性筛的唯一标记",
+          "learningDescription": "本章选学线性筛，解释每个合数被最小质因子标记一次；不列为基础整数验收条件。",
+          "prerequisites": {
+            "gateIds": [
+              "lp2-brute-models-construction-integers-prime-sieve"
+            ],
+            "topicIds": [
+              "xcpc-埃式筛-1"
+            ]
+          },
+          "threadGateIds": [
+            "lp2-brute-models-construction-integers-prime-sieve",
+            "lp2-brute-models-construction-integers-practice-assessment"
+          ]
+        },
+        {
+          "id": "lp2-brute-models-construction-integers-practice-assessment",
+          "index": 11,
+          "title": "混练验收：构造与整数工具",
+          "kind": "challenge",
+          "sectionId": "lp2-sec-brute-models-construction-integers",
+          "sectionTitle": "C · 构造与整数工具",
+          "routeId": null,
+          "scope": "core",
+          "optional": false,
+          "topicIds": [
+            "algorithm-content-feishu-part-1-6",
+            "algorithm-content-feishu-part-5-2-2",
+            "algorithm-lcm",
+            "xcpc-埃式筛-1"
+          ],
+          "luoguDifficulty": [],
+          "description": "围绕构造与整数工具完成变化任务与独立应用，核对方法选择、实现和边界。",
+          "goals": [
+            "给出构造的可行条件；独立完成 GCD、试除、质因数分解和埃式筛。",
+            "独立完成构造与整数工具的变化任务，说明选择方法的理由",
+            "检查边界或用小规模对照验证，并记录本段的一次错误与修正"
+          ],
+          "learningTitle": "构造与整数工具 · 独立验收",
+          "learningDescription": "组合运用构造、奇偶与充分条件、GCD、LCM 与整数分解、埃式筛与素数预处理，先比较不同方法，再独立完成无标签任务并记录验证结果。",
+          "prerequisites": {
+            "gateIds": [
+              "lp2-brute-models-construction-integers-constructive-invariants",
+              "lp2-brute-models-construction-integers-gcd-factorization",
+              "lp2-brute-models-construction-integers-prime-sieve"
+            ],
+            "topicIds": [
+              "algorithm-content-feishu-part-1-6",
+              "algorithm-content-feishu-part-5-2-2",
+              "algorithm-lcm",
+              "xcpc-埃式筛-1"
+            ]
+          },
+          "threadGateIds": [
+            "lp2-brute-models-construction-integers-linear-sieve",
+            "lp2-brute-models-brute-validation-build-oracle"
+          ]
+        },
+        {
+          "id": "lp2-brute-models-brute-validation-build-oracle",
+          "index": 12,
+          "title": "暴力对照与反例保留",
+          "kind": "learning",
+          "sectionId": "lp2-sec-brute-models-brute-validation",
+          "sectionTitle": "D · 证明与验证闭合",
+          "routeId": null,
+          "scope": "core",
+          "optional": false,
+          "topicIds": [
+            "xcpc-对拍-1",
+            "algorithm-枚举"
+          ],
+          "luoguDifficulty": [],
+          "description": "自己设计小规模正确对照，生成随机与边界输入；发现差异后保留失败数据并缩小反例。",
+          "goals": [
+            "为目标任务写出独立的小规模暴力解",
+            "同时生成随机输入和有针对性的边界输入",
+            "保存差异样例并定位错误来源"
+          ],
+          "learningTitle": "暴力对照与反例保留",
+          "learningDescription": "自己设计小规模正确对照，生成随机与边界输入；发现差异后保留失败数据并缩小反例。",
+          "prerequisites": {
+            "gateIds": [
+              "lp2-brute-models-construction-integers-practice-assessment"
+            ],
+            "topicIds": [
+              "algorithm-content-feishu-part-1-6",
+              "algorithm-content-feishu-part-5-2-2",
+              "algorithm-lcm",
+              "xcpc-埃式筛-1"
+            ]
+          },
+          "threadGateIds": [
+            "lp2-brute-models-construction-integers-practice-assessment",
+            "lp2-brute-models-brute-validation-practice-assessment"
+          ]
+        },
+        {
+          "id": "lp2-brute-models-brute-validation-practice-assessment",
+          "index": 13,
+          "title": "混练验收：证明与验证闭合",
+          "kind": "challenge",
+          "sectionId": "lp2-sec-brute-models-brute-validation",
+          "sectionTitle": "D · 证明与验证闭合",
+          "routeId": null,
+          "scope": "core",
+          "optional": false,
+          "topicIds": [
+            "xcpc-对拍-1",
+            "algorithm-枚举"
+          ],
+          "luoguDifficulty": [],
+          "description": "围绕证明与验证闭合完成变化任务与独立应用，核对方法选择、实现和边界。",
+          "goals": [
+            "完成模拟、枚举、基础构造三类陌生任务，解释不重不漏或构造充分性。",
+            "独立实现递归枚举和一种基础整数预处理，并处理 0、1、负数约定与乘法溢出。",
+            "对拍工具能打印并保留失败输入；题目正确性不能只凭随机测试。"
+          ],
+          "learningTitle": "证明与验证闭合 · 独立验收",
+          "learningDescription": "组合运用暴力对照与反例保留，先比较不同方法，再独立完成无标签任务并记录验证结果。",
+          "prerequisites": {
+            "gateIds": [
+              "lp2-brute-models-brute-validation-build-oracle",
+              "lp2-brute-models-simulation-practice-assessment",
+              "lp2-brute-models-complete-enumeration-practice-assessment",
+              "lp2-brute-models-construction-integers-practice-assessment"
+            ],
+            "topicIds": [
+              "xcpc-对拍-1",
+              "algorithm-枚举",
+              "algorithm-content-feishu-part-1-1",
+              "algorithm-content-feishu-part-5-1",
+              "xcpc-递归-回溯-1",
+              "xcpc-归并排序-1"
+            ]
+          },
+          "threadGateIds": [
+            "lp2-brute-models-brute-validation-build-oracle"
           ]
         }
       ]
@@ -1056,476 +2311,621 @@
     {
       "id": "stage-03",
       "index": 3,
-      "title": "用预处理消除重复计算",
-      "description": "识别重复计算，用预处理和单调推进降低复杂度。",
-      "goal": "识别重复计算，用预处理和单调推进降低复杂度。",
-      "cf": {
-        "min": 900,
-        "max": 1000
-      },
-      "luoguDifficulty": [
-        "普及−"
-      ],
-      "rationale": "本章按综合做题能力组织，不要求区间中的每道题都使用这些算法，也不要求学完所有专题才进入下一章。",
+      "title": "基础优化：预处理、单调性与贪心",
+      "description": "面对复杂度超限的暴力，能判断该复用信息、利用单调性，还是证明一个局部选择，并把优化写正确。",
+      "goal": "面对复杂度超限的暴力，能判断该复用信息、利用单调性，还是证明一个局部选择，并把优化写正确。",
+      "rationale": "修正 A 稿快速幂过晚问题；本章结束完成基础算法阶段，后续只复用这些工具。",
+      "entryText": "能写暴力基线、解释枚举范围，掌握排序、基本余数运算和二进制表示。",
+      "completionMode": "core",
       "completionCriteria": [
-        "独立完成本章综合题组中的新题",
-        "覆盖至少两种已学方法；后续阶段回收前面基础工具",
-        "说明正确性、复杂度，并记录一次完整复盘"
+        "每题提供暴力复杂度、瓶颈、优化依据和最终复杂度。",
+        "完成预处理、单调方法、贪心各一类独立任务及一个跨方法任务；这是能力覆盖，不规定题目总数。",
+        "二分答案能证明判定单调；贪心有证明；至少一个优化实现与暴力对拍。"
       ],
+      "scopeDescription": "快速幂完整前移到此章，包含整数范围安全的模乘场景；任意 64 位模数的防溢出乘法另列拓展。浮点二分属于选学，停止条件单独验收。",
       "prerequisites": {
         "stageIds": [
+          "stage-01",
           "stage-02"
         ]
       },
+      "luoguDifficulty": [],
+      "sections": [
+        {
+          "id": "lp2-sec-basic-optimization-preprocessing",
+          "title": "A · 复用已算信息",
+          "scope": "core",
+          "routeId": null,
+          "description": "预处理与区间信息：一维 / 二维前缀和；差分与还原；值域桶、频次；离散化。",
+          "completionCriteria": [
+            "用一维 / 二维前缀和与差分替换重复统计；能正确离散化。"
+          ],
+          "gateIds": [
+            "lp2-basic-optimization-preprocessing-prefix-sums",
+            "lp2-basic-optimization-preprocessing-difference",
+            "lp2-basic-optimization-preprocessing-compression-counting",
+            "lp2-basic-optimization-preprocessing-practice-assessment"
+          ],
+          "prerequisites": {
+            "gateIds": [
+              "lp2-brute-models-brute-validation-build-oracle"
+            ],
+            "topicIds": []
+          }
+        },
+        {
+          "id": "lp2-sec-basic-optimization-monotone-methods",
+          "title": "B · 用单调性缩小范围",
+          "scope": "core",
+          "routeId": null,
+          "description": "二分查找与二分答案：有序边界；闭开区间不变量；答案单调性与判定；整数边界，浮点二分作为扩展。\n双指针与滑动窗口：相向、同向、快慢指针；窗口增删；何时不能单调推进。",
+          "completionCriteria": [
+            "二分明确不变量，双指针明确单调推进条件，能给出不适用反例。"
+          ],
+          "gateIds": [
+            "lp2-basic-optimization-monotone-methods-binary-boundaries",
+            "lp2-basic-optimization-monotone-methods-binary-answer",
+            "lp2-basic-optimization-monotone-methods-two-pointers",
+            "lp2-basic-optimization-monotone-methods-practice-assessment"
+          ],
+          "prerequisites": {
+            "gateIds": [
+              "lp2-basic-optimization-preprocessing-practice-assessment"
+            ],
+            "topicIds": []
+          }
+        },
+        {
+          "id": "lp2-sec-basic-optimization-powers-greedy",
+          "title": "C · 快速计算与局部选择",
+          "scope": "core",
+          "routeId": null,
+          "description": "快速幂与基础模运算：二进制拆分指数；迭代快速幂、复杂度与循环不变量；模加、模乘、负数归一；约束下的安全整数范围。逆元与模除法第 9 章推导。\n排序与贪心：区间选择、配对、安排顺序；交换论证、反例与正确性；区分排序后的经验规则和可证明策略。",
+          "completionCriteria": [
+            "写出快速幂并说明循环不变量；为基础贪心给出交换或其他正确性论证。"
+          ],
+          "gateIds": [
+            "lp2-basic-optimization-powers-greedy-binary-power",
+            "lp2-basic-optimization-powers-greedy-greedy-proof",
+            "lp2-basic-optimization-powers-greedy-practice-assessment"
+          ],
+          "prerequisites": {
+            "gateIds": [
+              "lp2-basic-optimization-monotone-methods-practice-assessment",
+              "lp2-cpp-toolkit-reliable-code-bits-complexity"
+            ],
+            "topicIds": []
+          }
+        },
+        {
+          "id": "lp2-sec-basic-optimization-method-selection",
+          "title": "D · 自己选择优化",
+          "scope": "core",
+          "routeId": null,
+          "description": "方法组合：排序＋二分；前缀和＋枚举；差分＋判定；双指针＋计数。",
+          "completionCriteria": [
+            "从无标签题的暴力中找到瓶颈，选择合适工具，完整实现并验证。"
+          ],
+          "gateIds": [
+            "lp2-basic-optimization-method-selection-optimize-from-brute",
+            "lp2-basic-optimization-method-selection-practice-assessment"
+          ],
+          "prerequisites": {
+            "gateIds": [
+              "lp2-basic-optimization-powers-greedy-practice-assessment"
+            ],
+            "topicIds": []
+          }
+        }
+      ],
       "gates": [
         {
-          "id": "stage-03-gate-01",
+          "id": "lp2-basic-optimization-preprocessing-prefix-sums",
           "index": 1,
-          "title": "一维前缀和：区间统计",
+          "title": "一维、二维前缀和",
           "kind": "learning",
-          "topicIds": [
-            "algorithm-一维前缀和"
-          ],
-          "cf": {
-            "min": 900,
-            "max": 1000
-          },
-          "luoguDifficulty": [
-            "普及−"
-          ],
-          "description": "学习一维前缀和的适用条件、基本实现与复杂度，再用独立练习验证。",
-          "goals": [
-            "解释一维前缀和的核心不变量与适用边界",
-            "独立写出实现并说明时间与空间复杂度",
-            "完成基础练习与一道迁移题，记录失败原因"
-          ],
-          "prerequisites": {
-            "gateIds": [],
-            "topicIds": []
-          },
+          "sectionId": "lp2-sec-basic-optimization-preprocessing",
+          "sectionTitle": "A · 复用已算信息",
+          "routeId": null,
+          "scope": "core",
           "optional": false,
-          "scope": "题目难度仅为本关迁移练习的选题窗口；初学专项题可低于此区间。",
-          "learningTitle": "初识前缀和（一）· 存下累计信息",
-          "learningDescription": "反复枚举区间元素会做很多重复加法，把从起点累积的和预先保存，就能用两端信息得到区间和。这是从静态预处理走向动态区间维护的第一块积木。",
-          "threadGateIds": [
-            "stage-03-gate-10",
-            "stage-07-gate-01",
-            "stage-07-gate-02"
-          ]
-        },
-        {
-          "id": "stage-03-gate-02",
-          "index": 2,
-          "title": "一维差分：批量修改",
-          "kind": "learning",
           "topicIds": [
-            "algorithm-一维差分"
-          ],
-          "cf": {
-            "min": 900,
-            "max": 1000
-          },
-          "luoguDifficulty": [
-            "普及−"
-          ],
-          "description": "学习一维差分的适用条件、基本实现与复杂度，再用独立练习验证。",
-          "goals": [
-            "解释一维差分的核心不变量与适用边界",
-            "独立写出实现并说明时间与空间复杂度",
-            "完成基础练习与一道迁移题，记录失败原因"
-          ],
-          "prerequisites": {
-            "gateIds": [
-              "stage-03-gate-01"
-            ],
-            "topicIds": []
-          },
-          "optional": false,
-          "scope": "题目难度仅为本关迁移练习的选题窗口；初学专项题可低于此区间。",
-          "learningTitle": "初识差分 · 记录变化而非全量",
-          "learningDescription": "前缀和从局部信息还原累计量，差分则把连续修改压到边界上记录。先区分修改与还原的时机，后面再思考交错查询时为什么需要更强的数据结构。",
-          "threadGateIds": [
-            "stage-03-gate-01",
-            "stage-04-gate-11",
-            "stage-08-gate-01"
-          ]
-        },
-        {
-          "id": "stage-03-gate-03",
-          "index": 3,
-          "title": "二分查找：有序数组的边界",
-          "kind": "learning",
-          "topicIds": [
-            "algorithm-二分查找"
-          ],
-          "cf": {
-            "min": 900,
-            "max": 1000
-          },
-          "luoguDifficulty": [
-            "普及−"
-          ],
-          "description": "学习二分查找的适用条件、基本实现与复杂度，再用独立练习验证。",
-          "goals": [
-            "解释二分查找的核心不变量与适用边界",
-            "独立写出实现并说明时间与空间复杂度",
-            "完成基础练习与一道迁移题，记录失败原因"
-          ],
-          "prerequisites": {
-            "gateIds": [
-              "stage-03-gate-02"
-            ],
-            "topicIds": []
-          },
-          "optional": false,
-          "scope": "题目难度仅为本关迁移练习的选题窗口；初学专项题可低于此区间。",
-          "learningTitle": "初识二分（一）· 找到有序边界",
-          "learningDescription": "在排好序的数组里，利用单调的大小关系不断缩小范围。把边界含义与相等时的去向写清楚，之后把查找对象从数组位置换成答案时，仍能复用这套思路。",
-          "threadGateIds": [
-            "stage-01-gate-05",
-            "stage-04-gate-01",
-            "stage-05-gate-03"
-          ]
-        },
-        {
-          "id": "stage-03-gate-04",
-          "index": 4,
-          "title": "混练：排序、前缀和与二分查找",
-          "kind": "mixed",
-          "topicIds": [
-            "algorithm-常用算法函数与迭代器",
             "algorithm-一维前缀和",
-            "algorithm-二分查找"
+            "algorithm-二维前缀和"
           ],
-          "cf": {
-            "min": 900,
-            "max": 1000
-          },
-          "luoguDifficulty": [
-            "普及−"
-          ],
-          "description": "混合使用算法函数与迭代器、一维前缀和、二分查找；选题时隐藏专题标签，先独立辨型再实现。",
+          "luoguDifficulty": [],
+          "description": "明确前缀语义和矩形容斥，用边界补零减少分支；把重复统计变成常数次查询。",
           "goals": [
-            "在不看标签与题解的情况下提出完整思路",
-            "独立实现并通过所选平台的评测",
-            "复盘关键转化、错误解法与复杂度瓶颈"
+            "写清前缀下标的含义",
+            "独立完成区间与矩形查询",
+            "用单点和整范围查询检验容斥符号"
           ],
+          "learningTitle": "一维、二维前缀和",
+          "learningDescription": "明确前缀语义和矩形容斥，用边界补零减少分支；把重复统计变成常数次查询。",
           "prerequisites": {
             "gateIds": [
-              "stage-03-gate-03"
+              "lp2-brute-models-brute-validation-build-oracle"
             ],
-            "topicIds": []
+            "topicIds": [
+              "xcpc-对拍-1",
+              "algorithm-枚举"
+            ]
           },
-          "optional": false,
-          "scope": "区间只用于选择综合新题，不保证单题涵盖列出的所有算法。",
-          "learningTitle": "串联预处理 · 排序、前缀和与二分",
-          "learningDescription": "排序确定顺序，前缀和保存累计信息，二分定位满足条件的边界。练习说明三者各自减少哪部分重复工作，并检查排序后的统计含义是否仍与原题一致。",
           "threadGateIds": [
-            "stage-01-gate-05",
-            "stage-03-gate-01",
-            "stage-03-gate-03"
+            "lp2-basic-optimization-preprocessing-difference"
           ]
         },
         {
-          "id": "stage-03-gate-05",
-          "index": 5,
-          "title": "双指针：有序配对与区间移动",
+          "id": "lp2-basic-optimization-preprocessing-difference",
+          "index": 2,
+          "title": "差分、还原与批量修改",
           "kind": "learning",
+          "sectionId": "lp2-sec-basic-optimization-preprocessing",
+          "sectionTitle": "A · 复用已算信息",
+          "routeId": null,
+          "scope": "core",
+          "optional": false,
+          "topicIds": [
+            "algorithm-一维差分",
+            "algorithm-二维差分"
+          ],
+          "luoguDifficulty": [],
+          "description": "一维差分核心、二维差分同段推荐；从端点贡献推导还原，核验闭区间和边界外标记。",
+          "goals": [
+            "把闭区间修改转成端点贡献",
+            "通过前缀累加恢复最终数组",
+            "核对首尾端点与范围外标记"
+          ],
+          "learningTitle": "差分、还原与批量修改",
+          "learningDescription": "一维差分核心、二维差分同段推荐；从端点贡献推导还原，核验闭区间和边界外标记。",
+          "prerequisites": {
+            "gateIds": [
+              "lp2-basic-optimization-preprocessing-prefix-sums"
+            ],
+            "topicIds": [
+              "algorithm-一维前缀和",
+              "algorithm-二维前缀和"
+            ]
+          },
+          "threadGateIds": [
+            "lp2-basic-optimization-preprocessing-prefix-sums",
+            "lp2-basic-optimization-preprocessing-compression-counting"
+          ]
+        },
+        {
+          "id": "lp2-basic-optimization-preprocessing-compression-counting",
+          "index": 3,
+          "title": "离散化与值域计数",
+          "kind": "learning",
+          "sectionId": "lp2-sec-basic-optimization-preprocessing",
+          "sectionTitle": "A · 复用已算信息",
+          "routeId": null,
+          "scope": "core",
+          "optional": false,
+          "topicIds": [
+            "xcpc-离散-1",
+            "xcpc-桶排序-1"
+          ],
+          "luoguDifficulty": [],
+          "description": "保留相对大小和相等关系；区分原值、排名与频次，比较值域桶和排序压缩的条件。",
+          "goals": [
+            "正确区分原值、排名和频次",
+            "证明压缩保留大小与相等关系",
+            "根据值域和数据量选择桶或离散化"
+          ],
+          "learningTitle": "离散化与值域计数",
+          "learningDescription": "保留相对大小和相等关系；区分原值、排名与频次，比较值域桶和排序压缩的条件。",
+          "prerequisites": {
+            "gateIds": [
+              "lp2-basic-optimization-preprocessing-difference"
+            ],
+            "topicIds": [
+              "algorithm-一维差分",
+              "algorithm-二维差分"
+            ]
+          },
+          "threadGateIds": [
+            "lp2-basic-optimization-preprocessing-difference",
+            "lp2-basic-optimization-preprocessing-practice-assessment"
+          ]
+        },
+        {
+          "id": "lp2-basic-optimization-preprocessing-practice-assessment",
+          "index": 4,
+          "title": "混练验收：复用已算信息",
+          "kind": "challenge",
+          "sectionId": "lp2-sec-basic-optimization-preprocessing",
+          "sectionTitle": "A · 复用已算信息",
+          "routeId": null,
+          "scope": "core",
+          "optional": false,
+          "topicIds": [
+            "algorithm-一维前缀和",
+            "algorithm-二维前缀和",
+            "algorithm-一维差分",
+            "algorithm-二维差分",
+            "xcpc-离散-1",
+            "xcpc-桶排序-1"
+          ],
+          "luoguDifficulty": [],
+          "description": "围绕复用已算信息完成变化任务与独立应用，核对方法选择、实现和边界。",
+          "goals": [
+            "用一维 / 二维前缀和与差分替换重复统计；能正确离散化。",
+            "独立完成复用已算信息的变化任务，说明选择方法的理由",
+            "检查边界或用小规模对照验证，并记录本段的一次错误与修正"
+          ],
+          "learningTitle": "复用已算信息 · 独立验收",
+          "learningDescription": "组合运用一维、二维前缀和、差分、还原与批量修改、离散化与值域计数，先比较不同方法，再独立完成无标签任务并记录验证结果。",
+          "prerequisites": {
+            "gateIds": [
+              "lp2-basic-optimization-preprocessing-prefix-sums",
+              "lp2-basic-optimization-preprocessing-difference",
+              "lp2-basic-optimization-preprocessing-compression-counting"
+            ],
+            "topicIds": [
+              "algorithm-一维前缀和",
+              "algorithm-二维前缀和",
+              "algorithm-一维差分",
+              "algorithm-二维差分",
+              "xcpc-离散-1",
+              "xcpc-桶排序-1"
+            ]
+          },
+          "threadGateIds": [
+            "lp2-basic-optimization-preprocessing-compression-counting",
+            "lp2-basic-optimization-monotone-methods-binary-boundaries"
+          ]
+        },
+        {
+          "id": "lp2-basic-optimization-monotone-methods-binary-boundaries",
+          "index": 5,
+          "title": "二分查找的边界不变量",
+          "kind": "learning",
+          "sectionId": "lp2-sec-basic-optimization-monotone-methods",
+          "sectionTitle": "B · 用单调性缩小范围",
+          "routeId": null,
+          "scope": "core",
+          "optional": false,
+          "topicIds": [
+            "algorithm-二分查找"
+          ],
+          "luoguDifficulty": [],
+          "description": "推导lower/upper边界，统一开闭区间、不变量和终止条件；覆盖全满足、全不满足与重复值。",
+          "goals": [
+            "给出二分区间不变量",
+            "处理全真、全假和重复值边界",
+            "证明循环终止且返回目标边界"
+          ],
+          "learningTitle": "二分查找的边界不变量",
+          "learningDescription": "推导lower/upper边界，统一开闭区间、不变量和终止条件；覆盖全满足、全不满足与重复值。",
+          "prerequisites": {
+            "gateIds": [
+              "lp2-basic-optimization-preprocessing-practice-assessment"
+            ],
+            "topicIds": [
+              "algorithm-一维前缀和",
+              "algorithm-二维前缀和",
+              "algorithm-一维差分",
+              "algorithm-二维差分",
+              "xcpc-离散-1",
+              "xcpc-桶排序-1"
+            ]
+          },
+          "threadGateIds": [
+            "lp2-basic-optimization-preprocessing-practice-assessment",
+            "lp2-basic-optimization-monotone-methods-binary-answer"
+          ]
+        },
+        {
+          "id": "lp2-basic-optimization-monotone-methods-binary-answer",
+          "index": 6,
+          "title": "二分答案与单调判定",
+          "kind": "learning",
+          "sectionId": "lp2-sec-basic-optimization-monotone-methods",
+          "sectionTitle": "B · 用单调性缩小范围",
+          "routeId": null,
+          "scope": "core",
+          "optional": false,
+          "topicIds": [
+            "algorithm-二分答案"
+          ],
+          "luoguDifficulty": [],
+          "description": "从优化问题抽取可行性判定，证明单调性和答案边界；计算判定开销与二分次数。",
+          "goals": [
+            "从最优化目标定义可行性判定",
+            "证明判定随答案单调变化",
+            "给出搜索上下界与总复杂度"
+          ],
+          "learningTitle": "二分答案与单调判定",
+          "learningDescription": "从优化问题抽取可行性判定，证明单调性和答案边界；计算判定开销与二分次数。",
+          "prerequisites": {
+            "gateIds": [
+              "lp2-basic-optimization-monotone-methods-binary-boundaries"
+            ],
+            "topicIds": [
+              "algorithm-二分查找"
+            ]
+          },
+          "threadGateIds": [
+            "lp2-basic-optimization-monotone-methods-binary-boundaries",
+            "lp2-basic-optimization-monotone-methods-two-pointers"
+          ]
+        },
+        {
+          "id": "lp2-basic-optimization-monotone-methods-two-pointers",
+          "index": 7,
+          "title": "双指针与滑动窗口",
+          "kind": "learning",
+          "sectionId": "lp2-sec-basic-optimization-monotone-methods",
+          "sectionTitle": "B · 用单调性缩小范围",
+          "routeId": null,
+          "scope": "core",
+          "optional": false,
           "topicIds": [
             "algorithm-content-feishu-part-1-9"
           ],
-          "cf": {
-            "min": 900,
-            "max": 1000
-          },
-          "luoguDifficulty": [
-            "普及−"
-          ],
-          "description": "学习双指针的适用条件、基本实现与复杂度，再用独立练习验证。",
+          "luoguDifficulty": [],
+          "description": "相向和同向推进，维护窗口增删；证明指针不回退的条件，给出负数等破坏条件的反例。",
           "goals": [
-            "解释双指针的核心不变量与适用边界",
-            "独立写出实现并说明时间与空间复杂度",
-            "完成基础练习与一道迁移题，记录失败原因"
+            "解释两个指针各自维护的范围",
+            "证明被跳过的候选不会成为答案",
+            "构造一个单调性失效的输入"
           ],
+          "learningTitle": "双指针与滑动窗口",
+          "learningDescription": "相向和同向推进，维护窗口增删；证明指针不回退的条件，给出负数等破坏条件的反例。",
           "prerequisites": {
             "gateIds": [
-              "stage-03-gate-04"
+              "lp2-basic-optimization-monotone-methods-binary-answer"
             ],
-            "topicIds": []
+            "topicIds": [
+              "algorithm-二分答案"
+            ]
           },
-          "optional": false,
-          "scope": "题目难度仅为本关迁移练习的选题窗口；初学专项题可低于此区间。",
-          "learningTitle": "初识双指针 · 让边界只向前走",
-          "learningDescription": "有序性不仅支持二分，也可能让两个指针有规律地移动。先证明移动不会漏掉候选，再计算每个指针的总路程，把复杂度分析从循环层数转向实际移动次数。",
           "threadGateIds": [
-            "stage-03-gate-03",
-            "stage-04-gate-11",
-            "stage-07-gate-05"
+            "lp2-basic-optimization-monotone-methods-binary-answer",
+            "lp2-basic-optimization-monotone-methods-practice-assessment"
           ]
         },
         {
-          "id": "stage-03-gate-06",
-          "index": 6,
-          "title": "构造：奇偶与可行性",
-          "kind": "learning",
+          "id": "lp2-basic-optimization-monotone-methods-practice-assessment",
+          "index": 8,
+          "title": "混练验收：用单调性缩小范围",
+          "kind": "challenge",
+          "sectionId": "lp2-sec-basic-optimization-monotone-methods",
+          "sectionTitle": "B · 用单调性缩小范围",
+          "routeId": null,
+          "scope": "core",
+          "optional": false,
           "topicIds": [
-            "algorithm-content-feishu-part-1-6",
+            "algorithm-二分查找",
+            "algorithm-二分答案",
+            "algorithm-content-feishu-part-1-9"
+          ],
+          "luoguDifficulty": [],
+          "description": "围绕用单调性缩小范围完成变化任务与独立应用，核对方法选择、实现和边界。",
+          "goals": [
+            "二分明确不变量，双指针明确单调推进条件，能给出不适用反例。",
+            "独立完成用单调性缩小范围的变化任务，说明选择方法的理由",
+            "检查边界或用小规模对照验证，并记录本段的一次错误与修正"
+          ],
+          "learningTitle": "用单调性缩小范围 · 独立验收",
+          "learningDescription": "组合运用二分查找的边界不变量、二分答案与单调判定、双指针与滑动窗口，先比较不同方法，再独立完成无标签任务并记录验证结果。",
+          "prerequisites": {
+            "gateIds": [
+              "lp2-basic-optimization-monotone-methods-binary-boundaries",
+              "lp2-basic-optimization-monotone-methods-binary-answer",
+              "lp2-basic-optimization-monotone-methods-two-pointers"
+            ],
+            "topicIds": [
+              "algorithm-二分查找",
+              "algorithm-二分答案",
+              "algorithm-content-feishu-part-1-9"
+            ]
+          },
+          "threadGateIds": [
+            "lp2-basic-optimization-monotone-methods-two-pointers",
+            "lp2-basic-optimization-powers-greedy-binary-power"
+          ]
+        },
+        {
+          "id": "lp2-basic-optimization-powers-greedy-binary-power",
+          "index": 9,
+          "title": "基础取模与二进制快速幂",
+          "kind": "learning",
+          "sectionId": "lp2-sec-basic-optimization-powers-greedy",
+          "sectionTitle": "C · 快速计算与局部选择",
+          "routeId": null,
+          "scope": "core",
+          "optional": false,
+          "topicIds": [
+            "xcpc-快速幂-1",
             "algorithm-content-feishu-part-5-1"
           ],
-          "cf": {
-            "min": 900,
-            "max": 1000
-          },
-          "luoguDifficulty": [
-            "普及−"
-          ],
-          "description": "学习构造、位运算的适用条件、基本实现与复杂度，再用独立练习验证。",
+          "luoguDifficulty": [],
+          "description": "先学模加模乘、负余数归一和安全整数范围，再用二进制拆指数推导迭代快速幂及循环不变量；逆元留第9章。",
           "goals": [
-            "解释构造、位运算的核心不变量与适用边界",
-            "独立写出实现并说明时间与空间复杂度",
-            "完成基础练习与一道迁移题，记录失败原因"
+            "从指数二进制表示推导循环",
+            "正确处理零指数与负余数归一",
+            "在题设整数范围内验证模乘不会溢出"
           ],
+          "learningTitle": "基础取模与二进制快速幂",
+          "learningDescription": "先学模加模乘、负余数归一和安全整数范围，再用二进制拆指数推导迭代快速幂及循环不变量；逆元留第9章。",
           "prerequisites": {
             "gateIds": [
-              "stage-03-gate-05"
+              "lp2-basic-optimization-monotone-methods-practice-assessment",
+              "lp2-cpp-toolkit-reliable-code-bits-complexity"
             ],
-            "topicIds": []
+            "topicIds": [
+              "algorithm-二分查找",
+              "algorithm-二分答案",
+              "algorithm-content-feishu-part-1-9",
+              "algorithm-content-feishu-part-5-1",
+              "xcpc-时空复杂度分析-1",
+              "algorithm-int128-与整数溢出"
+            ]
           },
-          "optional": false,
-          "scope": "题目难度仅为本关迁移练习的选题窗口；初学专项题可低于此区间。",
-          "learningTitle": "初识构造 · 先判断能不能做到",
-          "learningDescription": "枚举可以检验小例子，奇偶信息则可能揭示所有方案都要满足的限制。先找必要条件，再给出确实可行的构造，分清无解证明与输出方案各自要完成的任务。",
           "threadGateIds": [
-            "stage-04-gate-05",
-            "stage-12-gate-11",
-            "stage-14-gate-11"
+            "lp2-basic-optimization-monotone-methods-practice-assessment",
+            "lp2-basic-optimization-powers-greedy-greedy-proof"
           ]
         },
         {
-          "id": "stage-03-gate-07",
-          "index": 7,
-          "title": "快速幂：重复乘法的缩减",
-          "kind": "learning",
-          "topicIds": [
-            "xcpc-快速幂-1"
-          ],
-          "cf": {
-            "min": 900,
-            "max": 1000
-          },
-          "luoguDifficulty": [
-            "普及−"
-          ],
-          "description": "学习快速幂的适用条件、基本实现与复杂度，再用独立练习验证。",
-          "goals": [
-            "解释快速幂的核心不变量与适用边界",
-            "独立写出实现并说明时间与空间复杂度",
-            "完成基础练习与一道迁移题，记录失败原因"
-          ],
-          "prerequisites": {
-            "gateIds": [
-              "stage-03-gate-06"
-            ],
-            "topicIds": []
-          },
-          "optional": false,
-          "scope": "题目难度仅为本关迁移练习的选题窗口；初学专项题可低于此区间。",
-          "learningTitle": "初识快速幂 · 拆开重复乘法",
-          "learningDescription": "把相同底数的连乘拆成平方与选取，用指数的二进制结构减少运算次数。写清每次保留的结果与剩余指数，之后模逆元和矩阵递推会继续使用这个工具。",
-          "threadGateIds": [
-            "stage-04-gate-05",
-            "stage-06-gate-10",
-            "stage-08-gate-10"
-          ]
-        },
-        {
-          "id": "stage-03-gate-08",
-          "index": 8,
-          "title": "混练：构造、枚举与快速幂",
-          "kind": "mixed",
-          "topicIds": [
-            "algorithm-content-feishu-part-1-6",
-            "algorithm-枚举",
-            "xcpc-快速幂-1"
-          ],
-          "cf": {
-            "min": 900,
-            "max": 1000
-          },
-          "luoguDifficulty": [
-            "普及−"
-          ],
-          "description": "混合使用构造、枚举、快速幂；选题时隐藏专题标签，先独立辨型再实现。",
-          "goals": [
-            "在不看标签与题解的情况下提出完整思路",
-            "独立实现并通过所选平台的评测",
-            "复盘关键转化、错误解法与复杂度瓶颈"
-          ],
-          "prerequisites": {
-            "gateIds": [
-              "stage-03-gate-07"
-            ],
-            "topicIds": []
-          },
-          "optional": false,
-          "scope": "区间只用于选择综合新题，不保证单题涵盖列出的所有算法。",
-          "learningTitle": "串联数学 · 枚举、构造与快速幂",
-          "learningDescription": "用枚举寻找小数据规律，用构造给出可行方案，再在需要重复乘法时使用快速幂。综合题里先判断数学关系与操作需求，再选择工具，避免把三种方法硬凑在一起。",
-          "threadGateIds": [
-            "stage-01-gate-06",
-            "stage-03-gate-06",
-            "stage-03-gate-07"
-          ]
-        },
-        {
-          "id": "stage-03-gate-09",
-          "index": 9,
-          "title": "桶排序：值域计数",
-          "kind": "learning",
-          "topicIds": [
-            "xcpc-桶排序-1"
-          ],
-          "cf": {
-            "min": 900,
-            "max": 1000
-          },
-          "luoguDifficulty": [
-            "普及−"
-          ],
-          "description": "学习桶排序的适用条件、基本实现与复杂度，再用独立练习验证。",
-          "goals": [
-            "解释桶排序的核心不变量与适用边界",
-            "独立写出实现并说明时间与空间复杂度",
-            "完成基础练习与一道迁移题，记录失败原因"
-          ],
-          "prerequisites": {
-            "gateIds": [
-              "stage-03-gate-08"
-            ],
-            "topicIds": []
-          },
-          "optional": false,
-          "scope": "题目难度仅为本关迁移练习的选题窗口；初学专项题可低于此区间。",
-          "learningTitle": "进阶计数 · 用值域完成排序",
-          "learningDescription": "此前用 map 保存频次，这次在值域较小时直接用桶记录。比较按元素个数排序与按值域扫描的代价，体会数据范围本身也能成为选择算法的重要信息。",
-          "threadGateIds": [
-            "stage-02-gate-01",
-            "stage-01-gate-05",
-            "stage-04-gate-10"
-          ]
-        },
-        {
-          "id": "stage-03-gate-10",
+          "id": "lp2-basic-optimization-powers-greedy-greedy-proof",
           "index": 10,
-          "title": "二维前缀和：矩形信息",
+          "title": "排序贪心与交换论证",
           "kind": "learning",
+          "sectionId": "lp2-sec-basic-optimization-powers-greedy",
+          "sectionTitle": "C · 快速计算与局部选择",
+          "routeId": null,
+          "scope": "core",
+          "optional": false,
           "topicIds": [
-            "algorithm-二维前缀和"
+            "algorithm-content-feishu-part-1-5"
           ],
-          "cf": {
-            "min": 900,
-            "max": 1000
-          },
-          "luoguDifficulty": [
-            "普及−"
-          ],
-          "description": "学习二维前缀和的适用条件、基本实现与复杂度，再用独立练习验证。",
+          "luoguDifficulty": [],
+          "description": "用区间选择、配对、安排顺序建立局部策略；先找反例，再给交换论证或其他正确性证明。",
           "goals": [
-            "解释二维前缀和的核心不变量与适用边界",
-            "独立写出实现并说明时间与空间复杂度",
-            "完成基础练习与一道迁移题，记录失败原因"
+            "写出局部选择规则而非仅描述排序",
+            "用交换论证或不变量证明策略",
+            "给相似但错误的策略构造反例"
           ],
+          "learningTitle": "排序贪心与交换论证",
+          "learningDescription": "用区间选择、配对、安排顺序建立局部策略；先找反例，再给交换论证或其他正确性证明。",
           "prerequisites": {
             "gateIds": [
-              "stage-03-gate-09"
+              "lp2-basic-optimization-powers-greedy-binary-power"
             ],
-            "topicIds": []
+            "topicIds": [
+              "xcpc-快速幂-1",
+              "algorithm-content-feishu-part-5-1"
+            ]
           },
-          "optional": false,
-          "scope": "题目难度仅为本关迁移练习的选题窗口；初学专项题可低于此区间。",
-          "learningTitle": "进阶前缀和（二）· 拼出矩形统计",
-          "learningDescription": "把一维的累计信息扩展到网格，使用重叠区域的加减还原矩形答案。先画清四块区域的关系，再写边界，给后面处理更复杂的重复计数积累直观经验。",
           "threadGateIds": [
-            "stage-03-gate-01",
-            "stage-06-gate-11",
-            "stage-03-gate-11"
+            "lp2-basic-optimization-powers-greedy-binary-power",
+            "lp2-basic-optimization-powers-greedy-practice-assessment"
           ]
         },
         {
-          "id": "stage-03-gate-11",
+          "id": "lp2-basic-optimization-powers-greedy-practice-assessment",
           "index": 11,
-          "title": "对拍：前缀统计与暴力验证",
-          "kind": "learning",
+          "title": "混练验收：快速计算与局部选择",
+          "kind": "challenge",
+          "sectionId": "lp2-sec-basic-optimization-powers-greedy",
+          "sectionTitle": "C · 快速计算与局部选择",
+          "routeId": null,
+          "scope": "core",
+          "optional": false,
           "topicIds": [
-            "xcpc-对拍-1",
-            "algorithm-一维前缀和"
+            "xcpc-快速幂-1",
+            "algorithm-content-feishu-part-5-1",
+            "algorithm-content-feishu-part-1-5"
           ],
-          "cf": {
-            "min": 900,
-            "max": 1000
-          },
-          "luoguDifficulty": [
-            "普及−"
-          ],
-          "description": "学习对拍、一维前缀和的适用条件、基本实现与复杂度，再用独立练习验证。",
+          "luoguDifficulty": [],
+          "description": "围绕快速计算与局部选择完成变化任务与独立应用，核对方法选择、实现和边界。",
           "goals": [
-            "解释对拍、一维前缀和的核心不变量与适用边界",
-            "独立写出实现并说明时间与空间复杂度",
-            "完成基础练习与一道迁移题，记录失败原因"
+            "写出快速幂并说明循环不变量；为基础贪心给出交换或其他正确性论证。",
+            "独立完成快速计算与局部选择的变化任务，说明选择方法的理由",
+            "检查边界或用小规模对照验证，并记录本段的一次错误与修正"
           ],
+          "learningTitle": "快速计算与局部选择 · 独立验收",
+          "learningDescription": "组合运用基础取模与二进制快速幂、排序贪心与交换论证，先比较不同方法，再独立完成无标签任务并记录验证结果。",
           "prerequisites": {
             "gateIds": [
-              "stage-03-gate-10"
+              "lp2-basic-optimization-powers-greedy-binary-power",
+              "lp2-basic-optimization-powers-greedy-greedy-proof"
             ],
-            "topicIds": []
+            "topicIds": [
+              "xcpc-快速幂-1",
+              "algorithm-content-feishu-part-5-1",
+              "algorithm-content-feishu-part-1-5"
+            ]
           },
-          "optional": false,
-          "scope": "题目难度仅为本关迁移练习的选题窗口；初学专项题可低于此区间。",
-          "learningTitle": "验证前缀和 · 与区间枚举对拍",
-          "learningDescription": "用逐项相加作为参照，检查前缀统计在空区间、端点和重复查询下的结果。把最小反例对应回公式中的位置，练习用程序验证推导，而不是只多试几个样例。",
           "threadGateIds": [
-            "stage-01-gate-11",
-            "stage-03-gate-01",
-            "stage-03-gate-10"
+            "lp2-basic-optimization-powers-greedy-greedy-proof",
+            "lp2-basic-optimization-method-selection-optimize-from-brute"
           ]
         },
         {
-          "id": "stage-03-gate-12",
+          "id": "lp2-basic-optimization-method-selection-optimize-from-brute",
           "index": 12,
-          "title": "挑战：前缀和、双指针与构造综合",
-          "kind": "challenge",
+          "title": "从暴力瓶颈选择优化",
+          "kind": "learning",
+          "sectionId": "lp2-sec-basic-optimization-method-selection",
+          "sectionTitle": "D · 自己选择优化",
+          "routeId": null,
+          "scope": "core",
+          "optional": false,
           "topicIds": [
-            "algorithm-一维前缀和",
-            "algorithm-content-feishu-part-1-9",
-            "algorithm-content-feishu-part-1-6"
+            "algorithm-枚举",
+            "algorithm-二分答案",
+            "algorithm-content-feishu-part-1-9"
           ],
-          "cf": {
-            "min": 900,
-            "max": 1000
-          },
-          "luoguDifficulty": [
-            "普及−"
-          ],
-          "description": "本阶段以一维前缀和、双指针、构造等已学方法为参考，混排新题，检验独立推导与组合能力。",
+          "luoguDifficulty": [],
+          "description": "对无标签任务给出暴力与瓶颈，比较预处理、二分、双指针和贪心；不能仅凭熟悉模板选算法。",
           "goals": [
-            "在不看标签与题解的情况下提出完整思路",
-            "独立实现并通过所选平台的评测",
-            "复盘关键转化、错误解法与复杂度瓶颈"
+            "给出可验证的暴力基线",
+            "定位重复计算或无效候选的瓶颈",
+            "比较优化方案并用对拍检查实现"
           ],
+          "learningTitle": "从暴力瓶颈选择优化",
+          "learningDescription": "对无标签任务给出暴力与瓶颈，比较预处理、二分、双指针和贪心；不能仅凭熟悉模板选算法。",
           "prerequisites": {
             "gateIds": [
-              "stage-03-gate-11"
+              "lp2-basic-optimization-powers-greedy-practice-assessment"
             ],
-            "topicIds": []
+            "topicIds": [
+              "xcpc-快速幂-1",
+              "algorithm-content-feishu-part-5-1",
+              "algorithm-content-feishu-part-1-5"
+            ]
           },
-          "optional": false,
-          "scope": "区间只用于选择综合新题，不保证单题涵盖列出的所有算法。",
-          "learningTitle": "序列合流 · 前缀、双指针与构造",
-          "learningDescription": "面对新的序列条件，分别考虑累计统计、单调移动和直接构造。先辨别题目的结构，再组合必要的方法，并用小数据枚举检查是否遗漏了边界方案。",
           "threadGateIds": [
-            "stage-03-gate-01",
-            "stage-03-gate-05",
-            "stage-03-gate-06"
+            "lp2-basic-optimization-powers-greedy-practice-assessment",
+            "lp2-basic-optimization-method-selection-practice-assessment"
+          ]
+        },
+        {
+          "id": "lp2-basic-optimization-method-selection-practice-assessment",
+          "index": 13,
+          "title": "混练验收：自己选择优化",
+          "kind": "challenge",
+          "sectionId": "lp2-sec-basic-optimization-method-selection",
+          "sectionTitle": "D · 自己选择优化",
+          "routeId": null,
+          "scope": "core",
+          "optional": false,
+          "topicIds": [
+            "algorithm-枚举",
+            "algorithm-二分答案",
+            "algorithm-content-feishu-part-1-9"
+          ],
+          "luoguDifficulty": [],
+          "description": "围绕自己选择优化完成变化任务与独立应用，核对方法选择、实现和边界。",
+          "goals": [
+            "每题提供暴力复杂度、瓶颈、优化依据和最终复杂度。",
+            "完成预处理、单调方法、贪心各一类独立任务及一个跨方法任务；这是能力覆盖，不规定题目总数。",
+            "二分答案能证明判定单调；贪心有证明；至少一个优化实现与暴力对拍。"
+          ],
+          "learningTitle": "自己选择优化 · 独立验收",
+          "learningDescription": "组合运用从暴力瓶颈选择优化，先比较不同方法，再独立完成无标签任务并记录验证结果。",
+          "prerequisites": {
+            "gateIds": [
+              "lp2-basic-optimization-method-selection-optimize-from-brute",
+              "lp2-basic-optimization-preprocessing-practice-assessment",
+              "lp2-basic-optimization-monotone-methods-practice-assessment",
+              "lp2-basic-optimization-powers-greedy-practice-assessment"
+            ],
+            "topicIds": [
+              "algorithm-枚举",
+              "algorithm-二分答案",
+              "algorithm-content-feishu-part-1-9",
+              "algorithm-一维前缀和",
+              "algorithm-二维前缀和",
+              "algorithm-一维差分"
+            ]
+          },
+          "threadGateIds": [
+            "lp2-basic-optimization-method-selection-optimize-from-brute"
           ]
         }
       ]
@@ -1533,490 +2933,572 @@
     {
       "id": "stage-04",
       "index": 4,
-      "title": "比较暴力、贪心与搜索",
-      "description": "比较枚举、搜索与贪心，选择可证明且满足约束的方法。",
-      "goal": "比较枚举、搜索与贪心，选择可证明且满足约束的方法。",
-      "cf": {
-        "min": 1000,
-        "max": 1100
-      },
-      "luoguDifficulty": [
-        "普及−",
-        "普及"
-      ],
-      "rationale": "本章按综合做题能力组织，不要求区间中的每道题都使用这些算法，也不要求学完所有专题才进入下一章。",
+      "title": "搜索：系统地遍历状态空间",
+      "description": "能把问题抽象成状态和转移，判断应遍历全部方案还是寻找最少步数，并控制去重、回溯与剪枝。",
+      "goal": "能把问题抽象成状态和转移，判断应遍历全部方案还是寻找最少步数，并控制去重、回溯与剪枝。",
+      "rationale": "明确搜索和 DP 的交界，补出图表示与路径恢复先修；进阶搜索独立选学。",
+      "entryText": "会递归出口与调用栈、枚举复杂度、queue / stack；能够表示网格和状态。",
+      "completionMode": "core",
       "completionCriteria": [
-        "独立完成本章综合题组中的新题",
-        "覆盖至少两种已学方法；后续阶段回收前面基础工具",
-        "说明正确性、复杂度，并记录一次完整复盘"
+        "各完成一个方案搜索与最短操作模型，说明状态、转移、去重与终止。",
+        "正确输出可验证方案或路径；不能只得到一个数字答案。",
+        "比较剪枝前后访问状态数，并证明没有剪掉合法答案。"
       ],
+      "scopeDescription": "0–1 BFS 与双向搜索均单列扩展；普通 BFS 的核心验收不依赖它们。记忆化在此建立接口，第 5 章系统讲状态充分性与转移。",
       "prerequisites": {
         "stageIds": [
+          "stage-02",
           "stage-03"
         ]
       },
-      "gates": [
+      "luoguDifficulty": [],
+      "sections": [
         {
-          "id": "stage-04-gate-01",
-          "index": 1,
-          "title": "二分答案：构造单调判定",
-          "kind": "learning",
-          "topicIds": [
-            "algorithm-二分答案"
+          "id": "lp2-sec-search-search-states",
+          "title": "A · 定义并遍历状态",
+          "scope": "core",
+          "routeId": null,
+          "description": "状态空间与图表示：隐式状态图；邻接表与邻接矩阵；边界、访问标记和连通性。\nDFS 与回溯：选择—递归—撤销；排列组合、网格、连通块；递归与显式栈。",
+          "completionCriteria": [
+            "明确状态唯一性、标记含义、撤销范围；正确统计连通块或方案。"
           ],
-          "cf": {
-            "min": 1000,
-            "max": 1100
-          },
-          "luoguDifficulty": [
-            "普及−",
-            "普及"
-          ],
-          "description": "学习二分答案的适用条件、基本实现与复杂度，再用独立练习验证。",
-          "goals": [
-            "解释二分答案的核心不变量与适用边界",
-            "独立写出实现并说明时间与空间复杂度",
-            "完成基础练习与一道迁移题，记录失败原因"
+          "gateIds": [
+            "lp2-search-search-states-graph-state",
+            "lp2-search-search-states-dfs-backtracking",
+            "lp2-search-search-states-practice-assessment"
           ],
           "prerequisites": {
-            "gateIds": [],
+            "gateIds": [
+              "lp2-brute-models-complete-enumeration-recursion",
+              "lp2-cpp-toolkit-stl-selection-adapters"
+            ],
             "topicIds": []
-          },
+          }
+        },
+        {
+          "id": "lp2-sec-search-shortest-actions",
+          "title": "B · 最少步数与路径",
+          "scope": "core",
+          "routeId": null,
+          "description": "BFS 与最短步数：分层搜索、入队标记、距离、路径还原、多源 BFS；等权最短路的证明。0–1 BFS 本章扩展，严格限定 0/1 边权。",
+          "completionCriteria": [
+            "解释 BFS 分层为何给出等权最短路，独立还原路径。"
+          ],
+          "gateIds": [
+            "lp2-search-shortest-actions-bfs-paths",
+            "lp2-search-shortest-actions-practice-assessment"
+          ],
+          "prerequisites": {
+            "gateIds": [
+              "lp2-search-search-states-practice-assessment"
+            ],
+            "topicIds": []
+          }
+        },
+        {
+          "id": "lp2-sec-search-pruning-cache",
+          "title": "C · 减少无效探索",
+          "scope": "core",
+          "routeId": null,
+          "description": "搜索剪枝：可行性、最优性、对称与搜索顺序；证明剪枝不会删除正确答案。\n从搜索走向缓存：识别重复状态；记忆化搜索的条件，为动态规划建立先修。",
+          "completionCriteria": [
+            "证明剪枝安全，识别重复状态；缓存时区分未求解、求解中与已求解。"
+          ],
+          "gateIds": [
+            "lp2-search-pruning-cache-safe-pruning",
+            "lp2-search-pruning-cache-cached-search",
+            "lp2-search-pruning-cache-practice-assessment"
+          ],
+          "prerequisites": {
+            "gateIds": [
+              "lp2-search-shortest-actions-practice-assessment"
+            ],
+            "topicIds": []
+          }
+        },
+        {
+          "id": "lp2-sec-search-search-extensions",
+          "title": "D · 特殊搜索扩展",
+          "scope": "elective",
+          "routeId": null,
+          "description": "搜索进阶选学：双向 BFS、迭代加深、折半搜索；按具体题型选学。",
+          "completionCriteria": [
+            "选双向 BFS、迭代加深或折半搜索，说明额外前提并与普通搜索比较。"
+          ],
+          "gateIds": [
+            "lp2-search-search-extensions-bidirectional",
+            "lp2-search-search-extensions-meet-middle",
+            "lp2-search-search-extensions-iterative-deepening",
+            "lp2-search-search-extensions-practice-assessment"
+          ],
+          "prerequisites": {
+            "gateIds": [
+              "lp2-search-shortest-actions-bfs-paths"
+            ],
+            "topicIds": []
+          }
+        }
+      ],
+      "gates": [
+        {
+          "id": "lp2-search-search-states-graph-state",
+          "index": 1,
+          "title": "状态图与图的表示",
+          "kind": "learning",
+          "sectionId": "lp2-sec-search-search-states",
+          "sectionTitle": "A · 定义并遍历状态",
+          "routeId": null,
+          "scope": "core",
           "optional": false,
-          "scope": "题目难度仅为本关迁移练习的选题窗口；初学专项题可低于此区间。",
-          "learningTitle": "进阶二分（二）· 把答案变成判定",
-          "learningDescription": "二分查找依赖有序数组，二分答案依赖可证明的可行性单调。先写出给定答案怎样检查，再证明边界两侧的含义，之后才能安全地缩小答案范围。",
+          "topicIds": [
+            "xcpc-图的概念-1",
+            "algorithm-content-xcpc-图的遍历-1"
+          ],
+          "luoguDifficulty": [],
+          "description": "学习显式邻接表示与隐式状态图；状态必须包含影响未来的信息，明确边界、访问标记和连通性。",
+          "goals": [
+            "明确顶点、边和状态唯一性",
+            "选择邻接表或隐式转移表示",
+            "指出遗漏历史信息会合并哪些不同状态"
+          ],
+          "learningTitle": "状态图与图的表示",
+          "learningDescription": "学习显式邻接表示与隐式状态图；状态必须包含影响未来的信息，明确边界、访问标记和连通性。",
+          "prerequisites": {
+            "gateIds": [
+              "lp2-brute-models-complete-enumeration-recursion",
+              "lp2-cpp-toolkit-stl-selection-adapters"
+            ],
+            "topicIds": [
+              "xcpc-递归-回溯-1",
+              "algorithm-枚举",
+              "algorithm-stack-queue",
+              "algorithm-deque",
+              "xcpc-priority-queue-1"
+            ]
+          },
           "threadGateIds": [
-            "stage-03-gate-03",
-            "stage-04-gate-04",
-            "stage-11-gate-08"
+            "lp2-search-search-states-dfs-backtracking"
           ]
         },
         {
-          "id": "stage-04-gate-02",
+          "id": "lp2-search-search-states-dfs-backtracking",
           "index": 2,
-          "title": "DFS 与回溯：枚举选择",
+          "title": "DFS、回溯与撤销",
           "kind": "learning",
+          "sectionId": "lp2-sec-search-search-states",
+          "sectionTitle": "A · 定义并遍历状态",
+          "routeId": null,
+          "scope": "core",
+          "optional": false,
           "topicIds": [
             "algorithm-content-feishu-part-2-1",
             "algorithm-backtracking"
           ],
-          "cf": {
-            "min": 1000,
-            "max": 1100
-          },
-          "luoguDifficulty": [
-            "普及−",
-            "普及"
-          ],
-          "description": "学习DFS、回溯的适用条件、基本实现与复杂度，再用独立练习验证。",
+          "luoguDifficulty": [],
+          "description": "用选择—递归—撤销枚举方案；区分路径访问与全局访问，必要时用显式栈控制深度。",
           "goals": [
-            "解释DFS、回溯的核心不变量与适用边界",
-            "独立写出实现并说明时间与空间复杂度",
-            "完成基础练习与一道迁移题，记录失败原因"
+            "独立枚举合法方案并恢复选择",
+            "分清路径标记与全局访问标记",
+            "检查返回上一层后状态是否完全还原"
           ],
+          "learningTitle": "DFS、回溯与撤销",
+          "learningDescription": "用选择—递归—撤销枚举方案；区分路径访问与全局访问，必要时用显式栈控制深度。",
           "prerequisites": {
             "gateIds": [
-              "stage-04-gate-01"
+              "lp2-search-search-states-graph-state"
             ],
-            "topicIds": []
+            "topicIds": [
+              "xcpc-图的概念-1",
+              "algorithm-content-xcpc-图的遍历-1"
+            ]
           },
-          "optional": false,
-          "scope": "题目难度仅为本关迁移练习的选题窗口；初学专项题可低于此区间。",
-          "learningTitle": "初识搜索（一）· 沿选择展开枚举",
-          "learningDescription": "把平铺的枚举变成一层层选择，用 DFS 进入分支，再在返回时撤销修改。先保证每个合法方案都能到达，后面加入剪枝时才知道哪些分支可以有理由地省去。",
           "threadGateIds": [
-            "stage-01-gate-06",
-            "stage-04-gate-07",
-            "stage-05-gate-07"
+            "lp2-search-search-states-graph-state",
+            "lp2-search-search-states-practice-assessment"
           ]
         },
         {
-          "id": "stage-04-gate-03",
+          "id": "lp2-search-search-states-practice-assessment",
           "index": 3,
-          "title": "BFS：网格上的最短步数",
+          "title": "混练验收：定义并遍历状态",
+          "kind": "challenge",
+          "sectionId": "lp2-sec-search-search-states",
+          "sectionTitle": "A · 定义并遍历状态",
+          "routeId": null,
+          "scope": "core",
+          "optional": false,
+          "topicIds": [
+            "xcpc-图的概念-1",
+            "algorithm-content-xcpc-图的遍历-1",
+            "algorithm-content-feishu-part-2-1",
+            "algorithm-backtracking"
+          ],
+          "luoguDifficulty": [],
+          "description": "围绕定义并遍历状态完成变化任务与独立应用，核对方法选择、实现和边界。",
+          "goals": [
+            "明确状态唯一性、标记含义、撤销范围；正确统计连通块或方案。",
+            "独立完成定义并遍历状态的变化任务，说明选择方法的理由",
+            "检查边界或用小规模对照验证，并记录本段的一次错误与修正"
+          ],
+          "learningTitle": "定义并遍历状态 · 独立验收",
+          "learningDescription": "组合运用状态图与图的表示、DFS、回溯与撤销，先比较不同方法，再独立完成无标签任务并记录验证结果。",
+          "prerequisites": {
+            "gateIds": [
+              "lp2-search-search-states-graph-state",
+              "lp2-search-search-states-dfs-backtracking"
+            ],
+            "topicIds": [
+              "xcpc-图的概念-1",
+              "algorithm-content-xcpc-图的遍历-1",
+              "algorithm-content-feishu-part-2-1",
+              "algorithm-backtracking"
+            ]
+          },
+          "threadGateIds": [
+            "lp2-search-search-states-dfs-backtracking",
+            "lp2-search-shortest-actions-bfs-paths"
+          ]
+        },
+        {
+          "id": "lp2-search-shortest-actions-bfs-paths",
+          "index": 4,
+          "title": "BFS、距离与路径还原",
           "kind": "learning",
+          "sectionId": "lp2-sec-search-shortest-actions",
+          "sectionTitle": "B · 最少步数与路径",
+          "routeId": null,
+          "scope": "core",
+          "optional": false,
           "topicIds": [
             "algorithm-content-feishu-part-2-2"
           ],
-          "cf": {
-            "min": 1000,
-            "max": 1100
-          },
-          "luoguDifficulty": [
-            "普及−",
-            "普及"
-          ],
-          "description": "学习BFS的适用条件、基本实现与复杂度，再用独立练习验证。",
+          "luoguDifficulty": [],
+          "description": "用分层队列证明等权最少步数；入队时标记，记录前驱恢复路径，再扩展多源起点。",
           "goals": [
-            "解释BFS的核心不变量与适用边界",
-            "独立写出实现并说明时间与空间复杂度",
-            "完成基础练习与一道迁移题，记录失败原因"
+            "解释首次到达为何是等权最短距离",
+            "正确设置入队标记和多源距离",
+            "输出一条可逐步验证的最短路径"
           ],
+          "learningTitle": "BFS、距离与路径还原",
+          "learningDescription": "用分层队列证明等权最少步数；入队时标记，记录前驱恢复路径，再扩展多源起点。",
           "prerequisites": {
             "gateIds": [
-              "stage-04-gate-02"
+              "lp2-search-search-states-practice-assessment"
             ],
-            "topicIds": []
+            "topicIds": [
+              "xcpc-图的概念-1",
+              "algorithm-content-xcpc-图的遍历-1",
+              "algorithm-content-feishu-part-2-1",
+              "algorithm-backtracking"
+            ]
           },
-          "optional": false,
-          "scope": "题目难度仅为本关迁移练习的选题窗口；初学专项题可低于此区间。",
-          "learningTitle": "初识搜索（二）· BFS 一层层走近",
-          "learningDescription": "队列让 BFS 按扩展层次访问状态，在等权网格中得到最短步数。分清状态、邻接关系与访问标记；之后边的代价不同时，再比较它与 Dijkstra 的不同。",
           "threadGateIds": [
-            "stage-02-gate-03",
-            "stage-05-gate-09",
-            "stage-06-gate-02"
+            "lp2-search-search-states-practice-assessment",
+            "lp2-search-shortest-actions-practice-assessment"
           ]
         },
         {
-          "id": "stage-04-gate-04",
-          "index": 4,
-          "title": "混练：二分答案与贪心判定",
-          "kind": "mixed",
-          "topicIds": [
-            "algorithm-二分答案",
-            "algorithm-content-feishu-part-1-5"
-          ],
-          "cf": {
-            "min": 1000,
-            "max": 1100
-          },
-          "luoguDifficulty": [
-            "普及−",
-            "普及"
-          ],
-          "description": "混合使用二分答案、贪心；选题时隐藏专题标签，先独立辨型再实现。",
-          "goals": [
-            "在不看标签与题解的情况下提出完整思路",
-            "独立实现并通过所选平台的评测",
-            "复盘关键转化、错误解法与复杂度瓶颈"
-          ],
-          "prerequisites": {
-            "gateIds": [
-              "stage-04-gate-03"
-            ],
-            "topicIds": []
-          },
-          "optional": false,
-          "scope": "区间只用于选择综合新题，不保证单题涵盖列出的所有算法。",
-          "learningTitle": "串联二分与贪心 · 判定也要证明",
-          "learningDescription": "二分负责缩小答案，贪心可能负责检查某个答案是否可行。分别证明可行性的单调与判定规则的正确性，避免用一个看似合理的局部选择破坏整套二分。",
-          "threadGateIds": [
-            "stage-04-gate-01",
-            "stage-02-gate-10",
-            "stage-04-gate-09"
-          ]
-        },
-        {
-          "id": "stage-04-gate-05",
+          "id": "lp2-search-shortest-actions-practice-assessment",
           "index": 5,
-          "title": "位运算：状态与奇偶信息",
-          "kind": "learning",
+          "title": "混练验收：最少步数与路径",
+          "kind": "challenge",
+          "sectionId": "lp2-sec-search-shortest-actions",
+          "sectionTitle": "B · 最少步数与路径",
+          "routeId": null,
+          "scope": "core",
+          "optional": false,
           "topicIds": [
-            "algorithm-content-feishu-part-5-1"
+            "algorithm-content-feishu-part-2-2"
           ],
-          "cf": {
-            "min": 1000,
-            "max": 1100
-          },
-          "luoguDifficulty": [
-            "普及−",
-            "普及"
-          ],
-          "description": "学习位运算的适用条件、基本实现与复杂度，再用独立练习验证。",
+          "luoguDifficulty": [],
+          "description": "围绕最少步数与路径完成变化任务与独立应用，核对方法选择、实现和边界。",
           "goals": [
-            "解释位运算的核心不变量与适用边界",
-            "独立写出实现并说明时间与空间复杂度",
-            "完成基础练习与一道迁移题，记录失败原因"
+            "解释 BFS 分层为何给出等权最短路，独立还原路径。",
+            "独立完成最少步数与路径的变化任务，说明选择方法的理由",
+            "检查边界或用小规模对照验证，并记录本段的一次错误与修正"
           ],
+          "learningTitle": "最少步数与路径 · 独立验收",
+          "learningDescription": "组合运用BFS、距离与路径还原，先比较不同方法，再独立完成无标签任务并记录验证结果。",
           "prerequisites": {
             "gateIds": [
-              "stage-04-gate-04"
+              "lp2-search-shortest-actions-bfs-paths"
             ],
-            "topicIds": []
+            "topicIds": [
+              "algorithm-content-feishu-part-2-2"
+            ]
           },
-          "optional": false,
-          "scope": "题目难度仅为本关迁移练习的选题窗口；初学专项题可低于此区间。",
-          "learningTitle": "初识位运算 · 用位表达状态",
-          "learningDescription": "从奇偶信息继续观察每一位如何保存开关或集合成员，练习掩码与基本位操作。先让表示和题意对应清楚，之后状态压缩 DP 才能把集合真正放进状态里。",
           "threadGateIds": [
-            "stage-03-gate-06",
-            "stage-03-gate-07",
-            "stage-08-gate-05"
+            "lp2-search-shortest-actions-bfs-paths",
+            "lp2-search-pruning-cache-safe-pruning"
           ]
         },
         {
-          "id": "stage-04-gate-06",
+          "id": "lp2-search-pruning-cache-safe-pruning",
           "index": 6,
-          "title": "埃式筛与线性筛：素数预处理",
+          "title": "剪枝与不漏解证明",
           "kind": "learning",
+          "sectionId": "lp2-sec-search-pruning-cache",
+          "sectionTitle": "C · 减少无效探索",
+          "routeId": null,
+          "scope": "core",
+          "optional": false,
           "topicIds": [
-            "xcpc-埃式筛-1",
-            "algorithm-线性筛-素数"
+            "algorithm-content-feishu-part-2-4"
           ],
-          "cf": {
-            "min": 1000,
-            "max": 1100
-          },
-          "luoguDifficulty": [
-            "普及−",
-            "普及"
-          ],
-          "description": "学习埃式筛、线性筛的适用条件、基本实现与复杂度，再用独立练习验证。",
+          "luoguDifficulty": [],
+          "description": "比较可行性、最优性、对称和搜索顺序剪枝；先证明安全，再统计减少的节点数。",
           "goals": [
-            "解释埃式筛、线性筛的核心不变量与适用边界",
-            "独立写出实现并说明时间与空间复杂度",
-            "完成基础练习与一道迁移题，记录失败原因"
+            "为每条剪枝写出不漏解理由",
+            "比较剪枝前后访问状态数",
+            "用小规模穷举核对剪枝结果"
           ],
+          "learningTitle": "剪枝与不漏解证明",
+          "learningDescription": "比较可行性、最优性、对称和搜索顺序剪枝；先证明安全，再统计减少的节点数。",
           "prerequisites": {
             "gateIds": [
-              "stage-04-gate-05"
+              "lp2-search-shortest-actions-practice-assessment"
             ],
-            "topicIds": []
+            "topicIds": [
+              "algorithm-content-feishu-part-2-2"
+            ]
           },
-          "optional": false,
-          "scope": "题目难度仅为本关迁移练习的选题窗口；初学专项题可低于此区间。",
-          "learningTitle": "进阶数论 · 素数信息一次筛好",
-          "learningDescription": "当许多数都要判断素性时，逐个试除会重复检查。比较埃式筛与线性筛怎样组织标记过程，把预处理思想从区间统计带到整数性质，为后续数论工具提供基础。",
           "threadGateIds": [
-            "stage-02-gate-09",
-            "stage-06-gate-10",
-            "stage-12-gate-09"
+            "lp2-search-shortest-actions-practice-assessment",
+            "lp2-search-pruning-cache-cached-search"
           ]
         },
         {
-          "id": "stage-04-gate-07",
+          "id": "lp2-search-pruning-cache-cached-search",
           "index": 7,
-          "title": "递归与搜索剪枝：边界和撤销",
+          "title": "重复状态与记忆化条件",
           "kind": "learning",
+          "sectionId": "lp2-sec-search-pruning-cache",
+          "sectionTitle": "C · 减少无效探索",
+          "routeId": null,
+          "scope": "core",
+          "optional": false,
+          "topicIds": [
+            "algorithm-content-feishu-part-2-3"
+          ],
+          "luoguDifficulty": [],
+          "description": "识别重叠子问题；缓存键必须表达完整状态，区分求解中和已求解，遇环不能直接套无环递推。",
+          "goals": [
+            "指出重复子问题及其完整缓存键",
+            "区分未访问、求解中和已求解",
+            "识别有环依赖不能直接记忆化的情况"
+          ],
+          "learningTitle": "重复状态与记忆化条件",
+          "learningDescription": "识别重叠子问题；缓存键必须表达完整状态，区分求解中和已求解，遇环不能直接套无环递推。",
+          "prerequisites": {
+            "gateIds": [
+              "lp2-search-pruning-cache-safe-pruning"
+            ],
+            "topicIds": [
+              "algorithm-content-feishu-part-2-4"
+            ]
+          },
+          "threadGateIds": [
+            "lp2-search-pruning-cache-safe-pruning",
+            "lp2-search-pruning-cache-practice-assessment"
+          ]
+        },
+        {
+          "id": "lp2-search-pruning-cache-practice-assessment",
+          "index": 8,
+          "title": "混练验收：减少无效探索",
+          "kind": "challenge",
+          "sectionId": "lp2-sec-search-pruning-cache",
+          "sectionTitle": "C · 减少无效探索",
+          "routeId": null,
+          "scope": "core",
+          "optional": false,
+          "topicIds": [
+            "algorithm-content-feishu-part-2-4",
+            "algorithm-content-feishu-part-2-3"
+          ],
+          "luoguDifficulty": [],
+          "description": "围绕减少无效探索完成变化任务与独立应用，核对方法选择、实现和边界。",
+          "goals": [
+            "各完成一个方案搜索与最短操作模型，说明状态、转移、去重与终止。",
+            "正确输出可验证方案或路径；不能只得到一个数字答案。",
+            "比较剪枝前后访问状态数，并证明没有剪掉合法答案。"
+          ],
+          "learningTitle": "减少无效探索 · 独立验收",
+          "learningDescription": "组合运用剪枝与不漏解证明、重复状态与记忆化条件，先比较不同方法，再独立完成无标签任务并记录验证结果。",
+          "prerequisites": {
+            "gateIds": [
+              "lp2-search-pruning-cache-safe-pruning",
+              "lp2-search-pruning-cache-cached-search",
+              "lp2-search-search-states-practice-assessment",
+              "lp2-search-shortest-actions-practice-assessment"
+            ],
+            "topicIds": [
+              "algorithm-content-feishu-part-2-4",
+              "algorithm-content-feishu-part-2-3",
+              "xcpc-图的概念-1",
+              "algorithm-content-xcpc-图的遍历-1",
+              "algorithm-content-feishu-part-2-1",
+              "algorithm-backtracking"
+            ]
+          },
+          "threadGateIds": [
+            "lp2-search-pruning-cache-cached-search",
+            "lp2-search-search-extensions-bidirectional"
+          ]
+        },
+        {
+          "id": "lp2-search-search-extensions-bidirectional",
+          "index": 9,
+          "title": "双向搜索的相遇条件",
+          "kind": "learning",
+          "sectionId": "lp2-sec-search-search-extensions",
+          "sectionTitle": "D · 特殊搜索扩展",
+          "routeId": null,
+          "scope": "elective",
+          "optional": true,
+          "topicIds": [
+            "algorithm-双向-bfs"
+          ],
+          "luoguDifficulty": [],
+          "description": "明确逆向转移、终止层和最短路保证，与普通BFS比较状态量。",
+          "goals": [
+            "定义正反两个方向的合法转移",
+            "解释相遇与停止条件的最短性保证",
+            "比较单向与双向访问的状态规模"
+          ],
+          "learningTitle": "双向搜索的相遇条件",
+          "learningDescription": "明确逆向转移、终止层和最短路保证，与普通BFS比较状态量。",
+          "prerequisites": {
+            "gateIds": [
+              "lp2-search-shortest-actions-bfs-paths"
+            ],
+            "topicIds": [
+              "algorithm-content-feishu-part-2-2"
+            ]
+          },
+          "threadGateIds": [
+            "lp2-search-pruning-cache-practice-assessment",
+            "lp2-search-search-extensions-meet-middle"
+          ]
+        },
+        {
+          "id": "lp2-search-search-extensions-meet-middle",
+          "index": 10,
+          "title": "折半搜索与组合",
+          "kind": "learning",
+          "sectionId": "lp2-sec-search-search-extensions",
+          "sectionTitle": "D · 特殊搜索扩展",
+          "routeId": null,
+          "scope": "elective",
+          "optional": true,
+          "topicIds": [
+            "xcpc-折半搜索-1"
+          ],
+          "luoguDifficulty": [],
+          "description": "把指数枚举拆为两半，选择排序、哈希或双指针合并；说明去重和内存。",
+          "goals": [
+            "把选择拆成两半且保持枚举完整",
+            "选择排序或哈希合并结果",
+            "估计两侧存储与组合开销"
+          ],
+          "learningTitle": "折半搜索与组合",
+          "learningDescription": "把指数枚举拆为两半，选择排序、哈希或双指针合并；说明去重和内存。",
+          "prerequisites": {
+            "gateIds": [
+              "lp2-search-search-extensions-bidirectional",
+              "lp2-brute-models-complete-enumeration-enumeration",
+              "lp2-basic-optimization-monotone-methods-two-pointers"
+            ],
+            "topicIds": [
+              "algorithm-双向-bfs",
+              "algorithm-枚举",
+              "algorithm-content-feishu-part-5-1",
+              "algorithm-content-feishu-part-1-9"
+            ]
+          },
+          "threadGateIds": [
+            "lp2-search-search-extensions-bidirectional",
+            "lp2-search-search-extensions-iterative-deepening"
+          ]
+        },
+        {
+          "id": "lp2-search-search-extensions-iterative-deepening",
+          "index": 11,
+          "title": "迭代加深与深度界",
+          "kind": "learning",
+          "sectionId": "lp2-sec-search-search-extensions",
+          "sectionTitle": "D · 特殊搜索扩展",
+          "routeId": null,
+          "scope": "elective",
+          "optional": true,
           "topicIds": [
             "xcpc-递归-回溯-1",
             "algorithm-content-feishu-part-2-4"
           ],
-          "cf": {
-            "min": 1000,
-            "max": 1100
-          },
-          "luoguDifficulty": [
-            "普及−",
-            "普及"
-          ],
-          "description": "学习递归、搜索剪枝的适用条件、基本实现与复杂度，再用独立练习验证。",
+          "luoguDifficulty": [],
+          "description": "深度限制搜索与逐层放宽上界，证明终止和剪枝条件；启发式IDA*另作专题延伸。",
           "goals": [
-            "解释递归、搜索剪枝的核心不变量与适用边界",
-            "独立写出实现并说明时间与空间复杂度",
-            "完成基础练习与一道迁移题，记录失败原因"
+            "实现带深度上限的搜索",
+            "说明上限递增何时能够终止",
+            "验证剪枝与深度限制不会遗漏目标解"
           ],
+          "learningTitle": "迭代加深与深度界",
+          "learningDescription": "深度限制搜索与逐层放宽上界，证明终止和剪枝条件；启发式IDA*另作专题延伸。",
           "prerequisites": {
             "gateIds": [
-              "stage-04-gate-06"
+              "lp2-search-search-extensions-meet-middle",
+              "lp2-search-pruning-cache-safe-pruning"
             ],
-            "topicIds": []
+            "topicIds": [
+              "xcpc-折半搜索-1",
+              "algorithm-content-feishu-part-2-4"
+            ]
           },
-          "optional": false,
-          "scope": "题目难度仅为本关迁移练习的选题窗口；初学专项题可低于此区间。",
-          "learningTitle": "进阶搜索（三）· 有依据地剪枝",
-          "learningDescription": "在能完整枚举的 DFS 上，利用当前状态判断哪些分支已经不可能成功。保留递归边界与撤销规则，并用未剪枝程序核对小数据，防止优化时误删正确方案。",
           "threadGateIds": [
-            "stage-04-gate-02",
-            "stage-01-gate-11",
-            "stage-05-gate-07"
+            "lp2-search-search-extensions-meet-middle",
+            "lp2-search-search-extensions-practice-assessment"
           ]
         },
         {
-          "id": "stage-04-gate-08",
-          "index": 8,
-          "title": "混练：DFS、枚举与数论",
-          "kind": "mixed",
-          "topicIds": [
-            "algorithm-content-feishu-part-2-1",
-            "algorithm-枚举",
-            "algorithm-content-feishu-part-5-2-2"
-          ],
-          "cf": {
-            "min": 1000,
-            "max": 1100
-          },
-          "luoguDifficulty": [
-            "普及−",
-            "普及"
-          ],
-          "description": "混合使用DFS、枚举、GCD 与 LCM；选题时隐藏专题标签，先独立辨型再实现。",
-          "goals": [
-            "在不看标签与题解的情况下提出完整思路",
-            "独立实现并通过所选平台的评测",
-            "复盘关键转化、错误解法与复杂度瓶颈"
-          ],
-          "prerequisites": {
-            "gateIds": [
-              "stage-04-gate-07"
-            ],
-            "topicIds": []
-          },
-          "optional": false,
-          "scope": "区间只用于选择综合新题，不保证单题涵盖列出的所有算法。",
-          "learningTitle": "搜索合流 · DFS、枚举与整除",
-          "learningDescription": "把数论限制放进搜索状态，在候选生成和合法性检查中使用整除关系。先说明搜索覆盖哪些方案，再决定哪些条件可以提前检查，让数学观察真正减少枚举工作。",
-          "threadGateIds": [
-            "stage-04-gate-02",
-            "stage-02-gate-09",
-            "stage-04-gate-07"
-          ]
-        },
-        {
-          "id": "stage-04-gate-09",
-          "index": 9,
-          "title": "贪心：交换顺序与局部选择",
-          "kind": "learning",
-          "topicIds": [
-            "algorithm-content-feishu-part-1-5"
-          ],
-          "cf": {
-            "min": 1000,
-            "max": 1100
-          },
-          "luoguDifficulty": [
-            "普及−",
-            "普及"
-          ],
-          "description": "学习贪心的适用条件、基本实现与复杂度，再用独立练习验证。",
-          "goals": [
-            "解释贪心的核心不变量与适用边界",
-            "独立写出实现并说明时间与空间复杂度",
-            "完成基础练习与一道迁移题，记录失败原因"
-          ],
-          "prerequisites": {
-            "gateIds": [
-              "stage-04-gate-08"
-            ],
-            "topicIds": []
-          },
-          "optional": false,
-          "scope": "题目难度仅为本关迁移练习的选题窗口；初学专项题可低于此区间。",
-          "learningTitle": "进阶贪心（二）· 用交换解释选择",
-          "learningDescription": "接着第一轮的排序与反例，这次尝试把任意可行方案逐步交换成贪心方案。说明交换为何不变差，也保留寻找反例的习惯，让局部选择从猜测走向可验证的结论。",
-          "threadGateIds": [
-            "stage-02-gate-10",
-            "stage-07-gate-06",
-            "stage-12-gate-11"
-          ]
-        },
-        {
-          "id": "stage-04-gate-10",
-          "index": 10,
-          "title": "离散化：保留相对大小",
-          "kind": "learning",
-          "topicIds": [
-            "xcpc-离散-1"
-          ],
-          "cf": {
-            "min": 1000,
-            "max": 1100
-          },
-          "luoguDifficulty": [
-            "普及−",
-            "普及"
-          ],
-          "description": "学习离散化的适用条件、基本实现与复杂度，再用独立练习验证。",
-          "goals": [
-            "解释离散化的核心不变量与适用边界",
-            "独立写出实现并说明时间与空间复杂度",
-            "完成基础练习与一道迁移题，记录失败原因"
-          ],
-          "prerequisites": {
-            "gateIds": [
-              "stage-04-gate-09"
-            ],
-            "topicIds": []
-          },
-          "optional": false,
-          "scope": "题目难度仅为本关迁移练习的选题窗口；初学专项题可低于此区间。",
-          "learningTitle": "初识离散化 · 缩小值域保留顺序",
-          "learningDescription": "值很大时，先排序去重，再用排名表达相对大小。明确哪些信息被保留、哪些数值距离会丢失，为后面的树状数组与离线统计准备合适的下标。",
-          "threadGateIds": [
-            "stage-03-gate-09",
-            "stage-07-gate-04",
-            "stage-12-gate-04"
-          ]
-        },
-        {
-          "id": "stage-04-gate-11",
-          "index": 11,
-          "title": "双指针与差分：一次扫描的选择",
-          "kind": "learning",
-          "topicIds": [
-            "algorithm-content-feishu-part-1-9",
-            "algorithm-一维差分"
-          ],
-          "cf": {
-            "min": 1000,
-            "max": 1100
-          },
-          "luoguDifficulty": [
-            "普及−",
-            "普及"
-          ],
-          "description": "学习双指针、一维差分的适用条件、基本实现与复杂度，再用独立练习验证。",
-          "goals": [
-            "解释双指针、一维差分的核心不变量与适用边界",
-            "独立写出实现并说明时间与空间复杂度",
-            "完成基础练习与一道迁移题，记录失败原因"
-          ],
-          "prerequisites": {
-            "gateIds": [
-              "stage-04-gate-10"
-            ],
-            "topicIds": []
-          },
-          "optional": false,
-          "scope": "题目难度仅为本关迁移练习的选题窗口；初学专项题可低于此区间。",
-          "learningTitle": "串联扫描 · 双指针与差分分工",
-          "learningDescription": "双指针组织区间如何移动，差分记录一批区间修改。分清两种方法各自依赖的条件，再判断它们能否共同减少重复扫描，或者题目其实只需要其中一种。",
-          "threadGateIds": [
-            "stage-03-gate-05",
-            "stage-03-gate-02",
-            "stage-07-gate-05"
-          ]
-        },
-        {
-          "id": "stage-04-gate-12",
+          "id": "lp2-search-search-extensions-practice-assessment",
           "index": 12,
-          "title": "挑战：二分、搜索与贪心综合",
+          "title": "混练验收：特殊搜索扩展",
           "kind": "challenge",
+          "sectionId": "lp2-sec-search-search-extensions",
+          "sectionTitle": "D · 特殊搜索扩展",
+          "routeId": null,
+          "scope": "elective",
+          "optional": true,
           "topicIds": [
-            "algorithm-二分答案",
-            "algorithm-content-feishu-part-2-2",
-            "algorithm-content-feishu-part-1-5"
+            "algorithm-双向-bfs",
+            "xcpc-折半搜索-1",
+            "xcpc-递归-回溯-1",
+            "algorithm-content-feishu-part-2-4"
           ],
-          "cf": {
-            "min": 1000,
-            "max": 1100
-          },
-          "luoguDifficulty": [
-            "普及−",
-            "普及"
-          ],
-          "description": "本阶段以二分答案、BFS、贪心等已学方法为参考，混排新题，检验独立推导与组合能力。",
+          "luoguDifficulty": [],
+          "description": "围绕特殊搜索扩展完成变化任务与独立应用，核对方法选择、实现和边界。",
           "goals": [
-            "在不看标签与题解的情况下提出完整思路",
-            "独立实现并通过所选平台的评测",
-            "复盘关键转化、错误解法与复杂度瓶颈"
+            "选双向 BFS、迭代加深或折半搜索，说明额外前提并与普通搜索比较。",
+            "独立完成特殊搜索扩展的变化任务，说明选择方法的理由",
+            "检查边界或用小规模对照验证，并记录本段的一次错误与修正"
           ],
+          "learningTitle": "特殊搜索扩展 · 独立验收",
+          "learningDescription": "组合运用双向搜索的相遇条件、折半搜索与组合、迭代加深与深度界，先比较不同方法，再独立完成无标签任务并记录验证结果。",
           "prerequisites": {
             "gateIds": [
-              "stage-04-gate-11"
+              "lp2-search-search-extensions-bidirectional",
+              "lp2-search-search-extensions-meet-middle",
+              "lp2-search-search-extensions-iterative-deepening"
             ],
-            "topicIds": []
+            "topicIds": [
+              "algorithm-双向-bfs",
+              "xcpc-折半搜索-1",
+              "xcpc-递归-回溯-1",
+              "algorithm-content-feishu-part-2-4"
+            ]
           },
-          "optional": false,
-          "scope": "区间只用于选择综合新题，不保证单题涵盖列出的所有算法。",
-          "learningTitle": "方法合流 · 二分、搜索与贪心",
-          "learningDescription": "先根据状态规模与条件结构，决定枚举搜索、单调判定还是局部选择。综合挑战会混合这些入口，重点是解释为何采用某条路线，以及其他方法在哪里失效。",
           "threadGateIds": [
-            "stage-04-gate-01",
-            "stage-04-gate-03",
-            "stage-04-gate-09"
+            "lp2-search-search-extensions-iterative-deepening"
           ]
         }
       ]
@@ -2024,477 +3506,668 @@
     {
       "id": "stage-05",
       "index": 5,
-      "title": "把重复子问题写成状态",
-      "description": "从重复子问题定义状态，完成搜索、DP 与关系模型的辨型。",
-      "goal": "从重复子问题定义状态，完成搜索、DP 与关系模型的辨型。",
-      "cf": {
-        "min": 1100,
-        "max": 1200
-      },
-      "luoguDifficulty": [
-        "普及"
-      ],
-      "rationale": "本章按综合做题能力组织，不要求区间中的每道题都使用这些算法，也不要求学完所有专题才进入下一章。",
+      "title": "动态规划基础：状态、转移与经典模型",
+      "description": "能从题意定义状态、推导转移、设定边界和计算顺序，而不只记忆代码模板。",
+      "goal": "能从题意定义状态、推导转移、设定边界和计算顺序，而不只记忆代码模板。",
+      "rationale": "经典背包与区间 DP 收齐，新增内容不默认全变必修；方案恢复与计数不重不漏成为验收重点。",
+      "entryText": "理解搜索状态与重复子问题、递推、二分和复杂度；第 3 章已提供基础取模，不需要逆元。",
+      "completionMode": "core",
       "completionCriteria": [
-        "独立完成本章综合题组中的新题",
-        "覆盖至少两种已学方法；后续阶段回收前面基础工具",
-        "说明正确性、复杂度，并记录一次完整复盘"
+        "分别覆盖序列、背包、区间模型，给出状态、转移、边界、顺序和答案位置。",
+        "解释背包的有序 / 无序计数差异，至少还原一个最优方案。",
+        "空间优化前后对照，明确覆盖旧状态会造成什么错误。"
       ],
+      "scopeDescription": "编辑距离属于二维序列扩展；基础计数采用加法和题设模数，不提前依赖组合逆元。多重背包二进制分组本章结束；单调队列优化留第 10 章。",
       "prerequisites": {
         "stageIds": [
+          "stage-03",
           "stage-04"
         ]
       },
+      "luoguDifficulty": [],
+      "sections": [
+        {
+          "id": "lp2-sec-basic-dp-state-sequence",
+          "title": "A · 从搜索到状态",
+          "scope": "core",
+          "routeId": null,
+          "description": "DP 的完整思考过程：重叠子问题、最优子结构；记忆化与递推；状态含义、合法性、初值、答案位置。\n线性与序列 DP：路径与选取；LIS 的二次 DP 与二分优化；LCS；编辑距离为同段扩展，核心先完成二维序列状态。",
+          "completionCriteria": [
+            "对每个状态用完整句子定义含义，推出线性与序列模型。"
+          ],
+          "gateIds": [
+            "lp2-basic-dp-state-sequence-dp-contract",
+            "lp2-basic-dp-state-sequence-linear-lis",
+            "lp2-basic-dp-state-sequence-lcs",
+            "lp2-basic-dp-state-sequence-practice-assessment"
+          ],
+          "prerequisites": {
+            "gateIds": [
+              "lp2-search-pruning-cache-cached-search",
+              "lp2-basic-optimization-powers-greedy-binary-power"
+            ],
+            "topicIds": []
+          }
+        },
+        {
+          "id": "lp2-sec-basic-dp-knapsack",
+          "title": "B · 背包基础一次学齐",
+          "scope": "core",
+          "routeId": null,
+          "description": "背包完整基础：二维 01 状态 → 一维倒序 → 完全正序 → 多重与二进制分组 → 分组背包；恰好 / 至多、不可达初值和方案还原。二进制分组用于可行性 / 最优值时说明等价性，不能直接泛化为有限件方案计数：拆分可能让同一数量有多种表达。计数单独定义物品是否可区分与去重。",
+          "completionCriteria": [
+            "区分 01、完全、多重、分组；解释循环方向和空间压缩对依赖的影响。"
+          ],
+          "gateIds": [
+            "lp2-basic-dp-knapsack-zero-one",
+            "lp2-basic-dp-knapsack-unbounded",
+            "lp2-basic-dp-knapsack-bounded",
+            "lp2-basic-dp-knapsack-grouped",
+            "lp2-basic-dp-knapsack-practice-assessment"
+          ],
+          "prerequisites": {
+            "gateIds": [
+              "lp2-basic-dp-state-sequence-practice-assessment"
+            ],
+            "topicIds": []
+          }
+        },
+        {
+          "id": "lp2-sec-basic-dp-interval-counting",
+          "title": "C · 区间与计数",
+          "scope": "core",
+          "routeId": null,
+          "description": "区间 DP：枚举区间长度和分割点；合并型问题；从小区间到大区间。\n方案数与解的还原：计数不重不漏；模数给定时的加法；记录前驱、恢复选择；空间优化的适用条件。",
+          "completionCriteria": [
+            "区间按依赖顺序计算；计数区分有序 / 无序，方案恢复不受压缩破坏。"
+          ],
+          "gateIds": [
+            "lp2-basic-dp-interval-counting-interval",
+            "lp2-basic-dp-interval-counting-count-reconstruct",
+            "lp2-basic-dp-interval-counting-practice-assessment"
+          ],
+          "prerequisites": {
+            "gateIds": [
+              "lp2-basic-dp-knapsack-practice-assessment"
+            ],
+            "topicIds": []
+          }
+        },
+        {
+          "id": "lp2-sec-basic-dp-dp-selection",
+          "title": "D · 无标签辨型",
+          "scope": "core",
+          "routeId": null,
+          "description": "辨型与综合：DP 与贪心、搜索的区别；状态能否覆盖历史；用暴力验证小数据。",
+          "completionCriteria": [
+            "能用反例否定错误贪心，或说明为何不需要 DP；独立实现并对拍。"
+          ],
+          "gateIds": [
+            "lp2-basic-dp-dp-selection-dp-greedy-search",
+            "lp2-basic-dp-dp-selection-practice-assessment"
+          ],
+          "prerequisites": {
+            "gateIds": [
+              "lp2-basic-dp-interval-counting-practice-assessment"
+            ],
+            "topicIds": []
+          }
+        }
+      ],
       "gates": [
         {
-          "id": "stage-05-gate-01",
+          "id": "lp2-basic-dp-state-sequence-dp-contract",
           "index": 1,
-          "title": "状态与转移：定义 DP 含义",
+          "title": "状态、转移与计算顺序",
           "kind": "learning",
+          "sectionId": "lp2-sec-basic-dp-state-sequence",
+          "sectionTitle": "A · 从搜索到状态",
+          "routeId": null,
+          "scope": "core",
+          "optional": false,
           "topicIds": [
             "xcpc-状态-1",
-            "xcpc-转移-1"
+            "xcpc-转移-1",
+            "xcpc-无后效性-1"
           ],
-          "cf": {
-            "min": 1100,
-            "max": 1200
-          },
-          "luoguDifficulty": [
-            "普及"
-          ],
-          "description": "学习状态、转移的适用条件、基本实现与复杂度，再用独立练习验证。",
+          "luoguDifficulty": [],
+          "description": "从搜索树压缩重复状态，逐句定义含义、初值、依赖、答案位置；解释无后效性。",
           "goals": [
-            "解释状态、转移的核心不变量与适用边界",
-            "独立写出实现并说明时间与空间复杂度",
-            "完成基础练习与一道迁移题，记录失败原因"
+            "用完整句子定义每个状态",
+            "列出初值、依赖和答案位置",
+            "用两个不同历史检查状态是否足够"
           ],
+          "learningTitle": "状态、转移与计算顺序",
+          "learningDescription": "从搜索树压缩重复状态，逐句定义含义、初值、依赖、答案位置；解释无后效性。",
           "prerequisites": {
-            "gateIds": [],
-            "topicIds": []
+            "gateIds": [
+              "lp2-search-pruning-cache-cached-search",
+              "lp2-basic-optimization-powers-greedy-binary-power"
+            ],
+            "topicIds": [
+              "algorithm-content-feishu-part-2-3",
+              "xcpc-快速幂-1",
+              "algorithm-content-feishu-part-5-1"
+            ]
           },
-          "optional": false,
-          "scope": "题目难度仅为本关迁移练习的选题窗口；初学专项题可低于此区间。",
-          "learningTitle": "初识 DP（一）· 状态要说明什么",
-          "learningDescription": "在递推和搜索之后，开始明确一个状态代表哪些子问题、需要保存什么答案。状态应足以支持下一次转移，但不必保存全部历史；这会成为后面各类 DP 的共同语言。",
           "threadGateIds": [
-            "stage-01-gate-10",
-            "stage-05-gate-02",
-            "stage-05-gate-07"
+            "lp2-basic-dp-state-sequence-linear-lis"
           ]
         },
         {
-          "id": "stage-05-gate-02",
+          "id": "lp2-basic-dp-state-sequence-linear-lis",
           "index": 2,
-          "title": "线性 DP：递推与最优子结构",
+          "title": "线性 DP 与 LIS",
           "kind": "learning",
+          "sectionId": "lp2-sec-basic-dp-state-sequence",
+          "sectionTitle": "A · 从搜索到状态",
+          "routeId": null,
+          "scope": "core",
+          "optional": false,
           "topicIds": [
             "algorithm-content-feishu-part-3-1",
-            "xcpc-最优子结构-1"
-          ],
-          "cf": {
-            "min": 1100,
-            "max": 1200
-          },
-          "luoguDifficulty": [
-            "普及"
-          ],
-          "description": "学习线性 DP、最优子结构的适用条件、基本实现与复杂度，再用独立练习验证。",
-          "goals": [
-            "解释线性 DP、最优子结构的核心不变量与适用边界",
-            "独立写出实现并说明时间与空间复杂度",
-            "完成基础练习与一道迁移题，记录失败原因"
-          ],
-          "prerequisites": {
-            "gateIds": [
-              "stage-05-gate-01"
-            ],
-            "topicIds": []
-          },
-          "optional": false,
-          "scope": "题目难度仅为本关迁移练习的选题窗口；初学专项题可低于此区间。",
-          "learningTitle": "初识 DP（二）· 沿序列汇总最优值",
-          "learningDescription": "从状态定义出发，把序列前面的结果用于当前决策，检查最优子结构和转移顺序。递推只是计算形式，能否正确概括子问题才决定这套 DP 是否成立。",
-          "threadGateIds": [
-            "stage-05-gate-01",
-            "stage-05-gate-03",
-            "stage-06-gate-07"
-          ]
-        },
-        {
-          "id": "stage-05-gate-03",
-          "index": 3,
-          "title": "LIS：子序列与转移顺序",
-          "kind": "learning",
-          "topicIds": [
             "algorithm-最长上升子序列-lis"
           ],
-          "cf": {
-            "min": 1100,
-            "max": 1200
-          },
-          "luoguDifficulty": [
-            "普及"
-          ],
-          "description": "学习LIS的适用条件、基本实现与复杂度，再用独立练习验证。",
+          "luoguDifficulty": [],
+          "description": "建立选取或路径状态，先写LIS二次转移再说明二分优化维护信息。",
           "goals": [
-            "解释LIS的核心不变量与适用边界",
-            "独立写出实现并说明时间与空间复杂度",
-            "完成基础练习与一道迁移题，记录失败原因"
+            "独立推导序列选取的转移",
+            "比较LIS二次DP与二分维护的信息",
+            "验证重复值下严格递增与不下降的差异"
           ],
+          "learningTitle": "线性 DP 与 LIS",
+          "learningDescription": "建立选取或路径状态，先写LIS二次转移再说明二分优化维护信息。",
           "prerequisites": {
             "gateIds": [
-              "stage-05-gate-02"
+              "lp2-basic-dp-state-sequence-dp-contract"
             ],
-            "topicIds": []
+            "topicIds": [
+              "xcpc-状态-1",
+              "xcpc-转移-1",
+              "xcpc-无后效性-1"
+            ]
           },
-          "optional": false,
-          "scope": "题目难度仅为本关迁移练习的选题窗口；初学专项题可低于此区间。",
-          "learningTitle": "进阶 DP（三）· LIS 的两种观察",
-          "learningDescription": "先用前驱关系描述最长上升子序列，再观察哪些信息可以压缩维护。把状态含义与有序边界联系起来，为比较线性 DP、二分和贪心式维护提供具体例子。",
           "threadGateIds": [
-            "stage-05-gate-02",
-            "stage-03-gate-03",
-            "stage-05-gate-04"
+            "lp2-basic-dp-state-sequence-dp-contract",
+            "lp2-basic-dp-state-sequence-lcs"
           ]
         },
         {
-          "id": "stage-05-gate-04",
-          "index": 4,
-          "title": "混练：贪心、二分与线性 DP",
-          "kind": "mixed",
-          "topicIds": [
-            "algorithm-content-feishu-part-1-5",
-            "algorithm-二分查找",
-            "algorithm-content-feishu-part-3-1"
-          ],
-          "cf": {
-            "min": 1100,
-            "max": 1200
-          },
-          "luoguDifficulty": [
-            "普及"
-          ],
-          "description": "混合使用贪心、二分查找、线性 DP；选题时隐藏专题标签，先独立辨型再实现。",
-          "goals": [
-            "在不看标签与题解的情况下提出完整思路",
-            "独立实现并通过所选平台的评测",
-            "复盘关键转化、错误解法与复杂度瓶颈"
-          ],
-          "prerequisites": {
-            "gateIds": [
-              "stage-05-gate-03"
-            ],
-            "topicIds": []
-          },
-          "optional": false,
-          "scope": "区间只用于选择综合新题，不保证单题涵盖列出的所有算法。",
-          "learningTitle": "辨型练习 · 贪心、二分还是 DP",
-          "learningDescription": "三种方法都可能处理序列题，却各自依赖不同结构。用混练区分局部选择、单调边界与子问题转移；允许它们组合，也要说明组合后每一部分负责什么。",
-          "threadGateIds": [
-            "stage-04-gate-09",
-            "stage-03-gate-03",
-            "stage-05-gate-02"
-          ]
-        },
-        {
-          "id": "stage-05-gate-05",
-          "index": 5,
-          "title": "01背包：选择与容量",
+          "id": "lp2-basic-dp-state-sequence-lcs",
+          "index": 3,
+          "title": "LCS 与二维序列状态",
           "kind": "learning",
+          "sectionId": "lp2-sec-basic-dp-state-sequence",
+          "sectionTitle": "A · 从搜索到状态",
+          "routeId": null,
+          "scope": "core",
+          "optional": false,
+          "topicIds": [
+            "algorithm-最长公共子序列-lcs"
+          ],
+          "luoguDifficulty": [],
+          "description": "按两前缀状态推导匹配与不匹配转移；编辑距离作为本段扩展，避免只背二维模板。",
+          "goals": [
+            "区分两个前缀长度的状态含义",
+            "推导匹配和不匹配时的转移",
+            "用空串和重复字符检验边界"
+          ],
+          "learningTitle": "LCS 与二维序列状态",
+          "learningDescription": "按两前缀状态推导匹配与不匹配转移；编辑距离作为本段扩展，避免只背二维模板。",
+          "prerequisites": {
+            "gateIds": [
+              "lp2-basic-dp-state-sequence-linear-lis"
+            ],
+            "topicIds": [
+              "algorithm-content-feishu-part-3-1",
+              "algorithm-最长上升子序列-lis"
+            ]
+          },
+          "threadGateIds": [
+            "lp2-basic-dp-state-sequence-linear-lis",
+            "lp2-basic-dp-state-sequence-practice-assessment"
+          ]
+        },
+        {
+          "id": "lp2-basic-dp-state-sequence-practice-assessment",
+          "index": 4,
+          "title": "混练验收：从搜索到状态",
+          "kind": "challenge",
+          "sectionId": "lp2-sec-basic-dp-state-sequence",
+          "sectionTitle": "A · 从搜索到状态",
+          "routeId": null,
+          "scope": "core",
+          "optional": false,
+          "topicIds": [
+            "xcpc-状态-1",
+            "xcpc-转移-1",
+            "xcpc-无后效性-1",
+            "algorithm-content-feishu-part-3-1",
+            "algorithm-最长上升子序列-lis",
+            "algorithm-最长公共子序列-lcs"
+          ],
+          "luoguDifficulty": [],
+          "description": "围绕从搜索到状态完成变化任务与独立应用，核对方法选择、实现和边界。",
+          "goals": [
+            "对每个状态用完整句子定义含义，推出线性与序列模型。",
+            "独立完成从搜索到状态的变化任务，说明选择方法的理由",
+            "检查边界或用小规模对照验证，并记录本段的一次错误与修正"
+          ],
+          "learningTitle": "从搜索到状态 · 独立验收",
+          "learningDescription": "组合运用状态、转移与计算顺序、线性 DP 与 LIS、LCS 与二维序列状态，先比较不同方法，再独立完成无标签任务并记录验证结果。",
+          "prerequisites": {
+            "gateIds": [
+              "lp2-basic-dp-state-sequence-dp-contract",
+              "lp2-basic-dp-state-sequence-linear-lis",
+              "lp2-basic-dp-state-sequence-lcs"
+            ],
+            "topicIds": [
+              "xcpc-状态-1",
+              "xcpc-转移-1",
+              "xcpc-无后效性-1",
+              "algorithm-content-feishu-part-3-1",
+              "algorithm-最长上升子序列-lis",
+              "algorithm-最长公共子序列-lcs"
+            ]
+          },
+          "threadGateIds": [
+            "lp2-basic-dp-state-sequence-lcs",
+            "lp2-basic-dp-knapsack-zero-one"
+          ]
+        },
+        {
+          "id": "lp2-basic-dp-knapsack-zero-one",
+          "index": 5,
+          "title": "01背包：语义与压缩",
+          "kind": "learning",
+          "sectionId": "lp2-sec-basic-dp-knapsack",
+          "sectionTitle": "B · 背包基础一次学齐",
+          "routeId": null,
+          "scope": "core",
+          "optional": false,
           "topicIds": [
             "xcpc-01背包-1"
           ],
-          "cf": {
-            "min": 1100,
-            "max": 1200
-          },
-          "luoguDifficulty": [
-            "普及"
-          ],
-          "description": "学习01背包的适用条件、基本实现与复杂度，再用独立练习验证。",
+          "luoguDifficulty": [],
+          "description": "二维状态先定义恰好或至多容量、不可达初值，再推导一维倒序，展示错误正序的反例。",
           "goals": [
-            "解释01背包的核心不变量与适用边界",
-            "独立写出实现并说明时间与空间复杂度",
-            "完成基础练习与一道迁移题，记录失败原因"
+            "先写二维01背包再完成空间压缩",
+            "解释倒序避免重复选取的原因",
+            "正确初始化恰好容量与至多容量状态"
           ],
+          "learningTitle": "01背包：语义与压缩",
+          "learningDescription": "二维状态先定义恰好或至多容量、不可达初值，再推导一维倒序，展示错误正序的反例。",
           "prerequisites": {
             "gateIds": [
-              "stage-05-gate-04"
+              "lp2-basic-dp-state-sequence-practice-assessment"
             ],
-            "topicIds": []
+            "topicIds": [
+              "xcpc-状态-1",
+              "xcpc-转移-1",
+              "xcpc-无后效性-1",
+              "algorithm-content-feishu-part-3-1",
+              "algorithm-最长上升子序列-lis",
+              "algorithm-最长公共子序列-lcs"
+            ]
           },
-          "optional": false,
-          "scope": "题目难度仅为本关迁移练习的选题窗口；初学专项题可低于此区间。",
-          "learningTitle": "初识背包（一）· 选或不选一件物品",
-          "learningDescription": "把有限容量下的选择写成状态，比较不选与选当前物品的结果。留意每件物品只能使用一次，转移实现的循环方向必须与这个限制一致。",
           "threadGateIds": [
-            "stage-05-gate-01",
-            "stage-05-gate-06",
-            "stage-08-gate-07"
+            "lp2-basic-dp-state-sequence-practice-assessment",
+            "lp2-basic-dp-knapsack-unbounded"
           ]
         },
         {
-          "id": "stage-05-gate-06",
+          "id": "lp2-basic-dp-knapsack-unbounded",
           "index": 6,
-          "title": "完全背包：复用与循环方向",
+          "title": "完全背包与循环顺序",
           "kind": "learning",
+          "sectionId": "lp2-sec-basic-dp-knapsack",
+          "sectionTitle": "B · 背包基础一次学齐",
+          "routeId": null,
+          "scope": "core",
+          "optional": false,
           "topicIds": [
             "xcpc-无限背包-1"
           ],
-          "cf": {
-            "min": 1100,
-            "max": 1200
-          },
-          "luoguDifficulty": [
-            "普及"
-          ],
-          "description": "学习完全背包的适用条件、基本实现与复杂度，再用独立练习验证。",
+          "luoguDifficulty": [],
+          "description": "从重复选择推导正序；区分最值、可行性和有序/无序方案计数。",
           "goals": [
-            "解释完全背包的核心不变量与适用边界",
-            "独立写出实现并说明时间与空间复杂度",
-            "完成基础练习与一道迁移题，记录失败原因"
+            "从可重复选择推导容量正序",
+            "区分有序与无序的计数对象",
+            "用小样例检查循环顺序改变了什么"
           ],
+          "learningTitle": "完全背包与循环顺序",
+          "learningDescription": "从重复选择推导正序；区分最值、可行性和有序/无序方案计数。",
           "prerequisites": {
             "gateIds": [
-              "stage-05-gate-05"
+              "lp2-basic-dp-knapsack-zero-one"
             ],
-            "topicIds": []
+            "topicIds": [
+              "xcpc-01背包-1"
+            ]
           },
-          "optional": false,
-          "scope": "题目难度仅为本关迁移练习的选题窗口；初学专项题可低于此区间。",
-          "learningTitle": "进阶背包（二）· 重复选择改变转移",
-          "learningDescription": "保留容量状态，把物品从只能用一次改为可以重复使用。对照 01 背包解释循环方向为何变化，再用小数据检查是否重复计数或漏掉可行选择。",
           "threadGateIds": [
-            "stage-05-gate-05",
-            "stage-05-gate-08",
-            "stage-08-gate-07"
+            "lp2-basic-dp-knapsack-zero-one",
+            "lp2-basic-dp-knapsack-bounded"
           ]
         },
         {
-          "id": "stage-05-gate-07",
+          "id": "lp2-basic-dp-knapsack-bounded",
           "index": 7,
-          "title": "记忆化搜索：缓存子问题",
+          "title": "多重背包与二进制分组",
           "kind": "learning",
+          "sectionId": "lp2-sec-basic-dp-knapsack",
+          "sectionTitle": "B · 背包基础一次学齐",
+          "routeId": null,
+          "scope": "core",
+          "optional": false,
           "topicIds": [
-            "algorithm-content-feishu-part-2-3"
+            "algorithm-content-xcpc-多重背包-1",
+            "xcpc-o-nm-log-l-1"
           ],
-          "cf": {
-            "min": 1100,
-            "max": 1200
-          },
-          "luoguDifficulty": [
-            "普及"
-          ],
-          "description": "学习记忆化搜索的适用条件、基本实现与复杂度，再用独立练习验证。",
+          "luoguDifficulty": [],
+          "description": "完成数量限制、朴素枚举和二进制分组；说明分组对可行性/最优值等价，不能直接泛化到有限件计数。",
           "goals": [
-            "解释记忆化搜索的核心不变量与适用边界",
-            "独立写出实现并说明时间与空间复杂度",
-            "完成基础练习与一道迁移题，记录失败原因"
+            "写出有限数量下的朴素转移",
+            "验证二进制分组对可行性或最优值的等价性",
+            "解释为什么同样拆分不能直接用于所有方案计数"
           ],
+          "learningTitle": "多重背包与二进制分组",
+          "learningDescription": "完成数量限制、朴素枚举和二进制分组；说明分组对可行性/最优值等价，不能直接泛化到有限件计数。",
           "prerequisites": {
             "gateIds": [
-              "stage-05-gate-06"
+              "lp2-basic-dp-knapsack-unbounded"
             ],
-            "topicIds": []
+            "topicIds": [
+              "xcpc-无限背包-1"
+            ]
           },
-          "optional": false,
-          "scope": "题目难度仅为本关迁移练习的选题窗口；初学专项题可低于此区间。",
-          "learningTitle": "搜索遇见 DP · 缓存重复子问题",
-          "learningDescription": "回看 DFS 是否反复到达含义相同的状态，在结果只由该状态决定时缓存答案。记忆化搜索和迭代 DP 可以表达相同的子问题关系，但都需要正确的依赖与边界。",
           "threadGateIds": [
-            "stage-04-gate-02",
-            "stage-05-gate-01",
-            "stage-05-gate-08"
+            "lp2-basic-dp-knapsack-unbounded",
+            "lp2-basic-dp-knapsack-grouped"
           ]
         },
         {
-          "id": "stage-05-gate-08",
+          "id": "lp2-basic-dp-knapsack-grouped",
           "index": 8,
-          "title": "混练：背包与记忆化搜索",
-          "kind": "mixed",
+          "title": "分组背包与变体判别",
+          "kind": "learning",
+          "sectionId": "lp2-sec-basic-dp-knapsack",
+          "sectionTitle": "B · 背包基础一次学齐",
+          "routeId": null,
+          "scope": "core",
+          "optional": false,
+          "topicIds": [
+            "xcpc-分组背包-1",
+            "xcpc-混合背包-1"
+          ],
+          "luoguDifficulty": [],
+          "description": "从每组最多或必须选一个推导更新，区分组内/组间依赖，按题意选择背包模型。",
+          "goals": [
+            "从题意判断每组最多或必须选择一个",
+            "正确隔离同组候选对旧状态的读取",
+            "用暴力核对混合限制的选择方案"
+          ],
+          "learningTitle": "分组背包与变体判别",
+          "learningDescription": "从每组最多或必须选一个推导更新，区分组内/组间依赖，按题意选择背包模型。",
+          "prerequisites": {
+            "gateIds": [
+              "lp2-basic-dp-knapsack-bounded"
+            ],
+            "topicIds": [
+              "algorithm-content-xcpc-多重背包-1",
+              "xcpc-o-nm-log-l-1"
+            ]
+          },
+          "threadGateIds": [
+            "lp2-basic-dp-knapsack-bounded",
+            "lp2-basic-dp-knapsack-practice-assessment"
+          ]
+        },
+        {
+          "id": "lp2-basic-dp-knapsack-practice-assessment",
+          "index": 9,
+          "title": "混练验收：背包基础一次学齐",
+          "kind": "challenge",
+          "sectionId": "lp2-sec-basic-dp-knapsack",
+          "sectionTitle": "B · 背包基础一次学齐",
+          "routeId": null,
+          "scope": "core",
+          "optional": false,
           "topicIds": [
             "xcpc-01背包-1",
             "xcpc-无限背包-1",
-            "algorithm-content-feishu-part-2-3"
+            "algorithm-content-xcpc-多重背包-1",
+            "xcpc-o-nm-log-l-1",
+            "xcpc-分组背包-1",
+            "xcpc-混合背包-1"
           ],
-          "cf": {
-            "min": 1100,
-            "max": 1200
-          },
-          "luoguDifficulty": [
-            "普及"
-          ],
-          "description": "混合使用01背包、完全背包、记忆化搜索；选题时隐藏专题标签，先独立辨型再实现。",
+          "luoguDifficulty": [],
+          "description": "围绕背包基础一次学齐完成变化任务与独立应用，核对方法选择、实现和边界。",
           "goals": [
-            "在不看标签与题解的情况下提出完整思路",
-            "独立实现并通过所选平台的评测",
-            "复盘关键转化、错误解法与复杂度瓶颈"
+            "区分 01、完全、多重、分组；解释循环方向和空间压缩对依赖的影响。",
+            "独立完成背包基础一次学齐的变化任务，说明选择方法的理由",
+            "检查边界或用小规模对照验证，并记录本段的一次错误与修正"
           ],
+          "learningTitle": "背包基础一次学齐 · 独立验收",
+          "learningDescription": "组合运用01背包：语义与压缩、完全背包与循环顺序、多重背包与二进制分组、分组背包与变体判别，先比较不同方法，再独立完成无标签任务并记录验证结果。",
           "prerequisites": {
             "gateIds": [
-              "stage-05-gate-07"
+              "lp2-basic-dp-knapsack-zero-one",
+              "lp2-basic-dp-knapsack-unbounded",
+              "lp2-basic-dp-knapsack-bounded",
+              "lp2-basic-dp-knapsack-grouped"
             ],
-            "topicIds": []
+            "topicIds": [
+              "xcpc-01背包-1",
+              "xcpc-无限背包-1",
+              "algorithm-content-xcpc-多重背包-1",
+              "xcpc-o-nm-log-l-1",
+              "xcpc-分组背包-1",
+              "xcpc-混合背包-1"
+            ]
           },
-          "optional": false,
-          "scope": "区间只用于选择综合新题，不保证单题涵盖列出的所有算法。",
-          "learningTitle": "状态合流 · 背包与记忆化搜索",
-          "learningDescription": "同样的选择问题，可以从递归探索，也可以按容量顺序推进。混练时先确定物品使用限制与状态含义，再选择实现方式，检查两种写法是否计算了同一组子问题。",
           "threadGateIds": [
-            "stage-05-gate-05",
-            "stage-05-gate-06",
-            "stage-05-gate-07"
+            "lp2-basic-dp-knapsack-grouped",
+            "lp2-basic-dp-interval-counting-interval"
           ]
         },
         {
-          "id": "stage-05-gate-09",
-          "index": 9,
-          "title": "图的遍历：连通分量",
-          "kind": "learning",
-          "topicIds": [
-            "algorithm-content-xcpc-图的遍历-1",
-            "xcpc-图的概念-1"
-          ],
-          "cf": {
-            "min": 1100,
-            "max": 1200
-          },
-          "luoguDifficulty": [
-            "普及"
-          ],
-          "description": "学习图的遍历、图的概念的适用条件、基本实现与复杂度，再用独立练习验证。",
-          "goals": [
-            "解释图的遍历、图的概念的核心不变量与适用边界",
-            "独立写出实现并说明时间与空间复杂度",
-            "完成基础练习与一道迁移题，记录失败原因"
-          ],
-          "prerequisites": {
-            "gateIds": [
-              "stage-05-gate-08"
-            ],
-            "topicIds": []
-          },
-          "optional": false,
-          "scope": "题目难度仅为本关迁移练习的选题窗口；初学专项题可低于此区间。",
-          "learningTitle": "初识图论 · 把关系连成图",
-          "learningDescription": "把网格搜索中的相邻状态推广成点与边，用遍历找出所有能互相到达的部分。图的表示与访问标记写清楚后，就能继续讨论集合连通、路径代价和依赖顺序。",
-          "threadGateIds": [
-            "stage-04-gate-03",
-            "stage-05-gate-10",
-            "stage-06-gate-01"
-          ]
-        },
-        {
-          "id": "stage-05-gate-10",
+          "id": "lp2-basic-dp-interval-counting-interval",
           "index": 10,
-          "title": "基础并查集：关系合并",
+          "title": "区间 DP 与分割点",
           "kind": "learning",
+          "sectionId": "lp2-sec-basic-dp-interval-counting",
+          "sectionTitle": "C · 区间与计数",
+          "routeId": null,
+          "scope": "core",
+          "optional": false,
           "topicIds": [
-            "xcpc-并查集基础-1"
+            "xcpc-基础-2"
           ],
-          "cf": {
-            "min": 1100,
-            "max": 1200
-          },
-          "luoguDifficulty": [
-            "普及"
-          ],
-          "description": "学习基础并查集的适用条件、基本实现与复杂度，再用独立练习验证。",
+          "luoguDifficulty": [],
+          "description": "从短区间到长区间，枚举分割点；检查依赖顺序、空区间与合并代价。",
           "goals": [
-            "解释基础并查集的核心不变量与适用边界",
-            "独立写出实现并说明时间与空间复杂度",
-            "完成基础练习与一道迁移题，记录失败原因"
+            "按依赖顺序枚举区间长度",
+            "完整枚举合法分割点",
+            "检查空区间、长度为一和代价重复累加"
           ],
+          "learningTitle": "区间 DP 与分割点",
+          "learningDescription": "从短区间到长区间，枚举分割点；检查依赖顺序、空区间与合并代价。",
           "prerequisites": {
             "gateIds": [
-              "stage-05-gate-09"
+              "lp2-basic-dp-knapsack-practice-assessment"
             ],
-            "topicIds": []
+            "topicIds": [
+              "xcpc-01背包-1",
+              "xcpc-无限背包-1",
+              "algorithm-content-xcpc-多重背包-1",
+              "xcpc-o-nm-log-l-1",
+              "xcpc-分组背包-1",
+              "xcpc-混合背包-1"
+            ]
           },
-          "optional": false,
-          "scope": "题目难度仅为本关迁移练习的选题窗口；初学专项题可低于此区间。",
-          "learningTitle": "初识并查集 · 只维护属于哪一组",
-          "learningDescription": "遍历可以找连通块，并查集则在不断合并时维护集合归属。理解它擅长回答哪些关系问题，也记住它不保存具体路径，为最小生成树与带权关系打下基础。",
           "threadGateIds": [
-            "stage-05-gate-09",
-            "stage-07-gate-06",
-            "stage-09-gate-03"
+            "lp2-basic-dp-knapsack-practice-assessment",
+            "lp2-basic-dp-interval-counting-count-reconstruct"
           ]
         },
         {
-          "id": "stage-05-gate-11",
+          "id": "lp2-basic-dp-interval-counting-count-reconstruct",
           "index": 11,
-          "title": "基础计数 DP：方案数与边界",
+          "title": "计数不重不漏与方案恢复",
           "kind": "learning",
+          "sectionId": "lp2-sec-basic-dp-interval-counting",
+          "sectionTitle": "C · 区间与计数",
+          "routeId": null,
+          "scope": "core",
+          "optional": false,
           "topicIds": [
-            "xcpc-基础-7"
+            "xcpc-基础-7",
+            "xcpc-状态-1"
           ],
-          "cf": {
-            "min": 1100,
-            "max": 1200
-          },
-          "luoguDifficulty": [
-            "普及"
-          ],
-          "description": "学习基础计数 DP的适用条件、基本实现与复杂度，再用独立练习验证。",
+          "luoguDifficulty": [],
+          "description": "定义方案是否区分顺序和物品身份，使用加法型模计数；保存前驱恢复解，说明空间压缩限制。",
           "goals": [
-            "解释基础计数 DP的核心不变量与适用边界",
-            "独立写出实现并说明时间与空间复杂度",
-            "完成基础练习与一道迁移题，记录失败原因"
+            "明确方案的顺序与物品身份是否区分",
+            "用穷举核对是否漏计或重计",
+            "保存足够信息还原一个合法最优方案"
           ],
+          "learningTitle": "计数不重不漏与方案恢复",
+          "learningDescription": "定义方案是否区分顺序和物品身份，使用加法型模计数；保存前驱恢复解，说明空间压缩限制。",
           "prerequisites": {
             "gateIds": [
-              "stage-05-gate-10"
+              "lp2-basic-dp-interval-counting-interval"
             ],
-            "topicIds": []
+            "topicIds": [
+              "xcpc-基础-2"
+            ]
           },
-          "optional": false,
-          "scope": "题目难度仅为本关迁移练习的选题窗口；初学专项题可低于此区间。",
-          "learningTitle": "进阶 DP（四）· 从最优值到方案数",
-          "learningDescription": "状态不仅能保存最优结果，也能累计达到条件的方案数。检查方案是否重复、初始空方案怎样计入，再回看背包的循环顺序如何影响实际统计的对象。",
           "threadGateIds": [
-            "stage-05-gate-01",
-            "stage-05-gate-06",
-            "stage-06-gate-09"
+            "lp2-basic-dp-interval-counting-interval",
+            "lp2-basic-dp-interval-counting-practice-assessment"
           ]
         },
         {
-          "id": "stage-05-gate-12",
+          "id": "lp2-basic-dp-interval-counting-practice-assessment",
           "index": 12,
-          "title": "挑战：线性 DP、BFS 与集合关系综合",
+          "title": "混练验收：区间与计数",
           "kind": "challenge",
+          "sectionId": "lp2-sec-basic-dp-interval-counting",
+          "sectionTitle": "C · 区间与计数",
+          "routeId": null,
+          "scope": "core",
+          "optional": false,
           "topicIds": [
-            "algorithm-content-feishu-part-3-1",
-            "algorithm-content-feishu-part-2-2",
-            "xcpc-并查集基础-1"
+            "xcpc-基础-2",
+            "xcpc-基础-7",
+            "xcpc-状态-1"
           ],
-          "cf": {
-            "min": 1100,
-            "max": 1200
-          },
-          "luoguDifficulty": [
-            "普及"
-          ],
-          "description": "本阶段以线性 DP、BFS、基础并查集等已学方法为参考，混排新题，检验独立推导与组合能力。",
+          "luoguDifficulty": [],
+          "description": "围绕区间与计数完成变化任务与独立应用，核对方法选择、实现和边界。",
           "goals": [
-            "在不看标签与题解的情况下提出完整思路",
-            "独立实现并通过所选平台的评测",
-            "复盘关键转化、错误解法与复杂度瓶颈"
+            "区间按依赖顺序计算；计数区分有序 / 无序，方案恢复不受压缩破坏。",
+            "独立完成区间与计数的变化任务，说明选择方法的理由",
+            "检查边界或用小规模对照验证，并记录本段的一次错误与修正"
           ],
+          "learningTitle": "区间与计数 · 独立验收",
+          "learningDescription": "组合运用区间 DP 与分割点、计数不重不漏与方案恢复，先比较不同方法，再独立完成无标签任务并记录验证结果。",
           "prerequisites": {
             "gateIds": [
-              "stage-05-gate-11"
+              "lp2-basic-dp-interval-counting-interval",
+              "lp2-basic-dp-interval-counting-count-reconstruct"
             ],
-            "topicIds": []
+            "topicIds": [
+              "xcpc-基础-2",
+              "xcpc-基础-7",
+              "xcpc-状态-1"
+            ]
           },
-          "optional": false,
-          "scope": "区间只用于选择综合新题，不保证单题涵盖列出的所有算法。",
-          "learningTitle": "基础模型合流 · DP、BFS 与集合",
-          "learningDescription": "用状态转移处理递推，用 BFS 处理等权步数，用并查集维护集合关系。挑战要求先辨认题目真正询问什么，再组合必要模型，而不是把所有工具都套进一道题。",
           "threadGateIds": [
-            "stage-05-gate-02",
-            "stage-04-gate-03",
-            "stage-05-gate-10"
+            "lp2-basic-dp-interval-counting-count-reconstruct",
+            "lp2-basic-dp-dp-selection-dp-greedy-search"
+          ]
+        },
+        {
+          "id": "lp2-basic-dp-dp-selection-dp-greedy-search",
+          "index": 13,
+          "title": "DP、搜索与贪心辨型",
+          "kind": "learning",
+          "sectionId": "lp2-sec-basic-dp-dp-selection",
+          "sectionTitle": "D · 无标签辨型",
+          "routeId": null,
+          "scope": "core",
+          "optional": false,
+          "topicIds": [
+            "xcpc-最优子结构-1",
+            "xcpc-无后效性-1",
+            "algorithm-content-feishu-part-1-5"
+          ],
+          "luoguDifficulty": [],
+          "description": "用小规模穷举检验状态充分性，用反例否定错误贪心；解释不需要DP时的更简单方案。",
+          "goals": [
+            "用反例否定不成立的贪心",
+            "解释哪些历史可以合并成一个状态",
+            "比较搜索与DP的状态量和实现代价"
+          ],
+          "learningTitle": "DP、搜索与贪心辨型",
+          "learningDescription": "用小规模穷举检验状态充分性，用反例否定错误贪心；解释不需要DP时的更简单方案。",
+          "prerequisites": {
+            "gateIds": [
+              "lp2-basic-dp-interval-counting-practice-assessment"
+            ],
+            "topicIds": [
+              "xcpc-基础-2",
+              "xcpc-基础-7",
+              "xcpc-状态-1"
+            ]
+          },
+          "threadGateIds": [
+            "lp2-basic-dp-interval-counting-practice-assessment",
+            "lp2-basic-dp-dp-selection-practice-assessment"
+          ]
+        },
+        {
+          "id": "lp2-basic-dp-dp-selection-practice-assessment",
+          "index": 14,
+          "title": "混练验收：无标签辨型",
+          "kind": "challenge",
+          "sectionId": "lp2-sec-basic-dp-dp-selection",
+          "sectionTitle": "D · 无标签辨型",
+          "routeId": null,
+          "scope": "core",
+          "optional": false,
+          "topicIds": [
+            "xcpc-最优子结构-1",
+            "xcpc-无后效性-1",
+            "algorithm-content-feishu-part-1-5"
+          ],
+          "luoguDifficulty": [],
+          "description": "围绕无标签辨型完成变化任务与独立应用，核对方法选择、实现和边界。",
+          "goals": [
+            "分别覆盖序列、背包、区间模型，给出状态、转移、边界、顺序和答案位置。",
+            "解释背包的有序 / 无序计数差异，至少还原一个最优方案。",
+            "空间优化前后对照，明确覆盖旧状态会造成什么错误。"
+          ],
+          "learningTitle": "无标签辨型 · 独立验收",
+          "learningDescription": "组合运用DP、搜索与贪心辨型，先比较不同方法，再独立完成无标签任务并记录验证结果。",
+          "prerequisites": {
+            "gateIds": [
+              "lp2-basic-dp-dp-selection-dp-greedy-search",
+              "lp2-basic-dp-state-sequence-practice-assessment",
+              "lp2-basic-dp-knapsack-practice-assessment",
+              "lp2-basic-dp-interval-counting-practice-assessment"
+            ],
+            "topicIds": [
+              "xcpc-最优子结构-1",
+              "xcpc-无后效性-1",
+              "algorithm-content-feishu-part-1-5",
+              "xcpc-状态-1",
+              "xcpc-转移-1",
+              "algorithm-content-feishu-part-3-1"
+            ]
+          },
+          "threadGateIds": [
+            "lp2-basic-dp-dp-selection-dp-greedy-search"
           ]
         }
       ]
@@ -2502,489 +4175,655 @@
     {
       "id": "stage-06",
       "index": 6,
-      "title": "在序列、图和计数间选模型",
-      "description": "在图、序列和计数间独立选择模型，说明转移与正确性。",
-      "goal": "在图、序列和计数间独立选择模型，说明转移与正确性。",
-      "cf": {
-        "min": 1200,
-        "max": 1300
-      },
-      "luoguDifficulty": [
-        "普及",
-        "普及+/提高−"
-      ],
-      "rationale": "本章按综合做题能力组织，不要求区间中的每道题都使用这些算法，也不要求学完所有专题才进入下一章。",
+      "title": "图与树基础：路径、依赖和连通",
+      "description": "能根据边权和关系选择图模型，处理常见路径、依赖、连接成本与基础树上查询。",
+      "goal": "能根据边权和关系选择图模型，处理常见路径、依赖、连接成本与基础树上查询。",
+      "rationale": "图章内部增加四个阶段，避免一口气吞下所有图论；负边作为清晰扩展，不混入基础过关要求。",
+      "entryText": "会邻接表示、DFS / BFS、优先队列、基础 DP；DAG DP 使用第 5 章状态方法。",
+      "completionMode": "core",
       "completionCriteria": [
-        "独立完成本章综合题组中的新题",
-        "覆盖至少两种已学方法；后续阶段回收前面基础工具",
-        "说明正确性、复杂度，并记录一次完整复盘"
+        "覆盖路径、依赖、生成树和树查询四种能力，选择算法有明确前提。",
+        "正确处理重边、自环、不连通、不可达与大距离溢出；说明每种边界是否与当前模型有关。",
+        "完成静态子树查询与 LCA 距离题；负边方向另作扩展验收。"
       ],
+      "scopeDescription": "Bellman–Ford 与负环检测是同章扩展，明确源点可达负环与任意负环的区别；不能把 SPFA 写成复杂度保证。树直径基础采用无权或非负边前提。",
       "prerequisites": {
         "stageIds": [
+          "stage-04",
           "stage-05"
         ]
       },
-      "gates": [
+      "luoguDifficulty": [],
+      "sections": [
         {
-          "id": "stage-06-gate-01",
-          "index": 1,
-          "title": "拓扑排序：依赖与 DAG",
-          "kind": "learning",
-          "topicIds": [
-            "algorithm-content-feishu-part-7-5"
+          "id": "lp2-sec-graph-trees-paths-dependency",
+          "title": "A · 路径与依赖",
+          "scope": "core",
+          "routeId": null,
+          "description": "拓扑排序与 DAG：入度、判环、依赖关系；拓扑序上的 DP；多种合法顺序。\n最短路成套学习：核心：等权 BFS、非负边 Dijkstra、Floyd、多源与路径恢复、不可达和溢出。扩展：Bellman–Ford、可达负环与任意负环检测，明确复杂度。",
+          "completionCriteria": [
+            "按边权与查询规模选择最短路；能判环并在拓扑序上递推。"
           ],
-          "cf": {
-            "min": 1200,
-            "max": 1300
-          },
-          "luoguDifficulty": [
-            "普及",
-            "普及+/提高−"
-          ],
-          "description": "学习拓扑排序的适用条件、基本实现与复杂度，再用独立练习验证。",
-          "goals": [
-            "解释拓扑排序的核心不变量与适用边界",
-            "独立写出实现并说明时间与空间复杂度",
-            "完成基础练习与一道迁移题，记录失败原因"
+          "gateIds": [
+            "lp2-graph-trees-paths-dependency-topological",
+            "lp2-graph-trees-paths-dependency-dijkstra",
+            "lp2-graph-trees-paths-dependency-floyd",
+            "lp2-graph-trees-paths-dependency-negative-edges",
+            "lp2-graph-trees-paths-dependency-practice-assessment"
           ],
           "prerequisites": {
-            "gateIds": [],
+            "gateIds": [
+              "lp2-search-search-states-graph-state",
+              "lp2-basic-dp-state-sequence-dp-contract"
+            ],
             "topicIds": []
-          },
+          }
+        },
+        {
+          "id": "lp2-sec-graph-trees-connectivity-cost",
+          "title": "B · 连接成本与集合",
+          "scope": "core",
+          "routeId": null,
+          "description": "并查集与最小生成树：集合合并、路径压缩和按大小合并；Kruskal / Prim；最短路与生成树的区别。",
+          "completionCriteria": [
+            "理解并查集不等于原图结构；比较最小生成树与最短路树。"
+          ],
+          "gateIds": [
+            "lp2-graph-trees-connectivity-cost-dsu",
+            "lp2-graph-trees-connectivity-cost-mst",
+            "lp2-graph-trees-connectivity-cost-practice-assessment"
+          ],
+          "prerequisites": {
+            "gateIds": [
+              "lp2-graph-trees-paths-dependency-practice-assessment"
+            ],
+            "topicIds": []
+          }
+        },
+        {
+          "id": "lp2-sec-graph-trees-static-trees",
+          "title": "C · 树上静态信息",
+          "scope": "core",
+          "routeId": null,
+          "description": "树的基本结构：根、父子、深度、子树；遍历与子树统计；无权 / 非负边树的直径、中心与路径性质，说明负边时结论的限制。",
+          "completionCriteria": [
+            "正确维护父子、深度、子树；理解直径性质对边权的适用条件。"
+          ],
+          "gateIds": [
+            "lp2-graph-trees-static-trees-tree-info",
+            "lp2-graph-trees-static-trees-diameter",
+            "lp2-graph-trees-static-trees-practice-assessment"
+          ],
+          "prerequisites": {
+            "gateIds": [
+              "lp2-graph-trees-connectivity-cost-practice-assessment"
+            ],
+            "topicIds": []
+          }
+        },
+        {
+          "id": "lp2-sec-graph-trees-tree-queries",
+          "title": "D · 树上查询收尾",
+          "scope": "core",
+          "routeId": null,
+          "description": "倍增与 LCA：祖先跳转、最近公共祖先、距离；预处理与查询复杂度。\nDFS 序与子树区间：入出时间、子树连续性；与前缀和结合做静态查询，为第 7、12 章建立接口。",
+          "completionCriteria": [
+            "能倍增求祖先 / LCA，用 DFS 序将子树映射成静态区间。"
+          ],
+          "gateIds": [
+            "lp2-graph-trees-tree-queries-lca",
+            "lp2-graph-trees-tree-queries-dfn",
+            "lp2-graph-trees-tree-queries-practice-assessment"
+          ],
+          "prerequisites": {
+            "gateIds": [
+              "lp2-graph-trees-static-trees-practice-assessment"
+            ],
+            "topicIds": []
+          }
+        }
+      ],
+      "gates": [
+        {
+          "id": "lp2-graph-trees-paths-dependency-topological",
+          "index": 1,
+          "title": "拓扑排序与 DAG DP",
+          "kind": "learning",
+          "sectionId": "lp2-sec-graph-trees-paths-dependency",
+          "sectionTitle": "A · 路径与依赖",
+          "routeId": null,
+          "scope": "core",
           "optional": false,
-          "scope": "题目难度仅为本关迁移练习的选题窗口；初学专项题可低于此区间。",
-          "learningTitle": "进阶图论 · 沿依赖顺序处理",
-          "learningDescription": "图的遍历关注能否到达，拓扑排序关注依赖能否依次满足。找出 DAG 上合法的处理顺序后，前驱信息就能逐步传给后继，为图上的递推准备顺序。",
+          "topicIds": [
+            "xcpc-拓扑序-1",
+            "xcpc-图上dp-1"
+          ],
+          "luoguDifficulty": [],
+          "description": "维护入度、输出依赖顺序与判环，按拓扑序推导路径或最值状态。",
+          "goals": [
+            "输出拓扑序并检测环",
+            "按依赖顺序计算DAG状态",
+            "处理多个起点与不连通分量"
+          ],
+          "learningTitle": "拓扑排序与 DAG DP",
+          "learningDescription": "维护入度、输出依赖顺序与判环，按拓扑序推导路径或最值状态。",
+          "prerequisites": {
+            "gateIds": [
+              "lp2-search-search-states-graph-state",
+              "lp2-basic-dp-state-sequence-dp-contract"
+            ],
+            "topicIds": [
+              "xcpc-图的概念-1",
+              "algorithm-content-xcpc-图的遍历-1",
+              "xcpc-状态-1",
+              "xcpc-转移-1",
+              "xcpc-无后效性-1"
+            ]
+          },
           "threadGateIds": [
-            "stage-05-gate-09",
-            "stage-06-gate-04",
-            "stage-09-gate-04"
+            "lp2-graph-trees-paths-dependency-dijkstra"
           ]
         },
         {
-          "id": "stage-06-gate-02",
+          "id": "lp2-graph-trees-paths-dependency-dijkstra",
           "index": 2,
-          "title": "Dijkstra：非负边最短路",
+          "title": "Dijkstra 与非负边",
           "kind": "learning",
+          "sectionId": "lp2-sec-graph-trees-paths-dependency",
+          "sectionTitle": "A · 路径与依赖",
+          "routeId": null,
+          "scope": "core",
+          "optional": false,
           "topicIds": [
             "xcpc-dijkstra-1"
           ],
-          "cf": {
-            "min": 1200,
-            "max": 1300
-          },
-          "luoguDifficulty": [
-            "普及",
-            "普及+/提高−"
-          ],
-          "description": "学习Dijkstra的适用条件、基本实现与复杂度，再用独立练习验证。",
+          "luoguDifficulty": [],
+          "description": "以距离最小未确定点为不变量，处理优先队列旧条目、不可达、重边与距离溢出。",
           "goals": [
-            "解释Dijkstra的核心不变量与适用边界",
-            "独立写出实现并说明时间与空间复杂度",
-            "完成基础练习与一道迁移题，记录失败原因"
+            "检查非负边前提再选择算法",
+            "忽略优先队列中的过期条目",
+            "处理不可达点及距离加法溢出"
           ],
+          "learningTitle": "Dijkstra 与非负边",
+          "learningDescription": "以距离最小未确定点为不变量，处理优先队列旧条目、不可达、重边与距离溢出。",
           "prerequisites": {
             "gateIds": [
-              "stage-06-gate-01"
+              "lp2-graph-trees-paths-dependency-topological",
+              "lp2-cpp-toolkit-stl-selection-adapters"
             ],
-            "topicIds": []
+            "topicIds": [
+              "xcpc-拓扑序-1",
+              "xcpc-图上dp-1",
+              "algorithm-stack-queue",
+              "algorithm-deque",
+              "xcpc-priority-queue-1"
+            ]
           },
-          "optional": false,
-          "scope": "题目难度仅为本关迁移练习的选题窗口；初学专项题可低于此区间。",
-          "learningTitle": "初识最短路 · Dijkstra 挑近的走",
-          "learningDescription": "BFS 按步数分层，Dijkstra 用优先队列选择当前距离最小的候选。理解非负边条件如何支撑这个选择，再把堆、图表示和距离更新串成完整算法。",
           "threadGateIds": [
-            "stage-04-gate-03",
-            "stage-02-gate-05",
-            "stage-06-gate-03"
+            "lp2-graph-trees-paths-dependency-topological",
+            "lp2-graph-trees-paths-dependency-floyd"
           ]
         },
         {
-          "id": "stage-06-gate-03",
+          "id": "lp2-graph-trees-paths-dependency-floyd",
           "index": 3,
-          "title": "Floyd–Warshall：多源路径",
+          "title": "Floyd 与多源路径",
           "kind": "learning",
+          "sectionId": "lp2-sec-graph-trees-paths-dependency",
+          "sectionTitle": "A · 路径与依赖",
+          "routeId": null,
+          "scope": "core",
+          "optional": false,
           "topicIds": [
             "xcpc-floyd-1"
           ],
-          "cf": {
-            "min": 1200,
-            "max": 1300
-          },
-          "luoguDifficulty": [
-            "普及",
-            "普及+/提高−"
-          ],
-          "description": "学习Floyd–Warshall的适用条件、基本实现与复杂度，再用独立练习验证。",
+          "luoguDifficulty": [],
+          "description": "用允许中间点集合定义状态，解释三重循环次序、不可达相加和路径恢复。",
           "goals": [
-            "解释Floyd–Warshall的核心不变量与适用边界",
-            "独立写出实现并说明时间与空间复杂度",
-            "完成基础练习与一道迁移题，记录失败原因"
+            "说明中间点集合对应的状态",
+            "解释三重循环不能任意交换的原因",
+            "恢复路径并避免不可达值参与加法"
           ],
+          "learningTitle": "Floyd 与多源路径",
+          "learningDescription": "用允许中间点集合定义状态，解释三重循环次序、不可达相加和路径恢复。",
           "prerequisites": {
             "gateIds": [
-              "stage-06-gate-02"
+              "lp2-graph-trees-paths-dependency-dijkstra"
             ],
-            "topicIds": []
+            "topicIds": [
+              "xcpc-dijkstra-1"
+            ]
           },
-          "optional": false,
-          "scope": "题目难度仅为本关迁移练习的选题窗口；初学专项题可低于此区间。",
-          "learningTitle": "进阶最短路 · Floyd 枚举中转点",
-          "learningDescription": "从单个起点转向所有点对，Floyd 按允许使用的中转点逐步更新路径。写清外层枚举的含义，再比较它与 Dijkstra 在规模、路径需求和复杂度上的差别。",
           "threadGateIds": [
-            "stage-06-gate-02",
-            "stage-05-gate-01",
-            "stage-06-gate-04"
+            "lp2-graph-trees-paths-dependency-dijkstra",
+            "lp2-graph-trees-paths-dependency-negative-edges"
           ]
         },
         {
-          "id": "stage-06-gate-04",
+          "id": "lp2-graph-trees-paths-dependency-negative-edges",
           "index": 4,
-          "title": "混练：BFS、Dijkstra 与拓扑排序",
-          "kind": "mixed",
+          "title": "负边与负环扩展",
+          "kind": "learning",
+          "sectionId": "lp2-sec-graph-trees-paths-dependency",
+          "sectionTitle": "A · 路径与依赖",
+          "routeId": null,
+          "scope": "elective",
+          "optional": true,
           "topicIds": [
-            "algorithm-content-feishu-part-2-2",
-            "xcpc-dijkstra-1",
-            "algorithm-content-feishu-part-7-5"
+            "xcpc-bellman-ford-1"
           ],
-          "cf": {
-            "min": 1200,
-            "max": 1300
-          },
-          "luoguDifficulty": [
-            "普及",
-            "普及+/提高−"
-          ],
-          "description": "混合使用BFS、Dijkstra、拓扑排序；选题时隐藏专题标签，先独立辨型再实现。",
+          "luoguDifficulty": [],
+          "description": "Bellman–Ford与负环检测同段扩展；区分源点可达和任意负环，不把SPFA当复杂度保证。",
           "goals": [
-            "在不看标签与题解的情况下提出完整思路",
-            "独立实现并通过所选平台的评测",
-            "复盘关键转化、错误解法与复杂度瓶颈"
+            "独立完成边松弛与负环检测",
+            "区分源点可达负环和任意负环",
+            "写出最坏复杂度而非依赖平均表现"
           ],
+          "learningTitle": "负边与负环扩展",
+          "learningDescription": "Bellman–Ford与负环检测同段扩展；区分源点可达和任意负环，不把SPFA当复杂度保证。",
           "prerequisites": {
             "gateIds": [
-              "stage-06-gate-03"
+              "lp2-graph-trees-paths-dependency-floyd"
             ],
-            "topicIds": []
+            "topicIds": [
+              "xcpc-floyd-1"
+            ]
           },
-          "optional": false,
-          "scope": "区间只用于选择综合新题，不保证单题涵盖列出的所有算法。",
-          "learningTitle": "路径辨型 · BFS、Dijkstra 与 DAG",
-          "learningDescription": "先检查边权是否相同、图是否无环、问题是否只问可达，再选扩展顺序。混练把同样的点边表示放到不同约束下，体会图模型相似并不代表算法可以互换。",
           "threadGateIds": [
-            "stage-04-gate-03",
-            "stage-06-gate-02",
-            "stage-06-gate-01"
+            "lp2-graph-trees-paths-dependency-floyd",
+            "lp2-graph-trees-paths-dependency-practice-assessment"
           ]
         },
         {
-          "id": "stage-06-gate-05",
+          "id": "lp2-graph-trees-paths-dependency-practice-assessment",
           "index": 5,
-          "title": "树的遍历：子树信息",
-          "kind": "learning",
+          "title": "混练验收：路径与依赖",
+          "kind": "challenge",
+          "sectionId": "lp2-sec-graph-trees-paths-dependency",
+          "sectionTitle": "A · 路径与依赖",
+          "routeId": null,
+          "scope": "core",
+          "optional": false,
           "topicIds": [
+            "xcpc-拓扑序-1",
+            "xcpc-图上dp-1",
+            "xcpc-dijkstra-1",
+            "xcpc-floyd-1"
+          ],
+          "luoguDifficulty": [],
+          "description": "围绕路径与依赖完成变化任务与独立应用，核对方法选择、实现和边界。",
+          "goals": [
+            "按边权与查询规模选择最短路；能判环并在拓扑序上递推。",
+            "独立完成路径与依赖的变化任务，说明选择方法的理由",
+            "检查边界或用小规模对照验证，并记录本段的一次错误与修正"
+          ],
+          "learningTitle": "路径与依赖 · 独立验收",
+          "learningDescription": "组合运用拓扑排序与 DAG DP、Dijkstra 与非负边、Floyd 与多源路径，先比较不同方法，再独立完成无标签任务并记录验证结果。",
+          "prerequisites": {
+            "gateIds": [
+              "lp2-graph-trees-paths-dependency-topological",
+              "lp2-graph-trees-paths-dependency-dijkstra",
+              "lp2-graph-trees-paths-dependency-floyd"
+            ],
+            "topicIds": [
+              "xcpc-拓扑序-1",
+              "xcpc-图上dp-1",
+              "xcpc-dijkstra-1",
+              "xcpc-floyd-1"
+            ]
+          },
+          "threadGateIds": [
+            "lp2-graph-trees-paths-dependency-negative-edges",
+            "lp2-graph-trees-connectivity-cost-dsu"
+          ]
+        },
+        {
+          "id": "lp2-graph-trees-connectivity-cost-dsu",
+          "index": 6,
+          "title": "并查集与集合关系",
+          "kind": "learning",
+          "sectionId": "lp2-sec-graph-trees-connectivity-cost",
+          "sectionTitle": "B · 连接成本与集合",
+          "routeId": null,
+          "scope": "core",
+          "optional": false,
+          "topicIds": [
+            "xcpc-并查集基础-1"
+          ],
+          "luoguDifficulty": [],
+          "description": "路径压缩与按大小合并，说明根只表示集合代表，不能当成原树父节点。",
+          "goals": [
+            "完成查找与按大小合并",
+            "解释路径压缩修改的只是代表关系",
+            "用连通性操作序列与暴力比较"
+          ],
+          "learningTitle": "并查集与集合关系",
+          "learningDescription": "路径压缩与按大小合并，说明根只表示集合代表，不能当成原树父节点。",
+          "prerequisites": {
+            "gateIds": [
+              "lp2-graph-trees-paths-dependency-practice-assessment"
+            ],
+            "topicIds": [
+              "xcpc-拓扑序-1",
+              "xcpc-图上dp-1",
+              "xcpc-dijkstra-1",
+              "xcpc-floyd-1"
+            ]
+          },
+          "threadGateIds": [
+            "lp2-graph-trees-paths-dependency-practice-assessment",
+            "lp2-graph-trees-connectivity-cost-mst"
+          ]
+        },
+        {
+          "id": "lp2-graph-trees-connectivity-cost-mst",
+          "index": 7,
+          "title": "Kruskal、Prim 与生成树",
+          "kind": "learning",
+          "sectionId": "lp2-sec-graph-trees-connectivity-cost",
+          "sectionTitle": "B · 连接成本与集合",
+          "routeId": null,
+          "scope": "core",
+          "optional": false,
+          "topicIds": [
+            "xcpc-kruskal-1",
+            "xcpc-prim-1"
+          ],
+          "luoguDifficulty": [],
+          "description": "证明连接成本的贪心选择，处理不连通；比较最短路树与最小生成树的目标。",
+          "goals": [
+            "说明生成树和最短路树优化目标不同",
+            "证明一条被选边的安全性",
+            "识别不连通输入并返回正确结果"
+          ],
+          "learningTitle": "Kruskal、Prim 与生成树",
+          "learningDescription": "证明连接成本的贪心选择，处理不连通；比较最短路树与最小生成树的目标。",
+          "prerequisites": {
+            "gateIds": [
+              "lp2-graph-trees-connectivity-cost-dsu"
+            ],
+            "topicIds": [
+              "xcpc-并查集基础-1"
+            ]
+          },
+          "threadGateIds": [
+            "lp2-graph-trees-connectivity-cost-dsu",
+            "lp2-graph-trees-connectivity-cost-practice-assessment"
+          ]
+        },
+        {
+          "id": "lp2-graph-trees-connectivity-cost-practice-assessment",
+          "index": 8,
+          "title": "混练验收：连接成本与集合",
+          "kind": "challenge",
+          "sectionId": "lp2-sec-graph-trees-connectivity-cost",
+          "sectionTitle": "B · 连接成本与集合",
+          "routeId": null,
+          "scope": "core",
+          "optional": false,
+          "topicIds": [
+            "xcpc-并查集基础-1",
+            "xcpc-kruskal-1",
+            "xcpc-prim-1"
+          ],
+          "luoguDifficulty": [],
+          "description": "围绕连接成本与集合完成变化任务与独立应用，核对方法选择、实现和边界。",
+          "goals": [
+            "理解并查集不等于原图结构；比较最小生成树与最短路树。",
+            "独立完成连接成本与集合的变化任务，说明选择方法的理由",
+            "检查边界或用小规模对照验证，并记录本段的一次错误与修正"
+          ],
+          "learningTitle": "连接成本与集合 · 独立验收",
+          "learningDescription": "组合运用并查集与集合关系、Kruskal、Prim 与生成树，先比较不同方法，再独立完成无标签任务并记录验证结果。",
+          "prerequisites": {
+            "gateIds": [
+              "lp2-graph-trees-connectivity-cost-dsu",
+              "lp2-graph-trees-connectivity-cost-mst"
+            ],
+            "topicIds": [
+              "xcpc-并查集基础-1",
+              "xcpc-kruskal-1",
+              "xcpc-prim-1"
+            ]
+          },
+          "threadGateIds": [
+            "lp2-graph-trees-connectivity-cost-mst",
+            "lp2-graph-trees-static-trees-tree-info"
+          ]
+        },
+        {
+          "id": "lp2-graph-trees-static-trees-tree-info",
+          "index": 9,
+          "title": "树遍历与子树信息",
+          "kind": "learning",
+          "sectionId": "lp2-sec-graph-trees-static-trees",
+          "sectionTitle": "C · 树上静态信息",
+          "routeId": null,
+          "scope": "core",
+          "optional": false,
+          "topicIds": [
+            "xcpc-树的基本概念-1",
             "xcpc-树的遍历-1"
           ],
-          "cf": {
-            "min": 1200,
-            "max": 1300
-          },
-          "luoguDifficulty": [
-            "普及",
-            "普及+/提高−"
-          ],
-          "description": "学习树的遍历的适用条件、基本实现与复杂度，再用独立练习验证。",
+          "luoguDifficulty": [],
+          "description": "选根后定义父子、深度、子树，后序聚合静态信息并考虑递归深度。",
           "goals": [
-            "解释树的遍历的核心不变量与适用边界",
-            "独立写出实现并说明时间与空间复杂度",
-            "完成基础练习与一道迁移题，记录失败原因"
+            "选根后正确维护父子和深度",
+            "在后序中聚合子树信息",
+            "检查递归深度及单节点树"
           ],
+          "learningTitle": "树遍历与子树信息",
+          "learningDescription": "选根后定义父子、深度、子树，后序聚合静态信息并考虑递归深度。",
           "prerequisites": {
             "gateIds": [
-              "stage-06-gate-04"
+              "lp2-graph-trees-connectivity-cost-practice-assessment"
             ],
-            "topicIds": []
+            "topicIds": [
+              "xcpc-并查集基础-1",
+              "xcpc-kruskal-1",
+              "xcpc-prim-1"
+            ]
           },
-          "optional": false,
-          "scope": "题目难度仅为本关迁移练习的选题窗口；初学专项题可低于此区间。",
-          "learningTitle": "初识树 · 从父子关系汇总信息",
-          "learningDescription": "树没有一般图中的任意环路，确定根后就有清楚的父子与子树关系。练习在遍历时向下传递、向上汇总，给之后的树形 DP 和子树区间表示建立直觉。",
           "threadGateIds": [
-            "stage-05-gate-09",
-            "stage-07-gate-07",
-            "stage-08-gate-03"
+            "lp2-graph-trees-connectivity-cost-practice-assessment",
+            "lp2-graph-trees-static-trees-diameter"
           ]
         },
         {
-          "id": "stage-06-gate-06",
-          "index": 6,
-          "title": "基础区间 DP：枚举分割点",
-          "kind": "learning",
-          "topicIds": [
-            "xcpc-基础-2"
-          ],
-          "cf": {
-            "min": 1200,
-            "max": 1300
-          },
-          "luoguDifficulty": [
-            "普及",
-            "普及+/提高−"
-          ],
-          "description": "学习基础区间 DP的适用条件、基本实现与复杂度，再用独立练习验证。",
-          "goals": [
-            "解释基础区间 DP的核心不变量与适用边界",
-            "独立写出实现并说明时间与空间复杂度",
-            "完成基础练习与一道迁移题，记录失败原因"
-          ],
-          "prerequisites": {
-            "gateIds": [
-              "stage-06-gate-05"
-            ],
-            "topicIds": []
-          },
-          "optional": false,
-          "scope": "题目难度仅为本关迁移练习的选题窗口；初学专项题可低于此区间。",
-          "learningTitle": "进阶 DP（五）· 区间从哪里分开",
-          "learningDescription": "把子问题从序列位置扩展成左右端点，枚举分割点连接较小区间的结果。先保证计算时依赖已经就绪，再检查合并代价，让状态组织方式与实际结构一致。",
-          "threadGateIds": [
-            "stage-05-gate-01",
-            "stage-05-gate-02",
-            "stage-11-gate-02"
-          ]
-        },
-        {
-          "id": "stage-06-gate-07",
-          "index": 7,
-          "title": "LCS：二维状态与匹配",
-          "kind": "learning",
-          "topicIds": [
-            "algorithm-最长公共子序列-lcs"
-          ],
-          "cf": {
-            "min": 1200,
-            "max": 1300
-          },
-          "luoguDifficulty": [
-            "普及",
-            "普及+/提高−"
-          ],
-          "description": "学习LCS的适用条件、基本实现与复杂度，再用独立练习验证。",
-          "goals": [
-            "解释LCS的核心不变量与适用边界",
-            "独立写出实现并说明时间与空间复杂度",
-            "完成基础练习与一道迁移题，记录失败原因"
-          ],
-          "prerequisites": {
-            "gateIds": [
-              "stage-06-gate-06"
-            ],
-            "topicIds": []
-          },
-          "optional": false,
-          "scope": "题目难度仅为本关迁移练习的选题窗口；初学专项题可低于此区间。",
-          "learningTitle": "进阶 DP（六）· LCS 对齐两条序列",
-          "learningDescription": "LIS 在一条序列里找上升关系，LCS 则同时考虑两条序列的前缀。用二维状态表达匹配与跳过，比较两个问题的转移含义，建立序列 DP 的共同视角。",
-          "threadGateIds": [
-            "stage-05-gate-03",
-            "stage-05-gate-02",
-            "stage-06-gate-08"
-          ]
-        },
-        {
-          "id": "stage-06-gate-08",
-          "index": 8,
-          "title": "混练：区间 DP、LCS 与序列转化",
-          "kind": "mixed",
-          "topicIds": [
-            "xcpc-基础-2",
-            "algorithm-最长公共子序列-lcs",
-            "algorithm-content-feishu-part-3-1"
-          ],
-          "cf": {
-            "min": 1200,
-            "max": 1300
-          },
-          "luoguDifficulty": [
-            "普及",
-            "普及+/提高−"
-          ],
-          "description": "混合使用基础区间 DP、LCS、线性 DP；选题时隐藏专题标签，先独立辨型再实现。",
-          "goals": [
-            "在不看标签与题解的情况下提出完整思路",
-            "独立实现并通过所选平台的评测",
-            "复盘关键转化、错误解法与复杂度瓶颈"
-          ],
-          "prerequisites": {
-            "gateIds": [
-              "stage-06-gate-07"
-            ],
-            "topicIds": []
-          },
-          "optional": false,
-          "scope": "区间只用于选择综合新题，不保证单题涵盖列出的所有算法。",
-          "learningTitle": "序列 DP 合流 · 区间与匹配",
-          "learningDescription": "面对序列题，先判断子问题由一个前缀、两个前缀还是一段区间描述。混练区间 DP、LCS 与线性 DP，重点是从题目结构选状态，而不是根据数组维数猜模型。",
-          "threadGateIds": [
-            "stage-06-gate-06",
-            "stage-06-gate-07",
-            "stage-05-gate-02"
-          ]
-        },
-        {
-          "id": "stage-06-gate-09",
-          "index": 9,
-          "title": "排列组合与杨辉三角",
-          "kind": "learning",
-          "topicIds": [
-            "algorithm-content-feishu-part-5-6-1",
-            "xcpc-杨辉三角-1"
-          ],
-          "cf": {
-            "min": 1200,
-            "max": 1300
-          },
-          "luoguDifficulty": [
-            "普及",
-            "普及+/提高−"
-          ],
-          "description": "学习排列组合、杨辉三角的适用条件、基本实现与复杂度，再用独立练习验证。",
-          "goals": [
-            "解释排列组合、杨辉三角的核心不变量与适用边界",
-            "独立写出实现并说明时间与空间复杂度",
-            "完成基础练习与一道迁移题，记录失败原因"
-          ],
-          "prerequisites": {
-            "gateIds": [
-              "stage-06-gate-08"
-            ],
-            "topicIds": []
-          },
-          "optional": false,
-          "scope": "题目难度仅为本关迁移练习的选题窗口；初学专项题可低于此区间。",
-          "learningTitle": "初识组合 · 从选择数到杨辉三角",
-          "learningDescription": "计数 DP 累加方案，组合数则把某些选择关系概括成可复用公式。用杨辉三角理解选或不选的递推，再分清排列与组合统计的对象是否关心顺序。",
-          "threadGateIds": [
-            "stage-05-gate-11",
-            "stage-06-gate-10",
-            "stage-13-gate-05"
-          ]
-        },
-        {
-          "id": "stage-06-gate-10",
+          "id": "lp2-graph-trees-static-trees-diameter",
           "index": 10,
-          "title": "逆元：模除法的存在条件",
+          "title": "树直径与路径性质",
           "kind": "learning",
+          "sectionId": "lp2-sec-graph-trees-static-trees",
+          "sectionTitle": "C · 树上静态信息",
+          "routeId": null,
+          "scope": "core",
+          "optional": false,
           "topicIds": [
-            "xcpc-逆元-1",
-            "xcpc-快速幂-1"
+            "algorithm-content-feishu-part-7-3-2"
           ],
-          "cf": {
-            "min": 1200,
-            "max": 1300
-          },
-          "luoguDifficulty": [
-            "普及",
-            "普及+/提高−"
-          ],
-          "description": "学习逆元、快速幂的适用条件、基本实现与复杂度，再用独立练习验证。",
+          "luoguDifficulty": [],
+          "description": "在无权或非负边前提下学习直径与中心性质，检查负边下何种结论不再成立。",
           "goals": [
-            "解释逆元、快速幂的核心不变量与适用边界",
-            "独立写出实现并说明时间与空间复杂度",
-            "完成基础练习与一道迁移题，记录失败原因"
+            "说明当前直径算法适用的边权条件",
+            "求出直径端点与路径",
+            "检验负边下失效的性质"
           ],
+          "learningTitle": "树直径与路径性质",
+          "learningDescription": "在无权或非负边前提下学习直径与中心性质，检查负边下何种结论不再成立。",
           "prerequisites": {
             "gateIds": [
-              "stage-06-gate-09"
+              "lp2-graph-trees-static-trees-tree-info"
             ],
-            "topicIds": []
+            "topicIds": [
+              "xcpc-树的基本概念-1",
+              "xcpc-树的遍历-1"
+            ]
           },
-          "optional": false,
-          "scope": "题目难度仅为本关迁移练习的选题窗口；初学专项题可低于此区间。",
-          "learningTitle": "进阶模运算 · 除法先问逆元",
-          "learningDescription": "整数除法不能直接搬进模运算，先检查逆元是否存在，再选择适用的求法。快速幂在满足条件时可以参与计算，这会把此前的数论工具连接到组合数与计数问题。",
           "threadGateIds": [
-            "stage-03-gate-07",
-            "stage-06-gate-09",
-            "stage-11-gate-10"
+            "lp2-graph-trees-static-trees-tree-info",
+            "lp2-graph-trees-static-trees-practice-assessment"
           ]
         },
         {
-          "id": "stage-06-gate-11",
+          "id": "lp2-graph-trees-static-trees-practice-assessment",
           "index": 11,
-          "title": "容斥原理：去除重复计数",
-          "kind": "learning",
+          "title": "混练验收：树上静态信息",
+          "kind": "challenge",
+          "sectionId": "lp2-sec-graph-trees-static-trees",
+          "sectionTitle": "C · 树上静态信息",
+          "routeId": null,
+          "scope": "core",
+          "optional": false,
           "topicIds": [
-            "algorithm-content-feishu-part-5-6-3"
+            "xcpc-树的基本概念-1",
+            "xcpc-树的遍历-1",
+            "algorithm-content-feishu-part-7-3-2"
           ],
-          "cf": {
-            "min": 1200,
-            "max": 1300
-          },
-          "luoguDifficulty": [
-            "普及",
-            "普及+/提高−"
-          ],
-          "description": "学习容斥原理的适用条件、基本实现与复杂度，再用独立练习验证。",
+          "luoguDifficulty": [],
+          "description": "围绕树上静态信息完成变化任务与独立应用，核对方法选择、实现和边界。",
           "goals": [
-            "解释容斥原理的核心不变量与适用边界",
-            "独立写出实现并说明时间与空间复杂度",
-            "完成基础练习与一道迁移题，记录失败原因"
+            "正确维护父子、深度、子树；理解直径性质对边权的适用条件。",
+            "独立完成树上静态信息的变化任务，说明选择方法的理由",
+            "检查边界或用小规模对照验证，并记录本段的一次错误与修正"
           ],
+          "learningTitle": "树上静态信息 · 独立验收",
+          "learningDescription": "组合运用树遍历与子树信息、树直径与路径性质，先比较不同方法，再独立完成无标签任务并记录验证结果。",
           "prerequisites": {
             "gateIds": [
-              "stage-06-gate-10"
+              "lp2-graph-trees-static-trees-tree-info",
+              "lp2-graph-trees-static-trees-diameter"
             ],
-            "topicIds": []
+            "topicIds": [
+              "xcpc-树的基本概念-1",
+              "xcpc-树的遍历-1",
+              "algorithm-content-feishu-part-7-3-2"
+            ]
           },
-          "optional": false,
-          "scope": "题目难度仅为本关迁移练习的选题窗口；初学专项题可低于此区间。",
-          "learningTitle": "初识容斥 · 加回被重复减去的部分",
-          "learningDescription": "直接相加会重复计数，逐项扣除也可能多扣交集。画清对象之间的重叠关系，用容斥整理加减，再回看二维前缀和中为什么也要补回重叠区域。",
           "threadGateIds": [
-            "stage-03-gate-10",
-            "stage-06-gate-09",
-            "stage-09-gate-07"
+            "lp2-graph-trees-static-trees-diameter",
+            "lp2-graph-trees-tree-queries-lca"
           ]
         },
         {
-          "id": "stage-06-gate-12",
+          "id": "lp2-graph-trees-tree-queries-lca",
           "index": 12,
-          "title": "挑战：图路径、DP 与组合计数综合",
-          "kind": "challenge",
+          "title": "倍增与 LCA",
+          "kind": "learning",
+          "sectionId": "lp2-sec-graph-trees-tree-queries",
+          "sectionTitle": "D · 树上查询收尾",
+          "routeId": null,
+          "scope": "core",
+          "optional": false,
           "topicIds": [
-            "xcpc-dijkstra-1",
-            "algorithm-content-feishu-part-3-1",
-            "algorithm-content-feishu-part-5-6-1"
+            "xcpc-倍增-1",
+            "algorithm-content-feishu-part-7-3-3"
           ],
-          "cf": {
-            "min": 1200,
-            "max": 1300
-          },
-          "luoguDifficulty": [
-            "普及",
-            "普及+/提高−"
-          ],
-          "description": "本阶段以Dijkstra、线性 DP、排列组合等已学方法为参考，混排新题，检验独立推导与组合能力。",
+          "luoguDifficulty": [],
+          "description": "建立祖先跳表，统一深度与同时跳转，求LCA、距离并分析预处理/查询。",
           "goals": [
-            "在不看标签与题解的情况下提出完整思路",
-            "独立实现并通过所选平台的评测",
-            "复盘关键转化、错误解法与复杂度瓶颈"
+            "正确构建祖先跳表",
+            "独立求最近公共祖先与两点距离",
+            "处理根、祖先关系和深度差为零"
           ],
+          "learningTitle": "倍增与 LCA",
+          "learningDescription": "建立祖先跳表，统一深度与同时跳转，求LCA、距离并分析预处理/查询。",
           "prerequisites": {
             "gateIds": [
-              "stage-06-gate-11"
+              "lp2-graph-trees-static-trees-practice-assessment"
             ],
-            "topicIds": []
+            "topicIds": [
+              "xcpc-树的基本概念-1",
+              "xcpc-树的遍历-1",
+              "algorithm-content-feishu-part-7-3-2"
+            ]
           },
-          "optional": false,
-          "scope": "区间只用于选择综合新题，不保证单题涵盖列出的所有算法。",
-          "learningTitle": "模型合流 · 路径、状态与计数",
-          "learningDescription": "有些题先建立图或路径关系，再在结构上递推；有些题只需要组合计数。挑战时先完成题意转化，再选择 Dijkstra、DP 或组合工具，检查组合后是否仍满足各自条件。",
           "threadGateIds": [
-            "stage-06-gate-02",
-            "stage-05-gate-02",
-            "stage-06-gate-09"
+            "lp2-graph-trees-static-trees-practice-assessment",
+            "lp2-graph-trees-tree-queries-dfn"
+          ]
+        },
+        {
+          "id": "lp2-graph-trees-tree-queries-dfn",
+          "index": 13,
+          "title": "DFS 序与子树区间",
+          "kind": "learning",
+          "sectionId": "lp2-sec-graph-trees-tree-queries",
+          "sectionTitle": "D · 树上查询收尾",
+          "routeId": null,
+          "scope": "core",
+          "optional": false,
+          "topicIds": [
+            "xcpc-dfn-1",
+            "algorithm-一维前缀和"
+          ],
+          "luoguDifficulty": [],
+          "description": "用入出时间证明子树连续区间，结合静态前缀和完成子树查询。",
+          "goals": [
+            "记录入出时间并证明子树连续",
+            "将子树条件转成闭合区间查询",
+            "与逐点遍历的子树和核对"
+          ],
+          "learningTitle": "DFS 序与子树区间",
+          "learningDescription": "用入出时间证明子树连续区间，结合静态前缀和完成子树查询。",
+          "prerequisites": {
+            "gateIds": [
+              "lp2-graph-trees-tree-queries-lca"
+            ],
+            "topicIds": [
+              "xcpc-倍增-1",
+              "algorithm-content-feishu-part-7-3-3"
+            ]
+          },
+          "threadGateIds": [
+            "lp2-graph-trees-tree-queries-lca",
+            "lp2-graph-trees-tree-queries-practice-assessment"
+          ]
+        },
+        {
+          "id": "lp2-graph-trees-tree-queries-practice-assessment",
+          "index": 14,
+          "title": "混练验收：树上查询收尾",
+          "kind": "challenge",
+          "sectionId": "lp2-sec-graph-trees-tree-queries",
+          "sectionTitle": "D · 树上查询收尾",
+          "routeId": null,
+          "scope": "core",
+          "optional": false,
+          "topicIds": [
+            "xcpc-倍增-1",
+            "algorithm-content-feishu-part-7-3-3",
+            "xcpc-dfn-1",
+            "algorithm-一维前缀和"
+          ],
+          "luoguDifficulty": [],
+          "description": "围绕树上查询收尾完成变化任务与独立应用，核对方法选择、实现和边界。",
+          "goals": [
+            "覆盖路径、依赖、生成树和树查询四种能力，选择算法有明确前提。",
+            "正确处理重边、自环、不连通、不可达与大距离溢出；说明每种边界是否与当前模型有关。",
+            "完成静态子树查询与 LCA 距离题；负边方向另作扩展验收。"
+          ],
+          "learningTitle": "树上查询收尾 · 独立验收",
+          "learningDescription": "组合运用倍增与 LCA、DFS 序与子树区间，先比较不同方法，再独立完成无标签任务并记录验证结果。",
+          "prerequisites": {
+            "gateIds": [
+              "lp2-graph-trees-tree-queries-lca",
+              "lp2-graph-trees-tree-queries-dfn",
+              "lp2-graph-trees-paths-dependency-practice-assessment",
+              "lp2-graph-trees-connectivity-cost-practice-assessment",
+              "lp2-graph-trees-static-trees-practice-assessment"
+            ],
+            "topicIds": [
+              "xcpc-倍增-1",
+              "algorithm-content-feishu-part-7-3-3",
+              "xcpc-dfn-1",
+              "algorithm-一维前缀和",
+              "xcpc-拓扑序-1",
+              "xcpc-图上dp-1"
+            ]
+          },
+          "threadGateIds": [
+            "lp2-graph-trees-tree-queries-dfn"
           ]
         }
       ]
@@ -2992,488 +4831,637 @@
     {
       "id": "stage-07",
       "index": 7,
-      "title": "维护动态信息并解释正确性",
-      "description": "维护动态信息，并将树、图和字符串工具组合到陌生题面。",
-      "goal": "维护动态信息，并将树、图和字符串工具组合到陌生题面。",
-      "cf": {
-        "min": 1300,
-        "max": 1400
-      },
-      "luoguDifficulty": [
-        "普及+/提高−",
-        "提高"
-      ],
-      "rationale": "本章按综合做题能力组织，不要求区间中的每道题都使用这些算法，也不要求学完所有专题才进入下一章。",
+      "title": "区间与动态数据：选择合适的维护结构",
+      "description": "看见一组修改与查询，就能根据操作性质选择结构、定义维护信息，并说明合并规则。",
+      "goal": "看见一组修改与查询，就能根据操作性质选择结构、定义维护信息，并说明合并规则。",
+      "rationale": "把懒标记和基础线段树收在一章，补充运算性质与标记复合的正确性边界。",
+      "entryText": "直接先修是前缀和、差分、离散化、二分、复杂度；若练树上应用，再补第 6 章 DFS 序。",
+      "completionMode": "core",
       "completionCriteria": [
-        "独立完成本章综合题组中的新题",
-        "覆盖至少两种已学方法；后续阶段回收前面基础工具",
-        "说明正确性、复杂度，并记录一次完整复盘"
+        "完成静态查询、单点动态查询和区间更新；解释结构为何支持这些操作。",
+        "独立实现树状数组及带懒标记线段树，用随机操作序列与暴力比较。",
+        "核心处理空区间、端点、负值、单位元和下传；非交换合并与赋值 / 加法复合为推荐深入，分别验收。"
       ],
+      "scopeDescription": "树上应用是第 6 章与本章的组合练习；动态第 k 小、复杂标记、线段树 Beats 不混入基础必修。",
       "prerequisites": {
         "stageIds": [
-          "stage-06"
+          "stage-03"
         ]
       },
-      "gates": [
+      "luoguDifficulty": [],
+      "sections": [
         {
-          "id": "stage-07-gate-01",
-          "index": 1,
-          "title": "基础树状数组：前缀查询与修改",
-          "kind": "learning",
-          "topicIds": [
-            "xcpc-树状数组基础-1"
+          "id": "lp2-sec-range-data-static-monotone",
+          "title": "A · 静态与单调维护",
+          "scope": "core",
+          "routeId": null,
+          "description": "单调栈与单调队列：最近更大 / 更小；窗口最值；贡献计数；元素何时被永久淘汰。\n静态区间查询：前缀和回顾；ST 表与可重复贡献；静态与动态的区别。",
+          "completionCriteria": [
+            "单调结构证明淘汰，ST 表明确幂等运算限制，避免错误用于区间求和。"
           ],
-          "cf": {
-            "min": 1300,
-            "max": 1400
-          },
-          "luoguDifficulty": [
-            "普及+/提高−",
-            "提高"
-          ],
-          "description": "学习基础树状数组的适用条件、基本实现与复杂度，再用独立练习验证。",
-          "goals": [
-            "解释基础树状数组的核心不变量与适用边界",
-            "独立写出实现并说明时间与空间复杂度",
-            "完成基础练习与一道迁移题，记录失败原因"
-          ],
-          "prerequisites": {
-            "gateIds": [],
-            "topicIds": []
-          },
-          "optional": false,
-          "scope": "题目难度仅为本关迁移练习的选题窗口；初学专项题可低于此区间。",
-          "learningTitle": "初识树状数组 · 让前缀信息可修改",
-          "learningDescription": "静态前缀和擅长查询，但一次修改会影响许多后续前缀。树状数组把信息分块维护，用若干局部节点完成修改与查询，把前缀统计带入动态场景。",
-          "threadGateIds": [
-            "stage-03-gate-01",
-            "stage-07-gate-04",
-            "stage-08-gate-04"
-          ]
-        },
-        {
-          "id": "stage-07-gate-02",
-          "index": 2,
-          "title": "基础线段树：区间合并",
-          "kind": "learning",
-          "topicIds": [
-            "xcpc-基础线段树-1"
-          ],
-          "cf": {
-            "min": 1300,
-            "max": 1400
-          },
-          "luoguDifficulty": [
-            "普及+/提高−",
-            "提高"
-          ],
-          "description": "学习基础线段树的适用条件、基本实现与复杂度，再用独立练习验证。",
-          "goals": [
-            "解释基础线段树的核心不变量与适用边界",
-            "独立写出实现并说明时间与空间复杂度",
-            "完成基础练习与一道迁移题，记录失败原因"
+          "gateIds": [
+            "lp2-range-data-static-monotone-monotone-stack",
+            "lp2-range-data-static-monotone-monotone-queue",
+            "lp2-range-data-static-monotone-sparse-table",
+            "lp2-range-data-static-monotone-practice-assessment"
           ],
           "prerequisites": {
             "gateIds": [
-              "stage-07-gate-01"
+              "lp2-basic-optimization-monotone-methods-two-pointers"
             ],
             "topicIds": []
-          },
-          "optional": false,
-          "scope": "题目难度仅为本关迁移练习的选题窗口；初学专项题可低于此区间。",
-          "learningTitle": "初识线段树 · 把区间逐层合并",
-          "learningDescription": "树状数组强调前缀结构，线段树则显式拆分区间并合并信息。先明确节点保存什么、相邻区间怎样合并，再考虑更复杂的修改与后续 DP 转移维护。",
-          "threadGateIds": [
-            "stage-07-gate-01",
-            "stage-08-gate-01",
-            "stage-09-gate-06"
-          ]
+          }
         },
         {
-          "id": "stage-07-gate-03",
-          "index": 3,
-          "title": "单调栈：最近更大或更小",
+          "id": "lp2-sec-range-data-fenwick",
+          "title": "B · 动态前缀维护",
+          "scope": "core",
+          "routeId": null,
+          "description": "树状数组：单点修改、前缀 / 区间查询；差分变体；离散化与逆序对；适用运算。",
+          "completionCriteria": [
+            "独立写树状数组，说明下标、lowbit、查询含义与支持的运算。"
+          ],
+          "gateIds": [
+            "lp2-range-data-fenwick-fenwick",
+            "lp2-range-data-fenwick-inversions",
+            "lp2-range-data-fenwick-practice-assessment"
+          ],
+          "prerequisites": {
+            "gateIds": [
+              "lp2-range-data-static-monotone-practice-assessment"
+            ],
+            "topicIds": []
+          }
+        },
+        {
+          "id": "lp2-sec-range-data-segment-lazy",
+          "title": "C · 区间合并与更新",
+          "scope": "core",
+          "routeId": null,
+          "description": "线段树完整基础：核心：区间合并、单点修改、区间查询，以及区间加 / 区间和完整懒标记；节点长度、标记生效、下传和合并。推荐深入：区间赋值与加法的非交换标记复合，单独验证顺序。",
+          "completionCriteria": [
+            "核心完整实现区间加 / 区间和懒标记，解释长度与下传；推荐复合标记段另以赋值和加法的非交换案例验收。"
+          ],
+          "gateIds": [
+            "lp2-range-data-segment-lazy-segment-merge",
+            "lp2-range-data-segment-lazy-lazy-add",
+            "lp2-range-data-segment-lazy-lazy-compose",
+            "lp2-range-data-segment-lazy-practice-assessment"
+          ],
+          "prerequisites": {
+            "gateIds": [
+              "lp2-range-data-fenwick-practice-assessment"
+            ],
+            "topicIds": []
+          }
+        },
+        {
+          "id": "lp2-sec-range-data-offline-selection",
+          "title": "D · 顺序与结构选择",
+          "scope": "core",
+          "routeId": null,
+          "description": "基础离线思想：排序查询、扫描线、事件顺序；什么时候可以改变查询顺序。\n结构选择与比较：同题用不同结构实现；复杂度、常数、内存与不支持的操作；调试和对拍。",
+          "completionCriteria": [
+            "判断能否离线；同一需求比较前缀和、BIT、线段树，给出复杂度和内存。"
+          ],
+          "gateIds": [
+            "lp2-range-data-offline-selection-offline-events",
+            "lp2-range-data-offline-selection-structure-choice",
+            "lp2-range-data-offline-selection-practice-assessment"
+          ],
+          "prerequisites": {
+            "gateIds": [
+              "lp2-range-data-segment-lazy-practice-assessment"
+            ],
+            "topicIds": []
+          }
+        }
+      ],
+      "gates": [
+        {
+          "id": "lp2-range-data-static-monotone-monotone-stack",
+          "index": 1,
+          "title": "单调栈与贡献计数",
           "kind": "learning",
+          "sectionId": "lp2-sec-range-data-static-monotone",
+          "sectionTitle": "A · 静态与单调维护",
+          "routeId": null,
+          "scope": "core",
+          "optional": false,
           "topicIds": [
             "xcpc-单调栈-1"
           ],
-          "cf": {
-            "min": 1300,
-            "max": 1400
-          },
-          "luoguDifficulty": [
-            "普及+/提高−",
-            "提高"
-          ],
-          "description": "学习单调栈的适用条件、基本实现与复杂度，再用独立练习验证。",
+          "luoguDifficulty": [],
+          "description": "维护候选序列求最近更大/小；重复值左右边界选定统一约定，推导贡献。",
           "goals": [
-            "解释单调栈的核心不变量与适用边界",
-            "独立写出实现并说明时间与空间复杂度",
-            "完成基础练习与一道迁移题，记录失败原因"
+            "解释候选被弹出后为何不再需要",
+            "统一相等值的左右边界约定",
+            "用暴力核对贡献是否重复"
           ],
+          "learningTitle": "单调栈与贡献计数",
+          "learningDescription": "维护候选序列求最近更大/小；重复值左右边界选定统一约定，推导贡献。",
           "prerequisites": {
             "gateIds": [
-              "stage-07-gate-02"
+              "lp2-basic-optimization-monotone-methods-two-pointers"
             ],
-            "topicIds": []
+            "topicIds": [
+              "algorithm-content-feishu-part-1-9"
+            ]
           },
-          "optional": false,
-          "scope": "题目难度仅为本关迁移练习的选题窗口；初学专项题可低于此区间。",
-          "learningTitle": "进阶栈 · 只留下有用的候选",
-          "learningDescription": "在普通栈的后进先出之上，增加候选值的单调性，寻找最近更大或更小的元素。证明弹出的元素为何不再需要，并按每个元素的进出次数分析总复杂度。",
           "threadGateIds": [
-            "stage-02-gate-03",
-            "stage-03-gate-05",
-            "stage-07-gate-05"
+            "lp2-range-data-static-monotone-monotone-queue"
           ]
         },
         {
-          "id": "stage-07-gate-04",
-          "index": 4,
-          "title": "混练：树状数组、离散化与逆序对",
-          "kind": "mixed",
-          "topicIds": [
-            "xcpc-树状数组基础-1",
-            "xcpc-离散-1",
-            "xcpc-逆序对-1"
-          ],
-          "cf": {
-            "min": 1300,
-            "max": 1400
-          },
-          "luoguDifficulty": [
-            "普及+/提高−",
-            "提高"
-          ],
-          "description": "混合使用基础树状数组、离散化、逆序对；选题时隐藏专题标签，先独立辨型再实现。",
-          "goals": [
-            "在不看标签与题解的情况下提出完整思路",
-            "独立实现并通过所选平台的评测",
-            "复盘关键转化、错误解法与复杂度瓶颈"
-          ],
-          "prerequisites": {
-            "gateIds": [
-              "stage-07-gate-03"
-            ],
-            "topicIds": []
-          },
-          "optional": false,
-          "scope": "区间只用于选择综合新题，不保证单题涵盖列出的所有算法。",
-          "learningTitle": "统计合流 · 离散化后数逆序对",
-          "learningDescription": "离散化把数值变成排名，树状数组统计已经处理过的排名数量。按顺序扫描并查询更大或更小的元素，体会排序、处理顺序与动态前缀信息怎样共同完成统计。",
-          "threadGateIds": [
-            "stage-04-gate-10",
-            "stage-07-gate-01",
-            "stage-12-gate-04"
-          ]
-        },
-        {
-          "id": "stage-07-gate-05",
-          "index": 5,
-          "title": "单调队列：滑动窗口最值",
+          "id": "lp2-range-data-static-monotone-monotone-queue",
+          "index": 2,
+          "title": "单调队列与窗口最值",
           "kind": "learning",
+          "sectionId": "lp2-sec-range-data-static-monotone",
+          "sectionTitle": "A · 静态与单调维护",
+          "routeId": null,
+          "scope": "core",
+          "optional": false,
           "topicIds": [
             "xcpc-单调队列-1"
           ],
-          "cf": {
-            "min": 1300,
-            "max": 1400
-          },
-          "luoguDifficulty": [
-            "普及+/提高−",
-            "提高"
-          ],
-          "description": "学习单调队列的适用条件、基本实现与复杂度，再用独立练习验证。",
+          "luoguDifficulty": [],
+          "description": "窗口过期与候选淘汰分别处理，证明被淘汰元素永不再优。",
           "goals": [
-            "解释单调队列的核心不变量与适用边界",
-            "独立写出实现并说明时间与空间复杂度",
-            "完成基础练习与一道迁移题，记录失败原因"
+            "分别处理窗口过期与候选淘汰",
+            "证明队首始终是合法最优候选",
+            "核对窗口长度为一和重复最值"
           ],
+          "learningTitle": "单调队列与窗口最值",
+          "learningDescription": "窗口过期与候选淘汰分别处理，证明被淘汰元素永不再优。",
           "prerequisites": {
             "gateIds": [
-              "stage-07-gate-04"
+              "lp2-range-data-static-monotone-monotone-stack"
             ],
-            "topicIds": []
+            "topicIds": [
+              "xcpc-单调栈-1"
+            ]
           },
-          "optional": false,
-          "scope": "题目难度仅为本关迁移练习的选题窗口；初学专项题可低于此区间。",
-          "learningTitle": "进阶队列 · 窗口中的最优候选",
-          "learningDescription": "窗口移动时，用双端队列移除过期元素，也淘汰永远不可能更优的候选。把双指针的移动和单调维护分开理解，后面才能把同样思想用于 DP 转移优化。",
           "threadGateIds": [
-            "stage-02-gate-06",
-            "stage-03-gate-05",
-            "stage-09-gate-05"
+            "lp2-range-data-static-monotone-monotone-stack",
+            "lp2-range-data-static-monotone-sparse-table"
           ]
         },
         {
-          "id": "stage-07-gate-06",
-          "index": 6,
-          "title": "Kruskal：连通成本与贪心",
+          "id": "lp2-range-data-static-monotone-sparse-table",
+          "index": 3,
+          "title": "ST 表与幂等查询",
           "kind": "learning",
+          "sectionId": "lp2-sec-range-data-static-monotone",
+          "sectionTitle": "A · 静态与单调维护",
+          "routeId": null,
+          "scope": "core",
+          "optional": false,
           "topicIds": [
-            "xcpc-kruskal-1",
-            "xcpc-并查集基础-1"
+            "algorithm-content-feishu-part-6-7"
           ],
-          "cf": {
-            "min": 1300,
-            "max": 1400
-          },
-          "luoguDifficulty": [
-            "普及+/提高−",
-            "提高"
-          ],
-          "description": "学习Kruskal、基础并查集的适用条件、基本实现与复杂度，再用独立练习验证。",
+          "luoguDifficulty": [],
+          "description": "倍增预处理静态区间，重叠查询要求幂等；不能直接用于一般区间和。",
           "goals": [
-            "解释Kruskal、基础并查集的核心不变量与适用边界",
-            "独立写出实现并说明时间与空间复杂度",
-            "完成基础练习与一道迁移题，记录失败原因"
+            "构建静态区间的倍增信息",
+            "解释重叠查询所需的幂等性",
+            "给出不能直接套重叠查询的运算例子"
           ],
+          "learningTitle": "ST 表与幂等查询",
+          "learningDescription": "倍增预处理静态区间，重叠查询要求幂等；不能直接用于一般区间和。",
           "prerequisites": {
             "gateIds": [
-              "stage-07-gate-05"
+              "lp2-range-data-static-monotone-monotone-queue"
             ],
-            "topicIds": []
+            "topicIds": [
+              "xcpc-单调队列-1"
+            ]
           },
-          "optional": false,
-          "scope": "题目难度仅为本关迁移练习的选题窗口；初学专项题可低于此区间。",
-          "learningTitle": "贪心遇见图 · Kruskal 逐边连接",
-          "learningDescription": "按边权排序，用并查集判断加入一条边是否产生环。这里把贪心选择与集合维护明确分工：并查集检查结构，最优性的理由仍需要由生成树的性质解释。",
           "threadGateIds": [
-            "stage-04-gate-09",
-            "stage-05-gate-10",
-            "stage-07-gate-08"
+            "lp2-range-data-static-monotone-monotone-queue",
+            "lp2-range-data-static-monotone-practice-assessment"
           ]
         },
         {
-          "id": "stage-07-gate-07",
-          "index": 7,
-          "title": "基础树形 DP：由子树合并",
-          "kind": "learning",
-          "topicIds": [
-            "xcpc-基础-3"
-          ],
-          "cf": {
-            "min": 1300,
-            "max": 1400
-          },
-          "luoguDifficulty": [
-            "普及+/提高−",
-            "提高"
-          ],
-          "description": "学习基础树形 DP的适用条件、基本实现与复杂度，再用独立练习验证。",
-          "goals": [
-            "解释基础树形 DP的核心不变量与适用边界",
-            "独立写出实现并说明时间与空间复杂度",
-            "完成基础练习与一道迁移题，记录失败原因"
-          ],
-          "prerequisites": {
-            "gateIds": [
-              "stage-07-gate-06"
-            ],
-            "topicIds": []
-          },
-          "optional": false,
-          "scope": "题目难度仅为本关迁移练习的选题窗口；初学专项题可低于此区间。",
-          "learningTitle": "进阶 DP（七）· 汇合每棵子树",
-          "learningDescription": "把树遍历得到的父子顺序与 DP 的状态转移连起来，先算子树，再合并到当前节点。写清每种状态的含义，为后面换根时处理子树外的信息保留清晰接口。",
-          "threadGateIds": [
-            "stage-06-gate-05",
-            "stage-05-gate-01",
-            "stage-09-gate-01"
-          ]
-        },
-        {
-          "id": "stage-07-gate-08",
-          "index": 8,
-          "title": "混练：生成树、图遍历与树形 DP",
-          "kind": "mixed",
-          "topicIds": [
-            "xcpc-kruskal-1",
-            "xcpc-树的遍历-1",
-            "xcpc-基础-3"
-          ],
-          "cf": {
-            "min": 1300,
-            "max": 1400
-          },
-          "luoguDifficulty": [
-            "普及+/提高−",
-            "提高"
-          ],
-          "description": "混合使用Kruskal、树的遍历、基础树形 DP；选题时隐藏专题标签，先独立辨型再实现。",
-          "goals": [
-            "在不看标签与题解的情况下提出完整思路",
-            "独立实现并通过所选平台的评测",
-            "复盘关键转化、错误解法与复杂度瓶颈"
-          ],
-          "prerequisites": {
-            "gateIds": [
-              "stage-07-gate-07"
-            ],
-            "topicIds": []
-          },
-          "optional": false,
-          "scope": "区间只用于选择综合新题，不保证单题涵盖列出的所有算法。",
-          "learningTitle": "树上合流 · 建树、遍历与 DP",
-          "learningDescription": "生成树负责从图中选出连接结构，树遍历组织访问顺序，树形 DP 汇总子树答案。综合练习时辨认这些步骤是否需要依次出现，不把所有树题都当成同一种模型。",
-          "threadGateIds": [
-            "stage-07-gate-06",
-            "stage-06-gate-05",
-            "stage-07-gate-07"
-          ]
-        },
-        {
-          "id": "stage-07-gate-09",
-          "index": 9,
-          "title": "字符串哈希：比较与碰撞风险",
-          "kind": "learning",
-          "topicIds": [
-            "algorithm-content-feishu-part-4-1"
-          ],
-          "cf": {
-            "min": 1300,
-            "max": 1400
-          },
-          "luoguDifficulty": [
-            "普及+/提高−",
-            "提高"
-          ],
-          "description": "学习字符串哈希的适用条件、基本实现与复杂度，再用独立练习验证。",
-          "goals": [
-            "解释字符串哈希的核心不变量与适用边界",
-            "独立写出实现并说明时间与空间复杂度",
-            "完成基础练习与一道迁移题，记录失败原因"
-          ],
-          "prerequisites": {
-            "gateIds": [
-              "stage-07-gate-08"
-            ],
-            "topicIds": []
-          },
-          "optional": false,
-          "scope": "题目难度仅为本关迁移练习的选题窗口；初学专项题可低于此区间。",
-          "learningTitle": "初识字符串算法 · 用哈希比较片段",
-          "learningDescription": "string 的逐字符比较在大量重复查询时可能很慢，哈希把片段映射为便于比较的信息。理解碰撞风险与预处理边界，再和精确匹配算法对照选择适用的方法。",
-          "threadGateIds": [
-            "stage-02-gate-07",
-            "stage-07-gate-10",
-            "stage-11-gate-08"
-          ]
-        },
-        {
-          "id": "stage-07-gate-10",
-          "index": 10,
-          "title": "KMP：前缀信息与匹配",
-          "kind": "learning",
-          "topicIds": [
-            "algorithm-content-feishu-part-4-2"
-          ],
-          "cf": {
-            "min": 1300,
-            "max": 1400
-          },
-          "luoguDifficulty": [
-            "普及+/提高−",
-            "提高"
-          ],
-          "description": "学习KMP的适用条件、基本实现与复杂度，再用独立练习验证。",
-          "goals": [
-            "解释KMP的核心不变量与适用边界",
-            "独立写出实现并说明时间与空间复杂度",
-            "完成基础练习与一道迁移题，记录失败原因"
-          ],
-          "prerequisites": {
-            "gateIds": [
-              "stage-07-gate-09"
-            ],
-            "topicIds": []
-          },
-          "optional": false,
-          "scope": "题目难度仅为本关迁移练习的选题窗口；初学专项题可低于此区间。",
-          "learningTitle": "初识 KMP · 匹配失败也留下信息",
-          "learningDescription": "逐字符匹配失败后，不必把已有比较全部重做。KMP 利用前缀信息决定下一步位置，把 string 的基础操作推进到专门匹配；后续 Z 函数和 AC 自动机还会沿这条线展开。",
-          "threadGateIds": [
-            "stage-02-gate-07",
-            "stage-10-gate-06",
-            "stage-10-gate-05"
-          ]
-        },
-        {
-          "id": "stage-07-gate-11",
-          "index": 11,
-          "title": "Trie：前缀集合",
-          "kind": "learning",
-          "topicIds": [
-            "algorithm-content-feishu-part-4-4"
-          ],
-          "cf": {
-            "min": 1300,
-            "max": 1400
-          },
-          "luoguDifficulty": [
-            "普及+/提高−",
-            "提高"
-          ],
-          "description": "学习Trie的适用条件、基本实现与复杂度，再用独立练习验证。",
-          "goals": [
-            "解释Trie的核心不变量与适用边界",
-            "独立写出实现并说明时间与空间复杂度",
-            "完成基础练习与一道迁移题，记录失败原因"
-          ],
-          "prerequisites": {
-            "gateIds": [
-              "stage-07-gate-10"
-            ],
-            "topicIds": []
-          },
-          "optional": false,
-          "scope": "题目难度仅为本关迁移练习的选题窗口；初学专项题可低于此区间。",
-          "learningTitle": "初识 Trie · 让公共前缀共用路径",
-          "learningDescription": "单个字符串匹配之外，若要保存一组字符串，可以让相同前缀共用节点。先把插入、查询与结束标记写清，再思考如何在这棵前缀树上继续处理多模式匹配。",
-          "threadGateIds": [
-            "stage-02-gate-07",
-            "stage-07-gate-10",
-            "stage-10-gate-05"
-          ]
-        },
-        {
-          "id": "stage-07-gate-12",
-          "index": 12,
-          "title": "挑战：动态统计、图与字符串综合",
+          "id": "lp2-range-data-static-monotone-practice-assessment",
+          "index": 4,
+          "title": "混练验收：静态与单调维护",
           "kind": "challenge",
+          "sectionId": "lp2-sec-range-data-static-monotone",
+          "sectionTitle": "A · 静态与单调维护",
+          "routeId": null,
+          "scope": "core",
+          "optional": false,
+          "topicIds": [
+            "xcpc-单调栈-1",
+            "xcpc-单调队列-1",
+            "algorithm-content-feishu-part-6-7"
+          ],
+          "luoguDifficulty": [],
+          "description": "围绕静态与单调维护完成变化任务与独立应用，核对方法选择、实现和边界。",
+          "goals": [
+            "单调结构证明淘汰，ST 表明确幂等运算限制，避免错误用于区间求和。",
+            "独立完成静态与单调维护的变化任务，说明选择方法的理由",
+            "检查边界或用小规模对照验证，并记录本段的一次错误与修正"
+          ],
+          "learningTitle": "静态与单调维护 · 独立验收",
+          "learningDescription": "组合运用单调栈与贡献计数、单调队列与窗口最值、ST 表与幂等查询，先比较不同方法，再独立完成无标签任务并记录验证结果。",
+          "prerequisites": {
+            "gateIds": [
+              "lp2-range-data-static-monotone-monotone-stack",
+              "lp2-range-data-static-monotone-monotone-queue",
+              "lp2-range-data-static-monotone-sparse-table"
+            ],
+            "topicIds": [
+              "xcpc-单调栈-1",
+              "xcpc-单调队列-1",
+              "algorithm-content-feishu-part-6-7"
+            ]
+          },
+          "threadGateIds": [
+            "lp2-range-data-static-monotone-sparse-table",
+            "lp2-range-data-fenwick-fenwick"
+          ]
+        },
+        {
+          "id": "lp2-range-data-fenwick-fenwick",
+          "index": 5,
+          "title": "树状数组与动态前缀",
+          "kind": "learning",
+          "sectionId": "lp2-sec-range-data-fenwick",
+          "sectionTitle": "B · 动态前缀维护",
+          "routeId": null,
+          "scope": "core",
+          "optional": false,
+          "topicIds": [
+            "xcpc-树状数组基础-1"
+          ],
+          "luoguDifficulty": [],
+          "description": "推导lowbit和覆盖区间，正确完成单点修改、前缀与区间查询；差分变体明确可逆运算。",
+          "goals": [
+            "手算lowbit所覆盖的下标范围",
+            "独立完成单点修改和区间查询",
+            "说明从前缀答案求区间答案需要的运算条件"
+          ],
+          "learningTitle": "树状数组与动态前缀",
+          "learningDescription": "推导lowbit和覆盖区间，正确完成单点修改、前缀与区间查询；差分变体明确可逆运算。",
+          "prerequisites": {
+            "gateIds": [
+              "lp2-range-data-static-monotone-practice-assessment"
+            ],
+            "topicIds": [
+              "xcpc-单调栈-1",
+              "xcpc-单调队列-1",
+              "algorithm-content-feishu-part-6-7"
+            ]
+          },
+          "threadGateIds": [
+            "lp2-range-data-static-monotone-practice-assessment",
+            "lp2-range-data-fenwick-inversions"
+          ]
+        },
+        {
+          "id": "lp2-range-data-fenwick-inversions",
+          "index": 6,
+          "title": "离散化、BIT 与逆序对",
+          "kind": "learning",
+          "sectionId": "lp2-sec-range-data-fenwick",
+          "sectionTitle": "B · 动态前缀维护",
+          "routeId": null,
+          "scope": "core",
+          "optional": false,
+          "topicIds": [
+            "xcpc-逆序对-1",
+            "xcpc-离散-1",
+            "xcpc-树状数组基础-1"
+          ],
+          "luoguDifficulty": [],
+          "description": "扫描时区分已处理集合与当前值，严格比较重复元素；与归并计数相互验证。",
+          "goals": [
+            "明确扫描时结构中保存哪些元素",
+            "处理相等元素不计逆序的边界",
+            "与归并排序计数结果比较"
+          ],
+          "learningTitle": "离散化、BIT 与逆序对",
+          "learningDescription": "扫描时区分已处理集合与当前值，严格比较重复元素；与归并计数相互验证。",
+          "prerequisites": {
+            "gateIds": [
+              "lp2-range-data-fenwick-fenwick",
+              "lp2-basic-optimization-preprocessing-compression-counting"
+            ],
+            "topicIds": [
+              "xcpc-树状数组基础-1",
+              "xcpc-离散-1",
+              "xcpc-桶排序-1"
+            ]
+          },
+          "threadGateIds": [
+            "lp2-range-data-fenwick-fenwick",
+            "lp2-range-data-fenwick-practice-assessment"
+          ]
+        },
+        {
+          "id": "lp2-range-data-fenwick-practice-assessment",
+          "index": 7,
+          "title": "混练验收：动态前缀维护",
+          "kind": "challenge",
+          "sectionId": "lp2-sec-range-data-fenwick",
+          "sectionTitle": "B · 动态前缀维护",
+          "routeId": null,
+          "scope": "core",
+          "optional": false,
           "topicIds": [
             "xcpc-树状数组基础-1",
-            "xcpc-kruskal-1",
-            "algorithm-content-feishu-part-4-2"
+            "xcpc-逆序对-1",
+            "xcpc-离散-1"
           ],
-          "cf": {
-            "min": 1300,
-            "max": 1400
-          },
-          "luoguDifficulty": [
-            "普及+/提高−",
-            "提高"
-          ],
-          "description": "本阶段以基础树状数组、Kruskal、KMP等已学方法为参考，混排新题，检验独立推导与组合能力。",
+          "luoguDifficulty": [],
+          "description": "围绕动态前缀维护完成变化任务与独立应用，核对方法选择、实现和边界。",
           "goals": [
-            "在不看标签与题解的情况下提出完整思路",
-            "独立实现并通过所选平台的评测",
-            "复盘关键转化、错误解法与复杂度瓶颈"
+            "独立写树状数组，说明下标、lowbit、查询含义与支持的运算。",
+            "独立完成动态前缀维护的变化任务，说明选择方法的理由",
+            "检查边界或用小规模对照验证，并记录本段的一次错误与修正"
           ],
+          "learningTitle": "动态前缀维护 · 独立验收",
+          "learningDescription": "组合运用树状数组与动态前缀、离散化、BIT 与逆序对，先比较不同方法，再独立完成无标签任务并记录验证结果。",
           "prerequisites": {
             "gateIds": [
-              "stage-07-gate-11"
+              "lp2-range-data-fenwick-fenwick",
+              "lp2-range-data-fenwick-inversions"
             ],
-            "topicIds": []
+            "topicIds": [
+              "xcpc-树状数组基础-1",
+              "xcpc-逆序对-1",
+              "xcpc-离散-1"
+            ]
           },
-          "optional": false,
-          "scope": "区间只用于选择综合新题，不保证单题涵盖列出的所有算法。",
-          "learningTitle": "工具再合流 · 动态统计、图与匹配",
-          "learningDescription": "把前缀信息的动态维护、图上的连接选择和字符串匹配放进混合题组。先辨认每道题的核心对象，再调用相应知识分支，检验是否形成了可按结构检索的工具箱。",
           "threadGateIds": [
-            "stage-07-gate-01",
-            "stage-07-gate-06",
-            "stage-07-gate-10"
+            "lp2-range-data-fenwick-inversions",
+            "lp2-range-data-segment-lazy-segment-merge"
+          ]
+        },
+        {
+          "id": "lp2-range-data-segment-lazy-segment-merge",
+          "index": 8,
+          "title": "线段树的合并与单点修改",
+          "kind": "learning",
+          "sectionId": "lp2-sec-range-data-segment-lazy",
+          "sectionTitle": "C · 区间合并与更新",
+          "routeId": null,
+          "scope": "core",
+          "optional": false,
+          "topicIds": [
+            "xcpc-基础线段树-1"
+          ],
+          "luoguDifficulty": [],
+          "description": "定义区间信息、合并与单位元，完成建树、单点更新和区间查询。",
+          "goals": [
+            "定义节点信息、单位元与合并顺序",
+            "实现建树、单点修改和区间查询",
+            "用随机查询检查跨子区间的合并"
+          ],
+          "learningTitle": "线段树的合并与单点修改",
+          "learningDescription": "定义区间信息、合并与单位元，完成建树、单点更新和区间查询。",
+          "prerequisites": {
+            "gateIds": [
+              "lp2-range-data-fenwick-practice-assessment"
+            ],
+            "topicIds": [
+              "xcpc-树状数组基础-1",
+              "xcpc-逆序对-1",
+              "xcpc-离散-1"
+            ]
+          },
+          "threadGateIds": [
+            "lp2-range-data-fenwick-practice-assessment",
+            "lp2-range-data-segment-lazy-lazy-add"
+          ]
+        },
+        {
+          "id": "lp2-range-data-segment-lazy-lazy-add",
+          "index": 9,
+          "title": "区间加与区间和懒标记",
+          "kind": "learning",
+          "sectionId": "lp2-sec-range-data-segment-lazy",
+          "sectionTitle": "C · 区间合并与更新",
+          "routeId": null,
+          "scope": "core",
+          "optional": false,
+          "topicIds": [
+            "xcpc-带标记的线段树-1"
+          ],
+          "luoguDifficulty": [],
+          "description": "节点长度决定加法对和的影响；完整实现标记生效、下传、合并与边界查询。",
+          "goals": [
+            "正确计算更新对区间和的影响",
+            "维护标记生效、下传与向上合并",
+            "用随机区间加和查询与逐项暴力对拍"
+          ],
+          "learningTitle": "区间加与区间和懒标记",
+          "learningDescription": "节点长度决定加法对和的影响；完整实现标记生效、下传、合并与边界查询。",
+          "prerequisites": {
+            "gateIds": [
+              "lp2-range-data-segment-lazy-segment-merge"
+            ],
+            "topicIds": [
+              "xcpc-基础线段树-1"
+            ]
+          },
+          "threadGateIds": [
+            "lp2-range-data-segment-lazy-segment-merge",
+            "lp2-range-data-segment-lazy-lazy-compose"
+          ]
+        },
+        {
+          "id": "lp2-range-data-segment-lazy-lazy-compose",
+          "index": 10,
+          "title": "赋值与加法的标记复合",
+          "kind": "learning",
+          "sectionId": "lp2-sec-range-data-segment-lazy",
+          "sectionTitle": "C · 区间合并与更新",
+          "routeId": null,
+          "scope": "recommended",
+          "optional": true,
+          "topicIds": [
+            "xcpc-带标记的线段树-1"
+          ],
+          "luoguDifficulty": [],
+          "description": "推荐深入：用非交换操作验证先后顺序，区分无赋值标记与赋值为零。",
+          "goals": [
+            "写出赋值与加法两种执行顺序",
+            "区分没有赋值标记与赋值为零",
+            "用交错操作核对标记复合结果"
+          ],
+          "learningTitle": "赋值与加法的标记复合",
+          "learningDescription": "推荐深入：用非交换操作验证先后顺序，区分无赋值标记与赋值为零。",
+          "prerequisites": {
+            "gateIds": [
+              "lp2-range-data-segment-lazy-lazy-add"
+            ],
+            "topicIds": [
+              "xcpc-带标记的线段树-1"
+            ]
+          },
+          "threadGateIds": [
+            "lp2-range-data-segment-lazy-lazy-add",
+            "lp2-range-data-segment-lazy-practice-assessment"
+          ]
+        },
+        {
+          "id": "lp2-range-data-segment-lazy-practice-assessment",
+          "index": 11,
+          "title": "混练验收：区间合并与更新",
+          "kind": "challenge",
+          "sectionId": "lp2-sec-range-data-segment-lazy",
+          "sectionTitle": "C · 区间合并与更新",
+          "routeId": null,
+          "scope": "core",
+          "optional": false,
+          "topicIds": [
+            "xcpc-基础线段树-1",
+            "xcpc-带标记的线段树-1"
+          ],
+          "luoguDifficulty": [],
+          "description": "围绕区间合并与更新完成变化任务与独立应用，核对方法选择、实现和边界。",
+          "goals": [
+            "核心完整实现区间加 / 区间和懒标记，解释长度与下传；推荐复合标记段另以赋值和加法的非交换案例验收。",
+            "独立完成区间合并与更新的变化任务，说明选择方法的理由",
+            "检查边界或用小规模对照验证，并记录本段的一次错误与修正"
+          ],
+          "learningTitle": "区间合并与更新 · 独立验收",
+          "learningDescription": "组合运用线段树的合并与单点修改、区间加与区间和懒标记，先比较不同方法，再独立完成无标签任务并记录验证结果。",
+          "prerequisites": {
+            "gateIds": [
+              "lp2-range-data-segment-lazy-segment-merge",
+              "lp2-range-data-segment-lazy-lazy-add"
+            ],
+            "topicIds": [
+              "xcpc-基础线段树-1",
+              "xcpc-带标记的线段树-1"
+            ]
+          },
+          "threadGateIds": [
+            "lp2-range-data-segment-lazy-lazy-compose",
+            "lp2-range-data-offline-selection-offline-events"
+          ]
+        },
+        {
+          "id": "lp2-range-data-offline-selection-offline-events",
+          "index": 12,
+          "title": "离线查询与扫描事件",
+          "kind": "learning",
+          "sectionId": "lp2-sec-range-data-offline-selection",
+          "sectionTitle": "D · 顺序与结构选择",
+          "routeId": null,
+          "scope": "core",
+          "optional": false,
+          "topicIds": [
+            "xcpc-扫描线-1",
+            "xcpc-树状数组基础-1"
+          ],
+          "luoguDifficulty": [],
+          "description": "先判断是否允许改变查询顺序，再按事件排序维护答案；处理等值时的先后顺序。",
+          "goals": [
+            "先说明查询是否允许改变处理顺序",
+            "正确安排相同坐标的事件先后",
+            "恢复每个原始查询的答案位置"
+          ],
+          "learningTitle": "离线查询与扫描事件",
+          "learningDescription": "先判断是否允许改变查询顺序，再按事件排序维护答案；处理等值时的先后顺序。",
+          "prerequisites": {
+            "gateIds": [
+              "lp2-range-data-segment-lazy-practice-assessment"
+            ],
+            "topicIds": [
+              "xcpc-基础线段树-1",
+              "xcpc-带标记的线段树-1"
+            ]
+          },
+          "threadGateIds": [
+            "lp2-range-data-segment-lazy-practice-assessment",
+            "lp2-range-data-offline-selection-structure-choice"
+          ]
+        },
+        {
+          "id": "lp2-range-data-offline-selection-structure-choice",
+          "index": 13,
+          "title": "操作需求到数据结构选型",
+          "kind": "learning",
+          "sectionId": "lp2-sec-range-data-offline-selection",
+          "sectionTitle": "D · 顺序与结构选择",
+          "routeId": null,
+          "scope": "core",
+          "optional": false,
+          "topicIds": [
+            "xcpc-树状数组基础-1",
+            "xcpc-基础线段树-1"
+          ],
+          "luoguDifficulty": [],
+          "description": "比较前缀、BIT、ST表、线段树的运算限制、时间与内存；用同一操作序列暴力验证。",
+          "goals": [
+            "根据更新查询组合选择维护结构",
+            "解释运算性质对结构的限制",
+            "比较候选结构的时间、空间与实现成本"
+          ],
+          "learningTitle": "操作需求到数据结构选型",
+          "learningDescription": "比较前缀、BIT、ST表、线段树的运算限制、时间与内存；用同一操作序列暴力验证。",
+          "prerequisites": {
+            "gateIds": [
+              "lp2-range-data-offline-selection-offline-events"
+            ],
+            "topicIds": [
+              "xcpc-扫描线-1",
+              "xcpc-树状数组基础-1"
+            ]
+          },
+          "threadGateIds": [
+            "lp2-range-data-offline-selection-offline-events",
+            "lp2-range-data-offline-selection-practice-assessment"
+          ]
+        },
+        {
+          "id": "lp2-range-data-offline-selection-practice-assessment",
+          "index": 14,
+          "title": "混练验收：顺序与结构选择",
+          "kind": "challenge",
+          "sectionId": "lp2-sec-range-data-offline-selection",
+          "sectionTitle": "D · 顺序与结构选择",
+          "routeId": null,
+          "scope": "core",
+          "optional": false,
+          "topicIds": [
+            "xcpc-扫描线-1",
+            "xcpc-树状数组基础-1",
+            "xcpc-基础线段树-1"
+          ],
+          "luoguDifficulty": [],
+          "description": "围绕顺序与结构选择完成变化任务与独立应用，核对方法选择、实现和边界。",
+          "goals": [
+            "完成静态查询、单点动态查询和区间更新；解释结构为何支持这些操作。",
+            "独立实现树状数组及带懒标记线段树，用随机操作序列与暴力比较。",
+            "核心处理空区间、端点、负值、单位元和下传；非交换合并与赋值 / 加法复合为推荐深入，分别验收。"
+          ],
+          "learningTitle": "顺序与结构选择 · 独立验收",
+          "learningDescription": "组合运用离线查询与扫描事件、操作需求到数据结构选型，先比较不同方法，再独立完成无标签任务并记录验证结果。",
+          "prerequisites": {
+            "gateIds": [
+              "lp2-range-data-offline-selection-offline-events",
+              "lp2-range-data-offline-selection-structure-choice",
+              "lp2-range-data-static-monotone-practice-assessment",
+              "lp2-range-data-fenwick-practice-assessment",
+              "lp2-range-data-segment-lazy-practice-assessment"
+            ],
+            "topicIds": [
+              "xcpc-扫描线-1",
+              "xcpc-树状数组基础-1",
+              "xcpc-基础线段树-1",
+              "xcpc-单调栈-1",
+              "xcpc-单调队列-1",
+              "algorithm-content-feishu-part-6-7"
+            ]
+          },
+          "threadGateIds": [
+            "lp2-range-data-offline-selection-structure-choice"
           ]
         }
       ]
@@ -3481,478 +5469,615 @@
     {
       "id": "stage-08",
       "index": 8,
-      "title": "从基础模型走向多步组合",
-      "description": "完成多步状态或区间建模，能在基础工具间迁移。",
-      "goal": "完成多步状态或区间建模，能在基础工具间迁移。",
-      "cf": {
-        "min": 1400,
-        "max": 1500
-      },
-      "luoguDifficulty": [
-        "提高"
-      ],
-      "rationale": "本章按综合做题能力组织，不要求区间中的每道题都使用这些算法，也不要求学完所有专题才进入下一章。",
+      "title": "字符串：从匹配到结构统计",
+      "description": "能区分匹配、前缀集合、子串相等和回文问题，选择对应工具并解释核心状态。",
+      "goal": "能区分匹配、前缀集合、子串相等和回文问题，选择对应工具并解释核心状态。",
+      "rationale": "拆开 Trie 与 AC，增加 BFS 先修检查；常用字符串形成核心成果，多模式匹配另有阶段收尾。",
+      "entryText": "会 string、数组与基本取模 / 快速幂，理解队列和 BFS；不要求先学线段树或组合数。",
+      "completionMode": "core",
       "completionCriteria": [
-        "独立完成本章综合题组中的新题",
-        "覆盖至少两种已学方法；后续阶段回收前面基础工具",
-        "说明正确性、复杂度，并记录一次完整复盘"
+        "核心：完成单模式匹配、前缀集合、回文任务，能说明状态或不变量。",
+        "核心：比较确定性匹配与哈希方案，不能把双哈希说成绝对无碰撞。",
+        "多模式段：匹配包含关系、重复词、重叠出现计数均与暴力一致；独立记录该段完成状态。"
       ],
+      "scopeDescription": "AC 保留在本章同一主线内，单设“进阶段已完成”状态；完成核心不能显示已掌握 AC。后缀结构第 14 章继续深入。",
       "prerequisites": {
         "stageIds": [
-          "stage-07"
+          "stage-01",
+          "stage-03",
+          "stage-04"
         ]
       },
+      "luoguDifficulty": [],
+      "sections": [
+        {
+          "id": "lp2-sec-strings-single-pattern",
+          "title": "A · 单串结构与匹配",
+          "scope": "core",
+          "routeId": null,
+          "description": "字符串基础模型：前缀、后缀、子串、子序列；字符编码与下标；与序列算法的关系。\nKMP 与 Z 函数：前缀函数、失配跳转、周期与重复结构；Z 匹配区间。",
+          "completionCriteria": [
+            "分清子串 / 子序列；推导 KMP / Z 的线性维护信息。"
+          ],
+          "gateIds": [
+            "lp2-strings-single-pattern-prefix-kmp",
+            "lp2-strings-single-pattern-z-function",
+            "lp2-strings-single-pattern-practice-assessment"
+          ],
+          "prerequisites": {
+            "gateIds": [
+              "lp2-cpp-toolkit-data-organization-sequences"
+            ],
+            "topicIds": []
+          }
+        },
+        {
+          "id": "lp2-sec-strings-substring-palindrome",
+          "title": "B · 比较与回文",
+          "scope": "core",
+          "routeId": null,
+          "description": "字符串哈希：子串比较、拼接与二分；碰撞风险、随机化与双哈希；需要确定性时的替代思路。\nManacher 与回文：奇偶回文半径；回文区间与统计；和暴力中心扩展对照。",
+          "completionCriteria": [
+            "说明哈希概率性，正确处理 Manacher 奇偶半径和边界。"
+          ],
+          "gateIds": [
+            "lp2-strings-substring-palindrome-hash",
+            "lp2-strings-substring-palindrome-manacher",
+            "lp2-strings-substring-palindrome-practice-assessment"
+          ],
+          "prerequisites": {
+            "gateIds": [
+              "lp2-strings-single-pattern-practice-assessment",
+              "lp2-basic-optimization-powers-greedy-binary-power"
+            ],
+            "topicIds": []
+          }
+        },
+        {
+          "id": "lp2-sec-strings-prefix-set",
+          "title": "C · 前缀集合",
+          "scope": "core",
+          "routeId": null,
+          "description": "Trie：前缀集合与计数：节点、字符边、终止标记；单词计数、前缀查询、重复元素；节点规模与内存。AC 的先修在此单独验收。",
+          "completionCriteria": [
+            "独立实现 Trie，处理重复单词、计数和节点空间。"
+          ],
+          "gateIds": [
+            "lp2-strings-prefix-set-trie",
+            "lp2-strings-prefix-set-practice-assessment"
+          ],
+          "prerequisites": {
+            "gateIds": [
+              "lp2-strings-substring-palindrome-practice-assessment"
+            ],
+            "topicIds": []
+          }
+        },
+        {
+          "id": "lp2-sec-strings-multi-pattern",
+          "title": "D · 多模式匹配",
+          "scope": "recommended",
+          "routeId": null,
+          "description": "AC 自动机：多模式匹配进阶段：先通过 Trie 与 BFS 检查，再学 fail 指针、BFS 构建、多模式与重叠匹配计数、fail 树传播。按本段独立验收，不与 Trie 一次过关。",
+          "completionCriteria": [
+            "在 Trie 与 BFS 检查通过后进入 AC；解释 fail、计数传播和重叠匹配。"
+          ],
+          "gateIds": [
+            "lp2-strings-multi-pattern-ac-build",
+            "lp2-strings-multi-pattern-ac-count",
+            "lp2-strings-multi-pattern-practice-assessment"
+          ],
+          "prerequisites": {
+            "gateIds": [
+              "lp2-strings-prefix-set-trie",
+              "lp2-strings-single-pattern-prefix-kmp",
+              "lp2-search-shortest-actions-bfs-paths"
+            ],
+            "topicIds": []
+          }
+        },
+        {
+          "id": "lp2-sec-strings-string-selection",
+          "title": "E · 综合选型",
+          "scope": "core",
+          "routeId": null,
+          "description": "综合匹配与统计：多工具比较；区分复杂度、正确性保证和实现成本。",
+          "completionCriteria": [
+            "核心题组覆盖单模式、前缀集合、回文；AC 题组单独验收。"
+          ],
+          "gateIds": [
+            "lp2-strings-string-selection-string-tool-choice",
+            "lp2-strings-string-selection-practice-assessment"
+          ],
+          "prerequisites": {
+            "gateIds": [
+              "lp2-strings-prefix-set-practice-assessment"
+            ],
+            "topicIds": []
+          }
+        }
+      ],
       "gates": [
         {
-          "id": "stage-08-gate-01",
+          "id": "lp2-strings-single-pattern-prefix-kmp",
           "index": 1,
-          "title": "懒标记线段树：区间更新",
+          "title": "前缀结构与 KMP",
           "kind": "learning",
-          "topicIds": [
-            "xcpc-带标记的线段树-1"
-          ],
-          "cf": {
-            "min": 1400,
-            "max": 1500
-          },
-          "luoguDifficulty": [
-            "提高"
-          ],
-          "description": "学习懒标记线段树的适用条件、基本实现与复杂度，再用独立练习验证。",
-          "goals": [
-            "解释懒标记线段树的核心不变量与适用边界",
-            "独立写出实现并说明时间与空间复杂度",
-            "完成基础练习与一道迁移题，记录失败原因"
-          ],
-          "prerequisites": {
-            "gateIds": [],
-            "topicIds": []
-          },
+          "sectionId": "lp2-sec-strings-single-pattern",
+          "sectionTitle": "A · 单串结构与匹配",
+          "routeId": null,
+          "scope": "core",
           "optional": false,
-          "scope": "题目难度仅为本关迁移练习的选题窗口；初学专项题可低于此区间。",
-          "learningTitle": "线段树进阶 · 让区间修改暂缓执行",
-          "learningDescription": "基础线段树已能合并区间信息，连续修改整段时却不宜逐点更新。本关用懒标记保存尚未下传的操作，理清标记合成与信息更新，为树上区间维护打底。",
+          "topicIds": [
+            "algorithm-content-feishu-part-4-2"
+          ],
+          "luoguDifficulty": [],
+          "description": "分清子串和子序列，推导前缀函数、失配跳转、匹配与周期；解释线性均摊。",
+          "goals": [
+            "手工推导前缀函数与失配跳转",
+            "正确处理重叠出现的匹配",
+            "解释每个字符推进带来的线性总成本"
+          ],
+          "learningTitle": "前缀结构与 KMP",
+          "learningDescription": "分清子串和子序列，推导前缀函数、失配跳转、匹配与周期；解释线性均摊。",
+          "prerequisites": {
+            "gateIds": [
+              "lp2-cpp-toolkit-data-organization-sequences"
+            ],
+            "topicIds": [
+              "xcpc-vector-1",
+              "algorithm-string",
+              "xcpc-pair-1"
+            ]
+          },
           "threadGateIds": [
-            "stage-07-gate-02",
-            "stage-10-gate-01",
-            "stage-09-gate-06"
+            "lp2-strings-single-pattern-z-function"
           ]
         },
         {
-          "id": "stage-08-gate-02",
+          "id": "lp2-strings-single-pattern-z-function",
           "index": 2,
-          "title": "LCA：树上路径的交汇点",
+          "title": "Z 函数与匹配区间",
           "kind": "learning",
+          "sectionId": "lp2-sec-strings-single-pattern",
+          "sectionTitle": "A · 单串结构与匹配",
+          "routeId": null,
+          "scope": "core",
+          "optional": false,
           "topicIds": [
-            "algorithm-content-feishu-part-7-3-3"
+            "xcpc-扩展kmp-1"
           ],
-          "cf": {
-            "min": 1400,
-            "max": 1500
-          },
-          "luoguDifficulty": [
-            "提高"
-          ],
-          "description": "学习LCA的适用条件、基本实现与复杂度，再用独立练习验证。",
+          "luoguDifficulty": [],
+          "description": "维护最右匹配区间，比较前缀长度与KMP的状态含义。",
           "goals": [
-            "解释LCA的核心不变量与适用边界",
-            "独立写出实现并说明时间与空间复杂度",
-            "完成基础练习与一道迁移题，记录失败原因"
+            "定义每个Z值表示的前缀长度",
+            "维护最右匹配区间与复用边界",
+            "与逐位比较计算的Z数组核对"
           ],
+          "learningTitle": "Z 函数与匹配区间",
+          "learningDescription": "维护最右匹配区间，比较前缀长度与KMP的状态含义。",
           "prerequisites": {
             "gateIds": [
-              "stage-08-gate-01"
+              "lp2-strings-single-pattern-prefix-kmp"
             ],
-            "topicIds": []
+            "topicIds": [
+              "algorithm-content-feishu-part-4-2"
+            ]
           },
-          "optional": false,
-          "scope": "题目难度仅为本关迁移练习的选题窗口；初学专项题可低于此区间。",
-          "learningTitle": "初识 LCA · 找到两条树路的交点",
-          "learningDescription": "树的遍历让你看清父子关系，现在把视线转向任意两点之间的路径。通过最近公共祖先计算距离、拆解路径，后续的虚树和树链方法也会再次用到这张关系图。",
           "threadGateIds": [
-            "stage-06-gate-05",
-            "stage-09-gate-11",
-            "stage-12-gate-05"
+            "lp2-strings-single-pattern-prefix-kmp",
+            "lp2-strings-single-pattern-practice-assessment"
           ]
         },
         {
-          "id": "stage-08-gate-03",
+          "id": "lp2-strings-single-pattern-practice-assessment",
           "index": 3,
-          "title": "dfn：子树转区间",
-          "kind": "learning",
-          "topicIds": [
-            "xcpc-dfn-1",
-            "xcpc-树的遍历-1"
-          ],
-          "cf": {
-            "min": 1400,
-            "max": 1500
-          },
-          "luoguDifficulty": [
-            "提高"
-          ],
-          "description": "学习dfn、树的遍历的适用条件、基本实现与复杂度，再用独立练习验证。",
-          "goals": [
-            "解释dfn、树的遍历的核心不变量与适用边界",
-            "独立写出实现并说明时间与空间复杂度",
-            "完成基础练习与一道迁移题，记录失败原因"
-          ],
-          "prerequisites": {
-            "gateIds": [
-              "stage-08-gate-02"
-            ],
-            "topicIds": []
-          },
-          "optional": false,
-          "scope": "题目难度仅为本关迁移练习的选题窗口；初学专项题可低于此区间。",
-          "learningTitle": "初识 dfn · 把整棵子树排成一段",
-          "learningDescription": "沿用 DFS 的访问顺序，为节点记下进入时刻，你会发现同一子树恰好占据连续区间。这一步把树的形状接到前缀统计和区间结构上，让两条知识支线开始汇合。",
-          "threadGateIds": [
-            "stage-06-gate-05",
-            "stage-07-gate-01",
-            "stage-10-gate-01"
-          ]
-        },
-        {
-          "id": "stage-08-gate-04",
-          "index": 4,
-          "title": "混练：dfn、树状数组与子树统计",
-          "kind": "mixed",
-          "topicIds": [
-            "xcpc-dfn-1",
-            "xcpc-树状数组基础-1",
-            "xcpc-树的遍历-1"
-          ],
-          "cf": {
-            "min": 1400,
-            "max": 1500
-          },
-          "luoguDifficulty": [
-            "提高"
-          ],
-          "description": "混合使用dfn、基础树状数组、树的遍历；选题时隐藏专题标签，先独立辨型再实现。",
-          "goals": [
-            "在不看标签与题解的情况下提出完整思路",
-            "独立实现并通过所选平台的评测",
-            "复盘关键转化、错误解法与复杂度瓶颈"
-          ],
-          "prerequisites": {
-            "gateIds": [
-              "stage-08-gate-03"
-            ],
-            "topicIds": []
-          },
-          "optional": false,
-          "scope": "区间只用于选择综合新题，不保证单题涵盖列出的所有算法。",
-          "learningTitle": "树上混练 · 用前缀工具统计子树",
-          "learningDescription": "先用 dfn 将子树映射成区间，再判断树状数组能否维护所需信息。练习重点是解释这次转化为何成立，而不只是把树遍历和数据结构模板放在一起。",
-          "threadGateIds": [
-            "stage-08-gate-03",
-            "stage-07-gate-01",
-            "stage-07-gate-04"
-          ]
-        },
-        {
-          "id": "stage-08-gate-05",
-          "index": 5,
-          "title": "基础状压 DP：集合编码",
-          "kind": "learning",
-          "topicIds": [
-            "xcpc-普通型-1",
-            "xcpc-枚举子集-超集-1"
-          ],
-          "cf": {
-            "min": 1400,
-            "max": 1500
-          },
-          "luoguDifficulty": [
-            "提高"
-          ],
-          "description": "学习基础状压 DP、子集与超集枚举的适用条件、基本实现与复杂度，再用独立练习验证。",
-          "goals": [
-            "解释基础状压 DP、子集与超集枚举的核心不变量与适用边界",
-            "独立写出实现并说明时间与空间复杂度",
-            "完成基础练习与一道迁移题，记录失败原因"
-          ],
-          "prerequisites": {
-            "gateIds": [
-              "stage-08-gate-04"
-            ],
-            "topicIds": []
-          },
-          "optional": false,
-          "scope": "题目难度仅为本关迁移练习的选题窗口；初学专项题可低于此区间。",
-          "learningTitle": "状压 DP 入门 · 用二进制记住集合",
-          "learningDescription": "位运算已能表示选中与未选中，现在让一个掩码成为 DP 状态的一部分。区分枚举元素与枚举子集的代价，学会在集合规模较小时保存完整选择信息。",
-          "threadGateIds": [
-            "stage-04-gate-05",
-            "stage-05-gate-01",
-            "stage-14-gate-06"
-          ]
-        },
-        {
-          "id": "stage-08-gate-06",
-          "index": 6,
-          "title": "基础数位 DP：位置与限制",
-          "kind": "learning",
-          "topicIds": [
-            "xcpc-基础-4"
-          ],
-          "cf": {
-            "min": 1400,
-            "max": 1500
-          },
-          "luoguDifficulty": [
-            "提高"
-          ],
-          "description": "学习基础数位 DP的适用条件、基本实现与复杂度，再用独立练习验证。",
-          "goals": [
-            "解释基础数位 DP的核心不变量与适用边界",
-            "独立写出实现并说明时间与空间复杂度",
-            "完成基础练习与一道迁移题，记录失败原因"
-          ],
-          "prerequisites": {
-            "gateIds": [
-              "stage-08-gate-05"
-            ],
-            "topicIds": []
-          },
-          "optional": false,
-          "scope": "题目难度仅为本关迁移练习的选题窗口；初学专项题可低于此区间。",
-          "learningTitle": "数位 DP 入门 · 沿数字边界做选择",
-          "learningDescription": "从逐个枚举整数转为逐位构造数字，把位置、上界限制和必要统计量写进状态。沿用记忆化搜索的思路，分清哪些状态可复用，哪些仍受当前上界约束。",
-          "threadGateIds": [
-            "stage-05-gate-07",
-            "stage-05-gate-11",
-            "stage-09-gate-07"
-          ]
-        },
-        {
-          "id": "stage-08-gate-07",
-          "index": 7,
-          "title": "多重背包与二进制分组",
-          "kind": "learning",
-          "topicIds": [
-            "algorithm-content-xcpc-多重背包-1",
-            "xcpc-o-nm-log-l-1"
-          ],
-          "cf": {
-            "min": 1400,
-            "max": 1500
-          },
-          "luoguDifficulty": [
-            "提高"
-          ],
-          "description": "学习多重背包、二进制分组的适用条件、基本实现与复杂度，再用独立练习验证。",
-          "goals": [
-            "解释多重背包、二进制分组的核心不变量与适用边界",
-            "独立写出实现并说明时间与空间复杂度",
-            "完成基础练习与一道迁移题，记录失败原因"
-          ],
-          "prerequisites": {
-            "gateIds": [
-              "stage-08-gate-06"
-            ],
-            "topicIds": []
-          },
-          "optional": false,
-          "scope": "题目难度仅为本关迁移练习的选题窗口；初学专项题可低于此区间。",
-          "learningTitle": "背包进阶 · 把有限件数拆成选择",
-          "learningDescription": "01 背包每件只选一次，完全背包允许无限复用，多重背包则给出有限数量。用二进制分组把数量限制转成若干 01 物品，理解不同背包其实共享同一条状态主线。",
-          "threadGateIds": [
-            "stage-05-gate-05",
-            "stage-05-gate-06",
-            "stage-09-gate-05"
-          ]
-        },
-        {
-          "id": "stage-08-gate-08",
-          "index": 8,
-          "title": "混练：背包、状压 DP 与计数",
-          "kind": "mixed",
-          "topicIds": [
-            "xcpc-01背包-1",
-            "xcpc-普通型-1",
-            "xcpc-基础-7"
-          ],
-          "cf": {
-            "min": 1400,
-            "max": 1500
-          },
-          "luoguDifficulty": [
-            "提高"
-          ],
-          "description": "混合使用01背包、基础状压 DP、基础计数 DP；选题时隐藏专题标签，先独立辨型再实现。",
-          "goals": [
-            "在不看标签与题解的情况下提出完整思路",
-            "独立实现并通过所选平台的评测",
-            "复盘关键转化、错误解法与复杂度瓶颈"
-          ],
-          "prerequisites": {
-            "gateIds": [
-              "stage-08-gate-07"
-            ],
-            "topicIds": []
-          },
-          "optional": false,
-          "scope": "区间只用于选择综合新题，不保证单题涵盖列出的所有算法。",
-          "learningTitle": "状态混练 · 容量、集合与方案数",
-          "learningDescription": "面对选择题，先问必须记住的是容量、已选集合，还是某种计数约束。比较背包与状压 DP 的状态表达，再决定求最优值还是统计方案，避免按题面关键词机械套用。",
-          "threadGateIds": [
-            "stage-05-gate-05",
-            "stage-08-gate-05",
-            "stage-05-gate-11"
-          ]
-        },
-        {
-          "id": "stage-08-gate-09",
-          "index": 9,
-          "title": "Manacher：回文半径",
-          "kind": "learning",
-          "topicIds": [
-            "algorithm-content-feishu-part-4-3"
-          ],
-          "cf": {
-            "min": 1400,
-            "max": 1500
-          },
-          "luoguDifficulty": [
-            "提高"
-          ],
-          "description": "学习Manacher的适用条件、基本实现与复杂度，再用独立练习验证。",
-          "goals": [
-            "解释Manacher的核心不变量与适用边界",
-            "独立写出实现并说明时间与空间复杂度",
-            "完成基础练习与一道迁移题，记录失败原因"
-          ],
-          "prerequisites": {
-            "gateIds": [
-              "stage-08-gate-08"
-            ],
-            "topicIds": []
-          },
-          "optional": false,
-          "scope": "题目难度仅为本关迁移练习的选题窗口；初学专项题可低于此区间。",
-          "learningTitle": "初识 Manacher · 复用回文的对称性",
-          "learningDescription": "字符串匹配让你学会复用前缀信息，回文问题则提供了另一种可复用的对称结构。维护最右回文边界和半径，减少重复扩展，也为回文自动机支线建立直觉。",
-          "threadGateIds": [
-            "stage-07-gate-10",
-            "stage-07-gate-09",
-            "stage-13-gate-07"
-          ]
-        },
-        {
-          "id": "stage-08-gate-10",
-          "index": 10,
-          "title": "矩阵快速幂：递推加速",
-          "kind": "learning",
-          "topicIds": [
-            "xcpc-矩阵快速幂-1"
-          ],
-          "cf": {
-            "min": 1400,
-            "max": 1500
-          },
-          "luoguDifficulty": [
-            "提高"
-          ],
-          "description": "学习矩阵快速幂的适用条件、基本实现与复杂度，再用独立练习验证。",
-          "goals": [
-            "解释矩阵快速幂的核心不变量与适用边界",
-            "独立写出实现并说明时间与空间复杂度",
-            "完成基础练习与一道迁移题，记录失败原因"
-          ],
-          "prerequisites": {
-            "gateIds": [
-              "stage-08-gate-09"
-            ],
-            "topicIds": []
-          },
-          "optional": false,
-          "scope": "题目难度仅为本关迁移练习的选题窗口；初学专项题可低于此区间。",
-          "learningTitle": "快速幂进阶 · 让递推一次跨多步",
-          "learningDescription": "普通快速幂压缩了重复乘法，矩阵则能把一组线性递推写成统一变换。先核对状态与转移矩阵，再用快速幂跨越大量步骤，连接递推、DP 与线性代数。",
-          "threadGateIds": [
-            "stage-03-gate-07",
-            "stage-01-gate-10",
-            "stage-10-gate-09"
-          ]
-        },
-        {
-          "id": "stage-08-gate-11",
-          "index": 11,
-          "title": "基础概率 DP 与期望线性性",
-          "kind": "learning",
-          "topicIds": [
-            "xcpc-基础-5",
-            "xcpc-期望的线性性-1"
-          ],
-          "cf": {
-            "min": 1400,
-            "max": 1500
-          },
-          "luoguDifficulty": [
-            "提高"
-          ],
-          "description": "学习基础概率 DP、期望的线性性的适用条件、基本实现与复杂度，再用独立练习验证。",
-          "goals": [
-            "解释基础概率 DP、期望的线性性的核心不变量与适用边界",
-            "独立写出实现并说明时间与空间复杂度",
-            "完成基础练习与一道迁移题，记录失败原因"
-          ],
-          "prerequisites": {
-            "gateIds": [
-              "stage-08-gate-10"
-            ],
-            "topicIds": []
-          },
-          "optional": false,
-          "scope": "题目难度仅为本关迁移练习的选题窗口；初学专项题可低于此区间。",
-          "learningTitle": "概率 DP 入门 · 分清分布与期望",
-          "learningDescription": "计数 DP 关心有多少种结果，概率 DP 进一步关心每种结果出现的机会。先写清状态之间的概率转移，再尝试用期望线性性拆开贡献，判断是否可以省去复杂分布。",
-          "threadGateIds": [
-            "stage-05-gate-11",
-            "stage-06-gate-09",
-            "stage-09-gate-07"
-          ]
-        },
-        {
-          "id": "stage-08-gate-12",
-          "index": 12,
-          "title": "挑战：区间维护、状态设计与字符串综合",
+          "title": "混练验收：单串结构与匹配",
           "kind": "challenge",
+          "sectionId": "lp2-sec-strings-single-pattern",
+          "sectionTitle": "A · 单串结构与匹配",
+          "routeId": null,
+          "scope": "core",
+          "optional": false,
           "topicIds": [
-            "xcpc-带标记的线段树-1",
-            "xcpc-基础-4",
-            "algorithm-content-feishu-part-4-3"
+            "algorithm-content-feishu-part-4-2",
+            "xcpc-扩展kmp-1"
           ],
-          "cf": {
-            "min": 1400,
-            "max": 1500
-          },
-          "luoguDifficulty": [
-            "提高"
-          ],
-          "description": "本阶段以懒标记线段树、基础数位 DP、Manacher等已学方法为参考，混排新题，检验独立推导与组合能力。",
+          "luoguDifficulty": [],
+          "description": "围绕单串结构与匹配完成变化任务与独立应用，核对方法选择、实现和边界。",
           "goals": [
-            "在不看标签与题解的情况下提出完整思路",
-            "独立实现并通过所选平台的评测",
-            "复盘关键转化、错误解法与复杂度瓶颈"
+            "分清子串 / 子序列；推导 KMP / Z 的线性维护信息。",
+            "独立完成单串结构与匹配的变化任务，说明选择方法的理由",
+            "检查边界或用小规模对照验证，并记录本段的一次错误与修正"
           ],
+          "learningTitle": "单串结构与匹配 · 独立验收",
+          "learningDescription": "组合运用前缀结构与 KMP、Z 函数与匹配区间，先比较不同方法，再独立完成无标签任务并记录验证结果。",
           "prerequisites": {
             "gateIds": [
-              "stage-08-gate-11"
+              "lp2-strings-single-pattern-prefix-kmp",
+              "lp2-strings-single-pattern-z-function"
             ],
-            "topicIds": []
+            "topicIds": [
+              "algorithm-content-feishu-part-4-2",
+              "xcpc-扩展kmp-1"
+            ]
           },
-          "optional": false,
-          "scope": "区间只用于选择综合新题，不保证单题涵盖列出的所有算法。",
-          "learningTitle": "组合挑战 · 识别结构再设计状态",
-          "learningDescription": "本轮综合题组混排区间修改、受限数字计数与回文问题。独立判断需要维护一段信息、记录构造状态，还是利用字符串对称性，检查自己能否从题意走到正确的知识分支。",
           "threadGateIds": [
-            "stage-08-gate-01",
-            "stage-08-gate-06",
-            "stage-08-gate-09"
+            "lp2-strings-single-pattern-z-function",
+            "lp2-strings-substring-palindrome-hash"
+          ]
+        },
+        {
+          "id": "lp2-strings-substring-palindrome-hash",
+          "index": 4,
+          "title": "子串哈希与碰撞边界",
+          "kind": "learning",
+          "sectionId": "lp2-sec-strings-substring-palindrome",
+          "sectionTitle": "B · 比较与回文",
+          "routeId": null,
+          "scope": "core",
+          "optional": false,
+          "topicIds": [
+            "algorithm-content-feishu-part-4-1"
+          ],
+          "luoguDifficulty": [],
+          "description": "使用模运算与快速幂维护前缀哈希，比较子串；解释随机化与双哈希仍非绝对确定。",
+          "goals": [
+            "正确提取并比较等长子串哈希",
+            "说明碰撞概率与确定性匹配的差别",
+            "覆盖取模归一、拼接和幂次下标"
+          ],
+          "learningTitle": "子串哈希与碰撞边界",
+          "learningDescription": "使用模运算与快速幂维护前缀哈希，比较子串；解释随机化与双哈希仍非绝对确定。",
+          "prerequisites": {
+            "gateIds": [
+              "lp2-strings-single-pattern-practice-assessment",
+              "lp2-basic-optimization-powers-greedy-binary-power"
+            ],
+            "topicIds": [
+              "algorithm-content-feishu-part-4-2",
+              "xcpc-扩展kmp-1",
+              "xcpc-快速幂-1",
+              "algorithm-content-feishu-part-5-1"
+            ]
+          },
+          "threadGateIds": [
+            "lp2-strings-single-pattern-practice-assessment",
+            "lp2-strings-substring-palindrome-manacher"
+          ]
+        },
+        {
+          "id": "lp2-strings-substring-palindrome-manacher",
+          "index": 5,
+          "title": "Manacher 与奇偶回文",
+          "kind": "learning",
+          "sectionId": "lp2-sec-strings-substring-palindrome",
+          "sectionTitle": "B · 比较与回文",
+          "routeId": null,
+          "scope": "core",
+          "optional": false,
+          "topicIds": [
+            "algorithm-content-feishu-part-4-3"
+          ],
+          "luoguDifficulty": [],
+          "description": "从中心扩展推导回文半径复用，统一奇偶边界并与暴力验证。",
+          "goals": [
+            "区分奇回文和偶回文的半径含义",
+            "解释镜像复用与右边界扩展",
+            "与逐中心暴力核对全部半径"
+          ],
+          "learningTitle": "Manacher 与奇偶回文",
+          "learningDescription": "从中心扩展推导回文半径复用，统一奇偶边界并与暴力验证。",
+          "prerequisites": {
+            "gateIds": [
+              "lp2-strings-substring-palindrome-hash"
+            ],
+            "topicIds": [
+              "algorithm-content-feishu-part-4-1"
+            ]
+          },
+          "threadGateIds": [
+            "lp2-strings-substring-palindrome-hash",
+            "lp2-strings-substring-palindrome-practice-assessment"
+          ]
+        },
+        {
+          "id": "lp2-strings-substring-palindrome-practice-assessment",
+          "index": 6,
+          "title": "混练验收：比较与回文",
+          "kind": "challenge",
+          "sectionId": "lp2-sec-strings-substring-palindrome",
+          "sectionTitle": "B · 比较与回文",
+          "routeId": null,
+          "scope": "core",
+          "optional": false,
+          "topicIds": [
+            "algorithm-content-feishu-part-4-1",
+            "algorithm-content-feishu-part-4-3"
+          ],
+          "luoguDifficulty": [],
+          "description": "围绕比较与回文完成变化任务与独立应用，核对方法选择、实现和边界。",
+          "goals": [
+            "说明哈希概率性，正确处理 Manacher 奇偶半径和边界。",
+            "独立完成比较与回文的变化任务，说明选择方法的理由",
+            "检查边界或用小规模对照验证，并记录本段的一次错误与修正"
+          ],
+          "learningTitle": "比较与回文 · 独立验收",
+          "learningDescription": "组合运用子串哈希与碰撞边界、Manacher 与奇偶回文，先比较不同方法，再独立完成无标签任务并记录验证结果。",
+          "prerequisites": {
+            "gateIds": [
+              "lp2-strings-substring-palindrome-hash",
+              "lp2-strings-substring-palindrome-manacher"
+            ],
+            "topicIds": [
+              "algorithm-content-feishu-part-4-1",
+              "algorithm-content-feishu-part-4-3"
+            ]
+          },
+          "threadGateIds": [
+            "lp2-strings-substring-palindrome-manacher",
+            "lp2-strings-prefix-set-trie"
+          ]
+        },
+        {
+          "id": "lp2-strings-prefix-set-trie",
+          "index": 7,
+          "title": "Trie 与前缀计数",
+          "kind": "learning",
+          "sectionId": "lp2-sec-strings-prefix-set",
+          "sectionTitle": "C · 前缀集合",
+          "routeId": null,
+          "scope": "core",
+          "optional": false,
+          "topicIds": [
+            "algorithm-content-feishu-part-4-4"
+          ],
+          "luoguDifficulty": [],
+          "description": "节点边、终止标记、重复单词和前缀计数；估算字符集和节点空间。",
+          "goals": [
+            "独立维护字符边与终止计数",
+            "区分完整单词次数和前缀次数",
+            "估算节点数量并覆盖重复插入"
+          ],
+          "learningTitle": "Trie 与前缀计数",
+          "learningDescription": "节点边、终止标记、重复单词和前缀计数；估算字符集和节点空间。",
+          "prerequisites": {
+            "gateIds": [
+              "lp2-strings-substring-palindrome-practice-assessment"
+            ],
+            "topicIds": [
+              "algorithm-content-feishu-part-4-1",
+              "algorithm-content-feishu-part-4-3"
+            ]
+          },
+          "threadGateIds": [
+            "lp2-strings-substring-palindrome-practice-assessment",
+            "lp2-strings-prefix-set-practice-assessment"
+          ]
+        },
+        {
+          "id": "lp2-strings-prefix-set-practice-assessment",
+          "index": 8,
+          "title": "混练验收：前缀集合",
+          "kind": "challenge",
+          "sectionId": "lp2-sec-strings-prefix-set",
+          "sectionTitle": "C · 前缀集合",
+          "routeId": null,
+          "scope": "core",
+          "optional": false,
+          "topicIds": [
+            "algorithm-content-feishu-part-4-4"
+          ],
+          "luoguDifficulty": [],
+          "description": "围绕前缀集合完成变化任务与独立应用，核对方法选择、实现和边界。",
+          "goals": [
+            "独立实现 Trie，处理重复单词、计数和节点空间。",
+            "独立完成前缀集合的变化任务，说明选择方法的理由",
+            "检查边界或用小规模对照验证，并记录本段的一次错误与修正"
+          ],
+          "learningTitle": "前缀集合 · 独立验收",
+          "learningDescription": "组合运用Trie 与前缀计数，先比较不同方法，再独立完成无标签任务并记录验证结果。",
+          "prerequisites": {
+            "gateIds": [
+              "lp2-strings-prefix-set-trie"
+            ],
+            "topicIds": [
+              "algorithm-content-feishu-part-4-4"
+            ]
+          },
+          "threadGateIds": [
+            "lp2-strings-prefix-set-trie",
+            "lp2-strings-multi-pattern-ac-build"
+          ]
+        },
+        {
+          "id": "lp2-strings-multi-pattern-ac-build",
+          "index": 9,
+          "title": "Trie、BFS 与 fail 构建",
+          "kind": "learning",
+          "sectionId": "lp2-sec-strings-multi-pattern",
+          "sectionTitle": "D · 多模式匹配",
+          "routeId": null,
+          "scope": "recommended",
+          "optional": true,
+          "topicIds": [
+            "algorithm-content-feishu-part-4-5"
+          ],
+          "luoguDifficulty": [],
+          "description": "先检查Trie、BFS与失配跳转，再构造fail和转移，明确缺失边处理。",
+          "goals": [
+            "在Trie上按BFS顺序求fail",
+            "说明失配后状态仍代表什么后缀",
+            "核对缺失边和根节点转移"
+          ],
+          "learningTitle": "Trie、BFS 与 fail 构建",
+          "learningDescription": "先检查Trie、BFS与失配跳转，再构造fail和转移，明确缺失边处理。",
+          "prerequisites": {
+            "gateIds": [
+              "lp2-strings-prefix-set-trie",
+              "lp2-strings-single-pattern-prefix-kmp",
+              "lp2-search-shortest-actions-bfs-paths"
+            ],
+            "topicIds": [
+              "algorithm-content-feishu-part-4-4",
+              "algorithm-content-feishu-part-4-2",
+              "algorithm-content-feishu-part-2-2"
+            ]
+          },
+          "threadGateIds": [
+            "lp2-strings-prefix-set-practice-assessment",
+            "lp2-strings-multi-pattern-ac-count"
+          ]
+        },
+        {
+          "id": "lp2-strings-multi-pattern-ac-count",
+          "index": 10,
+          "title": "多模式、重叠与计数传播",
+          "kind": "learning",
+          "sectionId": "lp2-sec-strings-multi-pattern",
+          "sectionTitle": "D · 多模式匹配",
+          "routeId": null,
+          "scope": "recommended",
+          "optional": true,
+          "topicIds": [
+            "algorithm-content-feishu-part-4-5"
+          ],
+          "luoguDifficulty": [],
+          "description": "处理包含关系、重复模式和重叠出现，按fail顺序汇总计数；动态模式与自动机DP另作拓展。",
+          "goals": [
+            "处理模式包含与重叠出现",
+            "正确传播fail方向的出现次数",
+            "与逐模式暴力比较重复词的答案"
+          ],
+          "learningTitle": "多模式、重叠与计数传播",
+          "learningDescription": "处理包含关系、重复模式和重叠出现，按fail顺序汇总计数；动态模式与自动机DP另作拓展。",
+          "prerequisites": {
+            "gateIds": [
+              "lp2-strings-multi-pattern-ac-build"
+            ],
+            "topicIds": [
+              "algorithm-content-feishu-part-4-5"
+            ]
+          },
+          "threadGateIds": [
+            "lp2-strings-multi-pattern-ac-build",
+            "lp2-strings-multi-pattern-practice-assessment"
+          ]
+        },
+        {
+          "id": "lp2-strings-multi-pattern-practice-assessment",
+          "index": 11,
+          "title": "混练验收：多模式匹配",
+          "kind": "challenge",
+          "sectionId": "lp2-sec-strings-multi-pattern",
+          "sectionTitle": "D · 多模式匹配",
+          "routeId": null,
+          "scope": "recommended",
+          "optional": true,
+          "topicIds": [
+            "algorithm-content-feishu-part-4-5"
+          ],
+          "luoguDifficulty": [],
+          "description": "围绕多模式匹配完成变化任务与独立应用，核对方法选择、实现和边界。",
+          "goals": [
+            "在 Trie 与 BFS 检查通过后进入 AC；解释 fail、计数传播和重叠匹配。",
+            "独立完成多模式匹配的变化任务，说明选择方法的理由",
+            "检查边界或用小规模对照验证，并记录本段的一次错误与修正"
+          ],
+          "learningTitle": "多模式匹配 · 独立验收",
+          "learningDescription": "组合运用Trie、BFS 与 fail 构建、多模式、重叠与计数传播，先比较不同方法，再独立完成无标签任务并记录验证结果。",
+          "prerequisites": {
+            "gateIds": [
+              "lp2-strings-multi-pattern-ac-build",
+              "lp2-strings-multi-pattern-ac-count"
+            ],
+            "topicIds": [
+              "algorithm-content-feishu-part-4-5"
+            ]
+          },
+          "threadGateIds": [
+            "lp2-strings-multi-pattern-ac-count",
+            "lp2-strings-string-selection-string-tool-choice"
+          ]
+        },
+        {
+          "id": "lp2-strings-string-selection-string-tool-choice",
+          "index": 12,
+          "title": "匹配、回文与比较选型",
+          "kind": "learning",
+          "sectionId": "lp2-sec-strings-string-selection",
+          "sectionTitle": "E · 综合选型",
+          "routeId": null,
+          "scope": "core",
+          "optional": false,
+          "topicIds": [
+            "algorithm-content-feishu-part-4-2",
+            "algorithm-content-feishu-part-4-3",
+            "algorithm-content-feishu-part-4-4"
+          ],
+          "luoguDifficulty": [],
+          "description": "核心综合只使用单模式、回文、前缀集合与子串比较；AC进阶段的完成状态独立保留。",
+          "goals": [
+            "根据匹配、前缀、回文或比较需求选方法",
+            "区分确定性保证和哈希概率保证",
+            "完整解决不提示算法的字符串任务"
+          ],
+          "learningTitle": "匹配、回文与比较选型",
+          "learningDescription": "核心综合只使用单模式、回文、前缀集合与子串比较；AC进阶段的完成状态独立保留。",
+          "prerequisites": {
+            "gateIds": [
+              "lp2-strings-prefix-set-practice-assessment"
+            ],
+            "topicIds": [
+              "algorithm-content-feishu-part-4-4"
+            ]
+          },
+          "threadGateIds": [
+            "lp2-strings-multi-pattern-practice-assessment",
+            "lp2-strings-string-selection-practice-assessment"
+          ]
+        },
+        {
+          "id": "lp2-strings-string-selection-practice-assessment",
+          "index": 13,
+          "title": "混练验收：综合选型",
+          "kind": "challenge",
+          "sectionId": "lp2-sec-strings-string-selection",
+          "sectionTitle": "E · 综合选型",
+          "routeId": null,
+          "scope": "core",
+          "optional": false,
+          "topicIds": [
+            "algorithm-content-feishu-part-4-2",
+            "algorithm-content-feishu-part-4-3",
+            "algorithm-content-feishu-part-4-4"
+          ],
+          "luoguDifficulty": [],
+          "description": "围绕综合选型完成变化任务与独立应用，核对方法选择、实现和边界。",
+          "goals": [
+            "核心：完成单模式匹配、前缀集合、回文任务，能说明状态或不变量。",
+            "核心：比较确定性匹配与哈希方案，不能把双哈希说成绝对无碰撞。",
+            "多模式段：匹配包含关系、重复词、重叠出现计数均与暴力一致；独立记录该段完成状态。"
+          ],
+          "learningTitle": "综合选型 · 独立验收",
+          "learningDescription": "组合运用匹配、回文与比较选型，先比较不同方法，再独立完成无标签任务并记录验证结果。",
+          "prerequisites": {
+            "gateIds": [
+              "lp2-strings-string-selection-string-tool-choice",
+              "lp2-strings-single-pattern-practice-assessment",
+              "lp2-strings-substring-palindrome-practice-assessment",
+              "lp2-strings-prefix-set-practice-assessment"
+            ],
+            "topicIds": [
+              "algorithm-content-feishu-part-4-2",
+              "algorithm-content-feishu-part-4-3",
+              "algorithm-content-feishu-part-4-4",
+              "xcpc-扩展kmp-1",
+              "algorithm-content-feishu-part-4-1"
+            ]
+          },
+          "threadGateIds": [
+            "lp2-strings-string-selection-string-tool-choice"
           ]
         }
       ]
@@ -3960,493 +6085,652 @@
     {
       "id": "stage-09",
       "index": 9,
-      "title": "组合工具处理非直接应用",
-      "description": "处理非直接应用，独立说明关键不变量、复杂度和边界。",
-      "goal": "处理非直接应用，独立说明关键不变量、复杂度和边界。",
-      "cf": {
-        "min": 1500,
-        "max": 1700
-      },
-      "luoguDifficulty": [
-        "提高",
-        "提高+/省选−"
-      ],
-      "rationale": "本章按综合做题能力组织，不要求区间中的每道题都使用这些算法，也不要求学完所有专题才进入下一章。",
+      "title": "数论与组合：把整数和计数算清楚",
+      "description": "能判断模除法是否合法，处理基础同余与组合计数，并证明计数不重不漏。",
+      "goal": "能判断模除法是否合法，处理基础同余与组合计数，并证明计数不重不漏。",
+      "rationale": "从堆公式改成“存在条件—模型推导—验证”；将扩展 CRT 等新增范围显式分级。",
+      "entryText": "掌握 GCD、分解、筛法、基础模运算 / 快速幂；计数模型可复用第 5 章加法型计数 DP。",
+      "completionMode": "core",
       "completionCriteria": [
-        "独立完成本章综合题组中的新题",
-        "覆盖至少两种已学方法；后续阶段回收前面基础工具",
-        "说明正确性、复杂度，并记录一次完整复盘"
+        "核心：分别完成同余 / 逆元、组合计数、容斥任务，写明公式适用条件。",
+        "核心：模数为质数但 n 大于等于模数时，不能直接套阶乘逆元公式。",
+        "扩展：CRT 方程有解、无解、重复约束分别验证；Lucas 与常见特殊数列另列选学。"
       ],
+      "scopeDescription": "快速幂在第 3 章已学，本章只复用并推导模数结论。CRT / 扩展 CRT 本章成套扩展；Lucas、错排、卡特兰按模型选学。",
       "prerequisites": {
         "stageIds": [
-          "stage-08"
+          "stage-02",
+          "stage-03",
+          "stage-05"
         ]
       },
+      "luoguDifficulty": [],
+      "sections": [
+        {
+          "id": "lp2-sec-number-counting-congruence-inverses",
+          "title": "A · 同余与模除法",
+          "scope": "core",
+          "routeId": null,
+          "description": "同余与模运算的数学条件：复用第 3 章快速幂；同余性质、费马小定理与前提；先讲欧拉函数定义与计算，再给欧拉定理及其互素条件。辨认溢出、负余数和非法模除法。\n扩展欧几里得与逆元：裴蜀定理；线性同余；逆元存在性；质数与非质数模数的处理。",
+          "completionCriteria": [
+            "先判断逆元存在，再选扩欧或费马方法；区分等式与同余。"
+          ],
+          "gateIds": [
+            "lp2-number-counting-congruence-inverses-congruence-theorems",
+            "lp2-number-counting-congruence-inverses-extended-gcd",
+            "lp2-number-counting-congruence-inverses-practice-assessment"
+          ],
+          "prerequisites": {
+            "gateIds": [
+              "lp2-brute-models-construction-integers-gcd-factorization",
+              "lp2-basic-optimization-powers-greedy-binary-power"
+            ],
+            "topicIds": []
+          }
+        },
+        {
+          "id": "lp2-sec-number-counting-combinations",
+          "title": "B · 组合模型与预处理",
+          "scope": "core",
+          "routeId": null,
+          "description": "排列组合完整基础：核心：加法 / 乘法原理；排列、组合；杨辉三角；阶乘 / 逆阶乘预处理及模数限制；可重复选择。Lucas 定理本章选学。",
+          "completionCriteria": [
+            "从计数原理推出组合数；判断阶乘 / 逆阶乘法对模数和 n 的限制。"
+          ],
+          "gateIds": [
+            "lp2-number-counting-combinations-combination-model",
+            "lp2-number-counting-combinations-factorial-combinations",
+            "lp2-number-counting-combinations-lucas",
+            "lp2-number-counting-combinations-practice-assessment"
+          ],
+          "prerequisites": {
+            "gateIds": [
+              "lp2-number-counting-congruence-inverses-practice-assessment"
+            ],
+            "topicIds": []
+          }
+        },
+        {
+          "id": "lp2-sec-number-counting-inclusion-integers",
+          "title": "C · 去重与整数结构",
+          "scope": "core",
+          "routeId": null,
+          "description": "容斥与常见计数模型：核心：集合重叠与容斥推导、不重不漏、与基础计数 DP 比较。错排、卡特兰数等作为独立模型选学。\n乘法函数与整除结构入门：复用前段已学欧拉函数；约数个数与约数和、乘法函数的互素条件；筛法计算与整除结构，为第 13 章反演建立先修。",
+          "completionCriteria": [
+            "能从集合关系推导容斥，并用质因数分解计算基础乘法函数。"
+          ],
+          "gateIds": [
+            "lp2-number-counting-inclusion-integers-inclusion-exclusion",
+            "lp2-number-counting-inclusion-integers-multiplicative",
+            "lp2-number-counting-inclusion-integers-classical-counts",
+            "lp2-number-counting-inclusion-integers-practice-assessment"
+          ],
+          "prerequisites": {
+            "gateIds": [
+              "lp2-number-counting-combinations-practice-assessment"
+            ],
+            "topicIds": []
+          }
+        },
+        {
+          "id": "lp2-sec-number-counting-crt-extension",
+          "title": "D · 同余方程扩展",
+          "scope": "recommended",
+          "routeId": null,
+          "description": "中国剩余定理：推荐扩展：CRT 与扩展 CRT；互素与非互素方程合并；相容性、无解检测；合并模数与乘法溢出。",
+          "completionCriteria": [
+            "先学互素 CRT，再验收非互素扩展 CRT 的相容性、合并与溢出。"
+          ],
+          "gateIds": [
+            "lp2-number-counting-crt-extension-crt",
+            "lp2-number-counting-crt-extension-extended-crt",
+            "lp2-number-counting-crt-extension-practice-assessment"
+          ],
+          "prerequisites": {
+            "gateIds": [
+              "lp2-number-counting-congruence-inverses-extended-gcd"
+            ],
+            "topicIds": []
+          }
+        }
+      ],
       "gates": [
         {
-          "id": "stage-09-gate-01",
+          "id": "lp2-number-counting-congruence-inverses-congruence-theorems",
           "index": 1,
-          "title": "换根 DP：子树内外贡献",
+          "title": "同余、欧拉函数与幂定理",
           "kind": "learning",
-          "topicIds": [
-            "algorithm-树形-dp-换根"
-          ],
-          "cf": {
-            "min": 1500,
-            "max": 1700
-          },
-          "luoguDifficulty": [
-            "提高",
-            "提高+/省选−"
-          ],
-          "description": "学习换根 DP的适用条件、基本实现与复杂度，再用独立练习验证。",
-          "goals": [
-            "解释换根 DP的核心不变量与适用边界",
-            "独立写出实现并说明时间与空间复杂度",
-            "完成基础练习与一道迁移题，记录失败原因"
-          ],
-          "prerequisites": {
-            "gateIds": [],
-            "topicIds": []
-          },
+          "sectionId": "lp2-sec-number-counting-congruence-inverses",
+          "sectionTitle": "A · 同余与模除法",
+          "routeId": null,
+          "scope": "core",
           "optional": false,
-          "scope": "题目难度仅为本关迁移练习的选题窗口；初学专项题可低于此区间。",
-          "learningTitle": "树形 DP 进阶 · 把根移到每个节点",
-          "learningDescription": "基础树形 DP 从子树向上汇总，换根 DP 还要把子树之外的信息传回来。拆清两侧贡献后，沿一条边更新答案，让同一套局部关系服务所有根的选择。",
+          "topicIds": [
+            "algorithm-content-feishu-part-5-2-3",
+            "xcpc-费马定理-欧拉定理-1"
+          ],
+          "luoguDifficulty": [],
+          "description": "复用第3章模幂，先定义并计算欧拉函数，再说明费马、欧拉定理的质数或互素前提。",
+          "goals": [
+            "先计算欧拉函数再调用相关定理",
+            "逐项核验质数或互素前提",
+            "用直接模幂比较定理化简后的结果"
+          ],
+          "learningTitle": "同余、欧拉函数与幂定理",
+          "learningDescription": "复用第3章模幂，先定义并计算欧拉函数，再说明费马、欧拉定理的质数或互素前提。",
+          "prerequisites": {
+            "gateIds": [
+              "lp2-brute-models-construction-integers-gcd-factorization",
+              "lp2-basic-optimization-powers-greedy-binary-power"
+            ],
+            "topicIds": [
+              "algorithm-content-feishu-part-5-2-2",
+              "algorithm-lcm",
+              "xcpc-快速幂-1",
+              "algorithm-content-feishu-part-5-1"
+            ]
+          },
           "threadGateIds": [
-            "stage-07-gate-07",
-            "stage-06-gate-05",
-            "stage-09-gate-11"
+            "lp2-number-counting-congruence-inverses-extended-gcd"
           ]
         },
         {
-          "id": "stage-09-gate-02",
+          "id": "lp2-number-counting-congruence-inverses-extended-gcd",
           "index": 2,
-          "title": "Tarjan 强连通与缩点",
+          "title": "扩欧、线性同余与逆元",
           "kind": "learning",
+          "sectionId": "lp2-sec-number-counting-congruence-inverses",
+          "sectionTitle": "A · 同余与模除法",
+          "routeId": null,
+          "scope": "core",
+          "optional": false,
           "topicIds": [
-            "algorithm-强连通分量-tarjan-",
-            "algorithm-content-feishu-part-7-5"
+            "xcpc-扩展欧几里得-1",
+            "xcpc-逆元-1"
           ],
-          "cf": {
-            "min": 1500,
-            "max": 1700
-          },
-          "luoguDifficulty": [
-            "提高",
-            "提高+/省选−"
-          ],
-          "description": "学习Tarjan 强连通、拓扑排序的适用条件、基本实现与复杂度，再用独立练习验证。",
+          "luoguDifficulty": [],
+          "description": "从裴蜀等式求解线性同余，先判可解与逆元存在，再选择算法。",
           "goals": [
-            "解释Tarjan 强连通、拓扑排序的核心不变量与适用边界",
-            "独立写出实现并说明时间与空间复杂度",
-            "完成基础练习与一道迁移题，记录失败原因"
+            "求出可验证的裴蜀系数",
+            "判断线性同余和逆元是否存在",
+            "检验求出的代表解满足原同余"
           ],
+          "learningTitle": "扩欧、线性同余与逆元",
+          "learningDescription": "从裴蜀等式求解线性同余，先判可解与逆元存在，再选择算法。",
           "prerequisites": {
             "gateIds": [
-              "stage-09-gate-01"
+              "lp2-number-counting-congruence-inverses-congruence-theorems"
             ],
-            "topicIds": []
+            "topicIds": [
+              "algorithm-content-feishu-part-5-2-3",
+              "xcpc-费马定理-欧拉定理-1"
+            ]
           },
-          "optional": false,
-          "scope": "题目难度仅为本关迁移练习的选题窗口；初学专项题可低于此区间。",
-          "learningTitle": "图论进阶 · 用强连通压缩有向环",
-          "learningDescription": "拓扑排序要求有向无环，含环的依赖图却常常不能直接递推。Tarjan 将互相可达的点归为强连通分量，缩点后回到 DAG，让图结构与 DP 的关系重新清晰起来。",
           "threadGateIds": [
-            "stage-05-gate-09",
-            "stage-06-gate-01",
-            "stage-09-gate-04"
+            "lp2-number-counting-congruence-inverses-congruence-theorems",
+            "lp2-number-counting-congruence-inverses-practice-assessment"
           ]
         },
         {
-          "id": "stage-09-gate-03",
+          "id": "lp2-number-counting-congruence-inverses-practice-assessment",
           "index": 3,
-          "title": "带权并查集：差值关系",
-          "kind": "learning",
+          "title": "混练验收：同余与模除法",
+          "kind": "challenge",
+          "sectionId": "lp2-sec-number-counting-congruence-inverses",
+          "sectionTitle": "A · 同余与模除法",
+          "routeId": null,
+          "scope": "core",
+          "optional": false,
           "topicIds": [
-            "xcpc-带权并查集-1"
+            "algorithm-content-feishu-part-5-2-3",
+            "xcpc-费马定理-欧拉定理-1",
+            "xcpc-扩展欧几里得-1",
+            "xcpc-逆元-1"
           ],
-          "cf": {
-            "min": 1500,
-            "max": 1700
-          },
-          "luoguDifficulty": [
-            "提高",
-            "提高+/省选−"
-          ],
-          "description": "学习带权并查集的适用条件、基本实现与复杂度，再用独立练习验证。",
+          "luoguDifficulty": [],
+          "description": "围绕同余与模除法完成变化任务与独立应用，核对方法选择、实现和边界。",
           "goals": [
-            "解释带权并查集的核心不变量与适用边界",
-            "独立写出实现并说明时间与空间复杂度",
-            "完成基础练习与一道迁移题，记录失败原因"
+            "先判断逆元存在，再选扩欧或费马方法；区分等式与同余。",
+            "独立完成同余与模除法的变化任务，说明选择方法的理由",
+            "检查边界或用小规模对照验证，并记录本段的一次错误与修正"
           ],
+          "learningTitle": "同余与模除法 · 独立验收",
+          "learningDescription": "组合运用同余、欧拉函数与幂定理、扩欧、线性同余与逆元，先比较不同方法，再独立完成无标签任务并记录验证结果。",
           "prerequisites": {
             "gateIds": [
-              "stage-09-gate-02"
+              "lp2-number-counting-congruence-inverses-congruence-theorems",
+              "lp2-number-counting-congruence-inverses-extended-gcd"
             ],
-            "topicIds": []
+            "topicIds": [
+              "algorithm-content-feishu-part-5-2-3",
+              "xcpc-费马定理-欧拉定理-1",
+              "xcpc-扩展欧几里得-1",
+              "xcpc-逆元-1"
+            ]
           },
-          "optional": false,
-          "scope": "题目难度仅为本关迁移练习的选题窗口；初学专项题可低于此区间。",
-          "learningTitle": "并查集进阶 · 合并时保留差值",
-          "learningDescription": "基础并查集只回答是否同组，带权并查集还要维护元素相对代表点的关系。沿路径累积差值，合并时核对方向，你就能把连通判断扩展到关系约束与矛盾检测。",
           "threadGateIds": [
-            "stage-05-gate-10",
-            "stage-12-gate-03",
-            "stage-14-gate-08"
+            "lp2-number-counting-congruence-inverses-extended-gcd",
+            "lp2-number-counting-combinations-combination-model"
           ]
         },
         {
-          "id": "stage-09-gate-04",
+          "id": "lp2-number-counting-combinations-combination-model",
           "index": 4,
-          "title": "混练：缩点、DAG 与 DP",
-          "kind": "mixed",
+          "title": "排列组合与杨辉三角",
+          "kind": "learning",
+          "sectionId": "lp2-sec-number-counting-combinations",
+          "sectionTitle": "B · 组合模型与预处理",
+          "routeId": null,
+          "scope": "core",
+          "optional": false,
           "topicIds": [
-            "algorithm-强连通分量-tarjan-",
-            "algorithm-content-feishu-part-7-5",
-            "xcpc-图上dp-1"
+            "algorithm-content-feishu-part-5-6-1",
+            "xcpc-杨辉三角-1",
+            "xcpc-多重集组合数-1"
           ],
-          "cf": {
-            "min": 1500,
-            "max": 1700
-          },
-          "luoguDifficulty": [
-            "提高",
-            "提高+/省选−"
-          ],
-          "description": "混合使用Tarjan 强连通、拓扑排序、图上 DP；选题时隐藏专题标签，先独立辨型再实现。",
+          "luoguDifficulty": [],
+          "description": "从加乘原理建立排列、组合与可重复选择模型；用杨辉三角处理小规模。",
           "goals": [
-            "在不看标签与题解的情况下提出完整思路",
-            "独立实现并通过所选平台的评测",
-            "复盘关键转化、错误解法与复杂度瓶颈"
+            "明确计数对象是否有序及是否允许重复",
+            "从加乘原理推导组合表达",
+            "用枚举核对杨辉三角与小规模模型"
           ],
+          "learningTitle": "排列组合与杨辉三角",
+          "learningDescription": "从加乘原理建立排列、组合与可重复选择模型；用杨辉三角处理小规模。",
           "prerequisites": {
             "gateIds": [
-              "stage-09-gate-03"
+              "lp2-number-counting-congruence-inverses-practice-assessment"
             ],
-            "topicIds": []
+            "topicIds": [
+              "algorithm-content-feishu-part-5-2-3",
+              "xcpc-费马定理-欧拉定理-1",
+              "xcpc-扩展欧几里得-1",
+              "xcpc-逆元-1"
+            ]
           },
-          "optional": false,
-          "scope": "区间只用于选择综合新题，不保证单题涵盖列出的所有算法。",
-          "learningTitle": "图上混练 · 先缩环再沿依赖递推",
-          "learningDescription": "从强连通分量找出无法单独处理的环，再在缩点图上设计状态与处理顺序。练习时特别检查分量内的信息如何汇总，别让图压缩丢失原题真正需要的代价或限制。",
           "threadGateIds": [
-            "stage-09-gate-02",
-            "stage-06-gate-01",
-            "stage-05-gate-01"
+            "lp2-number-counting-congruence-inverses-practice-assessment",
+            "lp2-number-counting-combinations-factorial-combinations"
           ]
         },
         {
-          "id": "stage-09-gate-05",
+          "id": "lp2-number-counting-combinations-factorial-combinations",
           "index": 5,
-          "title": "单调队列优化：证明淘汰条件",
+          "title": "阶乘预处理与模数限制",
           "kind": "learning",
+          "sectionId": "lp2-sec-number-counting-combinations",
+          "sectionTitle": "B · 组合模型与预处理",
+          "routeId": null,
+          "scope": "core",
+          "optional": false,
           "topicIds": [
-            "algorithm-content-feishu-part-3-8"
+            "algorithm-content-feishu-part-5-6-1",
+            "xcpc-逆元-1"
           ],
-          "cf": {
-            "min": 1500,
-            "max": 1700
-          },
-          "luoguDifficulty": [
-            "提高",
-            "提高+/省选−"
-          ],
-          "description": "学习单调队列优化的适用条件、基本实现与复杂度，再用独立练习验证。",
+          "luoguDifficulty": [],
+          "description": "阶乘/逆阶乘公式必须检查模数与n范围，质数模数下n达到模数也不能照套。",
           "goals": [
-            "解释单调队列优化的核心不变量与适用边界",
-            "独立写出实现并说明时间与空间复杂度",
-            "完成基础练习与一道迁移题，记录失败原因"
+            "检查阶乘分母在模数下是否可逆",
+            "独立完成预处理与组合数查询",
+            "给出n达到质数模数时不能照套的反例"
           ],
+          "learningTitle": "阶乘预处理与模数限制",
+          "learningDescription": "阶乘/逆阶乘公式必须检查模数与n范围，质数模数下n达到模数也不能照套。",
           "prerequisites": {
             "gateIds": [
-              "stage-09-gate-04"
+              "lp2-number-counting-combinations-combination-model"
             ],
-            "topicIds": []
+            "topicIds": [
+              "algorithm-content-feishu-part-5-6-1",
+              "xcpc-杨辉三角-1",
+              "xcpc-多重集组合数-1"
+            ]
           },
-          "optional": false,
-          "scope": "题目难度仅为本关迁移练习的选题窗口；初学专项题可低于此区间。",
-          "learningTitle": "队列进阶 · 淘汰永远不会更优的决策",
-          "learningDescription": "滑动窗口最值中的单调队列，现在可以用来维护一段候选转移。先证明新决策何时使旧决策失效，再检查有效范围，才能把 DP 的枚举量安全地压下来。",
           "threadGateIds": [
-            "stage-07-gate-05",
-            "stage-05-gate-02",
-            "stage-08-gate-07"
+            "lp2-number-counting-combinations-combination-model",
+            "lp2-number-counting-combinations-lucas"
           ]
         },
         {
-          "id": "stage-09-gate-06",
+          "id": "lp2-number-counting-combinations-lucas",
           "index": 6,
-          "title": "数据结构优化 DP：维护候选转移",
+          "title": "Lucas 定理扩展",
           "kind": "learning",
+          "sectionId": "lp2-sec-number-counting-combinations",
+          "sectionTitle": "B · 组合模型与预处理",
+          "routeId": null,
+          "scope": "elective",
+          "optional": true,
           "topicIds": [
-            "algorithm-content-feishu-part-3-7",
-            "xcpc-基础线段树-1"
+            "algorithm-content-xcpc-lucas定理-1"
           ],
-          "cf": {
-            "min": 1500,
-            "max": 1700
-          },
-          "luoguDifficulty": [
-            "提高",
-            "提高+/省选−"
-          ],
-          "description": "学习数据结构优化、基础线段树的适用条件、基本实现与复杂度，再用独立练习验证。",
+          "luoguDifficulty": [],
+          "description": "单独选学进位分解与适用模数，不将Lucas视为所有组合模数问题的万能解。",
           "goals": [
-            "解释数据结构优化、基础线段树的核心不变量与适用边界",
-            "独立写出实现并说明时间与空间复杂度",
-            "完成基础练习与一道迁移题，记录失败原因"
+            "按质数进制拆分组合参数",
+            "说明定理的模数限制",
+            "与小规模整数计算核对结果"
           ],
+          "learningTitle": "Lucas 定理扩展",
+          "learningDescription": "单独选学进位分解与适用模数，不将Lucas视为所有组合模数问题的万能解。",
           "prerequisites": {
             "gateIds": [
-              "stage-09-gate-05"
+              "lp2-number-counting-combinations-factorial-combinations"
             ],
-            "topicIds": []
+            "topicIds": [
+              "algorithm-content-feishu-part-5-6-1",
+              "xcpc-逆元-1"
+            ]
           },
-          "optional": false,
-          "scope": "题目难度仅为本关迁移练习的选题窗口；初学专项题可低于此区间。",
-          "learningTitle": "DP 优化 · 把转移交给区间结构",
-          "learningDescription": "写出朴素 DP 后，观察每次转移是否只是在某个范围里求最值或合并信息。借助线段树等结构维护候选，让状态设计与查询模型对齐，再比较优化前后的复杂度。",
           "threadGateIds": [
-            "stage-05-gate-02",
-            "stage-07-gate-02",
-            "stage-11-gate-01"
+            "lp2-number-counting-combinations-factorial-combinations",
+            "lp2-number-counting-combinations-practice-assessment"
           ]
         },
         {
-          "id": "stage-09-gate-07",
+          "id": "lp2-number-counting-combinations-practice-assessment",
           "index": 7,
-          "title": "容斥原理与基础计数 DP",
+          "title": "混练验收：组合模型与预处理",
+          "kind": "challenge",
+          "sectionId": "lp2-sec-number-counting-combinations",
+          "sectionTitle": "B · 组合模型与预处理",
+          "routeId": null,
+          "scope": "core",
+          "optional": false,
+          "topicIds": [
+            "algorithm-content-feishu-part-5-6-1",
+            "xcpc-杨辉三角-1",
+            "xcpc-多重集组合数-1",
+            "xcpc-逆元-1"
+          ],
+          "luoguDifficulty": [],
+          "description": "围绕组合模型与预处理完成变化任务与独立应用，核对方法选择、实现和边界。",
+          "goals": [
+            "从计数原理推出组合数；判断阶乘 / 逆阶乘法对模数和 n 的限制。",
+            "独立完成组合模型与预处理的变化任务，说明选择方法的理由",
+            "检查边界或用小规模对照验证，并记录本段的一次错误与修正"
+          ],
+          "learningTitle": "组合模型与预处理 · 独立验收",
+          "learningDescription": "组合运用排列组合与杨辉三角、阶乘预处理与模数限制，先比较不同方法，再独立完成无标签任务并记录验证结果。",
+          "prerequisites": {
+            "gateIds": [
+              "lp2-number-counting-combinations-combination-model",
+              "lp2-number-counting-combinations-factorial-combinations"
+            ],
+            "topicIds": [
+              "algorithm-content-feishu-part-5-6-1",
+              "xcpc-杨辉三角-1",
+              "xcpc-多重集组合数-1",
+              "xcpc-逆元-1"
+            ]
+          },
+          "threadGateIds": [
+            "lp2-number-counting-combinations-lucas",
+            "lp2-number-counting-inclusion-integers-inclusion-exclusion"
+          ]
+        },
+        {
+          "id": "lp2-number-counting-inclusion-integers-inclusion-exclusion",
+          "index": 8,
+          "title": "容斥与不重不漏",
           "kind": "learning",
+          "sectionId": "lp2-sec-number-counting-inclusion-integers",
+          "sectionTitle": "C · 去重与整数结构",
+          "routeId": null,
+          "scope": "core",
+          "optional": false,
+          "topicIds": [
+            "algorithm-content-feishu-part-5-6-3"
+          ],
+          "luoguDifficulty": [],
+          "description": "从集合交叠推导符号与交集，和枚举、计数DP核对同一对象。",
+          "goals": [
+            "定义集合及其交集的计数意义",
+            "推导容斥符号而非背结论",
+            "对小规模对象逐一核对重计漏计"
+          ],
+          "learningTitle": "容斥与不重不漏",
+          "learningDescription": "从集合交叠推导符号与交集，和枚举、计数DP核对同一对象。",
+          "prerequisites": {
+            "gateIds": [
+              "lp2-number-counting-combinations-practice-assessment"
+            ],
+            "topicIds": [
+              "algorithm-content-feishu-part-5-6-1",
+              "xcpc-杨辉三角-1",
+              "xcpc-多重集组合数-1",
+              "xcpc-逆元-1"
+            ]
+          },
+          "threadGateIds": [
+            "lp2-number-counting-combinations-practice-assessment",
+            "lp2-number-counting-inclusion-integers-multiplicative"
+          ]
+        },
+        {
+          "id": "lp2-number-counting-inclusion-integers-multiplicative",
+          "index": 9,
+          "title": "约数统计与乘法函数",
+          "kind": "learning",
+          "sectionId": "lp2-sec-number-counting-inclusion-integers",
+          "sectionTitle": "C · 去重与整数结构",
+          "routeId": null,
+          "scope": "core",
+          "optional": false,
+          "topicIds": [
+            "algorithm-content-feishu-part-5-2-3",
+            "algorithm-content-feishu-part-5-2-2"
+          ],
+          "luoguDifficulty": [],
+          "description": "从质因数分解推导约数个数与和，说明乘法函数互素条件；线性筛批量计算作为选学扩展，不阻塞核心。",
+          "goals": [
+            "由质因子指数计算约数信息",
+            "明确乘法函数只在互素条件下相乘",
+            "用直接枚举核对函数取值"
+          ],
+          "learningTitle": "约数统计与乘法函数",
+          "learningDescription": "从质因数分解推导约数个数与和，说明乘法函数互素条件；线性筛批量计算作为选学扩展，不阻塞核心。",
+          "prerequisites": {
+            "gateIds": [
+              "lp2-number-counting-inclusion-integers-inclusion-exclusion"
+            ],
+            "topicIds": [
+              "algorithm-content-feishu-part-5-6-3"
+            ]
+          },
+          "threadGateIds": [
+            "lp2-number-counting-inclusion-integers-inclusion-exclusion",
+            "lp2-number-counting-inclusion-integers-classical-counts"
+          ]
+        },
+        {
+          "id": "lp2-number-counting-inclusion-integers-classical-counts",
+          "index": 10,
+          "title": "错排与卡特兰模型扩展",
+          "kind": "learning",
+          "sectionId": "lp2-sec-number-counting-inclusion-integers",
+          "sectionTitle": "C · 去重与整数结构",
+          "routeId": null,
+          "scope": "elective",
+          "optional": true,
+          "topicIds": [
+            "xcpc-错排问题-1",
+            "xcpc-卡特兰数-1"
+          ],
+          "luoguDifficulty": [],
+          "description": "用递推或双射独立建立模型，说明边界；不要求把公式背诵当作计数基础。",
+          "goals": [
+            "为所选错排或卡特兰任务建立计数对象",
+            "用递推、双射或边界条件推导公式",
+            "与小规模生成的对象逐项核对"
+          ],
+          "learningTitle": "错排与卡特兰模型扩展",
+          "learningDescription": "用递推或双射独立建立模型，说明边界；不要求把公式背诵当作计数基础。",
+          "prerequisites": {
+            "gateIds": [
+              "lp2-number-counting-inclusion-integers-multiplicative"
+            ],
+            "topicIds": [
+              "algorithm-content-feishu-part-5-2-3",
+              "algorithm-content-feishu-part-5-2-2"
+            ]
+          },
+          "threadGateIds": [
+            "lp2-number-counting-inclusion-integers-multiplicative",
+            "lp2-number-counting-inclusion-integers-practice-assessment"
+          ]
+        },
+        {
+          "id": "lp2-number-counting-inclusion-integers-practice-assessment",
+          "index": 11,
+          "title": "混练验收：去重与整数结构",
+          "kind": "challenge",
+          "sectionId": "lp2-sec-number-counting-inclusion-integers",
+          "sectionTitle": "C · 去重与整数结构",
+          "routeId": null,
+          "scope": "core",
+          "optional": false,
           "topicIds": [
             "algorithm-content-feishu-part-5-6-3",
-            "xcpc-基础-7"
+            "algorithm-content-feishu-part-5-2-3",
+            "algorithm-content-feishu-part-5-2-2"
           ],
-          "cf": {
-            "min": 1500,
-            "max": 1700
-          },
-          "luoguDifficulty": [
-            "提高",
-            "提高+/省选−"
-          ],
-          "description": "学习容斥原理、基础计数 DP的适用条件、基本实现与复杂度，再用独立练习验证。",
+          "luoguDifficulty": [],
+          "description": "围绕去重与整数结构完成变化任务与独立应用，核对方法选择、实现和边界。",
           "goals": [
-            "解释容斥原理、基础计数 DP的核心不变量与适用边界",
-            "独立写出实现并说明时间与空间复杂度",
-            "完成基础练习与一道迁移题，记录失败原因"
+            "核心：分别完成同余 / 逆元、组合计数、容斥任务，写明公式适用条件。",
+            "核心：模数为质数但 n 大于等于模数时，不能直接套阶乘逆元公式。",
+            "扩展：CRT 方程有解、无解、重复约束分别验证；Lucas 与常见特殊数列另列选学。"
           ],
+          "learningTitle": "去重与整数结构 · 独立验收",
+          "learningDescription": "组合运用容斥与不重不漏、约数统计与乘法函数，先比较不同方法，再独立完成无标签任务并记录验证结果。",
           "prerequisites": {
             "gateIds": [
-              "stage-09-gate-06"
+              "lp2-number-counting-inclusion-integers-inclusion-exclusion",
+              "lp2-number-counting-inclusion-integers-multiplicative",
+              "lp2-number-counting-congruence-inverses-practice-assessment",
+              "lp2-number-counting-combinations-practice-assessment"
             ],
-            "topicIds": []
+            "topicIds": [
+              "algorithm-content-feishu-part-5-6-3",
+              "algorithm-content-feishu-part-5-2-3",
+              "algorithm-content-feishu-part-5-2-2",
+              "xcpc-费马定理-欧拉定理-1",
+              "xcpc-扩展欧几里得-1",
+              "xcpc-逆元-1"
+            ]
           },
-          "optional": false,
-          "scope": "题目难度仅为本关迁移练习的选题窗口；初学专项题可低于此区间。",
-          "learningTitle": "计数进阶 · 在状态里排除重复",
-          "learningDescription": "基础计数 DP 逐步累加方案，容斥则从集合关系修正重复统计。先明确一个方案被计算了几次，再选择直接建状态或借助容斥变换，为更复杂的计数表达作准备。",
           "threadGateIds": [
-            "stage-05-gate-11",
-            "stage-06-gate-11",
-            "stage-13-gate-05"
+            "lp2-number-counting-inclusion-integers-classical-counts",
+            "lp2-number-counting-crt-extension-crt"
           ]
         },
         {
-          "id": "stage-09-gate-08",
-          "index": 8,
-          "title": "混练：DP、队列与区间维护",
-          "kind": "mixed",
-          "topicIds": [
-            "algorithm-content-feishu-part-3-1",
-            "xcpc-单调队列-1",
-            "xcpc-基础线段树-1"
-          ],
-          "cf": {
-            "min": 1500,
-            "max": 1700
-          },
-          "luoguDifficulty": [
-            "提高",
-            "提高+/省选−"
-          ],
-          "description": "混合使用线性 DP、单调队列、基础线段树；选题时隐藏专题标签，先独立辨型再实现。",
-          "goals": [
-            "在不看标签与题解的情况下提出完整思路",
-            "独立实现并通过所选平台的评测",
-            "复盘关键转化、错误解法与复杂度瓶颈"
-          ],
-          "prerequisites": {
-            "gateIds": [
-              "stage-09-gate-07"
-            ],
-            "topicIds": []
-          },
-          "optional": false,
-          "scope": "区间只用于选择综合新题，不保证单题涵盖列出的所有算法。",
-          "learningTitle": "转移混练 · 先写对，再选维护工具",
-          "learningDescription": "对同一段候选转移，尝试比较朴素枚举、单调队列与区间结构。把有效范围、信息合并和淘汰条件分别写清，练习根据性质选择工具，而不是记住一套固定组合。",
-          "threadGateIds": [
-            "stage-05-gate-02",
-            "stage-09-gate-05",
-            "stage-09-gate-06"
-          ]
-        },
-        {
-          "id": "stage-09-gate-09",
-          "index": 9,
-          "title": "二分图判定与匈牙利算法",
-          "kind": "learning",
-          "topicIds": [
-            "xcpc-二分图判定-1",
-            "xcpc-匈牙利算法-1"
-          ],
-          "cf": {
-            "min": 1500,
-            "max": 1700
-          },
-          "luoguDifficulty": [
-            "提高",
-            "提高+/省选−"
-          ],
-          "description": "学习二分图判定、匈牙利算法的适用条件、基本实现与复杂度，再用独立练习验证。",
-          "goals": [
-            "解释二分图判定、匈牙利算法的核心不变量与适用边界",
-            "独立写出实现并说明时间与空间复杂度",
-            "完成基础练习与一道迁移题，记录失败原因"
-          ],
-          "prerequisites": {
-            "gateIds": [
-              "stage-09-gate-08"
-            ],
-            "topicIds": []
-          },
-          "optional": false,
-          "scope": "题目难度仅为本关迁移练习的选题窗口；初学专项题可低于此区间。",
-          "learningTitle": "初识匹配 · 为选择寻找增广路",
-          "learningDescription": "图遍历能判断可达，二分图染色进一步揭示两侧关系。把一对一选择写成匹配，通过增广路改进已有方案，为后续用网络流表达更复杂的分配问题建立起点。",
-          "threadGateIds": [
-            "stage-05-gate-09",
-            "stage-10-gate-03",
-            "stage-14-gate-09"
-          ]
-        },
-        {
-          "id": "stage-09-gate-10",
-          "index": 10,
-          "title": "ST 表与离线查询顺序",
-          "kind": "learning",
-          "topicIds": [
-            "algorithm-content-feishu-part-6-7",
-            "xcpc-离散-1"
-          ],
-          "cf": {
-            "min": 1500,
-            "max": 1700
-          },
-          "luoguDifficulty": [
-            "提高",
-            "提高+/省选−"
-          ],
-          "description": "学习ST 表、离散化的适用条件、基本实现与复杂度，再用独立练习验证。",
-          "goals": [
-            "解释ST 表、离散化的核心不变量与适用边界",
-            "独立写出实现并说明时间与空间复杂度",
-            "完成基础练习与一道迁移题，记录失败原因"
-          ],
-          "prerequisites": {
-            "gateIds": [
-              "stage-09-gate-09"
-            ],
-            "topicIds": []
-          },
-          "optional": false,
-          "scope": "题目难度仅为本关迁移练习的选题窗口；初学专项题可低于此区间。",
-          "learningTitle": "静态查询 · 预处理与离线各省什么",
-          "learningDescription": "前缀统计靠可相减的信息回答区间问题，ST 表利用可重复合并的性质处理静态查询。再比较调整查询顺序的离线思路，分清预先算好与改变处理顺序这两种节省。",
-          "threadGateIds": [
-            "stage-03-gate-01",
-            "stage-07-gate-02",
-            "stage-10-gate-07"
-          ]
-        },
-        {
-          "id": "stage-09-gate-11",
-          "index": 11,
-          "title": "树的直径与树上路径信息",
-          "kind": "learning",
-          "topicIds": [
-            "algorithm-content-feishu-part-7-3-2",
-            "algorithm-content-feishu-part-7-3-3"
-          ],
-          "cf": {
-            "min": 1500,
-            "max": 1700
-          },
-          "luoguDifficulty": [
-            "提高",
-            "提高+/省选−"
-          ],
-          "description": "学习树的直径、LCA的适用条件、基本实现与复杂度，再用独立练习验证。",
-          "goals": [
-            "解释树的直径、LCA的核心不变量与适用边界",
-            "独立写出实现并说明时间与空间复杂度",
-            "完成基础练习与一道迁移题，记录失败原因"
-          ],
-          "prerequisites": {
-            "gateIds": [
-              "stage-09-gate-10"
-            ],
-            "topicIds": []
-          },
-          "optional": false,
-          "scope": "题目难度仅为本关迁移练习的选题窗口；初学专项题可低于此区间。",
-          "learningTitle": "树路进阶 · 用直径和祖先概括距离",
-          "learningDescription": "LCA 能求两点距离，树的直径则用少数关键端点描述更整体的路径信息。结合树遍历与距离关系判断哪些路径需要逐一处理，哪些可以压缩成可维护的摘要。",
-          "threadGateIds": [
-            "stage-08-gate-02",
-            "stage-09-gate-01",
-            "stage-11-gate-05"
-          ]
-        },
-        {
-          "id": "stage-09-gate-12",
+          "id": "lp2-number-counting-crt-extension-crt",
           "index": 12,
-          "title": "挑战：树、缩点与优化 DP 综合",
-          "kind": "challenge",
+          "title": "互素 CRT 与方程合并",
+          "kind": "learning",
+          "sectionId": "lp2-sec-number-counting-crt-extension",
+          "sectionTitle": "D · 同余方程扩展",
+          "routeId": null,
+          "scope": "recommended",
+          "optional": true,
           "topicIds": [
-            "algorithm-树形-dp-换根",
-            "algorithm-强连通分量-tarjan-",
-            "algorithm-content-feishu-part-3-7"
+            "algorithm-content-feishu-part-5-3-2"
           ],
-          "cf": {
-            "min": 1500,
-            "max": 1700
-          },
-          "luoguDifficulty": [
-            "提高",
-            "提高+/省选−"
-          ],
-          "description": "本阶段以换根 DP、Tarjan 强连通、数据结构优化等已学方法为参考，混排新题，检验独立推导与组合能力。",
+          "luoguDifficulty": [],
+          "description": "先推导互素同余方程解，验证构造与唯一模积；检查中间乘法。",
           "goals": [
-            "在不看标签与题解的情况下提出完整思路",
-            "独立实现并通过所选平台的评测",
-            "复盘关键转化、错误解法与复杂度瓶颈"
+            "构造满足各互素方程的代表解",
+            "解释解在模积下的唯一性",
+            "检验合并时的乘法范围"
           ],
+          "learningTitle": "互素 CRT 与方程合并",
+          "learningDescription": "先推导互素同余方程解，验证构造与唯一模积；检查中间乘法。",
           "prerequisites": {
             "gateIds": [
-              "stage-09-gate-11"
+              "lp2-number-counting-congruence-inverses-extended-gcd"
             ],
-            "topicIds": []
+            "topicIds": [
+              "xcpc-扩展欧几里得-1",
+              "xcpc-逆元-1"
+            ]
           },
-          "optional": false,
-          "scope": "区间只用于选择综合新题，不保证单题涵盖列出的所有算法。",
-          "learningTitle": "结构挑战 · 让图形状帮助 DP",
-          "learningDescription": "综合题组回收换根、缩点和转移维护三条支线。先利用树或图的结构找出子问题，再决定状态和优化方式，检验自己能否解释每次转化保留了哪些关键信息。",
           "threadGateIds": [
-            "stage-09-gate-01",
-            "stage-09-gate-02",
-            "stage-09-gate-06"
+            "lp2-number-counting-inclusion-integers-practice-assessment",
+            "lp2-number-counting-crt-extension-extended-crt"
+          ]
+        },
+        {
+          "id": "lp2-number-counting-crt-extension-extended-crt",
+          "index": 13,
+          "title": "非互素扩展 CRT",
+          "kind": "learning",
+          "sectionId": "lp2-sec-number-counting-crt-extension",
+          "sectionTitle": "D · 同余方程扩展",
+          "routeId": null,
+          "scope": "recommended",
+          "optional": true,
+          "topicIds": [
+            "xcpc-扩展中国剩余定理-1"
+          ],
+          "luoguDifficulty": [],
+          "description": "按相容条件合并非互素方程，处理无解、重复约束与模数增长。",
+          "goals": [
+            "在合并前判断非互素约束是否相容",
+            "正确更新代表解与模数",
+            "覆盖无解、重复约束和大模数情况"
+          ],
+          "learningTitle": "非互素扩展 CRT",
+          "learningDescription": "按相容条件合并非互素方程，处理无解、重复约束与模数增长。",
+          "prerequisites": {
+            "gateIds": [
+              "lp2-number-counting-crt-extension-crt"
+            ],
+            "topicIds": [
+              "algorithm-content-feishu-part-5-3-2"
+            ]
+          },
+          "threadGateIds": [
+            "lp2-number-counting-crt-extension-crt",
+            "lp2-number-counting-crt-extension-practice-assessment"
+          ]
+        },
+        {
+          "id": "lp2-number-counting-crt-extension-practice-assessment",
+          "index": 14,
+          "title": "混练验收：同余方程扩展",
+          "kind": "challenge",
+          "sectionId": "lp2-sec-number-counting-crt-extension",
+          "sectionTitle": "D · 同余方程扩展",
+          "routeId": null,
+          "scope": "recommended",
+          "optional": true,
+          "topicIds": [
+            "algorithm-content-feishu-part-5-3-2",
+            "xcpc-扩展中国剩余定理-1"
+          ],
+          "luoguDifficulty": [],
+          "description": "围绕同余方程扩展完成变化任务与独立应用，核对方法选择、实现和边界。",
+          "goals": [
+            "先学互素 CRT，再验收非互素扩展 CRT 的相容性、合并与溢出。",
+            "独立完成同余方程扩展的变化任务，说明选择方法的理由",
+            "检查边界或用小规模对照验证，并记录本段的一次错误与修正"
+          ],
+          "learningTitle": "同余方程扩展 · 独立验收",
+          "learningDescription": "组合运用互素 CRT 与方程合并、非互素扩展 CRT，先比较不同方法，再独立完成无标签任务并记录验证结果。",
+          "prerequisites": {
+            "gateIds": [
+              "lp2-number-counting-crt-extension-crt",
+              "lp2-number-counting-crt-extension-extended-crt"
+            ],
+            "topicIds": [
+              "algorithm-content-feishu-part-5-3-2",
+              "xcpc-扩展中国剩余定理-1"
+            ]
+          },
+          "threadGateIds": [
+            "lp2-number-counting-crt-extension-extended-crt"
           ]
         }
       ]
@@ -4454,489 +6738,748 @@
     {
       "id": "stage-10",
       "index": 10,
-      "title": "以结构分解降低建模难度",
-      "description": "利用图结构、离线顺序或代数关系简化综合问题。",
-      "goal": "利用图结构、离线顺序或代数关系简化综合问题。",
-      "cf": {
-        "min": 1700,
-        "max": 1900
-      },
-      "luoguDifficulty": [
-        "提高",
-        "提高+/省选−"
-      ],
-      "rationale": "本章按综合做题能力组织，不要求区间中的每道题都使用这些算法，也不要求学完所有专题才进入下一章。",
+      "title": "动态规划进阶：扩展状态与优化转移",
+      "description": "面对树、集合或限制条件能设计新状态；优化时能先给出正确的朴素转移，再证明加速条件。",
+      "goal": "面对树、集合或限制条件能设计新状态；优化时能先给出正确的朴素转移，再证明加速条件。",
+      "rationale": "纠正 A 稿“任选两个模型即收尾”过于宽松的问题；本章核心与高级优化分别验收。",
+      "entryText": "DP 状态方法、树遍历、位掩码、模运算与区间维护；概率段先补样本空间、条件概率及期望定义。",
+      "completionMode": "core",
       "completionCriteria": [
-        "独立完成本章综合题组中的新题",
-        "覆盖至少两种已学方法；后续阶段回收前面基础工具",
-        "说明正确性、复杂度，并记录一次完整复盘"
+        "核心完成树形 / 换根、状压、数位、基础概率与期望四类模型的独立覆盖。",
+        "完成至少一种基础转移优化，解释为什么不会丢掉最优候选。",
+        "高级优化单独记录，不以任选两个模型代替本章核心完成。"
       ],
+      "scopeDescription": "轮廓 DP、复杂树背包合并、斜率 / 分治优化列选学；李超与斜率优化在同一扩展段内收尾。 多状态联立期望方程不是本章核心门槛，学完第 13 章消元路线再选学。",
       "prerequisites": {
         "stageIds": [
-          "stage-09"
+          "stage-05",
+          "stage-06",
+          "stage-07"
         ]
       },
+      "luoguDifficulty": [],
+      "sections": [
+        {
+          "id": "lp2-sec-advanced-dp-tree-subset-dp",
+          "title": "A · 树与集合状态",
+          "scope": "core",
+          "routeId": null,
+          "description": "树形与换根 DP：子树合并；树上选择；父方向贡献；换根时信息的传递与排除。\n状压 DP：集合编码；子集枚举；路径、覆盖等基础集合 DP；估算状态与转移总量。轮廓 DP 单列选学。",
+          "completionCriteria": [
+            "完整学习基础树形、换根、状压；区分树合并和集合枚举的复杂度。"
+          ],
+          "gateIds": [
+            "lp2-advanced-dp-tree-subset-dp-tree-dp",
+            "lp2-advanced-dp-tree-subset-dp-reroot",
+            "lp2-advanced-dp-tree-subset-dp-subset",
+            "lp2-advanced-dp-tree-subset-dp-practice-assessment"
+          ],
+          "prerequisites": {
+            "gateIds": [
+              "lp2-basic-dp-state-sequence-dp-contract",
+              "lp2-graph-trees-static-trees-tree-info"
+            ],
+            "topicIds": []
+          }
+        },
+        {
+          "id": "lp2-sec-advanced-dp-digits-probability",
+          "title": "B · 限制与随机过程",
+          "scope": "core",
+          "routeId": null,
+          "description": "数位 DP：位置、限制、前导零；区间计数；记忆化条件和重复计算。\n概率与期望 DP：先补样本空间、条件概率、全概率与期望定义；核心限定 DAG 过程和可解的单状态自环方程。多状态联立方程先修第 13 章消元；模意义概率先修第 9 章逆元且需检查分母。",
+          "completionCriteria": [
+            "数位 DP 的限制 / 前导零完整收尾；概率与期望状态有明确数学定义。"
+          ],
+          "gateIds": [
+            "lp2-advanced-dp-digits-probability-digit",
+            "lp2-advanced-dp-digits-probability-probability-basics",
+            "lp2-advanced-dp-digits-probability-probability-dp",
+            "lp2-advanced-dp-digits-probability-practice-assessment"
+          ],
+          "prerequisites": {
+            "gateIds": [
+              "lp2-advanced-dp-tree-subset-dp-practice-assessment"
+            ],
+            "topicIds": []
+          }
+        },
+        {
+          "id": "lp2-sec-advanced-dp-transition-optimization",
+          "title": "C · 加速正确转移",
+          "scope": "core",
+          "routeId": null,
+          "description": "基础转移优化：前缀和、单调队列、树状数组 / 线段树维护候选；证明候选淘汰和顺序。",
+          "completionCriteria": [
+            "从朴素 DP 出发，完成一种队列或数据结构优化，证明候选维护正确。"
+          ],
+          "gateIds": [
+            "lp2-advanced-dp-transition-optimization-queue-optimize",
+            "lp2-advanced-dp-transition-optimization-structure-optimize",
+            "lp2-advanced-dp-transition-optimization-practice-assessment"
+          ],
+          "prerequisites": {
+            "gateIds": [
+              "lp2-advanced-dp-digits-probability-practice-assessment",
+              "lp2-range-data-static-monotone-monotone-queue",
+              "lp2-basic-dp-knapsack-bounded"
+            ],
+            "topicIds": []
+          }
+        },
+        {
+          "id": "lp2-sec-advanced-dp-dp-extensions",
+          "title": "D · 优化条件深入",
+          "scope": "elective",
+          "routeId": null,
+          "description": "优化深入选学：斜率优化与李超线段树；分治 DP 与决策单调性；必须检查适用前提。",
+          "completionCriteria": [
+            "斜率优化、李超、决策单调性分别按条件验收，不假设所有转移都适用。"
+          ],
+          "gateIds": [
+            "lp2-advanced-dp-dp-extensions-convex-hull-dp",
+            "lp2-advanced-dp-dp-extensions-li-chao",
+            "lp2-advanced-dp-dp-extensions-divide-conquer-dp",
+            "lp2-advanced-dp-dp-extensions-profile-dp",
+            "lp2-advanced-dp-dp-extensions-practice-assessment"
+          ],
+          "prerequisites": {
+            "gateIds": [
+              "lp2-advanced-dp-transition-optimization-structure-optimize"
+            ],
+            "topicIds": []
+          }
+        }
+      ],
       "gates": [
         {
-          "id": "stage-10-gate-01",
+          "id": "lp2-advanced-dp-tree-subset-dp-tree-dp",
           "index": 1,
-          "title": "重链剖分：路径转区间",
+          "title": "子树合并与树形 DP",
           "kind": "learning",
-          "topicIds": [
-            "xcpc-重链剖分-1"
-          ],
-          "cf": {
-            "min": 1700,
-            "max": 1900
-          },
-          "luoguDifficulty": [
-            "提高",
-            "提高+/省选−"
-          ],
-          "description": "学习重链剖分的适用条件、基本实现与复杂度，再用独立练习验证。",
-          "goals": [
-            "解释重链剖分的核心不变量与适用边界",
-            "独立写出实现并说明时间与空间复杂度",
-            "完成基础练习与一道迁移题，记录失败原因"
-          ],
-          "prerequisites": {
-            "gateIds": [],
-            "topicIds": []
-          },
+          "sectionId": "lp2-sec-advanced-dp-tree-subset-dp",
+          "sectionTitle": "A · 树与集合状态",
+          "routeId": null,
+          "scope": "core",
           "optional": false,
-          "scope": "题目难度仅为本关迁移练习的选题窗口；初学专项题可低于此区间。",
-          "learningTitle": "树链进阶 · 将一条路径拆成几段",
-          "learningDescription": "dfn 已把子树变成区间，重链剖分进一步把任意树路拆成少量连续段。接回熟悉的线段树维护，理解树上操作怎样沿着路径分解落到区间查询与修改。",
+          "topicIds": [
+            "xcpc-基础-3",
+            "xcpc-进阶-2"
+          ],
+          "luoguDifficulty": [],
+          "description": "状态表达子树内限制，后序合并并说明复杂度；树背包复杂优化另作深入。",
+          "goals": [
+            "定义子树内状态和合并限制",
+            "按后序正确合并子节点贡献",
+            "估算合并次数而非只数状态数量"
+          ],
+          "learningTitle": "子树合并与树形 DP",
+          "learningDescription": "状态表达子树内限制，后序合并并说明复杂度；树背包复杂优化另作深入。",
+          "prerequisites": {
+            "gateIds": [
+              "lp2-basic-dp-state-sequence-dp-contract",
+              "lp2-graph-trees-static-trees-tree-info"
+            ],
+            "topicIds": [
+              "xcpc-状态-1",
+              "xcpc-转移-1",
+              "xcpc-无后效性-1",
+              "xcpc-树的基本概念-1",
+              "xcpc-树的遍历-1"
+            ]
+          },
           "threadGateIds": [
-            "stage-08-gate-03",
-            "stage-08-gate-01",
-            "stage-14-gate-07"
+            "lp2-advanced-dp-tree-subset-dp-reroot"
           ]
         },
         {
-          "id": "stage-10-gate-02",
+          "id": "lp2-advanced-dp-tree-subset-dp-reroot",
           "index": 2,
-          "title": "割点、割边与边双连通",
+          "title": "换根与子树内外贡献",
           "kind": "learning",
+          "sectionId": "lp2-sec-advanced-dp-tree-subset-dp",
+          "sectionTitle": "A · 树与集合状态",
+          "routeId": null,
+          "scope": "core",
+          "optional": false,
           "topicIds": [
-            "xcpc-割点-割边-1",
-            "algorithm-边双连通分量"
+            "algorithm-树形-dp-换根"
           ],
-          "cf": {
-            "min": 1700,
-            "max": 1900
-          },
-          "luoguDifficulty": [
-            "提高",
-            "提高+/省选−"
-          ],
-          "description": "学习割点、割边、边双连通分量的适用条件、基本实现与复杂度，再用独立练习验证。",
+          "luoguDifficulty": [],
+          "description": "拆分来自父方向与子方向的信息，转移时排除当前子树，和逐点求解对照。",
           "goals": [
-            "解释割点、割边、边双连通分量的核心不变量与适用边界",
-            "独立写出实现并说明时间与空间复杂度",
-            "完成基础练习与一道迁移题，记录失败原因"
+            "分开子方向和父方向的信息",
+            "转移到子节点时排除其原贡献",
+            "与每个点重新计算的答案比较"
           ],
+          "learningTitle": "换根与子树内外贡献",
+          "learningDescription": "拆分来自父方向与子方向的信息，转移时排除当前子树，和逐点求解对照。",
           "prerequisites": {
             "gateIds": [
-              "stage-10-gate-01"
+              "lp2-advanced-dp-tree-subset-dp-tree-dp"
             ],
-            "topicIds": []
+            "topicIds": [
+              "xcpc-基础-3",
+              "xcpc-进阶-2"
+            ]
           },
-          "optional": false,
-          "scope": "题目难度仅为本关迁移练习的选题窗口；初学专项题可低于此区间。",
-          "learningTitle": "图分解进阶 · 找到连通性的薄弱处",
-          "learningDescription": "强连通处理有向图中的互达关系，这次在无向图里寻找删点或删边后的断裂。沿 DFS 理解割点、桥与边双连通，学会先压缩结构，再讨论连通与路径问题。",
           "threadGateIds": [
-            "stage-05-gate-09",
-            "stage-09-gate-02",
-            "stage-12-gate-03"
+            "lp2-advanced-dp-tree-subset-dp-tree-dp",
+            "lp2-advanced-dp-tree-subset-dp-subset"
           ]
         },
         {
-          "id": "stage-10-gate-03",
+          "id": "lp2-advanced-dp-tree-subset-dp-subset",
           "index": 3,
-          "title": "Dinic：残量网络与最大流",
+          "title": "集合编码与状压 DP",
           "kind": "learning",
+          "sectionId": "lp2-sec-advanced-dp-tree-subset-dp",
+          "sectionTitle": "A · 树与集合状态",
+          "routeId": null,
+          "scope": "core",
+          "optional": false,
           "topicIds": [
-            "xcpc-dinic-1"
+            "xcpc-普通型-1",
+            "xcpc-枚举子集-超集-1"
           ],
-          "cf": {
-            "min": 1700,
-            "max": 1900
-          },
-          "luoguDifficulty": [
-            "提高",
-            "提高+/省选−"
-          ],
-          "description": "学习Dinic的适用条件、基本实现与复杂度，再用独立练习验证。",
+          "luoguDifficulty": [],
+          "description": "用位掩码表示集合，区分路径/覆盖状态和子集枚举总复杂度。",
           "goals": [
-            "解释Dinic的核心不变量与适用边界",
-            "独立写出实现并说明时间与空间复杂度",
-            "完成基础练习与一道迁移题，记录失败原因"
+            "解释位掩码中的每一位与集合含义",
+            "完整枚举合法子集转移",
+            "估算状态数乘转移量的总成本"
           ],
+          "learningTitle": "集合编码与状压 DP",
+          "learningDescription": "用位掩码表示集合，区分路径/覆盖状态和子集枚举总复杂度。",
           "prerequisites": {
             "gateIds": [
-              "stage-10-gate-02"
+              "lp2-advanced-dp-tree-subset-dp-reroot",
+              "lp2-brute-models-complete-enumeration-enumeration"
             ],
-            "topicIds": []
+            "topicIds": [
+              "algorithm-树形-dp-换根",
+              "algorithm-枚举",
+              "algorithm-content-feishu-part-5-1"
+            ]
           },
-          "optional": false,
-          "scope": "题目难度仅为本关迁移练习的选题窗口；初学专项题可低于此区间。",
-          "learningTitle": "初识网络流 · 让增广路带上容量",
-          "learningDescription": "匹配中的增广路可以推广到有容量限制的网络。通过残量边表达撤回与调整，再用 Dinic 寻找增广流，为分配问题以及后续的最小割建模提供统一语言。",
           "threadGateIds": [
-            "stage-09-gate-09",
-            "stage-11-gate-09",
-            "stage-12-gate-10"
+            "lp2-advanced-dp-tree-subset-dp-reroot",
+            "lp2-advanced-dp-tree-subset-dp-practice-assessment"
           ]
         },
         {
-          "id": "stage-10-gate-04",
+          "id": "lp2-advanced-dp-tree-subset-dp-practice-assessment",
           "index": 4,
-          "title": "混练：匹配、最大流与建模",
-          "kind": "mixed",
-          "topicIds": [
-            "xcpc-匈牙利算法-1",
-            "xcpc-dinic-1"
-          ],
-          "cf": {
-            "min": 1700,
-            "max": 1900
-          },
-          "luoguDifficulty": [
-            "提高",
-            "提高+/省选−"
-          ],
-          "description": "混合使用匈牙利算法、Dinic；选题时隐藏专题标签，先独立辨型再实现。",
-          "goals": [
-            "在不看标签与题解的情况下提出完整思路",
-            "独立实现并通过所选平台的评测",
-            "复盘关键转化、错误解法与复杂度瓶颈"
-          ],
-          "prerequisites": {
-            "gateIds": [
-              "stage-10-gate-03"
-            ],
-            "topicIds": []
-          },
-          "optional": false,
-          "scope": "区间只用于选择综合新题，不保证单题涵盖列出的所有算法。",
-          "learningTitle": "分配混练 · 匹配何时需要变成流",
-          "learningDescription": "先将选择对象和限制画成图，比较一对一匹配与带容量网络的表达能力。练习不仅要跑出最大值，还要说明原题方案如何对应流，以及怎样从结果还原选择。",
-          "threadGateIds": [
-            "stage-09-gate-09",
-            "stage-10-gate-03",
-            "stage-11-gate-09"
-          ]
-        },
-        {
-          "id": "stage-10-gate-05",
-          "index": 5,
-          "title": "AC 自动机：多模式匹配",
-          "kind": "learning",
-          "topicIds": [
-            "algorithm-content-feishu-part-4-5"
-          ],
-          "cf": {
-            "min": 1700,
-            "max": 1900
-          },
-          "luoguDifficulty": [
-            "提高",
-            "提高+/省选−"
-          ],
-          "description": "学习AC 自动机的适用条件、基本实现与复杂度，再用独立练习验证。",
-          "goals": [
-            "解释AC 自动机的核心不变量与适用边界",
-            "独立写出实现并说明时间与空间复杂度",
-            "完成基础练习与一道迁移题，记录失败原因"
-          ],
-          "prerequisites": {
-            "gateIds": [
-              "stage-10-gate-04"
-            ],
-            "topicIds": []
-          },
-          "optional": false,
-          "scope": "题目难度仅为本关迁移练习的选题窗口；初学专项题可低于此区间。",
-          "learningTitle": "匹配进阶 · 将 Trie 接上失配跳转",
-          "learningDescription": "Trie 保存多个模式串，KMP 让单个模式复用失配信息。AC 自动机把两者串起来，在共享前缀间跳转并汇总匹配贡献，走向多模式字符串统计。",
-          "threadGateIds": [
-            "stage-07-gate-11",
-            "stage-07-gate-10",
-            "stage-10-gate-08"
-          ]
-        },
-        {
-          "id": "stage-10-gate-06",
-          "index": 6,
-          "title": "Z 函数：前缀匹配信息",
-          "kind": "learning",
-          "topicIds": [
-            "xcpc-扩展kmp-1"
-          ],
-          "cf": {
-            "min": 1700,
-            "max": 1900
-          },
-          "luoguDifficulty": [
-            "提高",
-            "提高+/省选−"
-          ],
-          "description": "学习Z 函数的适用条件、基本实现与复杂度，再用独立练习验证。",
-          "goals": [
-            "解释Z 函数的核心不变量与适用边界",
-            "独立写出实现并说明时间与空间复杂度",
-            "完成基础练习与一道迁移题，记录失败原因"
-          ],
-          "prerequisites": {
-            "gateIds": [
-              "stage-10-gate-05"
-            ],
-            "topicIds": []
-          },
-          "optional": false,
-          "scope": "题目难度仅为本关迁移练习的选题窗口；初学专项题可低于此区间。",
-          "learningTitle": "匹配再认识 · 用 Z 函数观察前缀",
-          "learningDescription": "KMP 从前缀与后缀的关系复用匹配，Z 函数改为记录每个位置与整串前缀的公共长度。比较两种视角及其可复用区间，为字符串结构与重复片段问题补充工具。",
-          "threadGateIds": [
-            "stage-07-gate-10",
-            "stage-11-gate-07",
-            "stage-14-gate-10"
-          ]
-        },
-        {
-          "id": "stage-10-gate-07",
-          "index": 7,
-          "title": "莫队：离线区间迁移",
-          "kind": "learning",
-          "topicIds": [
-            "algorithm-content-feishu-part-9-3-3"
-          ],
-          "cf": {
-            "min": 1700,
-            "max": 1900
-          },
-          "luoguDifficulty": [
-            "提高",
-            "提高+/省选−"
-          ],
-          "description": "学习莫队的适用条件、基本实现与复杂度，再用独立练习验证。",
-          "goals": [
-            "解释莫队的核心不变量与适用边界",
-            "独立写出实现并说明时间与空间复杂度",
-            "完成基础练习与一道迁移题，记录失败原因"
-          ],
-          "prerequisites": {
-            "gateIds": [
-              "stage-10-gate-06"
-            ],
-            "topicIds": []
-          },
-          "optional": false,
-          "scope": "题目难度仅为本关迁移练习的选题窗口；初学专项题可低于此区间。",
-          "learningTitle": "初识莫队 · 让查询共享区间变化",
-          "learningDescription": "双指针曾利用有序推进减少重复工作，莫队则重新排列离线查询，让相邻区间只需少量增删。先确认信息能随端点移动维护，再核算总移动量，理解这种换序的收益。",
-          "threadGateIds": [
-            "stage-03-gate-05",
-            "stage-09-gate-10",
-            "stage-13-gate-10"
-          ]
-        },
-        {
-          "id": "stage-10-gate-08",
-          "index": 8,
-          "title": "混练：字符串匹配与离线统计",
-          "kind": "mixed",
-          "topicIds": [
-            "algorithm-content-feishu-part-4-5",
-            "algorithm-content-feishu-part-4-1",
-            "algorithm-content-feishu-part-9-3-3"
-          ],
-          "cf": {
-            "min": 1700,
-            "max": 1900
-          },
-          "luoguDifficulty": [
-            "提高",
-            "提高+/省选−"
-          ],
-          "description": "混合使用AC 自动机、字符串哈希、莫队；选题时隐藏专题标签，先独立辨型再实现。",
-          "goals": [
-            "在不看标签与题解的情况下提出完整思路",
-            "独立实现并通过所选平台的评测",
-            "复盘关键转化、错误解法与复杂度瓶颈"
-          ],
-          "prerequisites": {
-            "gateIds": [
-              "stage-10-gate-07"
-            ],
-            "topicIds": []
-          },
-          "optional": false,
-          "scope": "区间只用于选择综合新题，不保证单题涵盖列出的所有算法。",
-          "learningTitle": "字符串混练 · 匹配与统计分开想",
-          "learningDescription": "面对字符串统计，先判断需要精确匹配、快速比较，还是维护查询区间中的信息。对照 AC 自动机、哈希和离线迁移的职责，练习把题目拆成可以衔接的几个步骤。",
-          "threadGateIds": [
-            "stage-10-gate-05",
-            "stage-07-gate-09",
-            "stage-10-gate-07"
-          ]
-        },
-        {
-          "id": "stage-10-gate-09",
-          "index": 9,
-          "title": "高斯消元：方程组与秩",
-          "kind": "learning",
-          "topicIds": [
-            "algorithm-content-feishu-part-5-7-2"
-          ],
-          "cf": {
-            "min": 1700,
-            "max": 1900
-          },
-          "luoguDifficulty": [
-            "提高",
-            "提高+/省选−"
-          ],
-          "description": "学习高斯消元的适用条件、基本实现与复杂度，再用独立练习验证。",
-          "goals": [
-            "解释高斯消元的核心不变量与适用边界",
-            "独立写出实现并说明时间与空间复杂度",
-            "完成基础练习与一道迁移题，记录失败原因"
-          ],
-          "prerequisites": {
-            "gateIds": [
-              "stage-10-gate-08"
-            ],
-            "topicIds": []
-          },
-          "optional": false,
-          "scope": "题目难度仅为本关迁移练习的选题窗口；初学专项题可低于此区间。",
-          "learningTitle": "初识消元 · 用等价变形解出关系",
-          "learningDescription": "矩阵曾表达多步递推，现在转而表达同时成立的线性约束。通过消元观察主元、秩与解的情况，把方程关系化简，也为线性基中的独立性建立直觉。",
-          "threadGateIds": [
-            "stage-08-gate-10",
-            "stage-10-gate-10",
-            "stage-11-gate-10"
-          ]
-        },
-        {
-          "id": "stage-10-gate-10",
-          "index": 10,
-          "title": "线性基：异或向量空间",
-          "kind": "learning",
-          "topicIds": [
-            "algorithm-content-feishu-part-5-7-3"
-          ],
-          "cf": {
-            "min": 1700,
-            "max": 1900
-          },
-          "luoguDifficulty": [
-            "提高",
-            "提高+/省选−"
-          ],
-          "description": "学习线性基的适用条件、基本实现与复杂度，再用独立练习验证。",
-          "goals": [
-            "解释线性基的核心不变量与适用边界",
-            "独立写出实现并说明时间与空间复杂度",
-            "完成基础练习与一道迁移题，记录失败原因"
-          ],
-          "prerequisites": {
-            "gateIds": [
-              "stage-10-gate-09"
-            ],
-            "topicIds": []
-          },
-          "optional": false,
-          "scope": "题目难度仅为本关迁移练习的选题窗口；初学专项题可低于此区间。",
-          "learningTitle": "异或进阶 · 用线性基压缩可选集合",
-          "learningDescription": "位运算让你直接计算异或，消元则提示我们只需保留独立的信息。在线性基里维护能够张成所有异或结果的代表，连接二进制运算与向量空间两种视角。",
-          "threadGateIds": [
-            "stage-04-gate-05",
-            "stage-10-gate-09",
-            "stage-14-gate-03"
-          ]
-        },
-        {
-          "id": "stage-10-gate-11",
-          "index": 11,
-          "title": "点积、叉积与凸包",
-          "kind": "learning",
-          "topicIds": [
-            "xcpc-点积-1",
-            "xcpc-叉积-1",
-            "algorithm-content-feishu-part-8-1"
-          ],
-          "cf": {
-            "min": 1700,
-            "max": 1900
-          },
-          "luoguDifficulty": [
-            "提高",
-            "提高+/省选−"
-          ],
-          "description": "学习点积、叉积、凸包的适用条件、基本实现与复杂度，再用独立练习验证。",
-          "goals": [
-            "解释点积、叉积、凸包的核心不变量与适用边界",
-            "独立写出实现并说明时间与空间复杂度",
-            "完成基础练习与一道迁移题，记录失败原因"
-          ],
-          "prerequisites": {
-            "gateIds": [
-              "stage-10-gate-10"
-            ],
-            "topicIds": []
-          },
-          "optional": false,
-          "scope": "题目难度仅为本关迁移练习的选题窗口；初学专项题可低于此区间。",
-          "learningTitle": "几何入门 · 用方向筛出外层边界",
-          "learningDescription": "排序和扫描的经验在平面上依然有用：点积描述投影，叉积判断转向。用这些关系维护凸包边界，先把几何条件化成可计算的量，再进入凸包上的优化支线。",
-          "threadGateIds": [
-            "stage-01-gate-05",
-            "stage-11-gate-11",
-            "stage-13-gate-11"
-          ]
-        },
-        {
-          "id": "stage-10-gate-12",
-          "index": 12,
-          "title": "挑战：树链、离线与线性代数综合",
+          "title": "混练验收：树与集合状态",
           "kind": "challenge",
+          "sectionId": "lp2-sec-advanced-dp-tree-subset-dp",
+          "sectionTitle": "A · 树与集合状态",
+          "routeId": null,
+          "scope": "core",
+          "optional": false,
           "topicIds": [
-            "xcpc-重链剖分-1",
-            "algorithm-content-feishu-part-9-3-3",
-            "algorithm-content-feishu-part-5-7-2"
+            "xcpc-基础-3",
+            "xcpc-进阶-2",
+            "algorithm-树形-dp-换根",
+            "xcpc-普通型-1",
+            "xcpc-枚举子集-超集-1"
           ],
-          "cf": {
-            "min": 1700,
-            "max": 1900
-          },
-          "luoguDifficulty": [
-            "提高",
-            "提高+/省选−"
-          ],
-          "description": "本阶段以重链剖分、莫队、高斯消元等已学方法为参考，混排新题，检验独立推导与组合能力。",
+          "luoguDifficulty": [],
+          "description": "围绕树与集合状态完成变化任务与独立应用，核对方法选择、实现和边界。",
           "goals": [
-            "在不看标签与题解的情况下提出完整思路",
-            "独立实现并通过所选平台的评测",
-            "复盘关键转化、错误解法与复杂度瓶颈"
+            "完整学习基础树形、换根、状压；区分树合并和集合枚举的复杂度。",
+            "独立完成树与集合状态的变化任务，说明选择方法的理由",
+            "检查边界或用小规模对照验证，并记录本段的一次错误与修正"
           ],
+          "learningTitle": "树与集合状态 · 独立验收",
+          "learningDescription": "组合运用子树合并与树形 DP、换根与子树内外贡献、集合编码与状压 DP，先比较不同方法，再独立完成无标签任务并记录验证结果。",
           "prerequisites": {
             "gateIds": [
-              "stage-10-gate-11"
+              "lp2-advanced-dp-tree-subset-dp-tree-dp",
+              "lp2-advanced-dp-tree-subset-dp-reroot",
+              "lp2-advanced-dp-tree-subset-dp-subset"
             ],
-            "topicIds": []
+            "topicIds": [
+              "xcpc-基础-3",
+              "xcpc-进阶-2",
+              "algorithm-树形-dp-换根",
+              "xcpc-普通型-1",
+              "xcpc-枚举子集-超集-1"
+            ]
           },
-          "optional": false,
-          "scope": "区间只用于选择综合新题，不保证单题涵盖列出的所有算法。",
-          "learningTitle": "转化挑战 · 给问题换一种坐标",
-          "learningDescription": "这一轮分别尝试路径转区间、查询换序与方程消元。它们不必出现在同一道题里，但都要求你说明换一种表达后为何更容易处理，并保留原题的限制与答案。",
           "threadGateIds": [
-            "stage-10-gate-01",
-            "stage-10-gate-07",
-            "stage-10-gate-09"
+            "lp2-advanced-dp-tree-subset-dp-subset",
+            "lp2-advanced-dp-digits-probability-digit"
+          ]
+        },
+        {
+          "id": "lp2-advanced-dp-digits-probability-digit",
+          "index": 5,
+          "title": "数位 DP 的限制与前导零",
+          "kind": "learning",
+          "sectionId": "lp2-sec-advanced-dp-digits-probability",
+          "sectionTitle": "B · 限制与随机过程",
+          "routeId": null,
+          "scope": "core",
+          "optional": false,
+          "topicIds": [
+            "xcpc-基础-4"
+          ],
+          "luoguDifficulty": [],
+          "description": "定义位置、限制、前导零和缓存条件，分别检查0与空前缀，区间答案正确相减。",
+          "goals": [
+            "明确限制标记与前导零语义",
+            "说明哪些状态允许跨查询缓存",
+            "用逐数枚举核对0和区间端点"
+          ],
+          "learningTitle": "数位 DP 的限制与前导零",
+          "learningDescription": "定义位置、限制、前导零和缓存条件，分别检查0与空前缀，区间答案正确相减。",
+          "prerequisites": {
+            "gateIds": [
+              "lp2-advanced-dp-tree-subset-dp-practice-assessment"
+            ],
+            "topicIds": [
+              "xcpc-基础-3",
+              "xcpc-进阶-2",
+              "algorithm-树形-dp-换根",
+              "xcpc-普通型-1",
+              "xcpc-枚举子集-超集-1"
+            ]
+          },
+          "threadGateIds": [
+            "lp2-advanced-dp-tree-subset-dp-practice-assessment",
+            "lp2-advanced-dp-digits-probability-probability-basics"
+          ]
+        },
+        {
+          "id": "lp2-advanced-dp-digits-probability-probability-basics",
+          "index": 6,
+          "title": "条件概率与期望基础",
+          "kind": "learning",
+          "sectionId": "lp2-sec-advanced-dp-digits-probability",
+          "sectionTitle": "B · 限制与随机过程",
+          "routeId": null,
+          "scope": "core",
+          "optional": false,
+          "topicIds": [
+            "xcpc-条件概率-1",
+            "xcpc-期望的线性性-1"
+          ],
+          "luoguDifficulty": [],
+          "description": "先定义样本空间、条件概率、全概率和期望，说明独立与线性性的区别。",
+          "goals": [
+            "写出事件、样本空间和条件概率",
+            "正确使用全概率公式",
+            "给出期望线性性不要求独立的例子"
+          ],
+          "learningTitle": "条件概率与期望基础",
+          "learningDescription": "先定义样本空间、条件概率、全概率和期望，说明独立与线性性的区别。",
+          "prerequisites": {
+            "gateIds": [
+              "lp2-advanced-dp-digits-probability-digit"
+            ],
+            "topicIds": [
+              "xcpc-基础-4"
+            ]
+          },
+          "threadGateIds": [
+            "lp2-advanced-dp-digits-probability-digit",
+            "lp2-advanced-dp-digits-probability-probability-dp"
+          ]
+        },
+        {
+          "id": "lp2-advanced-dp-digits-probability-probability-dp",
+          "index": 7,
+          "title": "概率、期望 DP 与自环",
+          "kind": "learning",
+          "sectionId": "lp2-sec-advanced-dp-digits-probability",
+          "sectionTitle": "B · 限制与随机过程",
+          "routeId": null,
+          "scope": "core",
+          "optional": false,
+          "topicIds": [
+            "xcpc-基础-5",
+            "algorithm-期望dp"
+          ],
+          "luoguDifficulty": [],
+          "description": "核心限定DAG与可解单状态自环方程；多状态联立先修第13章消元，模概率先修逆元且需可逆分母。",
+          "goals": [
+            "先写概率或期望方程再实现",
+            "正确移项求解单状态自环",
+            "识别需要消元或模逆元的额外条件"
+          ],
+          "learningTitle": "概率、期望 DP 与自环",
+          "learningDescription": "核心限定DAG与可解单状态自环方程；多状态联立先修第13章消元，模概率先修逆元且需可逆分母。",
+          "prerequisites": {
+            "gateIds": [
+              "lp2-advanced-dp-digits-probability-probability-basics"
+            ],
+            "topicIds": [
+              "xcpc-条件概率-1",
+              "xcpc-期望的线性性-1"
+            ]
+          },
+          "threadGateIds": [
+            "lp2-advanced-dp-digits-probability-probability-basics",
+            "lp2-advanced-dp-digits-probability-practice-assessment"
+          ]
+        },
+        {
+          "id": "lp2-advanced-dp-digits-probability-practice-assessment",
+          "index": 8,
+          "title": "混练验收：限制与随机过程",
+          "kind": "challenge",
+          "sectionId": "lp2-sec-advanced-dp-digits-probability",
+          "sectionTitle": "B · 限制与随机过程",
+          "routeId": null,
+          "scope": "core",
+          "optional": false,
+          "topicIds": [
+            "xcpc-基础-4",
+            "xcpc-条件概率-1",
+            "xcpc-期望的线性性-1",
+            "xcpc-基础-5",
+            "algorithm-期望dp"
+          ],
+          "luoguDifficulty": [],
+          "description": "围绕限制与随机过程完成变化任务与独立应用，核对方法选择、实现和边界。",
+          "goals": [
+            "数位 DP 的限制 / 前导零完整收尾；概率与期望状态有明确数学定义。",
+            "独立完成限制与随机过程的变化任务，说明选择方法的理由",
+            "检查边界或用小规模对照验证，并记录本段的一次错误与修正"
+          ],
+          "learningTitle": "限制与随机过程 · 独立验收",
+          "learningDescription": "组合运用数位 DP 的限制与前导零、条件概率与期望基础、概率、期望 DP 与自环，先比较不同方法，再独立完成无标签任务并记录验证结果。",
+          "prerequisites": {
+            "gateIds": [
+              "lp2-advanced-dp-digits-probability-digit",
+              "lp2-advanced-dp-digits-probability-probability-basics",
+              "lp2-advanced-dp-digits-probability-probability-dp"
+            ],
+            "topicIds": [
+              "xcpc-基础-4",
+              "xcpc-条件概率-1",
+              "xcpc-期望的线性性-1",
+              "xcpc-基础-5",
+              "algorithm-期望dp"
+            ]
+          },
+          "threadGateIds": [
+            "lp2-advanced-dp-digits-probability-probability-dp",
+            "lp2-advanced-dp-transition-optimization-queue-optimize"
+          ]
+        },
+        {
+          "id": "lp2-advanced-dp-transition-optimization-queue-optimize",
+          "index": 9,
+          "title": "单调队列优化转移",
+          "kind": "learning",
+          "sectionId": "lp2-sec-advanced-dp-transition-optimization",
+          "sectionTitle": "C · 加速正确转移",
+          "routeId": null,
+          "scope": "core",
+          "optional": false,
+          "topicIds": [
+            "algorithm-content-feishu-part-3-8",
+            "xcpc-o-nm-1"
+          ],
+          "luoguDifficulty": [],
+          "description": "先给朴素转移，再拆分候选信息、窗口与淘汰证明；多重背包优化复用第5章语义。",
+          "goals": [
+            "从朴素转移拆出候选表达式",
+            "证明窗口淘汰和单调淘汰的安全性",
+            "用随机输入对比优化前后的状态"
+          ],
+          "learningTitle": "单调队列优化转移",
+          "learningDescription": "先给朴素转移，再拆分候选信息、窗口与淘汰证明；多重背包优化复用第5章语义。",
+          "prerequisites": {
+            "gateIds": [
+              "lp2-advanced-dp-digits-probability-practice-assessment",
+              "lp2-range-data-static-monotone-monotone-queue",
+              "lp2-basic-dp-knapsack-bounded"
+            ],
+            "topicIds": [
+              "xcpc-基础-4",
+              "xcpc-条件概率-1",
+              "xcpc-期望的线性性-1",
+              "xcpc-基础-5",
+              "algorithm-期望dp",
+              "xcpc-单调队列-1"
+            ]
+          },
+          "threadGateIds": [
+            "lp2-advanced-dp-digits-probability-practice-assessment",
+            "lp2-advanced-dp-transition-optimization-structure-optimize"
+          ]
+        },
+        {
+          "id": "lp2-advanced-dp-transition-optimization-structure-optimize",
+          "index": 10,
+          "title": "数据结构维护候选转移",
+          "kind": "learning",
+          "sectionId": "lp2-sec-advanced-dp-transition-optimization",
+          "sectionTitle": "C · 加速正确转移",
+          "routeId": null,
+          "scope": "core",
+          "optional": false,
+          "topicIds": [
+            "algorithm-content-feishu-part-3-7"
+          ],
+          "luoguDifficulty": [],
+          "description": "用BIT或线段树维护候选，证明处理顺序与合法转移范围，和朴素版本对拍。",
+          "goals": [
+            "指出候选集合的查询范围和插入时机",
+            "选择支持该运算的数据结构",
+            "与朴素DP逐状态核对"
+          ],
+          "learningTitle": "数据结构维护候选转移",
+          "learningDescription": "用BIT或线段树维护候选，证明处理顺序与合法转移范围，和朴素版本对拍。",
+          "prerequisites": {
+            "gateIds": [
+              "lp2-advanced-dp-transition-optimization-queue-optimize",
+              "lp2-range-data-segment-lazy-lazy-add"
+            ],
+            "topicIds": [
+              "algorithm-content-feishu-part-3-8",
+              "xcpc-o-nm-1",
+              "xcpc-带标记的线段树-1"
+            ]
+          },
+          "threadGateIds": [
+            "lp2-advanced-dp-transition-optimization-queue-optimize",
+            "lp2-advanced-dp-transition-optimization-practice-assessment"
+          ]
+        },
+        {
+          "id": "lp2-advanced-dp-transition-optimization-practice-assessment",
+          "index": 11,
+          "title": "混练验收：加速正确转移",
+          "kind": "challenge",
+          "sectionId": "lp2-sec-advanced-dp-transition-optimization",
+          "sectionTitle": "C · 加速正确转移",
+          "routeId": null,
+          "scope": "core",
+          "optional": false,
+          "topicIds": [
+            "algorithm-content-feishu-part-3-8",
+            "xcpc-o-nm-1",
+            "algorithm-content-feishu-part-3-7"
+          ],
+          "luoguDifficulty": [],
+          "description": "围绕加速正确转移完成变化任务与独立应用，核对方法选择、实现和边界。",
+          "goals": [
+            "核心完成树形 / 换根、状压、数位、基础概率与期望四类模型的独立覆盖。",
+            "完成至少一种基础转移优化，解释为什么不会丢掉最优候选。",
+            "高级优化单独记录，不以任选两个模型代替本章核心完成。"
+          ],
+          "learningTitle": "加速正确转移 · 独立验收",
+          "learningDescription": "组合运用单调队列优化转移、数据结构维护候选转移，先比较不同方法，再独立完成无标签任务并记录验证结果。",
+          "prerequisites": {
+            "gateIds": [
+              "lp2-advanced-dp-transition-optimization-queue-optimize",
+              "lp2-advanced-dp-transition-optimization-structure-optimize",
+              "lp2-advanced-dp-tree-subset-dp-practice-assessment",
+              "lp2-advanced-dp-digits-probability-practice-assessment"
+            ],
+            "topicIds": [
+              "algorithm-content-feishu-part-3-8",
+              "xcpc-o-nm-1",
+              "algorithm-content-feishu-part-3-7",
+              "xcpc-基础-3",
+              "xcpc-进阶-2",
+              "algorithm-树形-dp-换根"
+            ]
+          },
+          "threadGateIds": [
+            "lp2-advanced-dp-transition-optimization-structure-optimize",
+            "lp2-advanced-dp-dp-extensions-convex-hull-dp"
+          ]
+        },
+        {
+          "id": "lp2-advanced-dp-dp-extensions-convex-hull-dp",
+          "index": 12,
+          "title": "斜率优化的条件",
+          "kind": "learning",
+          "sectionId": "lp2-sec-advanced-dp-dp-extensions",
+          "sectionTitle": "D · 优化条件深入",
+          "routeId": null,
+          "scope": "elective",
+          "optional": true,
+          "topicIds": [
+            "algorithm-content-feishu-part-3-9"
+          ],
+          "luoguDifficulty": [],
+          "description": "从转移式推导直线与查询量，检查斜率和查询单调性；无单调性时不能照用队列。",
+          "goals": [
+            "把转移整理为直线与查询量",
+            "核验斜率和查询顺序的单调条件",
+            "构造破坏条件时队列优化失败的例子"
+          ],
+          "learningTitle": "斜率优化的条件",
+          "learningDescription": "从转移式推导直线与查询量，检查斜率和查询单调性；无单调性时不能照用队列。",
+          "prerequisites": {
+            "gateIds": [
+              "lp2-advanced-dp-transition-optimization-structure-optimize"
+            ],
+            "topicIds": [
+              "algorithm-content-feishu-part-3-7"
+            ]
+          },
+          "threadGateIds": [
+            "lp2-advanced-dp-transition-optimization-practice-assessment",
+            "lp2-advanced-dp-dp-extensions-li-chao"
+          ]
+        },
+        {
+          "id": "lp2-advanced-dp-dp-extensions-li-chao",
+          "index": 13,
+          "title": "李超线段树维护直线",
+          "kind": "learning",
+          "sectionId": "lp2-sec-advanced-dp-dp-extensions",
+          "sectionTitle": "D · 优化条件深入",
+          "routeId": null,
+          "scope": "elective",
+          "optional": true,
+          "topicIds": [
+            "xcpc-李超线段树-1"
+          ],
+          "luoguDifficulty": [],
+          "description": "选修直线集合维护与定义域离散化，证明局部比较和递归保留正确性。",
+          "goals": [
+            "明确直线与查询定义域",
+            "证明每层保留直线的比较规则",
+            "与逐条直线查询的暴力比较"
+          ],
+          "learningTitle": "李超线段树维护直线",
+          "learningDescription": "选修直线集合维护与定义域离散化，证明局部比较和递归保留正确性。",
+          "prerequisites": {
+            "gateIds": [
+              "lp2-advanced-dp-dp-extensions-convex-hull-dp"
+            ],
+            "topicIds": [
+              "algorithm-content-feishu-part-3-9"
+            ]
+          },
+          "threadGateIds": [
+            "lp2-advanced-dp-dp-extensions-convex-hull-dp",
+            "lp2-advanced-dp-dp-extensions-divide-conquer-dp"
+          ]
+        },
+        {
+          "id": "lp2-advanced-dp-dp-extensions-divide-conquer-dp",
+          "index": 14,
+          "title": "分治 DP 与决策单调性",
+          "kind": "learning",
+          "sectionId": "lp2-sec-advanced-dp-dp-extensions",
+          "sectionTitle": "D · 优化条件深入",
+          "routeId": null,
+          "scope": "elective",
+          "optional": true,
+          "topicIds": [
+            "xcpc-分治dp-1",
+            "algorithm-content-feishu-part-3-10"
+          ],
+          "luoguDifficulty": [],
+          "description": "先证明决策单调再缩小搜索范围，给出不满足时的反例。",
+          "goals": [
+            "给出决策单调性的依据",
+            "正确缩小子问题的决策区间",
+            "对不满足条件的任务拒绝使用优化"
+          ],
+          "learningTitle": "分治 DP 与决策单调性",
+          "learningDescription": "先证明决策单调再缩小搜索范围，给出不满足时的反例。",
+          "prerequisites": {
+            "gateIds": [
+              "lp2-advanced-dp-dp-extensions-li-chao"
+            ],
+            "topicIds": [
+              "xcpc-李超线段树-1"
+            ]
+          },
+          "threadGateIds": [
+            "lp2-advanced-dp-dp-extensions-li-chao",
+            "lp2-advanced-dp-dp-extensions-profile-dp"
+          ]
+        },
+        {
+          "id": "lp2-advanced-dp-dp-extensions-profile-dp",
+          "index": 15,
+          "title": "轮廓状态扩展",
+          "kind": "learning",
+          "sectionId": "lp2-sec-advanced-dp-dp-extensions",
+          "sectionTitle": "D · 优化条件深入",
+          "routeId": null,
+          "scope": "elective",
+          "optional": true,
+          "topicIds": [
+            "algorithm-content-feishu-part-3-12"
+          ],
+          "luoguDifficulty": [],
+          "description": "选择轮廓状态模型，验证编码、连通限制和状态规模；不作为基础状压验收要求。",
+          "goals": [
+            "明确轮廓编码与合法连通状态",
+            "实现状态推进与边界清空",
+            "估计并核对可达状态数量"
+          ],
+          "learningTitle": "轮廓状态扩展",
+          "learningDescription": "选择轮廓状态模型，验证编码、连通限制和状态规模；不作为基础状压验收要求。",
+          "prerequisites": {
+            "gateIds": [
+              "lp2-advanced-dp-dp-extensions-divide-conquer-dp"
+            ],
+            "topicIds": [
+              "xcpc-分治dp-1",
+              "algorithm-content-feishu-part-3-10"
+            ]
+          },
+          "threadGateIds": [
+            "lp2-advanced-dp-dp-extensions-divide-conquer-dp",
+            "lp2-advanced-dp-dp-extensions-practice-assessment"
+          ]
+        },
+        {
+          "id": "lp2-advanced-dp-dp-extensions-practice-assessment",
+          "index": 16,
+          "title": "混练验收：优化条件深入",
+          "kind": "challenge",
+          "sectionId": "lp2-sec-advanced-dp-dp-extensions",
+          "sectionTitle": "D · 优化条件深入",
+          "routeId": null,
+          "scope": "elective",
+          "optional": true,
+          "topicIds": [
+            "algorithm-content-feishu-part-3-9",
+            "xcpc-李超线段树-1",
+            "xcpc-分治dp-1",
+            "algorithm-content-feishu-part-3-10",
+            "algorithm-content-feishu-part-3-12"
+          ],
+          "luoguDifficulty": [],
+          "description": "围绕优化条件深入完成变化任务与独立应用，核对方法选择、实现和边界。",
+          "goals": [
+            "斜率优化、李超、决策单调性分别按条件验收，不假设所有转移都适用。",
+            "独立完成优化条件深入的变化任务，说明选择方法的理由",
+            "检查边界或用小规模对照验证，并记录本段的一次错误与修正"
+          ],
+          "learningTitle": "优化条件深入 · 独立验收",
+          "learningDescription": "组合运用斜率优化的条件、李超线段树维护直线、分治 DP 与决策单调性、轮廓状态扩展，先比较不同方法，再独立完成无标签任务并记录验证结果。",
+          "prerequisites": {
+            "gateIds": [
+              "lp2-advanced-dp-dp-extensions-convex-hull-dp",
+              "lp2-advanced-dp-dp-extensions-li-chao",
+              "lp2-advanced-dp-dp-extensions-divide-conquer-dp",
+              "lp2-advanced-dp-dp-extensions-profile-dp"
+            ],
+            "topicIds": [
+              "algorithm-content-feishu-part-3-9",
+              "xcpc-李超线段树-1",
+              "xcpc-分治dp-1",
+              "algorithm-content-feishu-part-3-10",
+              "algorithm-content-feishu-part-3-12"
+            ]
+          },
+          "threadGateIds": [
+            "lp2-advanced-dp-dp-extensions-profile-dp"
           ]
         }
       ]
@@ -4944,490 +7487,660 @@
     {
       "id": "stage-11",
       "index": 11,
-      "title": "深入专题并迁移到新约束",
-      "description": "选定若干专题深入，把已知模型迁移到新约束。",
-      "goal": "选定若干专题深入，把已知模型迁移到新约束。",
-      "cf": {
-        "min": 1900,
-        "max": 2100
-      },
-      "luoguDifficulty": [
-        "提高+/省选−",
-        "省选/NOI−"
-      ],
-      "rationale": "本章按综合做题能力组织，不要求区间中的每道题都使用这些算法，也不要求学完所有专题才进入下一章。",
+      "title": "图论进阶：结构分解与流量建模",
+      "description": "能利用图结构缩小问题，或把选择约束转换成匹配 / 流模型，并证明转换前后解的对应关系。",
+      "goal": "能利用图结构缩小问题，或把选择约束转换成匹配 / 流模型，并证明转换前后解的对应关系。",
+      "rationale": "结构分解和流建模分别有终点；新增高级模型显式标为扩展，避免全变必修。",
+      "entryText": "图遍历、DAG、最短路、并查集与基础 DP；残量网络是新模型，不要求先学高级数据结构。",
+      "completionMode": "core",
       "completionCriteria": [
-        "独立完成本章综合题组中的新题",
-        "覆盖至少两种已学方法；后续阶段回收前面基础工具",
-        "说明正确性、复杂度，并记录一次完整复盘"
+        "核心覆盖结构分解、关系约束、匹配和流模型；解释每类模型维护的信息。",
+        "网络流必须证明可行解映射、目标值对应和方案恢复。",
+        "对重边、残量反向边、容量溢出、断开图给出测试；选修费用流另外核验费用与流量。"
       ],
+      "scopeDescription": "2-SAT、边双 / 点双进阶与圆方树、费用流作为明确扩展，逐个完成。基础割点 / 桥不能被扩展专题挤掉。",
       "prerequisites": {
         "stageIds": [
-          "stage-10"
+          "stage-06",
+          "stage-05"
         ]
       },
+      "luoguDifficulty": [],
+      "sections": [
+        {
+          "id": "lp2-sec-advanced-graphs-graph-decomposition",
+          "title": "A · 结构分解",
+          "scope": "core",
+          "routeId": null,
+          "description": "有向图结构：核心：Tarjan 强连通、缩点、DAG DP。2-SAT 为本章扩展：先建立蕴含关系，再验证可满足性与赋值。\n无向图结构：核心：割点与桥；重边和父边编号。边双 / 点双深入、桥树和圆方树按模型扩展，分别核验结构定义。",
+          "completionCriteria": [
+            "强连通、缩点、桥与割点完整收尾；区分有向与无向 lowlink 的含义。"
+          ],
+          "gateIds": [
+            "lp2-advanced-graphs-graph-decomposition-scc",
+            "lp2-advanced-graphs-graph-decomposition-bridges-cuts",
+            "lp2-advanced-graphs-graph-decomposition-practice-assessment"
+          ],
+          "prerequisites": {
+            "gateIds": [
+              "lp2-graph-trees-paths-dependency-topological",
+              "lp2-search-search-states-dfs-backtracking"
+            ],
+            "topicIds": []
+          }
+        },
+        {
+          "id": "lp2-sec-advanced-graphs-relations-matching",
+          "title": "B · 关系与匹配",
+          "scope": "core",
+          "routeId": null,
+          "description": "关系约束：核心：带权 / 奇偶并查集，差值关系、方向与一致性。差分约束同章扩展，依赖第 6 章负环与最短路扩展。\n二分图与匹配：染色判定；增广路与匈牙利算法；匹配、覆盖与实际分配模型。",
+          "completionCriteria": [
+            "带权关系能解释势差方向；二分图匹配能还原实际分配。"
+          ],
+          "gateIds": [
+            "lp2-advanced-graphs-relations-matching-weighted-dsu",
+            "lp2-advanced-graphs-relations-matching-bipartite",
+            "lp2-advanced-graphs-relations-matching-practice-assessment"
+          ],
+          "prerequisites": {
+            "gateIds": [
+              "lp2-advanced-graphs-graph-decomposition-practice-assessment",
+              "lp2-graph-trees-connectivity-cost-dsu"
+            ],
+            "topicIds": []
+          }
+        },
+        {
+          "id": "lp2-sec-advanced-graphs-flow-models",
+          "title": "C · 容量与目标函数",
+          "scope": "core",
+          "routeId": null,
+          "description": "最大流与最小割：残量网络、Dinic；容量含义；最大流最小割；最大权闭合子图与割模型。",
+          "completionCriteria": [
+            "理解残量边和增广；推导 Dinic、最小割及一个完整建模。"
+          ],
+          "gateIds": [
+            "lp2-advanced-graphs-flow-models-residual-dinic",
+            "lp2-advanced-graphs-flow-models-mincut",
+            "lp2-advanced-graphs-flow-models-practice-assessment"
+          ],
+          "prerequisites": {
+            "gateIds": [
+              "lp2-advanced-graphs-relations-matching-practice-assessment"
+            ],
+            "topicIds": []
+          }
+        },
+        {
+          "id": "lp2-sec-advanced-graphs-graph-extensions",
+          "title": "D · 约束与费用扩展",
+          "scope": "elective",
+          "routeId": null,
+          "description": "约束、双连通与费用扩展：2-SAT、边双 / 点双深入、圆方树、差分约束、最小费用流逐项选学；按各自直接先修与模型单独验收。",
+          "completionCriteria": [
+            "2-SAT、双连通进阶、最小费用流按各自先修选学与验证。"
+          ],
+          "gateIds": [
+            "lp2-advanced-graphs-graph-extensions-two-sat",
+            "lp2-advanced-graphs-graph-extensions-biconnected",
+            "lp2-advanced-graphs-graph-extensions-difference-constraints",
+            "lp2-advanced-graphs-graph-extensions-mincost",
+            "lp2-advanced-graphs-graph-extensions-practice-assessment"
+          ],
+          "prerequisites": {
+            "gateIds": [
+              "lp2-advanced-graphs-graph-decomposition-scc"
+            ],
+            "topicIds": []
+          }
+        }
+      ],
       "gates": [
         {
-          "id": "stage-11-gate-01",
+          "id": "lp2-advanced-graphs-graph-decomposition-scc",
           "index": 1,
-          "title": "斜率优化：转移的几何表达",
+          "title": "强连通分量与缩点",
           "kind": "learning",
-          "topicIds": [
-            "algorithm-content-feishu-part-3-9"
-          ],
-          "cf": {
-            "min": 1900,
-            "max": 2100
-          },
-          "luoguDifficulty": [
-            "提高+/省选−",
-            "省选/NOI−"
-          ],
-          "description": "学习斜率优化的适用条件、基本实现与复杂度，再用独立练习验证。",
-          "goals": [
-            "解释斜率优化的核心不变量与适用边界",
-            "独立写出实现并说明时间与空间复杂度",
-            "完成基础练习与一道迁移题，记录失败原因"
-          ],
-          "prerequisites": {
-            "gateIds": [],
-            "topicIds": []
-          },
+          "sectionId": "lp2-sec-advanced-graphs-graph-decomposition",
+          "sectionTitle": "A · 结构分解",
+          "routeId": null,
+          "scope": "core",
           "optional": false,
-          "scope": "题目难度仅为本关迁移练习的选题窗口；初学专项题可低于此区间。",
-          "learningTitle": "DP 优化进阶 · 把候选转移画成直线",
-          "learningDescription": "数据结构优化 DP 已让你关注候选转移的维护，本关继续整理式子，看能否转成直线求最值。只有满足相应形式与顺序条件才使用斜率优化，条件不足时再寻找别的结构。",
+          "topicIds": [
+            "algorithm-强连通分量-tarjan-"
+          ],
+          "luoguDifficulty": [],
+          "description": "理解栈内状态与lowlink，缩点后在DAG上处理贡献；不能混用无向父边规则。",
+          "goals": [
+            "区分DFS访问与仍在栈内的顶点",
+            "正确提取强连通分量并缩点",
+            "验证缩点图无环且贡献未丢失"
+          ],
+          "learningTitle": "强连通分量与缩点",
+          "learningDescription": "理解栈内状态与lowlink，缩点后在DAG上处理贡献；不能混用无向父边规则。",
+          "prerequisites": {
+            "gateIds": [
+              "lp2-graph-trees-paths-dependency-topological",
+              "lp2-search-search-states-dfs-backtracking"
+            ],
+            "topicIds": [
+              "xcpc-拓扑序-1",
+              "xcpc-图上dp-1",
+              "algorithm-content-feishu-part-2-1",
+              "algorithm-backtracking"
+            ]
+          },
           "threadGateIds": [
-            "stage-09-gate-06",
-            "stage-09-gate-05",
-            "stage-13-gate-02"
+            "lp2-advanced-graphs-graph-decomposition-bridges-cuts"
           ]
         },
         {
-          "id": "stage-11-gate-02",
+          "id": "lp2-advanced-graphs-graph-decomposition-bridges-cuts",
           "index": 2,
-          "title": "分治 DP：决策单调性前提",
+          "title": "割点、桥与重边",
           "kind": "learning",
+          "sectionId": "lp2-sec-advanced-graphs-graph-decomposition",
+          "sectionTitle": "A · 结构分解",
+          "routeId": null,
+          "scope": "core",
+          "optional": false,
           "topicIds": [
-            "xcpc-分治dp-1",
-            "algorithm-content-feishu-part-3-10"
+            "xcpc-割点-割边-1"
           ],
-          "cf": {
-            "min": 1900,
-            "max": 2100
-          },
-          "luoguDifficulty": [
-            "提高+/省选−",
-            "省选/NOI−"
-          ],
-          "description": "学习分治 DP、决策单调性的适用条件、基本实现与复杂度，再用独立练习验证。",
+          "luoguDifficulty": [],
+          "description": "用父边编号处理无向重边，分清割点与桥条件，根节点特殊处理。",
           "goals": [
-            "解释分治 DP、决策单调性的核心不变量与适用边界",
-            "独立写出实现并说明时间与空间复杂度",
-            "完成基础练习与一道迁移题，记录失败原因"
+            "分别写出桥和割点判断条件",
+            "用边编号处理重边与父边",
+            "覆盖根节点、孤立点与多个连通分量"
           ],
+          "learningTitle": "割点、桥与重边",
+          "learningDescription": "用父边编号处理无向重边，分清割点与桥条件，根节点特殊处理。",
           "prerequisites": {
             "gateIds": [
-              "stage-11-gate-01"
+              "lp2-advanced-graphs-graph-decomposition-scc"
             ],
-            "topicIds": []
+            "topicIds": [
+              "algorithm-强连通分量-tarjan-"
+            ]
           },
-          "optional": false,
-          "scope": "题目难度仅为本关迁移练习的选题窗口；初学专项题可低于此区间。",
-          "learningTitle": "DP 优化进阶 · 证明决策会向前走",
-          "learningDescription": "斜率优化利用转移的代数形式，分治 DP 则利用最优决策位置的单调性。先验证或证明这个性质，再缩小每个状态的候选范围，不能只凭样例观察就套上优化。",
           "threadGateIds": [
-            "stage-05-gate-02",
-            "stage-06-gate-06",
-            "stage-11-gate-01"
+            "lp2-advanced-graphs-graph-decomposition-scc",
+            "lp2-advanced-graphs-graph-decomposition-practice-assessment"
           ]
         },
         {
-          "id": "stage-11-gate-03",
+          "id": "lp2-advanced-graphs-graph-decomposition-practice-assessment",
           "index": 3,
-          "title": "主席树：历史版本与区间第 k 小",
-          "kind": "learning",
-          "topicIds": [
-            "algorithm-content-feishu-part-6-12"
-          ],
-          "cf": {
-            "min": 1900,
-            "max": 2100
-          },
-          "luoguDifficulty": [
-            "提高+/省选−",
-            "省选/NOI−"
-          ],
-          "description": "学习主席树的适用条件、基本实现与复杂度，再用独立练习验证。",
-          "goals": [
-            "解释主席树的核心不变量与适用边界",
-            "独立写出实现并说明时间与空间复杂度",
-            "完成基础练习与一道迁移题，记录失败原因"
-          ],
-          "prerequisites": {
-            "gateIds": [
-              "stage-11-gate-02"
-            ],
-            "topicIds": []
-          },
-          "optional": false,
-          "scope": "题目难度仅为本关迁移练习的选题窗口；初学专项题可低于此区间。",
-          "learningTitle": "线段树进阶 · 保留每次修改的版本",
-          "learningDescription": "普通线段树修改后覆盖旧信息，可持久化思路只复制受影响的路径。把前缀版本与值域统计结合，理解历史查询和区间第 k 小如何从版本差异中得到答案。",
-          "threadGateIds": [
-            "stage-07-gate-02",
-            "stage-03-gate-01",
-            "stage-04-gate-10"
-          ]
-        },
-        {
-          "id": "stage-11-gate-04",
-          "index": 4,
-          "title": "混练：离散化、主席树与二分",
-          "kind": "mixed",
-          "topicIds": [
-            "xcpc-离散-1",
-            "algorithm-content-feishu-part-6-12",
-            "algorithm-二分查找"
-          ],
-          "cf": {
-            "min": 1900,
-            "max": 2100
-          },
-          "luoguDifficulty": [
-            "提高+/省选−",
-            "省选/NOI−"
-          ],
-          "description": "混合使用离散化、主席树、二分查找；选题时隐藏专题标签，先独立辨型再实现。",
-          "goals": [
-            "在不看标签与题解的情况下提出完整思路",
-            "独立实现并通过所选平台的评测",
-            "复盘关键转化、错误解法与复杂度瓶颈"
-          ],
-          "prerequisites": {
-            "gateIds": [
-              "stage-11-gate-03"
-            ],
-            "topicIds": []
-          },
-          "optional": false,
-          "scope": "区间只用于选择综合新题，不保证单题涵盖列出的所有算法。",
-          "learningTitle": "版本混练 · 在值域中定位第 k 个",
-          "learningDescription": "先用离散化整理值域，再比较前缀版本中的数量差，沿左右子树定位第 k 小。把它与普通二分的判定过程对照，理解答案搜索怎样被嵌进数据结构内部。",
-          "threadGateIds": [
-            "stage-11-gate-03",
-            "stage-04-gate-10",
-            "stage-03-gate-03"
-          ]
-        },
-        {
-          "id": "stage-11-gate-05",
-          "index": 5,
-          "title": "点分治：树上路径分解",
-          "kind": "learning",
-          "topicIds": [
-            "algorithm-content-feishu-part-7-11"
-          ],
-          "cf": {
-            "min": 1900,
-            "max": 2100
-          },
-          "luoguDifficulty": [
-            "提高+/省选−",
-            "省选/NOI−"
-          ],
-          "description": "学习点分治的适用条件、基本实现与复杂度，再用独立练习验证。",
-          "goals": [
-            "解释点分治的核心不变量与适用边界",
-            "独立写出实现并说明时间与空间复杂度",
-            "完成基础练习与一道迁移题，记录失败原因"
-          ],
-          "prerequisites": {
-            "gateIds": [
-              "stage-11-gate-04"
-            ],
-            "topicIds": []
-          },
-          "optional": false,
-          "scope": "题目难度仅为本关迁移练习的选题窗口；初学专项题可低于此区间。",
-          "learningTitle": "树分治入门 · 按路径经过的位置拆开",
-          "learningDescription": "LCA 和直径从路径性质寻找摘要，点分治则选择分治中心分开统计。区分经过中心与留在子树内的路径，处理重复计数后递归，让全树路径问题逐层变小。",
-          "threadGateIds": [
-            "stage-08-gate-02",
-            "stage-09-gate-11",
-            "stage-12-gate-05"
-          ]
-        },
-        {
-          "id": "stage-11-gate-06",
-          "index": 6,
-          "title": "启发式合并：小并大代价分析",
-          "kind": "learning",
-          "topicIds": [
-            "xcpc-树的启发式合并-1"
-          ],
-          "cf": {
-            "min": 1900,
-            "max": 2100
-          },
-          "luoguDifficulty": [
-            "提高+/省选−",
-            "省选/NOI−"
-          ],
-          "description": "学习启发式合并的适用条件、基本实现与复杂度，再用独立练习验证。",
-          "goals": [
-            "解释启发式合并的核心不变量与适用边界",
-            "独立写出实现并说明时间与空间复杂度",
-            "完成基础练习与一道迁移题，记录失败原因"
-          ],
-          "prerequisites": {
-            "gateIds": [
-              "stage-11-gate-05"
-            ],
-            "topicIds": []
-          },
-          "optional": false,
-          "scope": "题目难度仅为本关迁移练习的选题窗口；初学专项题可低于此区间。",
-          "learningTitle": "树上合并 · 从小并大解释总成本",
-          "learningDescription": "树形 DP 汇总子树时，复杂信息的反复合并可能成为瓶颈。让较小集合迁入较大集合，跟踪一个元素被移动多少次，学会用整体代价解释看似昂贵的局部操作。",
-          "threadGateIds": [
-            "stage-07-gate-07",
-            "stage-02-gate-01",
-            "stage-13-gate-01"
-          ]
-        },
-        {
-          "id": "stage-11-gate-07",
-          "index": 7,
-          "title": "后缀数组：排序与 LCP",
-          "kind": "learning",
-          "topicIds": [
-            "algorithm-content-feishu-part-4-7"
-          ],
-          "cf": {
-            "min": 1900,
-            "max": 2100
-          },
-          "luoguDifficulty": [
-            "提高+/省选−",
-            "省选/NOI−"
-          ],
-          "description": "学习后缀数组的适用条件、基本实现与复杂度，再用独立练习验证。",
-          "goals": [
-            "解释后缀数组的核心不变量与适用边界",
-            "独立写出实现并说明时间与空间复杂度",
-            "完成基础练习与一道迁移题，记录失败原因"
-          ],
-          "prerequisites": {
-            "gateIds": [
-              "stage-11-gate-06"
-            ],
-            "topicIds": []
-          },
-          "optional": false,
-          "scope": "题目难度仅为本关迁移练习的选题窗口；初学专项题可低于此区间。",
-          "learningTitle": "后缀数组入门 · 把子串放进排序中",
-          "learningDescription": "前缀匹配和哈希擅长局部比较，后缀数组把所有后缀排好序，让相似片段相邻。借助 LCP 观察重复与公共子串，建立从字符串内容到有序区间的另一条路径。",
-          "threadGateIds": [
-            "stage-10-gate-06",
-            "stage-07-gate-09",
-            "stage-13-gate-03"
-          ]
-        },
-        {
-          "id": "stage-11-gate-08",
-          "index": 8,
-          "title": "混练：后缀数组、哈希与二分",
-          "kind": "mixed",
-          "topicIds": [
-            "algorithm-content-feishu-part-4-7",
-            "algorithm-content-feishu-part-4-1",
-            "algorithm-二分答案"
-          ],
-          "cf": {
-            "min": 1900,
-            "max": 2100
-          },
-          "luoguDifficulty": [
-            "提高+/省选−",
-            "省选/NOI−"
-          ],
-          "description": "混合使用后缀数组、字符串哈希、二分答案；选题时隐藏专题标签，先独立辨型再实现。",
-          "goals": [
-            "在不看标签与题解的情况下提出完整思路",
-            "独立实现并通过所选平台的评测",
-            "复盘关键转化、错误解法与复杂度瓶颈"
-          ],
-          "prerequisites": {
-            "gateIds": [
-              "stage-11-gate-07"
-            ],
-            "topicIds": []
-          },
-          "optional": false,
-          "scope": "区间只用于选择综合新题，不保证单题涵盖列出的所有算法。",
-          "learningTitle": "子串混练 · 统一比较、排序与判定",
-          "learningDescription": "对重复片段或公共子串问题，比较哈希检查与后缀数组加 LCP 的表达。若答案满足单调性，再引入二分；用多种解法交叉验证，也说明每种方案的风险与代价。",
-          "threadGateIds": [
-            "stage-11-gate-07",
-            "stage-07-gate-09",
-            "stage-04-gate-01"
-          ]
-        },
-        {
-          "id": "stage-11-gate-09",
-          "index": 9,
-          "title": "最小割模型：目标函数等价",
-          "kind": "learning",
-          "topicIds": [
-            "algorithm-最小割模型"
-          ],
-          "cf": {
-            "min": 1900,
-            "max": 2100
-          },
-          "luoguDifficulty": [
-            "提高+/省选−",
-            "省选/NOI−"
-          ],
-          "description": "学习最小割模型的适用条件、基本实现与复杂度，再用独立练习验证。",
-          "goals": [
-            "解释最小割模型的核心不变量与适用边界",
-            "独立写出实现并说明时间与空间复杂度",
-            "完成基础练习与一道迁移题，记录失败原因"
-          ],
-          "prerequisites": {
-            "gateIds": [
-              "stage-11-gate-08"
-            ],
-            "topicIds": []
-          },
-          "optional": false,
-          "scope": "题目难度仅为本关迁移练习的选题窗口；初学专项题可低于此区间。",
-          "learningTitle": "网络流进阶 · 让割的代价等于目标",
-          "learningDescription": "最大流算出可通过的总量，最小割换个角度描述分开两侧的代价。本关从目标函数和限制逐项构图，证明合法选择与割之间的对应，为闭合子图等模型铺路。",
-          "threadGateIds": [
-            "stage-10-gate-03",
-            "stage-10-gate-04",
-            "stage-13-gate-09"
-          ]
-        },
-        {
-          "id": "stage-11-gate-10",
-          "index": 10,
-          "title": "CRT 与扩展欧几里得",
-          "kind": "learning",
-          "topicIds": [
-            "algorithm-content-feishu-part-5-3-2",
-            "xcpc-扩展欧几里得-1"
-          ],
-          "cf": {
-            "min": 1900,
-            "max": 2100
-          },
-          "luoguDifficulty": [
-            "提高+/省选−",
-            "省选/NOI−"
-          ],
-          "description": "学习CRT 与扩展、扩展欧几里得的适用条件、基本实现与复杂度，再用独立练习验证。",
-          "goals": [
-            "解释CRT 与扩展、扩展欧几里得的核心不变量与适用边界",
-            "独立写出实现并说明时间与空间复杂度",
-            "完成基础练习与一道迁移题，记录失败原因"
-          ],
-          "prerequisites": {
-            "gateIds": [
-              "stage-11-gate-09"
-            ],
-            "topicIds": []
-          },
-          "optional": false,
-          "scope": "题目难度仅为本关迁移练习的选题窗口；初学专项题可低于此区间。",
-          "learningTitle": "数论进阶 · 合并多条同余约束",
-          "learningDescription": "GCD 与逆元解释了部分整除关系，现在用扩展欧几里得求解线性组合，再用 CRT 合并同余条件。遇到非互质模数时先判断兼容性，别把存在条件藏进公式。",
-          "threadGateIds": [
-            "stage-02-gate-09",
-            "stage-06-gate-10",
-            "stage-12-gate-09"
-          ]
-        },
-        {
-          "id": "stage-11-gate-11",
-          "index": 11,
-          "title": "旋转卡壳：凸包上的指针",
-          "kind": "learning",
-          "topicIds": [
-            "algorithm-content-feishu-part-8-2",
-            "algorithm-content-feishu-part-8-1"
-          ],
-          "cf": {
-            "min": 1900,
-            "max": 2100
-          },
-          "luoguDifficulty": [
-            "提高+/省选−",
-            "省选/NOI−"
-          ],
-          "description": "学习旋转卡壳、凸包的适用条件、基本实现与复杂度，再用独立练习验证。",
-          "goals": [
-            "解释旋转卡壳、凸包的核心不变量与适用边界",
-            "独立写出实现并说明时间与空间复杂度",
-            "完成基础练习与一道迁移题，记录失败原因"
-          ],
-          "prerequisites": {
-            "gateIds": [
-              "stage-11-gate-10"
-            ],
-            "topicIds": []
-          },
-          "optional": false,
-          "scope": "题目难度仅为本关迁移练习的选题窗口；初学专项题可低于此区间。",
-          "learningTitle": "凸包进阶 · 让指针沿边界转动",
-          "learningDescription": "凸包筛掉了内部点，旋转卡壳进一步利用凸性寻找极值位置。把双指针的有序推进迁移到边界上，核对支持点为何不必反复回退，再处理最远点等几何问题。",
-          "threadGateIds": [
-            "stage-10-gate-11",
-            "stage-03-gate-05",
-            "stage-13-gate-11"
-          ]
-        },
-        {
-          "id": "stage-11-gate-12",
-          "index": 12,
-          "title": "挑战：DP 优化、树分解与建模综合",
+          "title": "混练验收：结构分解",
           "kind": "challenge",
+          "sectionId": "lp2-sec-advanced-graphs-graph-decomposition",
+          "sectionTitle": "A · 结构分解",
+          "routeId": null,
+          "scope": "core",
+          "optional": false,
           "topicIds": [
-            "algorithm-content-feishu-part-3-9",
-            "algorithm-content-feishu-part-7-11",
-            "algorithm-最小割模型"
+            "algorithm-强连通分量-tarjan-",
+            "xcpc-割点-割边-1"
           ],
-          "cf": {
-            "min": 1900,
-            "max": 2100
-          },
-          "luoguDifficulty": [
-            "提高+/省选−",
-            "省选/NOI−"
-          ],
-          "description": "本阶段以斜率优化、点分治、最小割模型等已学方法为参考，混排新题，检验独立推导与组合能力。",
+          "luoguDifficulty": [],
+          "description": "围绕结构分解完成变化任务与独立应用，核对方法选择、实现和边界。",
           "goals": [
-            "在不看标签与题解的情况下提出完整思路",
-            "独立实现并通过所选平台的评测",
-            "复盘关键转化、错误解法与复杂度瓶颈"
+            "强连通、缩点、桥与割点完整收尾；区分有向与无向 lowlink 的含义。",
+            "独立完成结构分解的变化任务，说明选择方法的理由",
+            "检查边界或用小规模对照验证，并记录本段的一次错误与修正"
           ],
+          "learningTitle": "结构分解 · 独立验收",
+          "learningDescription": "组合运用强连通分量与缩点、割点、桥与重边，先比较不同方法，再独立完成无标签任务并记录验证结果。",
           "prerequisites": {
             "gateIds": [
-              "stage-11-gate-11"
+              "lp2-advanced-graphs-graph-decomposition-scc",
+              "lp2-advanced-graphs-graph-decomposition-bridges-cuts"
             ],
-            "topicIds": []
+            "topicIds": [
+              "algorithm-强连通分量-tarjan-",
+              "xcpc-割点-割边-1"
+            ]
           },
-          "optional": false,
-          "scope": "区间只用于选择综合新题，不保证单题涵盖列出的所有算法。",
-          "learningTitle": "迁移挑战 · 证明转化带来的节省",
-          "learningDescription": "从 DP 转移、树路径与选择代价中各取新题，练习斜率表达、分治统计和割模型。重点交代优化前的朴素模型及转化成立的条件，让高级工具有清楚的来处。",
           "threadGateIds": [
-            "stage-11-gate-01",
-            "stage-11-gate-05",
-            "stage-11-gate-09"
+            "lp2-advanced-graphs-graph-decomposition-bridges-cuts",
+            "lp2-advanced-graphs-relations-matching-weighted-dsu"
+          ]
+        },
+        {
+          "id": "lp2-advanced-graphs-relations-matching-weighted-dsu",
+          "index": 4,
+          "title": "带权与奇偶并查集",
+          "kind": "learning",
+          "sectionId": "lp2-sec-advanced-graphs-relations-matching",
+          "sectionTitle": "B · 关系与匹配",
+          "routeId": null,
+          "scope": "core",
+          "optional": false,
+          "topicIds": [
+            "xcpc-带权并查集-1"
+          ],
+          "luoguDifficulty": [],
+          "description": "明确势差方向和合并公式，检测约束矛盾；与简单约束枚举校验。",
+          "goals": [
+            "定义势差的方向与累加关系",
+            "推导不同合并方向的更新公式",
+            "用约束序列发现矛盾并与枚举核对"
+          ],
+          "learningTitle": "带权与奇偶并查集",
+          "learningDescription": "明确势差方向和合并公式，检测约束矛盾；与简单约束枚举校验。",
+          "prerequisites": {
+            "gateIds": [
+              "lp2-advanced-graphs-graph-decomposition-practice-assessment",
+              "lp2-graph-trees-connectivity-cost-dsu"
+            ],
+            "topicIds": [
+              "algorithm-强连通分量-tarjan-",
+              "xcpc-割点-割边-1",
+              "xcpc-并查集基础-1"
+            ]
+          },
+          "threadGateIds": [
+            "lp2-advanced-graphs-graph-decomposition-practice-assessment",
+            "lp2-advanced-graphs-relations-matching-bipartite"
+          ]
+        },
+        {
+          "id": "lp2-advanced-graphs-relations-matching-bipartite",
+          "index": 5,
+          "title": "二分图判定与匹配",
+          "kind": "learning",
+          "sectionId": "lp2-sec-advanced-graphs-relations-matching",
+          "sectionTitle": "B · 关系与匹配",
+          "routeId": null,
+          "scope": "core",
+          "optional": false,
+          "topicIds": [
+            "xcpc-二分图判定-1",
+            "xcpc-匈牙利算法-1"
+          ],
+          "luoguDifficulty": [],
+          "description": "染色判定、增广路匹配与实际分配恢复；比较单次匹配与流模型。",
+          "goals": [
+            "判断图是否能够二染色",
+            "完成增广并还原实际匹配对",
+            "与小图枚举比较匹配规模"
+          ],
+          "learningTitle": "二分图判定与匹配",
+          "learningDescription": "染色判定、增广路匹配与实际分配恢复；比较单次匹配与流模型。",
+          "prerequisites": {
+            "gateIds": [
+              "lp2-advanced-graphs-relations-matching-weighted-dsu"
+            ],
+            "topicIds": [
+              "xcpc-带权并查集-1"
+            ]
+          },
+          "threadGateIds": [
+            "lp2-advanced-graphs-relations-matching-weighted-dsu",
+            "lp2-advanced-graphs-relations-matching-practice-assessment"
+          ]
+        },
+        {
+          "id": "lp2-advanced-graphs-relations-matching-practice-assessment",
+          "index": 6,
+          "title": "混练验收：关系与匹配",
+          "kind": "challenge",
+          "sectionId": "lp2-sec-advanced-graphs-relations-matching",
+          "sectionTitle": "B · 关系与匹配",
+          "routeId": null,
+          "scope": "core",
+          "optional": false,
+          "topicIds": [
+            "xcpc-带权并查集-1",
+            "xcpc-二分图判定-1",
+            "xcpc-匈牙利算法-1"
+          ],
+          "luoguDifficulty": [],
+          "description": "围绕关系与匹配完成变化任务与独立应用，核对方法选择、实现和边界。",
+          "goals": [
+            "带权关系能解释势差方向；二分图匹配能还原实际分配。",
+            "独立完成关系与匹配的变化任务，说明选择方法的理由",
+            "检查边界或用小规模对照验证，并记录本段的一次错误与修正"
+          ],
+          "learningTitle": "关系与匹配 · 独立验收",
+          "learningDescription": "组合运用带权与奇偶并查集、二分图判定与匹配，先比较不同方法，再独立完成无标签任务并记录验证结果。",
+          "prerequisites": {
+            "gateIds": [
+              "lp2-advanced-graphs-relations-matching-weighted-dsu",
+              "lp2-advanced-graphs-relations-matching-bipartite"
+            ],
+            "topicIds": [
+              "xcpc-带权并查集-1",
+              "xcpc-二分图判定-1",
+              "xcpc-匈牙利算法-1"
+            ]
+          },
+          "threadGateIds": [
+            "lp2-advanced-graphs-relations-matching-bipartite",
+            "lp2-advanced-graphs-flow-models-residual-dinic"
+          ]
+        },
+        {
+          "id": "lp2-advanced-graphs-flow-models-residual-dinic",
+          "index": 7,
+          "title": "残量网络与 Dinic",
+          "kind": "learning",
+          "sectionId": "lp2-sec-advanced-graphs-flow-models",
+          "sectionTitle": "C · 容量与目标函数",
+          "routeId": null,
+          "scope": "core",
+          "optional": false,
+          "topicIds": [
+            "xcpc-dinic-1",
+            "algorithm-content-feishu-part-7-9-1"
+          ],
+          "luoguDifficulty": [],
+          "description": "定义容量、反向残量和增广，证明分层图算法与流守恒；避免只背加边模板。",
+          "goals": [
+            "解释反向边为何需要残量",
+            "验证增广前后流守恒和容量限制",
+            "完成分层图搜索并分析复杂度"
+          ],
+          "learningTitle": "残量网络与 Dinic",
+          "learningDescription": "定义容量、反向残量和增广，证明分层图算法与流守恒；避免只背加边模板。",
+          "prerequisites": {
+            "gateIds": [
+              "lp2-advanced-graphs-relations-matching-practice-assessment"
+            ],
+            "topicIds": [
+              "xcpc-带权并查集-1",
+              "xcpc-二分图判定-1",
+              "xcpc-匈牙利算法-1"
+            ]
+          },
+          "threadGateIds": [
+            "lp2-advanced-graphs-relations-matching-practice-assessment",
+            "lp2-advanced-graphs-flow-models-mincut"
+          ]
+        },
+        {
+          "id": "lp2-advanced-graphs-flow-models-mincut",
+          "index": 8,
+          "title": "最小割建模与闭合子图",
+          "kind": "learning",
+          "sectionId": "lp2-sec-advanced-graphs-flow-models",
+          "sectionTitle": "C · 容量与目标函数",
+          "routeId": null,
+          "scope": "core",
+          "optional": false,
+          "topicIds": [
+            "algorithm-最小割模型",
+            "algorithm-最大权闭合子图"
+          ],
+          "luoguDifficulty": [],
+          "description": "建立高级割模型的目标函数等价、足够大容量与方案恢复；逐步验证原问题到流网络的映射。",
+          "goals": [
+            "证明原方案与割之间的对应关系",
+            "选择足够大容量且避免溢出",
+            "从割恢复方案并与穷举目标值核对"
+          ],
+          "learningTitle": "最小割建模与闭合子图",
+          "learningDescription": "建立高级割模型的目标函数等价、足够大容量与方案恢复；逐步验证原问题到流网络的映射。",
+          "prerequisites": {
+            "gateIds": [
+              "lp2-advanced-graphs-flow-models-residual-dinic"
+            ],
+            "topicIds": [
+              "xcpc-dinic-1",
+              "algorithm-content-feishu-part-7-9-1"
+            ]
+          },
+          "threadGateIds": [
+            "lp2-advanced-graphs-flow-models-residual-dinic",
+            "lp2-advanced-graphs-flow-models-practice-assessment"
+          ]
+        },
+        {
+          "id": "lp2-advanced-graphs-flow-models-practice-assessment",
+          "index": 9,
+          "title": "混练验收：容量与目标函数",
+          "kind": "challenge",
+          "sectionId": "lp2-sec-advanced-graphs-flow-models",
+          "sectionTitle": "C · 容量与目标函数",
+          "routeId": null,
+          "scope": "core",
+          "optional": false,
+          "topicIds": [
+            "xcpc-dinic-1",
+            "algorithm-content-feishu-part-7-9-1",
+            "algorithm-最小割模型",
+            "algorithm-最大权闭合子图"
+          ],
+          "luoguDifficulty": [],
+          "description": "围绕容量与目标函数完成变化任务与独立应用，核对方法选择、实现和边界。",
+          "goals": [
+            "核心覆盖结构分解、关系约束、匹配和流模型；解释每类模型维护的信息。",
+            "网络流必须证明可行解映射、目标值对应和方案恢复。",
+            "对重边、残量反向边、容量溢出、断开图给出测试；选修费用流另外核验费用与流量。"
+          ],
+          "learningTitle": "容量与目标函数 · 独立验收",
+          "learningDescription": "组合运用残量网络与 Dinic、最小割建模与闭合子图，先比较不同方法，再独立完成无标签任务并记录验证结果。",
+          "prerequisites": {
+            "gateIds": [
+              "lp2-advanced-graphs-flow-models-residual-dinic",
+              "lp2-advanced-graphs-flow-models-mincut",
+              "lp2-advanced-graphs-graph-decomposition-practice-assessment",
+              "lp2-advanced-graphs-relations-matching-practice-assessment"
+            ],
+            "topicIds": [
+              "xcpc-dinic-1",
+              "algorithm-content-feishu-part-7-9-1",
+              "algorithm-最小割模型",
+              "algorithm-最大权闭合子图",
+              "algorithm-强连通分量-tarjan-",
+              "xcpc-割点-割边-1"
+            ]
+          },
+          "threadGateIds": [
+            "lp2-advanced-graphs-flow-models-mincut",
+            "lp2-advanced-graphs-graph-extensions-two-sat"
+          ]
+        },
+        {
+          "id": "lp2-advanced-graphs-graph-extensions-two-sat",
+          "index": 10,
+          "title": "2-SAT 与蕴含图",
+          "kind": "learning",
+          "sectionId": "lp2-sec-advanced-graphs-graph-extensions",
+          "sectionTitle": "D · 约束与费用扩展",
+          "routeId": null,
+          "scope": "elective",
+          "optional": true,
+          "topicIds": [
+            "algorithm-content-feishu-part-7-10"
+          ],
+          "luoguDifficulty": [],
+          "description": "按逻辑约束构造蕴含边，用强连通判矛盾并说明赋值恢复。",
+          "goals": [
+            "把每条逻辑约束转成蕴含边",
+            "用强连通分量判断矛盾",
+            "恢复赋值并代回全部原约束"
+          ],
+          "learningTitle": "2-SAT 与蕴含图",
+          "learningDescription": "按逻辑约束构造蕴含边，用强连通判矛盾并说明赋值恢复。",
+          "prerequisites": {
+            "gateIds": [
+              "lp2-advanced-graphs-graph-decomposition-scc"
+            ],
+            "topicIds": [
+              "algorithm-强连通分量-tarjan-"
+            ]
+          },
+          "threadGateIds": [
+            "lp2-advanced-graphs-flow-models-practice-assessment",
+            "lp2-advanced-graphs-graph-extensions-biconnected"
+          ]
+        },
+        {
+          "id": "lp2-advanced-graphs-graph-extensions-biconnected",
+          "index": 11,
+          "title": "双连通与圆方结构",
+          "kind": "learning",
+          "sectionId": "lp2-sec-advanced-graphs-graph-extensions",
+          "sectionTitle": "D · 约束与费用扩展",
+          "routeId": null,
+          "scope": "elective",
+          "optional": true,
+          "topicIds": [
+            "algorithm-边双连通分量",
+            "algorithm-点双连通分量",
+            "xcpc-圆方树-1"
+          ],
+          "luoguDifficulty": [],
+          "description": "分别推导边双与点双，圆方树高级扩展；区分分量和割点的重叠。",
+          "goals": [
+            "区分边双与点双分量的定义",
+            "正确表示割点与分量的关联",
+            "用删除边或顶点的暴力验证结构"
+          ],
+          "learningTitle": "双连通与圆方结构",
+          "learningDescription": "分别推导边双与点双，圆方树高级扩展；区分分量和割点的重叠。",
+          "prerequisites": {
+            "gateIds": [
+              "lp2-advanced-graphs-graph-extensions-two-sat",
+              "lp2-advanced-graphs-graph-decomposition-bridges-cuts"
+            ],
+            "topicIds": [
+              "algorithm-content-feishu-part-7-10",
+              "xcpc-割点-割边-1"
+            ]
+          },
+          "threadGateIds": [
+            "lp2-advanced-graphs-graph-extensions-two-sat",
+            "lp2-advanced-graphs-graph-extensions-difference-constraints"
+          ]
+        },
+        {
+          "id": "lp2-advanced-graphs-graph-extensions-difference-constraints",
+          "index": 12,
+          "title": "差分约束与负环",
+          "kind": "learning",
+          "sectionId": "lp2-sec-advanced-graphs-graph-extensions",
+          "sectionTitle": "D · 约束与费用扩展",
+          "routeId": null,
+          "scope": "elective",
+          "optional": true,
+          "topicIds": [
+            "algorithm-content-feishu-part-7-6"
+          ],
+          "luoguDifficulty": [],
+          "description": "把不等式翻译成有向边，先补负边/负环扩展；说明可行解、不可行与超源点。",
+          "goals": [
+            "将不等式方向转换成正确的边",
+            "说明超源点和负环的含义",
+            "把求得的势值代回原约束验证"
+          ],
+          "learningTitle": "差分约束与负环",
+          "learningDescription": "把不等式翻译成有向边，先补负边/负环扩展；说明可行解、不可行与超源点。",
+          "prerequisites": {
+            "gateIds": [
+              "lp2-advanced-graphs-graph-extensions-biconnected",
+              "lp2-graph-trees-paths-dependency-negative-edges"
+            ],
+            "topicIds": [
+              "algorithm-边双连通分量",
+              "algorithm-点双连通分量",
+              "xcpc-圆方树-1",
+              "xcpc-bellman-ford-1"
+            ]
+          },
+          "threadGateIds": [
+            "lp2-advanced-graphs-graph-extensions-biconnected",
+            "lp2-advanced-graphs-graph-extensions-mincost"
+          ]
+        },
+        {
+          "id": "lp2-advanced-graphs-graph-extensions-mincost",
+          "index": 13,
+          "title": "最小费用流",
+          "kind": "learning",
+          "sectionId": "lp2-sec-advanced-graphs-graph-extensions",
+          "sectionTitle": "D · 约束与费用扩展",
+          "routeId": null,
+          "scope": "elective",
+          "optional": true,
+          "topicIds": [
+            "algorithm-content-feishu-part-7-9-3"
+          ],
+          "luoguDifficulty": [],
+          "description": "定义流量与费用目标、负费用反向边和路径选择，验证费用与可行方案对应。",
+          "goals": [
+            "核验增广路径的费用与流量",
+            "正确维护负费用反向边",
+            "恢复方案并核对总费用"
+          ],
+          "learningTitle": "最小费用流",
+          "learningDescription": "定义流量与费用目标、负费用反向边和路径选择，验证费用与可行方案对应。",
+          "prerequisites": {
+            "gateIds": [
+              "lp2-advanced-graphs-graph-extensions-difference-constraints",
+              "lp2-advanced-graphs-flow-models-residual-dinic",
+              "lp2-graph-trees-paths-dependency-negative-edges"
+            ],
+            "topicIds": [
+              "algorithm-content-feishu-part-7-6",
+              "xcpc-dinic-1",
+              "algorithm-content-feishu-part-7-9-1",
+              "xcpc-bellman-ford-1"
+            ]
+          },
+          "threadGateIds": [
+            "lp2-advanced-graphs-graph-extensions-difference-constraints",
+            "lp2-advanced-graphs-graph-extensions-practice-assessment"
+          ]
+        },
+        {
+          "id": "lp2-advanced-graphs-graph-extensions-practice-assessment",
+          "index": 14,
+          "title": "混练验收：约束与费用扩展",
+          "kind": "challenge",
+          "sectionId": "lp2-sec-advanced-graphs-graph-extensions",
+          "sectionTitle": "D · 约束与费用扩展",
+          "routeId": null,
+          "scope": "elective",
+          "optional": true,
+          "topicIds": [
+            "algorithm-content-feishu-part-7-10",
+            "algorithm-边双连通分量",
+            "algorithm-点双连通分量",
+            "xcpc-圆方树-1",
+            "algorithm-content-feishu-part-7-6",
+            "algorithm-content-feishu-part-7-9-3"
+          ],
+          "luoguDifficulty": [],
+          "description": "围绕约束与费用扩展完成变化任务与独立应用，核对方法选择、实现和边界。",
+          "goals": [
+            "2-SAT、双连通进阶、最小费用流按各自先修选学与验证。",
+            "独立完成约束与费用扩展的变化任务，说明选择方法的理由",
+            "检查边界或用小规模对照验证，并记录本段的一次错误与修正"
+          ],
+          "learningTitle": "约束与费用扩展 · 独立验收",
+          "learningDescription": "组合运用2-SAT 与蕴含图、双连通与圆方结构、差分约束与负环、最小费用流，先比较不同方法，再独立完成无标签任务并记录验证结果。",
+          "prerequisites": {
+            "gateIds": [
+              "lp2-advanced-graphs-graph-extensions-two-sat",
+              "lp2-advanced-graphs-graph-extensions-biconnected",
+              "lp2-advanced-graphs-graph-extensions-difference-constraints",
+              "lp2-advanced-graphs-graph-extensions-mincost"
+            ],
+            "topicIds": [
+              "algorithm-content-feishu-part-7-10",
+              "algorithm-边双连通分量",
+              "algorithm-点双连通分量",
+              "xcpc-圆方树-1",
+              "algorithm-content-feishu-part-7-6",
+              "algorithm-content-feishu-part-7-9-3"
+            ]
+          },
+          "threadGateIds": [
+            "lp2-advanced-graphs-graph-extensions-mincost"
           ]
         }
       ]
@@ -5435,490 +8148,694 @@
     {
       "id": "stage-12",
       "index": 12,
-      "title": "突破离线、代数与结构瓶颈",
-      "description": "发现离线、代数和复杂结构中的优化瓶颈并完成证明。",
-      "goal": "发现离线、代数和复杂结构中的优化瓶颈并完成证明。",
-      "cf": {
-        "min": 2100,
-        "max": 2300
-      },
-      "luoguDifficulty": [
-        "提高+/省选−",
-        "省选/NOI−"
-      ],
-      "rationale": "本章按综合做题能力组织，不要求区间中的每道题都使用这些算法，也不要求学完所有专题才进入下一章。",
+      "title": "高级数据维护：树上、离线与历史版本",
+      "description": "能识别在线要求、树结构或历史版本的特殊性，选定一种维护策略并完成复杂度证明。",
+      "goal": "能识别在线要求、树结构或历史版本的特殊性，选定一种维护策略并完成复杂度证明。",
+      "rationale": "从 A 稿含混的三条路线细化为四条，给动态有序集合独立位置；树上贡献算法、莫队变体不再全部强制打包。",
+      "entryText": "先会 LCA / DFS 序、区间维护与复杂度；每条路线另列直接先修，不要求先学进阶图论。",
+      "completionMode": "routes",
       "completionCriteria": [
-        "独立完成本章综合题组中的新题",
-        "覆盖至少两种已学方法；后续阶段回收前面基础工具",
-        "说明正确性、复杂度，并记录一次完整复盘"
+        "每条路线单独显示：未开始 / 基础完成 / 深入完成；预览仅展示要求，不记录正式学习进度。",
+        "完成一条路线，只能写“第 12 章 · 对应路线基础完成”，不表示掌握其他三条。",
+        "每条路线都提交可运行实现、复杂度分析、陌生题应用与暴力对照；无强制全修。"
       ],
+      "scopeDescription": "虚树先修 LCA＋DFS 序；树上合并需相应区间结构；CDQ 需离散化＋BIT；整体二分需二分判定＋可撤销操作；回滚并查集不用普通路径压缩。 动态有序集合路线先补二叉搜索树不变量与旋转 / 分裂合并；回滚采用按大小合并，不做普通路径压缩。",
       "prerequisites": {
         "stageIds": [
-          "stage-11"
+          "stage-06",
+          "stage-07"
         ]
       },
+      "luoguDifficulty": [],
+      "sections": [
+        {
+          "id": "lp2-sec-advanced-data-tree-route",
+          "title": "A · 树上维护路线",
+          "scope": "route",
+          "routeId": "lp2-route-tree-route",
+          "description": "树上区间维护：重链剖分＋线段树；路径 / 子树更新；边权和点权；链的拆分与合并。\n树上贡献与分解：同路线深入分支：启发式合并、线段树合并、点分治、虚树；选一种形成独立成果，不能因为学完树链剖分就默认掌握全部。",
+          "completionCriteria": [
+            "基础终点：独立完成树链剖分路径 / 子树维护；深入分支再选一种树上贡献算法。"
+          ],
+          "gateIds": [
+            "lp2-advanced-data-tree-route-hld",
+            "lp2-advanced-data-tree-route-small-large",
+            "lp2-advanced-data-tree-route-centroid-virtual",
+            "lp2-advanced-data-tree-route-practice-assessment"
+          ],
+          "prerequisites": {
+            "gateIds": [
+              "lp2-graph-trees-tree-queries-lca",
+              "lp2-graph-trees-tree-queries-dfn",
+              "lp2-range-data-segment-lazy-lazy-add"
+            ],
+            "topicIds": []
+          }
+        },
+        {
+          "id": "lp2-sec-advanced-data-offline-route",
+          "title": "B · 离线处理路线",
+          "scope": "route",
+          "routeId": "lp2-route-offline-route",
+          "description": "离线区间维护：分块与普通莫队先形成基础成果；带修改 / 回滚莫队为深入分支。说明查询能否重排、增删代价和复杂度。\n多维与答案离线：CDQ 分治；整体二分；树状数组协作；等值、排序和撤销顺序。",
+          "completionCriteria": [
+            "基础终点：分块与普通莫队；深入分支选 CDQ 或整体二分，理解处理顺序和撤销。"
+          ],
+          "gateIds": [
+            "lp2-advanced-data-offline-route-blocks-mo",
+            "lp2-advanced-data-offline-route-cdq",
+            "lp2-advanced-data-offline-route-parallel-binary",
+            "lp2-advanced-data-offline-route-mo-variants",
+            "lp2-advanced-data-offline-route-practice-assessment"
+          ],
+          "prerequisites": {
+            "gateIds": [
+              "lp2-basic-optimization-preprocessing-compression-counting",
+              "lp2-range-data-offline-selection-offline-events"
+            ],
+            "topicIds": []
+          }
+        },
+        {
+          "id": "lp2-sec-advanced-data-versions-route",
+          "title": "C · 历史与时间路线",
+          "scope": "route",
+          "routeId": "lp2-route-versions-route",
+          "description": "历史版本与时间：基础：持久化线段树、版本根、区间第 k 小。深入：不用路径压缩的回滚并查集、时间线段树与时间分治；分别验收。",
+          "completionCriteria": [
+            "先完成持久化区间第 k 小；回滚并查集＋时间分治是同路线的独立深入成果。"
+          ],
+          "gateIds": [
+            "lp2-advanced-data-versions-route-persistent-kth",
+            "lp2-advanced-data-versions-route-rollback-time",
+            "lp2-advanced-data-versions-route-practice-assessment"
+          ],
+          "prerequisites": {
+            "gateIds": [
+              "lp2-range-data-segment-lazy-segment-merge",
+              "lp2-basic-optimization-preprocessing-compression-counting"
+            ],
+            "topicIds": []
+          }
+        },
+        {
+          "id": "lp2-sec-advanced-data-ordered-route",
+          "title": "D · 动态有序集合路线",
+          "scope": "route",
+          "routeId": "lp2-route-ordered-route",
+          "description": "动态有序结构：Treap / FHQ Treap；排名、前驱后继；分裂合并；平衡性与随机化。",
+          "completionCriteria": [
+            "选一种 Treap 实现并完成排名 / 前驱后继；序列翻转等隐式键维护另设扩展。"
+          ],
+          "gateIds": [
+            "lp2-advanced-data-ordered-route-bst-treap",
+            "lp2-advanced-data-ordered-route-implicit-treap",
+            "lp2-advanced-data-ordered-route-practice-assessment"
+          ],
+          "prerequisites": {
+            "gateIds": [
+              "lp2-range-data-segment-lazy-segment-merge"
+            ],
+            "topicIds": []
+          }
+        }
+      ],
       "gates": [
         {
-          "id": "stage-12-gate-01",
+          "id": "lp2-advanced-data-tree-route-hld",
           "index": 1,
-          "title": "CDQ 分治：偏序与处理顺序",
+          "title": "树链剖分与路径区间",
           "kind": "learning",
+          "sectionId": "lp2-sec-advanced-data-tree-route",
+          "sectionTitle": "A · 树上维护路线",
+          "routeId": "lp2-route-tree-route",
+          "scope": "route",
+          "optional": true,
+          "topicIds": [
+            "xcpc-重链剖分-1",
+            "xcpc-带标记的线段树-1"
+          ],
+          "luoguDifficulty": [],
+          "description": "路径分链后接区间结构，区分边权/点权和子树区间；这是树上路线的基础终点。",
+          "goals": [
+            "证明路径被拆成少量连续区间",
+            "正确区分边权与点权端点",
+            "把路径和子树操作与暴力遍历比较"
+          ],
+          "learningTitle": "树链剖分与路径区间",
+          "learningDescription": "路径分链后接区间结构，区分边权/点权和子树区间；这是树上路线的基础终点。",
+          "prerequisites": {
+            "gateIds": [
+              "lp2-graph-trees-tree-queries-lca",
+              "lp2-graph-trees-tree-queries-dfn",
+              "lp2-range-data-segment-lazy-lazy-add"
+            ],
+            "topicIds": [
+              "xcpc-倍增-1",
+              "algorithm-content-feishu-part-7-3-3",
+              "xcpc-dfn-1",
+              "algorithm-一维前缀和",
+              "xcpc-带标记的线段树-1"
+            ]
+          },
+          "threadGateIds": [
+            "lp2-advanced-data-tree-route-small-large"
+          ]
+        },
+        {
+          "id": "lp2-advanced-data-tree-route-small-large",
+          "index": 2,
+          "title": "启发式合并与线段树合并",
+          "kind": "learning",
+          "sectionId": "lp2-sec-advanced-data-tree-route",
+          "sectionTitle": "A · 树上维护路线",
+          "routeId": "lp2-route-tree-route",
+          "scope": "elective",
+          "optional": true,
+          "topicIds": [
+            "xcpc-树的启发式合并-1",
+            "xcpc-线段树合并-1"
+          ],
+          "luoguDifficulty": [],
+          "description": "路线深入：分别说明小并大摊还与线段树节点合并代价，不能因为会树链就视为已掌握。",
+          "goals": [
+            "为所选合并方法说明摊还代价",
+            "正确维护被保留与被清空的贡献",
+            "与独立计算各子树的答案比较"
+          ],
+          "learningTitle": "启发式合并与线段树合并",
+          "learningDescription": "路线深入：分别说明小并大摊还与线段树节点合并代价，不能因为会树链就视为已掌握。",
+          "prerequisites": {
+            "gateIds": [
+              "lp2-advanced-data-tree-route-hld",
+              "lp2-graph-trees-static-trees-tree-info",
+              "lp2-range-data-segment-lazy-segment-merge"
+            ],
+            "topicIds": [
+              "xcpc-重链剖分-1",
+              "xcpc-带标记的线段树-1",
+              "xcpc-树的基本概念-1",
+              "xcpc-树的遍历-1",
+              "xcpc-基础线段树-1"
+            ]
+          },
+          "threadGateIds": [
+            "lp2-advanced-data-tree-route-hld",
+            "lp2-advanced-data-tree-route-centroid-virtual"
+          ]
+        },
+        {
+          "id": "lp2-advanced-data-tree-route-centroid-virtual",
+          "index": 3,
+          "title": "点分治与虚树分支",
+          "kind": "learning",
+          "sectionId": "lp2-sec-advanced-data-tree-route",
+          "sectionTitle": "A · 树上维护路线",
+          "routeId": "lp2-route-tree-route",
+          "scope": "elective",
+          "optional": true,
+          "topicIds": [
+            "algorithm-content-feishu-part-7-11",
+            "algorithm-content-feishu-part-7-12"
+          ],
+          "luoguDifficulty": [],
+          "description": "选一个深入分支；点分治核验重复计数，虚树先修LCA和DFS序，证明关键点压缩保留所需路径信息。",
+          "goals": [
+            "明确所选分治或压缩保留的信息",
+            "证明贡献统计不重不漏",
+            "用小树逐路径枚举核对答案"
+          ],
+          "learningTitle": "点分治与虚树分支",
+          "learningDescription": "选一个深入分支；点分治核验重复计数，虚树先修LCA和DFS序，证明关键点压缩保留所需路径信息。",
+          "prerequisites": {
+            "gateIds": [
+              "lp2-advanced-data-tree-route-hld",
+              "lp2-graph-trees-tree-queries-lca",
+              "lp2-graph-trees-tree-queries-dfn"
+            ],
+            "topicIds": [
+              "xcpc-重链剖分-1",
+              "xcpc-带标记的线段树-1",
+              "xcpc-倍增-1",
+              "algorithm-content-feishu-part-7-3-3",
+              "xcpc-dfn-1",
+              "algorithm-一维前缀和"
+            ]
+          },
+          "threadGateIds": [
+            "lp2-advanced-data-tree-route-small-large",
+            "lp2-advanced-data-tree-route-practice-assessment"
+          ]
+        },
+        {
+          "id": "lp2-advanced-data-tree-route-practice-assessment",
+          "index": 4,
+          "title": "混练验收：树上维护路线",
+          "kind": "challenge",
+          "sectionId": "lp2-sec-advanced-data-tree-route",
+          "sectionTitle": "A · 树上维护路线",
+          "routeId": "lp2-route-tree-route",
+          "scope": "route",
+          "optional": true,
+          "topicIds": [
+            "xcpc-重链剖分-1",
+            "xcpc-带标记的线段树-1"
+          ],
+          "luoguDifficulty": [],
+          "description": "围绕树上维护路线完成变化任务与独立应用，核对方法选择、实现和边界。",
+          "goals": [
+            "基础终点：独立完成树链剖分路径 / 子树维护；深入分支再选一种树上贡献算法。",
+            "独立完成树上维护路线的变化任务，说明选择方法的理由",
+            "检查边界或用小规模对照验证，并记录本段的一次错误与修正"
+          ],
+          "learningTitle": "树上维护路线 · 独立验收",
+          "learningDescription": "组合运用树链剖分与路径区间，先比较不同方法，再独立完成无标签任务并记录验证结果。",
+          "prerequisites": {
+            "gateIds": [
+              "lp2-advanced-data-tree-route-hld"
+            ],
+            "topicIds": [
+              "xcpc-重链剖分-1",
+              "xcpc-带标记的线段树-1"
+            ]
+          },
+          "threadGateIds": [
+            "lp2-advanced-data-tree-route-centroid-virtual",
+            "lp2-advanced-data-offline-route-blocks-mo"
+          ]
+        },
+        {
+          "id": "lp2-advanced-data-offline-route-blocks-mo",
+          "index": 5,
+          "title": "分块与普通莫队",
+          "kind": "learning",
+          "sectionId": "lp2-sec-advanced-data-offline-route",
+          "sectionTitle": "B · 离线处理路线",
+          "routeId": "lp2-route-offline-route",
+          "scope": "route",
+          "optional": true,
+          "topicIds": [
+            "algorithm-content-feishu-part-6-10",
+            "algorithm-content-feishu-part-9-3-3"
+          ],
+          "luoguDifficulty": [],
+          "description": "路线基础：说明允许查询重排和增删操作，比较块长、移动顺序和维护代价。",
+          "goals": [
+            "说明查询能够离线重排的前提",
+            "实现区间两端的增删维护",
+            "估计块长和指针移动总量"
+          ],
+          "learningTitle": "分块与普通莫队",
+          "learningDescription": "路线基础：说明允许查询重排和增删操作，比较块长、移动顺序和维护代价。",
+          "prerequisites": {
+            "gateIds": [
+              "lp2-basic-optimization-preprocessing-compression-counting",
+              "lp2-range-data-offline-selection-offline-events"
+            ],
+            "topicIds": [
+              "xcpc-离散-1",
+              "xcpc-桶排序-1",
+              "xcpc-扫描线-1",
+              "xcpc-树状数组基础-1"
+            ]
+          },
+          "threadGateIds": [
+            "lp2-advanced-data-tree-route-practice-assessment",
+            "lp2-advanced-data-offline-route-cdq"
+          ]
+        },
+        {
+          "id": "lp2-advanced-data-offline-route-cdq",
+          "index": 6,
+          "title": "CDQ 与多维处理顺序",
+          "kind": "learning",
+          "sectionId": "lp2-sec-advanced-data-offline-route",
+          "sectionTitle": "B · 离线处理路线",
+          "routeId": "lp2-route-offline-route",
+          "scope": "elective",
+          "optional": true,
           "topicIds": [
             "algorithm-content-feishu-part-9-3-1"
           ],
-          "cf": {
-            "min": 2100,
-            "max": 2300
-          },
-          "luoguDifficulty": [
-            "提高+/省选−",
-            "省选/NOI−"
-          ],
-          "description": "学习CDQ 分治的适用条件、基本实现与复杂度，再用独立练习验证。",
+          "luoguDifficulty": [],
+          "description": "选修多维偏序：先修离散化与BIT，证明分治、等值处理与回滚顺序。",
           "goals": [
-            "解释CDQ 分治的核心不变量与适用边界",
-            "独立写出实现并说明时间与空间复杂度",
-            "完成基础练习与一道迁移题，记录失败原因"
+            "给出分治各层处理的偏序关系",
+            "正确安排等值元素与BIT撤销",
+            "与多维条件暴力判断比较"
           ],
+          "learningTitle": "CDQ 与多维处理顺序",
+          "learningDescription": "选修多维偏序：先修离散化与BIT，证明分治、等值处理与回滚顺序。",
           "prerequisites": {
-            "gateIds": [],
-            "topicIds": []
+            "gateIds": [
+              "lp2-advanced-data-offline-route-blocks-mo",
+              "lp2-range-data-fenwick-fenwick",
+              "lp2-basic-optimization-preprocessing-compression-counting"
+            ],
+            "topicIds": [
+              "algorithm-content-feishu-part-6-10",
+              "algorithm-content-feishu-part-9-3-3",
+              "xcpc-树状数组基础-1",
+              "xcpc-离散-1",
+              "xcpc-桶排序-1"
+            ]
           },
-          "optional": false,
-          "scope": "题目难度仅为本关迁移练习的选题窗口；初学专项题可低于此区间。",
-          "learningTitle": "离线进阶 · 用分治安排贡献顺序",
-          "learningDescription": "离线查询已让你调整处理顺序，CDQ 继续把偏序关系分到不同维度处理。先分清左右两部分谁向谁贡献，再接排序和树状数组，把高维统计拆成可管理的小步骤。",
           "threadGateIds": [
-            "stage-09-gate-10",
-            "stage-07-gate-01",
-            "stage-12-gate-04"
+            "lp2-advanced-data-offline-route-blocks-mo",
+            "lp2-advanced-data-offline-route-parallel-binary"
           ]
         },
         {
-          "id": "stage-12-gate-02",
-          "index": 2,
-          "title": "整体二分：答案分治与撤销",
+          "id": "lp2-advanced-data-offline-route-parallel-binary",
+          "index": 7,
+          "title": "整体二分与撤销",
           "kind": "learning",
+          "sectionId": "lp2-sec-advanced-data-offline-route",
+          "sectionTitle": "B · 离线处理路线",
+          "routeId": "lp2-route-offline-route",
+          "scope": "elective",
+          "optional": true,
           "topicIds": [
             "algorithm-content-feishu-part-9-3-2"
           ],
-          "cf": {
-            "min": 2100,
-            "max": 2300
-          },
-          "luoguDifficulty": [
-            "提高+/省选−",
-            "省选/NOI−"
-          ],
-          "description": "学习整体二分的适用条件、基本实现与复杂度，再用独立练习验证。",
+          "luoguDifficulty": [],
+          "description": "选修答案离线：把查询按答案区间分组，证明判定与状态还原。",
           "goals": [
-            "解释整体二分的核心不变量与适用边界",
-            "独立写出实现并说明时间与空间复杂度",
-            "完成基础练习与一道迁移题，记录失败原因"
+            "为每个查询维护答案候选区间",
+            "解释分组判定与状态恢复顺序",
+            "与逐查询二分或暴力比较结果"
           ],
+          "learningTitle": "整体二分与撤销",
+          "learningDescription": "选修答案离线：把查询按答案区间分组，证明判定与状态还原。",
           "prerequisites": {
             "gateIds": [
-              "stage-12-gate-01"
+              "lp2-advanced-data-offline-route-blocks-mo",
+              "lp2-basic-optimization-monotone-methods-binary-answer",
+              "lp2-range-data-offline-selection-offline-events"
             ],
-            "topicIds": []
+            "topicIds": [
+              "algorithm-content-feishu-part-6-10",
+              "algorithm-content-feishu-part-9-3-3",
+              "algorithm-二分答案",
+              "xcpc-扫描线-1",
+              "xcpc-树状数组基础-1"
+            ]
           },
-          "optional": false,
-          "scope": "题目难度仅为本关迁移练习的选题窗口；初学专项题可低于此区间。",
-          "learningTitle": "二分进阶 · 让一组查询共享判定",
-          "learningDescription": "二分答案逐题判断，整体二分则将许多查询按答案区间共同分治。设计一次批量判定与状态撤销，理解答案维上的分组，如何减少重复扫描和维护。",
           "threadGateIds": [
-            "stage-04-gate-01",
-            "stage-11-gate-04",
-            "stage-12-gate-03"
+            "lp2-advanced-data-offline-route-cdq",
+            "lp2-advanced-data-offline-route-mo-variants"
           ]
         },
         {
-          "id": "stage-12-gate-03",
-          "index": 3,
-          "title": "可撤销并查集：时间维维护",
+          "id": "lp2-advanced-data-offline-route-mo-variants",
+          "index": 8,
+          "title": "带修改与回滚莫队",
           "kind": "learning",
+          "sectionId": "lp2-sec-advanced-data-offline-route",
+          "sectionTitle": "B · 离线处理路线",
+          "routeId": "lp2-route-offline-route",
+          "scope": "elective",
+          "optional": true,
+          "topicIds": [
+            "algorithm-带修莫队",
+            "algorithm-回滚莫队"
+          ],
+          "luoguDifficulty": [],
+          "description": "任选一个深入变体，明确时间维/撤销边界与复杂度，不计入普通莫队基础完成。",
+          "goals": [
+            "明确所选变体新增的时间或撤销状态",
+            "保证跨块或回退时状态恢复一致",
+            "估算移动和修改操作的总成本"
+          ],
+          "learningTitle": "带修改与回滚莫队",
+          "learningDescription": "任选一个深入变体，明确时间维/撤销边界与复杂度，不计入普通莫队基础完成。",
+          "prerequisites": {
+            "gateIds": [
+              "lp2-advanced-data-offline-route-blocks-mo"
+            ],
+            "topicIds": [
+              "algorithm-content-feishu-part-6-10",
+              "algorithm-content-feishu-part-9-3-3"
+            ]
+          },
+          "threadGateIds": [
+            "lp2-advanced-data-offline-route-parallel-binary",
+            "lp2-advanced-data-offline-route-practice-assessment"
+          ]
+        },
+        {
+          "id": "lp2-advanced-data-offline-route-practice-assessment",
+          "index": 9,
+          "title": "混练验收：离线处理路线",
+          "kind": "challenge",
+          "sectionId": "lp2-sec-advanced-data-offline-route",
+          "sectionTitle": "B · 离线处理路线",
+          "routeId": "lp2-route-offline-route",
+          "scope": "route",
+          "optional": true,
+          "topicIds": [
+            "algorithm-content-feishu-part-6-10",
+            "algorithm-content-feishu-part-9-3-3"
+          ],
+          "luoguDifficulty": [],
+          "description": "围绕离线处理路线完成变化任务与独立应用，核对方法选择、实现和边界。",
+          "goals": [
+            "基础终点：分块与普通莫队；深入分支选 CDQ 或整体二分，理解处理顺序和撤销。",
+            "独立完成离线处理路线的变化任务，说明选择方法的理由",
+            "检查边界或用小规模对照验证，并记录本段的一次错误与修正"
+          ],
+          "learningTitle": "离线处理路线 · 独立验收",
+          "learningDescription": "组合运用分块与普通莫队，先比较不同方法，再独立完成无标签任务并记录验证结果。",
+          "prerequisites": {
+            "gateIds": [
+              "lp2-advanced-data-offline-route-blocks-mo"
+            ],
+            "topicIds": [
+              "algorithm-content-feishu-part-6-10",
+              "algorithm-content-feishu-part-9-3-3"
+            ]
+          },
+          "threadGateIds": [
+            "lp2-advanced-data-offline-route-mo-variants",
+            "lp2-advanced-data-versions-route-persistent-kth"
+          ]
+        },
+        {
+          "id": "lp2-advanced-data-versions-route-persistent-kth",
+          "index": 10,
+          "title": "持久化线段树与第 k 小",
+          "kind": "learning",
+          "sectionId": "lp2-sec-advanced-data-versions-route",
+          "sectionTitle": "C · 历史与时间路线",
+          "routeId": "lp2-route-versions-route",
+          "scope": "route",
+          "optional": true,
+          "topicIds": [
+            "algorithm-content-feishu-part-6-12"
+          ],
+          "luoguDifficulty": [],
+          "description": "版本根与路径复制，区间第k小用前缀版本差；估算节点空间并验证旧版本不变。",
+          "goals": [
+            "解释版本根与路径复制的关系",
+            "用前缀版本差定位第k小",
+            "验证查询旧版本时其内容没有改变"
+          ],
+          "learningTitle": "持久化线段树与第 k 小",
+          "learningDescription": "版本根与路径复制，区间第k小用前缀版本差；估算节点空间并验证旧版本不变。",
+          "prerequisites": {
+            "gateIds": [
+              "lp2-range-data-segment-lazy-segment-merge",
+              "lp2-basic-optimization-preprocessing-compression-counting"
+            ],
+            "topicIds": [
+              "xcpc-基础线段树-1",
+              "xcpc-离散-1",
+              "xcpc-桶排序-1"
+            ]
+          },
+          "threadGateIds": [
+            "lp2-advanced-data-offline-route-practice-assessment",
+            "lp2-advanced-data-versions-route-rollback-time"
+          ]
+        },
+        {
+          "id": "lp2-advanced-data-versions-route-rollback-time",
+          "index": 11,
+          "title": "回滚并查集与时间分治",
+          "kind": "learning",
+          "sectionId": "lp2-sec-advanced-data-versions-route",
+          "sectionTitle": "C · 历史与时间路线",
+          "routeId": "lp2-route-versions-route",
+          "scope": "elective",
+          "optional": true,
           "topicIds": [
             "algorithm-可撤销并查集"
           ],
-          "cf": {
-            "min": 2100,
-            "max": 2300
-          },
-          "luoguDifficulty": [
-            "提高+/省选−",
-            "省选/NOI−"
-          ],
-          "description": "学习可撤销并查集的适用条件、基本实现与复杂度，再用独立练习验证。",
+          "luoguDifficulty": [],
+          "description": "路线深入：按大小合并且不用普通路径压缩，记录操作栈，在时间分治节点进入/退出时还原。",
           "goals": [
-            "解释可撤销并查集的核心不变量与适用边界",
-            "独立写出实现并说明时间与空间复杂度",
-            "完成基础练习与一道迁移题，记录失败原因"
+            "按大小合并且不使用普通路径压缩",
+            "记录并撤销每次真实状态修改",
+            "在时间分治退出时恢复到进入前状态"
           ],
+          "learningTitle": "回滚并查集与时间分治",
+          "learningDescription": "路线深入：按大小合并且不用普通路径压缩，记录操作栈，在时间分治节点进入/退出时还原。",
           "prerequisites": {
             "gateIds": [
-              "stage-12-gate-02"
+              "lp2-advanced-data-versions-route-persistent-kth",
+              "lp2-graph-trees-connectivity-cost-dsu"
             ],
-            "topicIds": []
+            "topicIds": [
+              "algorithm-content-feishu-part-6-12",
+              "xcpc-并查集基础-1"
+            ]
           },
-          "optional": false,
-          "scope": "题目难度仅为本关迁移练习的选题窗口；初学专项题可低于此区间。",
-          "learningTitle": "并查集再进阶 · 记住怎样撤回合并",
-          "learningDescription": "带权并查集维护了关系，可撤销并查集则关心如何恢复旧状态。记录每次合并的改动，配合时间维上的分治处理动态连通，注意常用路径压缩不能直接照搬。",
           "threadGateIds": [
-            "stage-05-gate-10",
-            "stage-09-gate-03",
-            "stage-14-gate-08"
+            "lp2-advanced-data-versions-route-persistent-kth",
+            "lp2-advanced-data-versions-route-practice-assessment"
           ]
         },
         {
-          "id": "stage-12-gate-04",
-          "index": 4,
-          "title": "混练：CDQ、树状数组与离散化",
-          "kind": "mixed",
-          "topicIds": [
-            "algorithm-content-feishu-part-9-3-1",
-            "xcpc-树状数组基础-1",
-            "xcpc-离散-1"
-          ],
-          "cf": {
-            "min": 2100,
-            "max": 2300
-          },
-          "luoguDifficulty": [
-            "提高+/省选−",
-            "省选/NOI−"
-          ],
-          "description": "混合使用CDQ 分治、基础树状数组、离散化；选题时隐藏专题标签，先独立辨型再实现。",
-          "goals": [
-            "在不看标签与题解的情况下提出完整思路",
-            "独立实现并通过所选平台的评测",
-            "复盘关键转化、错误解法与复杂度瓶颈"
-          ],
-          "prerequisites": {
-            "gateIds": [
-              "stage-12-gate-03"
-            ],
-            "topicIds": []
-          },
-          "optional": false,
-          "scope": "区间只用于选择综合新题，不保证单题涵盖列出的所有算法。",
-          "learningTitle": "偏序混练 · 排序、分治与前缀汇合",
-          "learningDescription": "离散化整理坐标，CDQ 安排贡献先后，树状数组回答剩余一维统计。把每个工具消去的难点逐一说明，并检查相等坐标的边界，让多维问题形成完整而可验证的链条。",
-          "threadGateIds": [
-            "stage-12-gate-01",
-            "stage-07-gate-01",
-            "stage-04-gate-10"
-          ]
-        },
-        {
-          "id": "stage-12-gate-05",
-          "index": 5,
-          "title": "虚树：关键点与树压缩",
-          "kind": "learning",
-          "topicIds": [
-            "algorithm-content-feishu-part-7-12",
-            "algorithm-content-feishu-part-7-3-3"
-          ],
-          "cf": {
-            "min": 2100,
-            "max": 2300
-          },
-          "luoguDifficulty": [
-            "提高+/省选−",
-            "省选/NOI−"
-          ],
-          "description": "学习虚树、LCA的适用条件、基本实现与复杂度，再用独立练习验证。",
-          "goals": [
-            "解释虚树、LCA的核心不变量与适用边界",
-            "独立写出实现并说明时间与空间复杂度",
-            "完成基础练习与一道迁移题，记录失败原因"
-          ],
-          "prerequisites": {
-            "gateIds": [
-              "stage-12-gate-04"
-            ],
-            "topicIds": []
-          },
-          "optional": false,
-          "scope": "题目难度仅为本关迁移练习的选题窗口；初学专项题可低于此区间。",
-          "learningTitle": "树压缩进阶 · 只留下本次关键节点",
-          "learningDescription": "LCA 描述关键点相遇的位置，dfn 给出它们在树上的访问顺序。虚树保留关键点及必要祖先，把整棵树压成较小骨架，再接回熟悉的树形统计与 DP。",
-          "threadGateIds": [
-            "stage-08-gate-02",
-            "stage-08-gate-03",
-            "stage-07-gate-07"
-          ]
-        },
-        {
-          "id": "stage-12-gate-06",
-          "index": 6,
-          "title": "Treap：随机平衡与维护",
-          "kind": "learning",
-          "topicIds": [
-            "xcpc-treap-1"
-          ],
-          "cf": {
-            "min": 2100,
-            "max": 2300
-          },
-          "luoguDifficulty": [
-            "提高+/省选−",
-            "省选/NOI−"
-          ],
-          "description": "学习Treap的适用条件、基本实现与复杂度，再用独立练习验证。",
-          "goals": [
-            "解释Treap的核心不变量与适用边界",
-            "独立写出实现并说明时间与空间复杂度",
-            "完成基础练习与一道迁移题，记录失败原因"
-          ],
-          "prerequisites": {
-            "gateIds": [
-              "stage-12-gate-05"
-            ],
-            "topicIds": []
-          },
-          "optional": false,
-          "scope": "题目难度仅为本关迁移练习的选题窗口；初学专项题可低于此区间。",
-          "learningTitle": "平衡树入门 · 同时维护顺序与随机性",
-          "learningDescription": "set 已经提供有序集合接口，现在走进实现内部观察 Treap。用键值维持搜索顺序、随机优先级控制形状，再围绕分裂与合并组织操作，理解其期望复杂度来源。",
-          "threadGateIds": [
-            "stage-02-gate-02",
-            "stage-07-gate-02",
-            "stage-14-gate-07"
-          ]
-        },
-        {
-          "id": "stage-12-gate-07",
-          "index": 7,
-          "title": "FFT/NTT：卷积模型与变换条件",
-          "kind": "learning",
-          "topicIds": [
-            "algorithm-content-xcpc-fft-ntt-1"
-          ],
-          "cf": {
-            "min": 2100,
-            "max": 2300
-          },
-          "luoguDifficulty": [
-            "提高+/省选−",
-            "省选/NOI−"
-          ],
-          "description": "学习FFT/NTT的适用条件、基本实现与复杂度，再用独立练习验证。",
-          "goals": [
-            "解释FFT/NTT的核心不变量与适用边界",
-            "独立写出实现并说明时间与空间复杂度",
-            "完成基础练习与一道迁移题，记录失败原因"
-          ],
-          "prerequisites": {
-            "gateIds": [
-              "stage-12-gate-06"
-            ],
-            "topicIds": []
-          },
-          "optional": false,
-          "scope": "题目难度仅为本关迁移练习的选题窗口；初学专项题可低于此区间。",
-          "learningTitle": "卷积入门 · 将两组选择合成系数",
-          "learningDescription": "计数 DP 常把两部分的数量相乘再按总量汇总，这正提示了卷积结构。先把下标和系数的意义写清，再学习 FFT 或 NTT 的加速条件，为生成函数支线搭好计算工具。",
-          "threadGateIds": [
-            "stage-05-gate-11",
-            "stage-06-gate-10",
-            "stage-13-gate-05"
-          ]
-        },
-        {
-          "id": "stage-12-gate-08",
-          "index": 8,
-          "title": "混练：卷积、组合数与计数 DP",
-          "kind": "mixed",
-          "topicIds": [
-            "algorithm-content-xcpc-fft-ntt-1",
-            "algorithm-content-feishu-part-5-6-1",
-            "algorithm-content-xcpc-计数dp-1"
-          ],
-          "cf": {
-            "min": 2100,
-            "max": 2300
-          },
-          "luoguDifficulty": [
-            "提高+/省选−",
-            "省选/NOI−"
-          ],
-          "description": "混合使用FFT/NTT、排列组合、计数 DP；选题时隐藏专题标签，先独立辨型再实现。",
-          "goals": [
-            "在不看标签与题解的情况下提出完整思路",
-            "独立实现并通过所选平台的评测",
-            "复盘关键转化、错误解法与复杂度瓶颈"
-          ],
-          "prerequisites": {
-            "gateIds": [
-              "stage-12-gate-07"
-            ],
-            "topicIds": []
-          },
-          "optional": false,
-          "scope": "区间只用于选择综合新题，不保证单题涵盖列出的所有算法。",
-          "learningTitle": "计数混练 · 从逐项转移走向卷积",
-          "learningDescription": "先用组合数或 DP 写出明确的计数式，再观察是否存在按下标和合并的卷积。比较朴素转移与快速变换的成本，确认模型正确后再加速，避免让多项式符号掩盖重复计数。",
-          "threadGateIds": [
-            "stage-12-gate-07",
-            "stage-06-gate-09",
-            "stage-09-gate-07"
-          ]
-        },
-        {
-          "id": "stage-12-gate-09",
-          "index": 9,
-          "title": "莫比乌斯反演与整除分块",
-          "kind": "learning",
-          "topicIds": [
-            "algorithm-content-feishu-part-5-9",
-            "xcpc-整除分块-1"
-          ],
-          "cf": {
-            "min": 2100,
-            "max": 2300
-          },
-          "luoguDifficulty": [
-            "提高+/省选−",
-            "省选/NOI−"
-          ],
-          "description": "学习莫比乌斯反演、整除分块的适用条件、基本实现与复杂度，再用独立练习验证。",
-          "goals": [
-            "解释莫比乌斯反演、整除分块的核心不变量与适用边界",
-            "独立写出实现并说明时间与空间复杂度",
-            "完成基础练习与一道迁移题，记录失败原因"
-          ],
-          "prerequisites": {
-            "gateIds": [
-              "stage-12-gate-08"
-            ],
-            "topicIds": []
-          },
-          "optional": false,
-          "scope": "题目难度仅为本关迁移练习的选题窗口；初学专项题可低于此区间。",
-          "learningTitle": "反演入门 · 沿整除关系还原计数",
-          "learningDescription": "容斥按集合修正计数，莫比乌斯反演则在整除关系里做类似的还原。先分清统计的是倍数还是约数，再用整除分块合并相同商值，把公式推导与求和效率接起来。",
-          "threadGateIds": [
-            "stage-06-gate-11",
-            "stage-04-gate-06",
-            "stage-02-gate-09"
-          ]
-        },
-        {
-          "id": "stage-12-gate-10",
-          "index": 10,
-          "title": "最小费用流：带代价的选择",
-          "kind": "learning",
-          "topicIds": [
-            "algorithm-content-feishu-part-7-9-3"
-          ],
-          "cf": {
-            "min": 2100,
-            "max": 2300
-          },
-          "luoguDifficulty": [
-            "提高+/省选−",
-            "省选/NOI−"
-          ],
-          "description": "学习最小费用流的适用条件、基本实现与复杂度，再用独立练习验证。",
-          "goals": [
-            "解释最小费用流的核心不变量与适用边界",
-            "独立写出实现并说明时间与空间复杂度",
-            "完成基础练习与一道迁移题，记录失败原因"
-          ],
-          "prerequisites": {
-            "gateIds": [
-              "stage-12-gate-09"
-            ],
-            "topicIds": []
-          },
-          "optional": false,
-          "scope": "题目难度仅为本关迁移练习的选题窗口；初学专项题可低于此区间。",
-          "learningTitle": "网络流再进阶 · 给每份选择标上代价",
-          "learningDescription": "最大流表达容量与可行分配，费用流进一步累积每条边的单位代价。把熟悉的残量调整与最短路思想接起来，检查目标是固定流量的最小费用，还是最小费用最大流。",
-          "threadGateIds": [
-            "stage-10-gate-03",
-            "stage-06-gate-02",
-            "stage-10-gate-04"
-          ]
-        },
-        {
-          "id": "stage-12-gate-11",
-          "index": 11,
-          "title": "构造与贪心：充分条件和反例",
-          "kind": "learning",
-          "topicIds": [
-            "algorithm-content-feishu-part-1-6",
-            "algorithm-content-feishu-part-1-5"
-          ],
-          "cf": {
-            "min": 2100,
-            "max": 2300
-          },
-          "luoguDifficulty": [
-            "提高+/省选−",
-            "省选/NOI−"
-          ],
-          "description": "学习构造、贪心的适用条件、基本实现与复杂度，再用独立练习验证。",
-          "goals": [
-            "解释构造、贪心的核心不变量与适用边界",
-            "独立写出实现并说明时间与空间复杂度",
-            "完成基础练习与一道迁移题，记录失败原因"
-          ],
-          "prerequisites": {
-            "gateIds": [
-              "stage-12-gate-10"
-            ],
-            "topicIds": []
-          },
-          "optional": false,
-          "scope": "题目难度仅为本关迁移练习的选题窗口；初学专项题可低于此区间。",
-          "learningTitle": "贪心进阶 · 从必要条件走向可行构造",
-          "learningDescription": "排序贪心教你比较局部选择，构造题则要求交出满足全部限制的方案。先寻找必要条件，再用交换、归纳或不变量补足充分性，并用小规模枚举主动寻找反例。",
-          "threadGateIds": [
-            "stage-02-gate-10",
-            "stage-04-gate-09",
-            "stage-14-gate-11"
-          ]
-        },
-        {
-          "id": "stage-12-gate-12",
+          "id": "lp2-advanced-data-versions-route-practice-assessment",
           "index": 12,
-          "title": "挑战：离线、树压缩与数学转化综合",
+          "title": "混练验收：历史与时间路线",
           "kind": "challenge",
+          "sectionId": "lp2-sec-advanced-data-versions-route",
+          "sectionTitle": "C · 历史与时间路线",
+          "routeId": "lp2-route-versions-route",
+          "scope": "route",
+          "optional": true,
           "topicIds": [
-            "algorithm-content-feishu-part-9-3-1",
-            "algorithm-content-feishu-part-7-12",
-            "algorithm-content-feishu-part-5-9"
+            "algorithm-content-feishu-part-6-12"
           ],
-          "cf": {
-            "min": 2100,
-            "max": 2300
-          },
-          "luoguDifficulty": [
-            "提高+/省选−",
-            "省选/NOI−"
-          ],
-          "description": "本阶段以CDQ 分治、虚树、莫比乌斯反演等已学方法为参考，混排新题，检验独立推导与组合能力。",
+          "luoguDifficulty": [],
+          "description": "围绕历史与时间路线完成变化任务与独立应用，核对方法选择、实现和边界。",
           "goals": [
-            "在不看标签与题解的情况下提出完整思路",
-            "独立实现并通过所选平台的评测",
-            "复盘关键转化、错误解法与复杂度瓶颈"
+            "先完成持久化区间第 k 小；回滚并查集＋时间分治是同路线的独立深入成果。",
+            "独立完成历史与时间路线的变化任务，说明选择方法的理由",
+            "检查边界或用小规模对照验证，并记录本段的一次错误与修正"
           ],
+          "learningTitle": "历史与时间路线 · 独立验收",
+          "learningDescription": "组合运用持久化线段树与第 k 小，先比较不同方法，再独立完成无标签任务并记录验证结果。",
           "prerequisites": {
             "gateIds": [
-              "stage-12-gate-11"
+              "lp2-advanced-data-versions-route-persistent-kth"
             ],
-            "topicIds": []
+            "topicIds": [
+              "algorithm-content-feishu-part-6-12"
+            ]
           },
-          "optional": false,
-          "scope": "区间只用于选择综合新题，不保证单题涵盖列出的所有算法。",
-          "learningTitle": "压缩挑战 · 减少真正需要处理的信息",
-          "learningDescription": "CDQ 压低同时处理的维度，虚树缩小当前问题的节点集，反演改写统计对象。通过混排新题比较这些不同的压缩方式，说明被省去的信息为何不会改变答案。",
           "threadGateIds": [
-            "stage-12-gate-01",
-            "stage-12-gate-05",
-            "stage-12-gate-09"
+            "lp2-advanced-data-versions-route-rollback-time",
+            "lp2-advanced-data-ordered-route-bst-treap"
+          ]
+        },
+        {
+          "id": "lp2-advanced-data-ordered-route-bst-treap",
+          "index": 13,
+          "title": "二叉搜索树不变量与 Treap",
+          "kind": "learning",
+          "sectionId": "lp2-sec-advanced-data-ordered-route",
+          "sectionTitle": "D · 动态有序集合路线",
+          "routeId": "lp2-route-ordered-route",
+          "scope": "route",
+          "optional": true,
+          "topicIds": [
+            "xcpc-treap-1",
+            "xcpc-fhqtreap-1"
+          ],
+          "luoguDifficulty": [],
+          "description": "补搜索树、重复键、随机优先级与分裂合并；选一种Treap完成排名、前驱后继并分析期望复杂度。",
+          "goals": [
+            "维护搜索树与随机优先级不变量",
+            "实现排名、前驱、后继及重复键处理",
+            "用标准容器或排序暴力核对操作序列"
+          ],
+          "learningTitle": "二叉搜索树不变量与 Treap",
+          "learningDescription": "补搜索树、重复键、随机优先级与分裂合并；选一种Treap完成排名、前驱后继并分析期望复杂度。",
+          "prerequisites": {
+            "gateIds": [
+              "lp2-range-data-segment-lazy-segment-merge"
+            ],
+            "topicIds": [
+              "xcpc-基础线段树-1"
+            ]
+          },
+          "threadGateIds": [
+            "lp2-advanced-data-versions-route-practice-assessment",
+            "lp2-advanced-data-ordered-route-implicit-treap"
+          ]
+        },
+        {
+          "id": "lp2-advanced-data-ordered-route-implicit-treap",
+          "index": 14,
+          "title": "隐式键与序列维护",
+          "kind": "learning",
+          "sectionId": "lp2-sec-advanced-data-ordered-route",
+          "sectionTitle": "D · 动态有序集合路线",
+          "routeId": "lp2-route-ordered-route",
+          "scope": "elective",
+          "optional": true,
+          "topicIds": [
+            "xcpc-fhqtreap-1"
+          ],
+          "luoguDifficulty": [],
+          "description": "深入扩展：按大小分裂序列，处理翻转和懒标记；不能把集合键操作直接等同序列下标。",
+          "goals": [
+            "按子树大小解释序列下标",
+            "正确完成分裂合并与翻转下传",
+            "用数组操作核对随机修改和查询"
+          ],
+          "learningTitle": "隐式键与序列维护",
+          "learningDescription": "深入扩展：按大小分裂序列，处理翻转和懒标记；不能把集合键操作直接等同序列下标。",
+          "prerequisites": {
+            "gateIds": [
+              "lp2-advanced-data-ordered-route-bst-treap"
+            ],
+            "topicIds": [
+              "xcpc-treap-1",
+              "xcpc-fhqtreap-1"
+            ]
+          },
+          "threadGateIds": [
+            "lp2-advanced-data-ordered-route-bst-treap",
+            "lp2-advanced-data-ordered-route-practice-assessment"
+          ]
+        },
+        {
+          "id": "lp2-advanced-data-ordered-route-practice-assessment",
+          "index": 15,
+          "title": "混练验收：动态有序集合路线",
+          "kind": "challenge",
+          "sectionId": "lp2-sec-advanced-data-ordered-route",
+          "sectionTitle": "D · 动态有序集合路线",
+          "routeId": "lp2-route-ordered-route",
+          "scope": "route",
+          "optional": true,
+          "topicIds": [
+            "xcpc-treap-1",
+            "xcpc-fhqtreap-1"
+          ],
+          "luoguDifficulty": [],
+          "description": "围绕动态有序集合路线完成变化任务与独立应用，核对方法选择、实现和边界。",
+          "goals": [
+            "选一种 Treap 实现并完成排名 / 前驱后继；序列翻转等隐式键维护另设扩展。",
+            "独立完成动态有序集合路线的变化任务，说明选择方法的理由",
+            "检查边界或用小规模对照验证，并记录本段的一次错误与修正"
+          ],
+          "learningTitle": "动态有序集合路线 · 独立验收",
+          "learningDescription": "组合运用二叉搜索树不变量与 Treap，先比较不同方法，再独立完成无标签任务并记录验证结果。",
+          "prerequisites": {
+            "gateIds": [
+              "lp2-advanced-data-ordered-route-bst-treap"
+            ],
+            "topicIds": [
+              "xcpc-treap-1",
+              "xcpc-fhqtreap-1"
+            ]
+          },
+          "threadGateIds": [
+            "lp2-advanced-data-ordered-route-implicit-treap"
           ]
         }
       ]
@@ -5926,475 +8843,665 @@
     {
       "id": "stage-13",
       "index": 13,
-      "title": "在选定主线形成高级解法",
-      "description": "围绕已选主线构造完整高级解法，不要求完成全部选修。",
-      "goal": "围绕已选主线构造完整高级解法，不要求完成全部选修。",
-      "cf": {
-        "min": 2300,
-        "max": 2500
-      },
-      "luoguDifficulty": [
-        "省选/NOI−"
-      ],
-      "rationale": "本章按综合做题能力组织，不要求区间中的每道题都使用这些算法，也不要求学完所有专题才进入下一章。",
+      "title": "数学进阶：代数、反演与几何",
+      "description": "选定一条数学主线，能把算法题转换为明确的代数、计数或几何问题，并验证转换的条件。",
+      "goal": "选定一条数学主线，能把算法题转换为明确的代数、计数或几何问题，并验证转换的条件。",
+      "rationale": "数学从一个大章拆成四条可独立结束的路线，基础与深入边界可见；几何不再与代数绑在同一次通关中。",
+      "entryText": "共同先修是复杂度和基础代数表达；线代路线用第 3 章快速幂，模域消元再补第 9 章逆元；反演和 NTT / 组合计数路线需第 9 章；几何路线只需基础算术、排序和证明，不必先清数论。",
+      "completionMode": "routes",
       "completionCriteria": [
-        "独立完成本章综合题组中的新题",
-        "覆盖至少两种已学方法；后续阶段回收前面基础工具",
-        "说明正确性、复杂度，并记录一次完整复盘"
+        "按具体路线命名成果，不使用一个“数学进阶已掌握”总勾选。",
+        "基础成果必须覆盖模型、算法、实现、适用条件与边界；深入模块逐一独立验收。",
+        "只有完成第 13 章相关基础路线，才推荐进入第 14 章相应延伸；不要求完成其他路线。"
       ],
+      "scopeDescription": "NTT 的模数 / 原根 / 长度条件、FFT 的精度范围分别验收；浮点消元与模消元不可混用。半平面交保留选修。",
       "prerequisites": {
-        "stageIds": [
-          "stage-12"
-        ]
+        "stageIds": []
       },
+      "luoguDifficulty": [],
+      "sections": [
+        {
+          "id": "lp2-sec-advanced-math-linear-algebra-route",
+          "title": "A · 线性代数路线",
+          "scope": "route",
+          "routeId": "lp2-route-linear-algebra-route",
+          "description": "矩阵与线性代数：先补矩阵运算、向量空间与线性相关定义；矩阵快速幂 / 递推、高斯消元 / 秩、异或线性基。浮点域、模域与 GF(2) 条件分别核验。",
+          "completionCriteria": [
+            "先完成矩阵乘法与快速幂形成递推成果；高斯消元与异或线性基是两条独立深入分支，不以学过其中一种宣称全部掌握。"
+          ],
+          "gateIds": [
+            "lp2-advanced-math-linear-algebra-route-matrix",
+            "lp2-advanced-math-linear-algebra-route-gaussian",
+            "lp2-advanced-math-linear-algebra-route-xor-basis",
+            "lp2-advanced-math-linear-algebra-route-practice-assessment"
+          ],
+          "prerequisites": {
+            "gateIds": [
+              "lp2-basic-optimization-powers-greedy-binary-power"
+            ],
+            "topicIds": []
+          }
+        },
+        {
+          "id": "lp2-sec-advanced-math-inversion-route",
+          "title": "B · 反演与整数计数路线",
+          "scope": "route",
+          "routeId": "lp2-route-inversion-route",
+          "description": "反演与整除分块：莫比乌斯函数与反演；整除分块；筛法协作；从计数关系推导公式。",
+          "completionCriteria": [
+            "从约数计数推导 Möbius 反演，再结合整除分块独立解决计数任务。"
+          ],
+          "gateIds": [
+            "lp2-advanced-math-inversion-route-mobius",
+            "lp2-advanced-math-inversion-route-division-blocks",
+            "lp2-advanced-math-inversion-route-practice-assessment"
+          ],
+          "prerequisites": {
+            "gateIds": [
+              "lp2-number-counting-inclusion-integers-multiplicative"
+            ],
+            "topicIds": []
+          }
+        },
+        {
+          "id": "lp2-sec-advanced-math-convolution-route",
+          "title": "C · 卷积与代数计数路线",
+          "scope": "route",
+          "routeId": "lp2-route-convolution-route",
+          "description": "卷积与多项式基础：基础：卷积建模与二次实现，选 FFT 或 NTT 走完加速与验证；补所需复数或模域知识。深入：生成函数、拉格朗日插值分支。",
+          "completionCriteria": [
+            "先用朴素卷积建立模型，再选 NTT 或 FFT 完成基础；生成函数 / 插值分别扩展。"
+          ],
+          "gateIds": [
+            "lp2-advanced-math-convolution-route-convolution",
+            "lp2-advanced-math-convolution-route-fft-ntt",
+            "lp2-advanced-math-convolution-route-generating-interpolation",
+            "lp2-advanced-math-convolution-route-practice-assessment"
+          ],
+          "prerequisites": {
+            "gateIds": [
+              "lp2-number-counting-combinations-combination-model"
+            ],
+            "topicIds": []
+          }
+        },
+        {
+          "id": "lp2-sec-advanced-math-geometry-route",
+          "title": "D · 计算几何路线",
+          "scope": "route",
+          "routeId": "lp2-route-geometry-route",
+          "description": "计算几何基础闭合：向量、点积、叉积；点线关系、相交和距离；整数精确判断与浮点误差。\n凸性与几何算法：凸包、旋转卡壳；半平面交选学；退化、共线和边界约定。",
+          "completionCriteria": [
+            "向量与几何原语、凸包收齐形成基础成果；旋转卡壳和半平面交分层深入。"
+          ],
+          "gateIds": [
+            "lp2-advanced-math-geometry-route-geometry-primitives",
+            "lp2-advanced-math-geometry-route-convex-hull",
+            "lp2-advanced-math-geometry-route-calipers-halfplanes",
+            "lp2-advanced-math-geometry-route-practice-assessment"
+          ],
+          "prerequisites": {
+            "gateIds": [
+              "lp2-cpp-toolkit-stl-selection-sorting-interfaces"
+            ],
+            "topicIds": []
+          }
+        }
+      ],
       "gates": [
         {
-          "id": "stage-13-gate-01",
+          "id": "lp2-advanced-math-linear-algebra-route-matrix",
           "index": 1,
-          "title": "线段树合并：聚合与复杂度",
+          "title": "矩阵运算与递推加速",
           "kind": "learning",
+          "sectionId": "lp2-sec-advanced-math-linear-algebra-route",
+          "sectionTitle": "A · 线性代数路线",
+          "routeId": "lp2-route-linear-algebra-route",
+          "scope": "route",
+          "optional": true,
           "topicIds": [
-            "xcpc-线段树合并-1"
+            "xcpc-矩阵快速幂-1"
           ],
-          "cf": {
-            "min": 2300,
-            "max": 2500
-          },
-          "luoguDifficulty": [
-            "省选/NOI−"
-          ],
-          "description": "学习线段树合并的适用条件、基本实现与复杂度，再用独立练习验证。",
+          "luoguDifficulty": [],
+          "description": "先定义矩阵运算与维度，用快速幂推进线性递推；矩阵乘法非交换，明确状态方向。",
           "goals": [
-            "解释线段树合并的核心不变量与适用边界",
-            "独立写出实现并说明时间与空间复杂度",
-            "完成基础练习与一道迁移题，记录失败原因"
+            "检查矩阵维度和状态向量方向",
+            "用快速幂计算递推的远项",
+            "和逐步递推比较前若干项"
           ],
+          "learningTitle": "矩阵运算与递推加速",
+          "learningDescription": "先定义矩阵运算与维度，用快速幂推进线性递推；矩阵乘法非交换，明确状态方向。",
+          "prerequisites": {
+            "gateIds": [
+              "lp2-basic-optimization-powers-greedy-binary-power"
+            ],
+            "topicIds": [
+              "xcpc-快速幂-1",
+              "algorithm-content-feishu-part-5-1"
+            ]
+          },
+          "threadGateIds": [
+            "lp2-advanced-math-linear-algebra-route-gaussian"
+          ]
+        },
+        {
+          "id": "lp2-advanced-math-linear-algebra-route-gaussian",
+          "index": 2,
+          "title": "消元、秩与解的情况",
+          "kind": "learning",
+          "sectionId": "lp2-sec-advanced-math-linear-algebra-route",
+          "sectionTitle": "A · 线性代数路线",
+          "routeId": "lp2-route-linear-algebra-route",
+          "scope": "elective",
+          "optional": true,
+          "topicIds": [
+            "algorithm-content-feishu-part-5-7-2"
+          ],
+          "luoguDifficulty": [],
+          "description": "路线深入：定义向量、线性方程和秩，区分无解、唯一解与自由元；实数、模域条件分别核验。",
+          "goals": [
+            "区分秩、主元、自由元与无解条件",
+            "选择适合当前数域的消元操作",
+            "把求出的解代回方程并检查误差或模数"
+          ],
+          "learningTitle": "消元、秩与解的情况",
+          "learningDescription": "路线深入：定义向量、线性方程和秩，区分无解、唯一解与自由元；实数、模域条件分别核验。",
+          "prerequisites": {
+            "gateIds": [
+              "lp2-advanced-math-linear-algebra-route-matrix",
+              "lp2-number-counting-congruence-inverses-extended-gcd"
+            ],
+            "topicIds": [
+              "xcpc-矩阵快速幂-1",
+              "xcpc-扩展欧几里得-1",
+              "xcpc-逆元-1"
+            ]
+          },
+          "threadGateIds": [
+            "lp2-advanced-math-linear-algebra-route-matrix",
+            "lp2-advanced-math-linear-algebra-route-xor-basis"
+          ]
+        },
+        {
+          "id": "lp2-advanced-math-linear-algebra-route-xor-basis",
+          "index": 3,
+          "title": "异或线性基",
+          "kind": "learning",
+          "sectionId": "lp2-sec-advanced-math-linear-algebra-route",
+          "sectionTitle": "A · 线性代数路线",
+          "routeId": "lp2-route-linear-algebra-route",
+          "scope": "elective",
+          "optional": true,
+          "topicIds": [
+            "algorithm-content-feishu-part-5-7-3"
+          ],
+          "luoguDifficulty": [],
+          "description": "独立分支：在GF(2)下解释消元、线性相关和可表示集合，验证最大异或查询。",
+          "goals": [
+            "解释GF(2)中的线性相关",
+            "维护可表示集合并求最大异或",
+            "与小集合的全部子集异或比较"
+          ],
+          "learningTitle": "异或线性基",
+          "learningDescription": "独立分支：在GF(2)下解释消元、线性相关和可表示集合，验证最大异或查询。",
           "prerequisites": {
             "gateIds": [],
             "topicIds": []
           },
-          "optional": false,
-          "scope": "题目难度仅为本关迁移练习的选题窗口；初学专项题可低于此区间。",
-          "learningTitle": "线段树再进阶 · 合并整份值域信息",
-          "learningDescription": "小并大让你按元素合并子树信息，线段树合并则按值域结构直接聚合节点。跟踪被合并节点的总数量，比较它与逐元素插入的区别，将树上汇总和区间结构连成一线。",
           "threadGateIds": [
-            "stage-11-gate-06",
-            "stage-07-gate-02",
-            "stage-13-gate-04"
+            "lp2-advanced-math-linear-algebra-route-gaussian",
+            "lp2-advanced-math-linear-algebra-route-practice-assessment"
           ]
         },
         {
-          "id": "stage-13-gate-02",
-          "index": 2,
-          "title": "李超线段树：直线集合维护",
-          "kind": "learning",
-          "topicIds": [
-            "xcpc-李超线段树-1"
-          ],
-          "cf": {
-            "min": 2300,
-            "max": 2500
-          },
-          "luoguDifficulty": [
-            "省选/NOI−"
-          ],
-          "description": "学习李超线段树的适用条件、基本实现与复杂度，再用独立练习验证。",
-          "goals": [
-            "解释李超线段树的核心不变量与适用边界",
-            "独立写出实现并说明时间与空间复杂度",
-            "完成基础练习与一道迁移题，记录失败原因"
-          ],
-          "prerequisites": {
-            "gateIds": [
-              "stage-13-gate-01"
-            ],
-            "topicIds": []
-          },
-          "optional": false,
-          "scope": "题目难度仅为本关迁移练习的选题窗口；初学专项题可低于此区间。",
-          "learningTitle": "直线维护进阶 · 用李超树保留赢家",
-          "learningDescription": "斜率优化把转移变成直线查询，李超线段树为另一类直线插入与最值查询提供维护方式。利用两条直线最多相交一次的性质递归比较，明确其适用域与数值边界。",
-          "threadGateIds": [
-            "stage-11-gate-01",
-            "stage-07-gate-02",
-            "stage-09-gate-06"
-          ]
-        },
-        {
-          "id": "stage-13-gate-03",
-          "index": 3,
-          "title": "后缀自动机：状态与 endpos（选修）",
-          "kind": "learning",
-          "topicIds": [
-            "algorithm-content-feishu-part-4-8"
-          ],
-          "cf": {
-            "min": 2300,
-            "max": 2500
-          },
-          "luoguDifficulty": [
-            "省选/NOI−"
-          ],
-          "description": "学习后缀自动机的适用条件、基本实现与复杂度，再用独立练习验证。",
-          "goals": [
-            "解释后缀自动机的核心不变量与适用边界",
-            "独立写出实现并说明时间与空间复杂度",
-            "完成基础练习与一道迁移题，记录失败原因"
-          ],
-          "prerequisites": {
-            "gateIds": [
-              "stage-13-gate-02"
-            ],
-            "topicIds": []
-          },
-          "optional": true,
-          "scope": "题目难度仅为本关迁移练习的选题窗口；初学专项题可低于此区间。",
-          "learningTitle": "字符串选修 · 按出现位置归并子串",
-          "learningDescription": "后缀数组用排序组织子串，SAM 则按 endpos 等价关系压缩状态。沿后缀链接观察出现次数和长度区间，按字符串主线需要选修，不把它当作所有综合题的前置门槛。",
-          "threadGateIds": [
-            "stage-11-gate-07",
-            "stage-07-gate-11",
-            "stage-14-gate-10"
-          ]
-        },
-        {
-          "id": "stage-13-gate-04",
+          "id": "lp2-advanced-math-linear-algebra-route-practice-assessment",
           "index": 4,
-          "title": "混练：离线、线段树与树上合并",
-          "kind": "mixed",
+          "title": "混练验收：线性代数路线",
+          "kind": "challenge",
+          "sectionId": "lp2-sec-advanced-math-linear-algebra-route",
+          "sectionTitle": "A · 线性代数路线",
+          "routeId": "lp2-route-linear-algebra-route",
+          "scope": "route",
+          "optional": true,
           "topicIds": [
-            "algorithm-content-feishu-part-9-3-1",
-            "xcpc-线段树合并-1",
-            "xcpc-树的遍历-1"
+            "xcpc-矩阵快速幂-1"
           ],
-          "cf": {
-            "min": 2300,
-            "max": 2500
-          },
-          "luoguDifficulty": [
-            "省选/NOI−"
-          ],
-          "description": "混合使用CDQ 分治、线段树合并、树的遍历；选题时隐藏专题标签，先独立辨型再实现。",
+          "luoguDifficulty": [],
+          "description": "围绕线性代数路线完成变化任务与独立应用，核对方法选择、实现和边界。",
           "goals": [
-            "在不看标签与题解的情况下提出完整思路",
-            "独立实现并通过所选平台的评测",
-            "复盘关键转化、错误解法与复杂度瓶颈"
+            "先完成矩阵乘法与快速幂形成递推成果；高斯消元与异或线性基是两条独立深入分支，不以学过其中一种宣称全部掌握。",
+            "独立完成线性代数路线的变化任务，说明选择方法的理由",
+            "检查边界或用小规模对照验证，并记录本段的一次错误与修正"
           ],
+          "learningTitle": "线性代数路线 · 独立验收",
+          "learningDescription": "组合运用矩阵运算与递推加速，先比较不同方法，再独立完成无标签任务并记录验证结果。",
           "prerequisites": {
             "gateIds": [
-              "stage-13-gate-02"
+              "lp2-advanced-math-linear-algebra-route-matrix"
             ],
-            "topicIds": []
+            "topicIds": [
+              "xcpc-矩阵快速幂-1"
+            ]
           },
-          "optional": false,
-          "scope": "区间只用于选择综合新题，不保证单题涵盖列出的所有算法。",
-          "learningTitle": "汇总混练 · 离线贡献与子树合并",
-          "learningDescription": "同样的统计目标，有时适合安排离线贡献，有时适合自底向上合并值域结构。结合树遍历比较两种组织方式，先说明信息属于哪个子问题，再决定怎样复用中间结果。",
           "threadGateIds": [
-            "stage-12-gate-01",
-            "stage-13-gate-01",
-            "stage-11-gate-06"
+            "lp2-advanced-math-linear-algebra-route-xor-basis",
+            "lp2-advanced-math-inversion-route-mobius"
           ]
         },
         {
-          "id": "stage-13-gate-05",
+          "id": "lp2-advanced-math-inversion-route-mobius",
           "index": 5,
-          "title": "生成函数：计数的代数表达",
+          "title": "Möbius 反演与计数关系",
           "kind": "learning",
+          "sectionId": "lp2-sec-advanced-math-inversion-route",
+          "sectionTitle": "B · 反演与整数计数路线",
+          "routeId": "lp2-route-inversion-route",
+          "scope": "route",
+          "optional": true,
           "topicIds": [
-            "algorithm-content-xcpc-生成函数-1"
+            "algorithm-content-feishu-part-5-9",
+            "xcpc-狄利克雷卷积-1"
           ],
-          "cf": {
-            "min": 2300,
-            "max": 2500
-          },
-          "luoguDifficulty": [
-            "省选/NOI−"
-          ],
-          "description": "学习生成函数的适用条件、基本实现与复杂度，再用独立练习验证。",
+          "luoguDifficulty": [],
+          "description": "从约数求和关系推导反演与Möbius函数，不直接背公式；核对互素与整除计数。",
           "goals": [
-            "解释生成函数的核心不变量与适用边界",
-            "独立写出实现并说明时间与空间复杂度",
-            "完成基础练习与一道迁移题，记录失败原因"
+            "从约数求和关系推出反演",
+            "说明Möbius函数在当前公式中的作用",
+            "用直接gcd或整除枚举核对计数"
           ],
+          "learningTitle": "Möbius 反演与计数关系",
+          "learningDescription": "从约数求和关系推导反演与Möbius函数，不直接背公式；核对互素与整除计数。",
           "prerequisites": {
             "gateIds": [
-              "stage-13-gate-04"
+              "lp2-number-counting-inclusion-integers-multiplicative"
             ],
-            "topicIds": []
+            "topicIds": [
+              "algorithm-content-feishu-part-5-2-3",
+              "algorithm-content-feishu-part-5-2-2"
+            ]
           },
-          "optional": false,
-          "scope": "题目难度仅为本关迁移练习的选题窗口；初学专项题可低于此区间。",
-          "learningTitle": "生成函数入门 · 让系数记下方案数",
-          "learningDescription": "卷积已经将两组选择合并，现在用生成函数把整套计数过程写成代数表达。明确指数代表的量与系数统计的对象，观察乘法怎样对应独立选择，为形式幂级数选修提供起点。",
           "threadGateIds": [
-            "stage-12-gate-07",
-            "stage-09-gate-07",
-            "stage-14-gate-01"
+            "lp2-advanced-math-linear-algebra-route-practice-assessment",
+            "lp2-advanced-math-inversion-route-division-blocks"
           ]
         },
         {
-          "id": "stage-13-gate-06",
+          "id": "lp2-advanced-math-inversion-route-division-blocks",
           "index": 6,
-          "title": "拉格朗日插值：多项式求值",
+          "title": "整除分块与筛法协作",
           "kind": "learning",
+          "sectionId": "lp2-sec-advanced-math-inversion-route",
+          "sectionTitle": "B · 反演与整数计数路线",
+          "routeId": "lp2-route-inversion-route",
+          "scope": "route",
+          "optional": true,
           "topicIds": [
+            "xcpc-整除分块-1"
+          ],
+          "luoguDifficulty": [],
+          "description": "证明商值相同区间与右端点，组合反演预处理加速求和；检查n=0与下标。",
+          "goals": [
+            "推导商值不变区间的右端点",
+            "正确推进到下一整除块",
+            "比较分块求和和逐项累加"
+          ],
+          "learningTitle": "整除分块与筛法协作",
+          "learningDescription": "证明商值相同区间与右端点，组合反演预处理加速求和；检查n=0与下标。",
+          "prerequisites": {
+            "gateIds": [
+              "lp2-advanced-math-inversion-route-mobius"
+            ],
+            "topicIds": [
+              "algorithm-content-feishu-part-5-9",
+              "xcpc-狄利克雷卷积-1"
+            ]
+          },
+          "threadGateIds": [
+            "lp2-advanced-math-inversion-route-mobius",
+            "lp2-advanced-math-inversion-route-practice-assessment"
+          ]
+        },
+        {
+          "id": "lp2-advanced-math-inversion-route-practice-assessment",
+          "index": 7,
+          "title": "混练验收：反演与整数计数路线",
+          "kind": "challenge",
+          "sectionId": "lp2-sec-advanced-math-inversion-route",
+          "sectionTitle": "B · 反演与整数计数路线",
+          "routeId": "lp2-route-inversion-route",
+          "scope": "route",
+          "optional": true,
+          "topicIds": [
+            "algorithm-content-feishu-part-5-9",
+            "xcpc-狄利克雷卷积-1",
+            "xcpc-整除分块-1"
+          ],
+          "luoguDifficulty": [],
+          "description": "围绕反演与整数计数路线完成变化任务与独立应用，核对方法选择、实现和边界。",
+          "goals": [
+            "从约数计数推导 Möbius 反演，再结合整除分块独立解决计数任务。",
+            "独立完成反演与整数计数路线的变化任务，说明选择方法的理由",
+            "检查边界或用小规模对照验证，并记录本段的一次错误与修正"
+          ],
+          "learningTitle": "反演与整数计数路线 · 独立验收",
+          "learningDescription": "组合运用Möbius 反演与计数关系、整除分块与筛法协作，先比较不同方法，再独立完成无标签任务并记录验证结果。",
+          "prerequisites": {
+            "gateIds": [
+              "lp2-advanced-math-inversion-route-mobius",
+              "lp2-advanced-math-inversion-route-division-blocks"
+            ],
+            "topicIds": [
+              "algorithm-content-feishu-part-5-9",
+              "xcpc-狄利克雷卷积-1",
+              "xcpc-整除分块-1"
+            ]
+          },
+          "threadGateIds": [
+            "lp2-advanced-math-inversion-route-division-blocks",
+            "lp2-advanced-math-convolution-route-convolution"
+          ]
+        },
+        {
+          "id": "lp2-advanced-math-convolution-route-convolution",
+          "index": 8,
+          "title": "朴素卷积与模型",
+          "kind": "learning",
+          "sectionId": "lp2-sec-advanced-math-convolution-route",
+          "sectionTitle": "C · 卷积与代数计数路线",
+          "routeId": "lp2-route-convolution-route",
+          "scope": "route",
+          "optional": true,
+          "topicIds": [
+            "algorithm-content-xcpc-fft-ntt-1"
+          ],
+          "luoguDifficulty": [],
+          "description": "路线先建立系数与卷积模型，写二次实现做对照；补复数或模域需要的数学定义。",
+          "goals": [
+            "解释每个系数对应的计数或权重",
+            "写出二次卷积作为可信对照",
+            "选择足够的输出长度并检查系数范围"
+          ],
+          "learningTitle": "朴素卷积与模型",
+          "learningDescription": "路线先建立系数与卷积模型，写二次实现做对照；补复数或模域需要的数学定义。",
+          "prerequisites": {
+            "gateIds": [
+              "lp2-number-counting-combinations-combination-model"
+            ],
+            "topicIds": [
+              "algorithm-content-feishu-part-5-6-1",
+              "xcpc-杨辉三角-1",
+              "xcpc-多重集组合数-1"
+            ]
+          },
+          "threadGateIds": [
+            "lp2-advanced-math-inversion-route-practice-assessment",
+            "lp2-advanced-math-convolution-route-fft-ntt"
+          ]
+        },
+        {
+          "id": "lp2-advanced-math-convolution-route-fft-ntt",
+          "index": 9,
+          "title": "FFT / NTT 的变换条件",
+          "kind": "learning",
+          "sectionId": "lp2-sec-advanced-math-convolution-route",
+          "sectionTitle": "C · 卷积与代数计数路线",
+          "routeId": "lp2-route-convolution-route",
+          "scope": "route",
+          "optional": true,
+          "topicIds": [
+            "algorithm-content-xcpc-fft-ntt-1",
+            "xcpc-原根-阶-1"
+          ],
+          "luoguDifficulty": [],
+          "description": "选一种变换走完推导、实现与验证；检查单位根、模数、长度、精度和系数范围。",
+          "goals": [
+            "推导所选变换及逆变换的条件",
+            "检查根、长度、模数或数值精度",
+            "与二次卷积逐项核对输出"
+          ],
+          "learningTitle": "FFT / NTT 的变换条件",
+          "learningDescription": "选一种变换走完推导、实现与验证；检查单位根、模数、长度、精度和系数范围。",
+          "prerequisites": {
+            "gateIds": [
+              "lp2-advanced-math-convolution-route-convolution",
+              "lp2-number-counting-congruence-inverses-extended-gcd"
+            ],
+            "topicIds": [
+              "algorithm-content-xcpc-fft-ntt-1",
+              "xcpc-扩展欧几里得-1",
+              "xcpc-逆元-1"
+            ]
+          },
+          "threadGateIds": [
+            "lp2-advanced-math-convolution-route-convolution",
+            "lp2-advanced-math-convolution-route-generating-interpolation"
+          ]
+        },
+        {
+          "id": "lp2-advanced-math-convolution-route-generating-interpolation",
+          "index": 10,
+          "title": "生成函数与插值分支",
+          "kind": "learning",
+          "sectionId": "lp2-sec-advanced-math-convolution-route",
+          "sectionTitle": "C · 卷积与代数计数路线",
+          "routeId": "lp2-route-convolution-route",
+          "scope": "elective",
+          "optional": true,
+          "topicIds": [
+            "algorithm-content-xcpc-生成函数-1",
             "algorithm-content-xcpc-拉格朗日插值-1"
           ],
-          "cf": {
-            "min": 2300,
-            "max": 2500
-          },
-          "luoguDifficulty": [
-            "省选/NOI−"
-          ],
-          "description": "学习拉格朗日插值的适用条件、基本实现与复杂度，再用独立练习验证。",
+          "luoguDifficulty": [],
+          "description": "深入分支分别建立形式幂级数和多项式插值模型，证明代数表达与原计数对应。",
           "goals": [
-            "解释拉格朗日插值的核心不变量与适用边界",
-            "独立写出实现并说明时间与空间复杂度",
-            "完成基础练习与一道迁移题，记录失败原因"
+            "说明代数表达如何编码原问题",
+            "核验所选生成函数或插值公式的条件",
+            "在小规模实例上还原原计数或函数值"
           ],
+          "learningTitle": "生成函数与插值分支",
+          "learningDescription": "深入分支分别建立形式幂级数和多项式插值模型，证明代数表达与原计数对应。",
           "prerequisites": {
             "gateIds": [
-              "stage-13-gate-05"
+              "lp2-advanced-math-convolution-route-fft-ntt"
             ],
-            "topicIds": []
+            "topicIds": [
+              "algorithm-content-xcpc-fft-ntt-1",
+              "xcpc-原根-阶-1"
+            ]
           },
-          "optional": false,
-          "scope": "题目难度仅为本关迁移练习的选题窗口；初学专项题可低于此区间。",
-          "learningTitle": "插值入门 · 从有限点值恢复多项式",
-          "learningDescription": "快速幂和模逆元提供了计算工具，插值进一步利用次数上界恢复多项式的信息。先证明目标确实是所需次数内的多项式，再由已知点值求新值，避免只因样例吻合就外推。",
           "threadGateIds": [
-            "stage-06-gate-10",
-            "stage-03-gate-07",
-            "stage-13-gate-05"
+            "lp2-advanced-math-convolution-route-fft-ntt",
+            "lp2-advanced-math-convolution-route-practice-assessment"
           ]
         },
         {
-          "id": "stage-13-gate-07",
-          "index": 7,
-          "title": "回文自动机：不同回文的状态（选修）",
-          "kind": "learning",
-          "topicIds": [
-            "algorithm-content-feishu-part-4-6"
-          ],
-          "cf": {
-            "min": 2300,
-            "max": 2500
-          },
-          "luoguDifficulty": [
-            "省选/NOI−"
-          ],
-          "description": "学习回文自动机的适用条件、基本实现与复杂度，再用独立练习验证。",
-          "goals": [
-            "解释回文自动机的核心不变量与适用边界",
-            "独立写出实现并说明时间与空间复杂度",
-            "完成基础练习与一道迁移题，记录失败原因"
-          ],
-          "prerequisites": {
-            "gateIds": [
-              "stage-13-gate-06"
-            ],
-            "topicIds": []
-          },
-          "optional": true,
-          "scope": "题目难度仅为本关迁移练习的选题窗口；初学专项题可低于此区间。",
-          "learningTitle": "回文选修 · 给每种不同回文建状态",
-          "learningDescription": "Manacher 描述以各位置为中心的回文半径，PAM 则将不同回文组织成状态与后缀关系。对比两种表示擅长的统计任务，沿字符串兴趣支线选修，完成后再回到综合训练。",
-          "threadGateIds": [
-            "stage-08-gate-09",
-            "stage-07-gate-11",
-            "stage-13-gate-03"
-          ]
-        },
-        {
-          "id": "stage-13-gate-08",
-          "index": 8,
-          "title": "混练：生成函数、NTT 与计数",
-          "kind": "mixed",
-          "topicIds": [
-            "algorithm-content-xcpc-生成函数-1",
-            "algorithm-content-xcpc-fft-ntt-1",
-            "algorithm-content-xcpc-计数dp-1"
-          ],
-          "cf": {
-            "min": 2300,
-            "max": 2500
-          },
-          "luoguDifficulty": [
-            "省选/NOI−"
-          ],
-          "description": "混合使用生成函数、FFT/NTT、计数 DP；选题时隐藏专题标签，先独立辨型再实现。",
-          "goals": [
-            "在不看标签与题解的情况下提出完整思路",
-            "独立实现并通过所选平台的评测",
-            "复盘关键转化、错误解法与复杂度瓶颈"
-          ],
-          "prerequisites": {
-            "gateIds": [
-              "stage-13-gate-06"
-            ],
-            "topicIds": []
-          },
-          "optional": false,
-          "scope": "区间只用于选择综合新题，不保证单题涵盖列出的所有算法。",
-          "learningTitle": "代数混练 · 从计数式走到快速乘法",
-          "learningDescription": "计数 DP 给出转移，生成函数组织整套系数，NTT 执行其中符合条件的乘法。把三层职责分开，再检查截断、模数与组合系数，让加速后的表达仍忠实于原始方案。",
-          "threadGateIds": [
-            "stage-13-gate-05",
-            "stage-12-gate-07",
-            "stage-12-gate-08"
-          ]
-        },
-        {
-          "id": "stage-13-gate-09",
-          "index": 9,
-          "title": "最小割与最大权闭合子图",
-          "kind": "learning",
-          "topicIds": [
-            "algorithm-最小割模型",
-            "algorithm-最大权闭合子图"
-          ],
-          "cf": {
-            "min": 2300,
-            "max": 2500
-          },
-          "luoguDifficulty": [
-            "省选/NOI−"
-          ],
-          "description": "学习最小割模型、最大权闭合子图的适用条件、基本实现与复杂度，再用独立练习验证。",
-          "goals": [
-            "解释最小割模型、最大权闭合子图的核心不变量与适用边界",
-            "独立写出实现并说明时间与空间复杂度",
-            "完成基础练习与一道迁移题，记录失败原因"
-          ],
-          "prerequisites": {
-            "gateIds": [
-              "stage-13-gate-08"
-            ],
-            "topicIds": []
-          },
-          "optional": false,
-          "scope": "题目难度仅为本关迁移练习的选题窗口；初学专项题可低于此区间。",
-          "learningTitle": "最小割进阶 · 把依赖选择写进图",
-          "learningDescription": "最小割已经能表示部分选择代价，最大权闭合子图进一步加入选中某项必须连带选中的依赖。将收益与依赖分别建边，证明无法接受的选择会付出足够大的割代价。",
-          "threadGateIds": [
-            "stage-11-gate-09",
-            "stage-10-gate-03",
-            "stage-06-gate-01"
-          ]
-        },
-        {
-          "id": "stage-13-gate-10",
-          "index": 10,
-          "title": "回滚莫队：撤销与区间组织",
-          "kind": "learning",
-          "topicIds": [
-            "algorithm-回滚莫队"
-          ],
-          "cf": {
-            "min": 2300,
-            "max": 2500
-          },
-          "luoguDifficulty": [
-            "省选/NOI−"
-          ],
-          "description": "学习回滚莫队的适用条件、基本实现与复杂度，再用独立练习验证。",
-          "goals": [
-            "解释回滚莫队的核心不变量与适用边界",
-            "独立写出实现并说明时间与空间复杂度",
-            "完成基础练习与一道迁移题，记录失败原因"
-          ],
-          "prerequisites": {
-            "gateIds": [
-              "stage-13-gate-09"
-            ],
-            "topicIds": []
-          },
-          "optional": false,
-          "scope": "题目难度仅为本关迁移练习的选题窗口；初学专项题可低于此区间。",
-          "learningTitle": "莫队进阶 · 用撤销代替难做的删除",
-          "learningDescription": "普通莫队依赖端点增删都能维护，某些信息却只容易添加或回退。回滚莫队重新组织区间与临时修改，把撤销作为工具；对照并查集回滚，理解保存改动的共同思路。",
-          "threadGateIds": [
-            "stage-10-gate-07",
-            "stage-12-gate-03",
-            "stage-03-gate-05"
-          ]
-        },
-        {
-          "id": "stage-13-gate-11",
+          "id": "lp2-advanced-math-convolution-route-practice-assessment",
           "index": 11,
-          "title": "半平面交：可行域与凸性",
-          "kind": "learning",
+          "title": "混练验收：卷积与代数计数路线",
+          "kind": "challenge",
+          "sectionId": "lp2-sec-advanced-math-convolution-route",
+          "sectionTitle": "C · 卷积与代数计数路线",
+          "routeId": "lp2-route-convolution-route",
+          "scope": "route",
+          "optional": true,
           "topicIds": [
+            "algorithm-content-xcpc-fft-ntt-1",
+            "xcpc-原根-阶-1"
+          ],
+          "luoguDifficulty": [],
+          "description": "围绕卷积与代数计数路线完成变化任务与独立应用，核对方法选择、实现和边界。",
+          "goals": [
+            "先用朴素卷积建立模型，再选 NTT 或 FFT 完成基础；生成函数 / 插值分别扩展。",
+            "独立完成卷积与代数计数路线的变化任务，说明选择方法的理由",
+            "检查边界或用小规模对照验证，并记录本段的一次错误与修正"
+          ],
+          "learningTitle": "卷积与代数计数路线 · 独立验收",
+          "learningDescription": "组合运用朴素卷积与模型、FFT / NTT 的变换条件，先比较不同方法，再独立完成无标签任务并记录验证结果。",
+          "prerequisites": {
+            "gateIds": [
+              "lp2-advanced-math-convolution-route-convolution",
+              "lp2-advanced-math-convolution-route-fft-ntt"
+            ],
+            "topicIds": [
+              "algorithm-content-xcpc-fft-ntt-1",
+              "xcpc-原根-阶-1"
+            ]
+          },
+          "threadGateIds": [
+            "lp2-advanced-math-convolution-route-generating-interpolation",
+            "lp2-advanced-math-geometry-route-geometry-primitives"
+          ]
+        },
+        {
+          "id": "lp2-advanced-math-geometry-route-geometry-primitives",
+          "index": 12,
+          "title": "点、向量与几何原语",
+          "kind": "learning",
+          "sectionId": "lp2-sec-advanced-math-geometry-route",
+          "sectionTitle": "D · 计算几何路线",
+          "routeId": "lp2-route-geometry-route",
+          "scope": "route",
+          "optional": true,
+          "topicIds": [
+            "algorithm-点与向量",
+            "xcpc-点积-1",
+            "xcpc-叉积-1"
+          ],
+          "luoguDifficulty": [],
+          "description": "先学向量、点积、叉积、相交与距离；分开整数精确判断和浮点误差、共线与重点。",
+          "goals": [
+            "用点积叉积判断方向与位置关系",
+            "独立处理线段相交和距离",
+            "分别验证整数溢出与浮点退化边界"
+          ],
+          "learningTitle": "点、向量与几何原语",
+          "learningDescription": "先学向量、点积、叉积、相交与距离；分开整数精确判断和浮点误差、共线与重点。",
+          "prerequisites": {
+            "gateIds": [
+              "lp2-cpp-toolkit-stl-selection-sorting-interfaces"
+            ],
+            "topicIds": [
+              "algorithm-常用算法函数与迭代器",
+              "xcpc-pair-1"
+            ]
+          },
+          "threadGateIds": [
+            "lp2-advanced-math-convolution-route-practice-assessment",
+            "lp2-advanced-math-geometry-route-convex-hull"
+          ]
+        },
+        {
+          "id": "lp2-advanced-math-geometry-route-convex-hull",
+          "index": 13,
+          "title": "凸包与退化情况",
+          "kind": "learning",
+          "sectionId": "lp2-sec-advanced-math-geometry-route",
+          "sectionTitle": "D · 计算几何路线",
+          "routeId": "lp2-route-geometry-route",
+          "scope": "route",
+          "optional": true,
+          "topicIds": [
+            "algorithm-content-feishu-part-8-1"
+          ],
+          "luoguDifficulty": [],
+          "description": "定义凸性，排序去重并构建凸包；统一共线点保留约定，与暴力或几何性质核对。",
+          "goals": [
+            "统一共线点保留和去重规则",
+            "构造并验证凸包边界",
+            "覆盖重点、单点和全部共线输入"
+          ],
+          "learningTitle": "凸包与退化情况",
+          "learningDescription": "定义凸性，排序去重并构建凸包；统一共线点保留约定，与暴力或几何性质核对。",
+          "prerequisites": {
+            "gateIds": [
+              "lp2-advanced-math-geometry-route-geometry-primitives"
+            ],
+            "topicIds": [
+              "algorithm-点与向量",
+              "xcpc-点积-1",
+              "xcpc-叉积-1"
+            ]
+          },
+          "threadGateIds": [
+            "lp2-advanced-math-geometry-route-geometry-primitives",
+            "lp2-advanced-math-geometry-route-calipers-halfplanes"
+          ]
+        },
+        {
+          "id": "lp2-advanced-math-geometry-route-calipers-halfplanes",
+          "index": 14,
+          "title": "卡壳与半平面交",
+          "kind": "learning",
+          "sectionId": "lp2-sec-advanced-math-geometry-route",
+          "sectionTitle": "D · 计算几何路线",
+          "routeId": "lp2-route-geometry-route",
+          "scope": "elective",
+          "optional": true,
+          "topicIds": [
+            "algorithm-content-feishu-part-8-2",
             "algorithm-content-feishu-part-8-3"
           ],
-          "cf": {
-            "min": 2300,
-            "max": 2500
-          },
-          "luoguDifficulty": [
-            "省选/NOI−"
-          ],
-          "description": "学习半平面交的适用条件、基本实现与复杂度，再用独立练习验证。",
+          "luoguDifficulty": [],
+          "description": "路线深入：先完成旋转卡壳，再按需求选半平面交；检查相切、平行、空交和无界情况。",
           "goals": [
-            "解释半平面交的核心不变量与适用边界",
-            "独立写出实现并说明时间与空间复杂度",
-            "完成基础练习与一道迁移题，记录失败原因"
+            "说明当前指针或半平面队列的不变量",
+            "处理平行、相切和空可行域",
+            "用小规模几何检查验证边界约定"
           ],
+          "learningTitle": "卡壳与半平面交",
+          "learningDescription": "路线深入：先完成旋转卡壳，再按需求选半平面交；检查相切、平行、空交和无界情况。",
           "prerequisites": {
             "gateIds": [
-              "stage-13-gate-10"
+              "lp2-advanced-math-geometry-route-convex-hull"
             ],
-            "topicIds": []
+            "topicIds": [
+              "algorithm-content-feishu-part-8-1"
+            ]
           },
-          "optional": false,
-          "scope": "题目难度仅为本关迁移练习的选题窗口；初学专项题可低于此区间。",
-          "learningTitle": "几何进阶 · 用半平面逐步收紧可行域",
-          "learningDescription": "凸包描出点集的外边界，半平面交则从一组方向限制求共同可行区域。沿用叉积、排序和凸性的理解，维护仍有效的边界，并仔细处理平行线与退化情形。",
           "threadGateIds": [
-            "stage-10-gate-11",
-            "stage-11-gate-11",
-            "stage-02-gate-06"
+            "lp2-advanced-math-geometry-route-convex-hull",
+            "lp2-advanced-math-geometry-route-practice-assessment"
           ]
         },
         {
-          "id": "stage-13-gate-12",
-          "index": 12,
-          "title": "挑战：数据结构、数学与构造综合",
+          "id": "lp2-advanced-math-geometry-route-practice-assessment",
+          "index": 15,
+          "title": "混练验收：计算几何路线",
           "kind": "challenge",
+          "sectionId": "lp2-sec-advanced-math-geometry-route",
+          "sectionTitle": "D · 计算几何路线",
+          "routeId": "lp2-route-geometry-route",
+          "scope": "route",
+          "optional": true,
           "topicIds": [
-            "xcpc-线段树合并-1",
-            "algorithm-content-xcpc-生成函数-1",
-            "algorithm-content-feishu-part-1-6"
+            "algorithm-点与向量",
+            "xcpc-点积-1",
+            "xcpc-叉积-1",
+            "algorithm-content-feishu-part-8-1"
           ],
-          "cf": {
-            "min": 2300,
-            "max": 2500
-          },
-          "luoguDifficulty": [
-            "省选/NOI−"
-          ],
-          "description": "本阶段以线段树合并、生成函数、构造等已学方法为参考，混排新题，检验独立推导与组合能力。",
+          "luoguDifficulty": [],
+          "description": "围绕计算几何路线完成变化任务与独立应用，核对方法选择、实现和边界。",
           "goals": [
-            "在不看标签与题解的情况下提出完整思路",
-            "独立实现并通过所选平台的评测",
-            "复盘关键转化、错误解法与复杂度瓶颈"
+            "向量与几何原语、凸包收齐形成基础成果；旋转卡壳和半平面交分层深入。",
+            "独立完成计算几何路线的变化任务，说明选择方法的理由",
+            "检查边界或用小规模对照验证，并记录本段的一次错误与修正"
           ],
+          "learningTitle": "计算几何路线 · 独立验收",
+          "learningDescription": "组合运用点、向量与几何原语、凸包与退化情况，先比较不同方法，再独立完成无标签任务并记录验证结果。",
           "prerequisites": {
             "gateIds": [
-              "stage-13-gate-11"
+              "lp2-advanced-math-geometry-route-geometry-primitives",
+              "lp2-advanced-math-geometry-route-convex-hull"
             ],
-            "topicIds": []
+            "topicIds": [
+              "algorithm-点与向量",
+              "xcpc-点积-1",
+              "xcpc-叉积-1",
+              "algorithm-content-feishu-part-8-1"
+            ]
           },
-          "optional": false,
-          "scope": "区间只用于选择综合新题，不保证单题涵盖列出的所有算法。",
-          "learningTitle": "主线挑战 · 比较结构解与数学解",
-          "learningDescription": "在数据结构聚合、代数计数与构造中挑选新题，练习从同一限制寻找不同表达。不要按工具数量评价解法，回顾每一步推导，比较实现成本、复杂度和证明是否完整。",
           "threadGateIds": [
-            "stage-13-gate-01",
-            "stage-13-gate-05",
-            "stage-12-gate-11"
+            "lp2-advanced-math-geometry-route-calipers-halfplanes"
           ]
         }
       ]
@@ -6402,488 +9509,766 @@
     {
       "id": "stage-14",
       "index": 14,
-      "title": "开放挑战与个人专题路线",
-      "description": "按个人兴趣和比赛需求挑战开放难题，持续复盘并迭代方法。",
-      "goal": "按个人兴趣和比赛需求挑战开放难题，持续复盘并迭代方法。",
-      "cf": {
-        "min": 2500,
-        "max": null
-      },
-      "luoguDifficulty": [
-        "省选/NOI−",
-        "NOI/NOI+/CTS"
-      ],
-      "rationale": "本章按综合做题能力组织，不要求区间中的每道题都使用这些算法，也不要求学完所有专题才进入下一章。",
+      "title": "专题毕业：选择方向，形成完整解法",
+      "description": "选择一个方向，从理论、实现、证明走到陌生综合题，形成可复用的个人专题笔记和题目复盘。",
+      "goal": "选择一个方向，从理论、实现、证明走到陌生综合题，形成可复用的个人专题笔记和题目复盘。",
+      "rationale": "明确专题选择与成果，不把“后缀数组→SAM”或“多项式→等价类计数”误写成必修先修链。",
+      "entryText": "按具体方向进入：后缀结构需第 8 章对应核心；多项式需第 13C 的 NTT 分支；动态树需第 6、7 章与旋转 / 辅助树先修（Treap 分裂合并不等于已会旋转）；特殊图论需第 11 章。各分支补直接先修，无统一前 13 章全修门槛。",
+      "completionMode": "core",
       "completionCriteria": [
-        "独立完成本章综合题组中的新题",
-        "覆盖至少两种已学方法；后续阶段回收前面基础工具",
-        "说明正确性、复杂度，并记录一次完整复盘"
+        "成果注明具体专题和先修，包含问题模型、正确性、复杂度与适用边界。",
+        "包含独立实现、边界 / 暴力验证、陌生题应用、失败案例复盘。",
+        "“专题成果完成”指所选路线达到要求，不意味着达到某个 CF 分数或精通全部算法。"
       ],
+      "scopeDescription": "FWT 先修位运算与相应变换；集合幂级数先修子集 DP 与代数运算；Burnside / Pólya 先补群作用。回文自动机与 Lyndon 为字符串独立分支。",
       "prerequisites": {
-        "stageIds": [
-          "stage-13"
-        ]
+        "stageIds": []
       },
-      "gates": [
+      "luoguDifficulty": [],
+      "sections": [
         {
-          "id": "stage-14-gate-01",
-          "index": 1,
-          "title": "多项式求逆与 Newton 迭代（选修）",
-          "kind": "learning",
-          "topicIds": [
-            "algorithm-多项式求逆",
-            "algorithm-content-xcpc-fft-ntt-1"
+          "id": "lp2-sec-specialization-suffix-route",
+          "title": "A · 字符串结构路线",
+          "scope": "route",
+          "routeId": "lp2-route-suffix-route",
+          "description": "字符串深入路线：后缀数组与 LCP、后缀自动机与 endpos 可独立进入；回文自动机、Lyndon 分解另作延伸。按一个具体专题形成完整成果。",
+          "completionCriteria": [
+            "后缀数组 / LCP 或后缀自动机二选一形成完整基础专题，再按需要选择另一个；不把前者强制设为后者先修。"
           ],
-          "cf": {
-            "min": 2500,
-            "max": null
-          },
-          "luoguDifficulty": [
-            "省选/NOI−",
-            "NOI/NOI+/CTS"
-          ],
-          "description": "学习多项式求逆、FFT/NTT的适用条件、基本实现与复杂度，再用独立练习验证。",
-          "goals": [
-            "解释多项式求逆、FFT/NTT的核心不变量与适用边界",
-            "独立写出实现并说明时间与空间复杂度",
-            "完成基础练习与一道迁移题，记录失败原因"
+          "gateIds": [
+            "lp2-specialization-suffix-route-suffix-array",
+            "lp2-specialization-suffix-route-suffix-automaton",
+            "lp2-specialization-suffix-route-palindrome-lyndon",
+            "lp2-specialization-suffix-route-practice-assessment"
           ],
           "prerequisites": {
-            "gateIds": [],
+            "gateIds": [
+              "lp2-strings-single-pattern-prefix-kmp"
+            ],
             "topicIds": []
-          },
+          }
+        },
+        {
+          "id": "lp2-sec-specialization-algebra-route",
+          "title": "B · 高级代数与计数路线",
+          "scope": "route",
+          "routeId": "lp2-route-algebra-route",
+          "description": "代数与高级计数路线：多项式路线：NTT 基础 → 求逆 / Newton → ln / exp；FWT 与集合幂级数各自补先修；Burnside / Pólya 另走群作用与等价类计数。互相不构成统一必修链。",
+          "completionCriteria": [
+            "多项式、位运算卷积、等价类计数分别独立选题；不能把它们当成一条必修链。"
+          ],
+          "gateIds": [
+            "lp2-specialization-algebra-route-newton",
+            "lp2-specialization-algebra-route-formal-exp-log",
+            "lp2-specialization-algebra-route-bit-convolution",
+            "lp2-specialization-algebra-route-burnside",
+            "lp2-specialization-algebra-route-practice-assessment"
+          ],
+          "prerequisites": {
+            "gateIds": [
+              "lp2-advanced-math-convolution-route-fft-ntt"
+            ],
+            "topicIds": []
+          }
+        },
+        {
+          "id": "lp2-sec-specialization-dynamic-tree-route",
+          "title": "C · 动态结构路线",
+          "scope": "route",
+          "routeId": "lp2-route-dynamic-tree-route",
+          "description": "动态结构路线：平衡树、树上路径基础 → 动态树；链接、切断与路径维护；配套完整证明和验证。",
+          "completionCriteria": [
+            "从旋转与辅助树不变量到链接 / 切断与路径维护，完成动态树的完整验证。"
+          ],
+          "gateIds": [
+            "lp2-specialization-dynamic-tree-route-link-cut",
+            "lp2-specialization-dynamic-tree-route-practice-assessment"
+          ],
+          "prerequisites": {
+            "gateIds": [
+              "lp2-graph-trees-tree-queries-lca",
+              "lp2-range-data-segment-lazy-lazy-add"
+            ],
+            "topicIds": []
+          }
+        },
+        {
+          "id": "lp2-sec-specialization-special-graph-route",
+          "title": "D · 特殊图论路线",
+          "scope": "route",
+          "routeId": "lp2-route-special-graph-route",
+          "description": "特殊图论路线：在图论进阶完成后，选择一般图匹配或支配树等专题；逐一核实先修，不并成必修清单。",
+          "completionCriteria": [
+            "明确选一个具体专题，补齐直接先修后，完成证明、实现与独立应用。"
+          ],
+          "gateIds": [
+            "lp2-specialization-special-graph-route-special-matching",
+            "lp2-specialization-special-graph-route-dominators",
+            "lp2-specialization-special-graph-route-practice-assessment"
+          ],
+          "prerequisites": {
+            "gateIds": [
+              "lp2-advanced-graphs-relations-matching-bipartite"
+            ],
+            "topicIds": []
+          }
+        },
+        {
+          "id": "lp2-sec-specialization-capstone",
+          "title": "E · 综合成果与复盘",
+          "scope": "core",
+          "routeId": null,
+          "description": "综合构造与多解重建：在已掌握方向中，训练构造、贪心、DP 的转换；反例、充分性和方案还原。\n毕业项目与训练复盘：选定主线的陌生题组；再完成跨两个已学方向的综合题；整理模板适用条件、失败案例和后续计划。",
+          "completionCriteria": [
+            "选定一个专题完成成果包，再使用两个已学方向解决综合任务；无须全修高级路线。"
+          ],
+          "gateIds": [
+            "lp2-specialization-capstone-solution-reconstruction",
+            "lp2-specialization-capstone-project-review",
+            "lp2-specialization-capstone-practice-assessment"
+          ],
+          "prerequisites": {
+            "gateIds": [
+              "lp2-basic-dp-dp-selection-dp-greedy-search",
+              "lp2-basic-optimization-method-selection-optimize-from-brute"
+            ],
+            "topicIds": []
+          }
+        }
+      ],
+      "gates": [
+        {
+          "id": "lp2-specialization-suffix-route-suffix-array",
+          "index": 1,
+          "title": "后缀数组与 LCP 专题",
+          "kind": "learning",
+          "sectionId": "lp2-sec-specialization-suffix-route",
+          "sectionTitle": "A · 字符串结构路线",
+          "routeId": "lp2-route-suffix-route",
+          "scope": "route",
           "optional": true,
-          "scope": "题目难度仅为本关迁移练习的选题窗口；初学专项题可低于此区间。",
-          "learningTitle": "多项式选修 · 用倍增逐步求出逆元",
-          "learningDescription": "生成函数把计数写成形式表达，卷积提供快速乘法，Newton 迭代再逐步翻倍正确的系数范围。先核对常数项可逆条件，按代数主线需要选修多项式求逆。",
+          "topicIds": [
+            "algorithm-content-feishu-part-4-7"
+          ],
+          "luoguDifficulty": [],
+          "description": "可独立选SA/LCP路线，建立后缀排序、排名和LCP，完成子串应用；不作为SAM的强制先修。",
+          "goals": [
+            "定义后缀排名与相邻LCP",
+            "用后缀结构完成一个子串统计任务",
+            "与全部后缀排序和暴力匹配核对"
+          ],
+          "learningTitle": "后缀数组与 LCP 专题",
+          "learningDescription": "可独立选SA/LCP路线，建立后缀排序、排名和LCP，完成子串应用；不作为SAM的强制先修。",
+          "prerequisites": {
+            "gateIds": [
+              "lp2-strings-single-pattern-prefix-kmp"
+            ],
+            "topicIds": [
+              "algorithm-content-feishu-part-4-2"
+            ]
+          },
           "threadGateIds": [
-            "stage-13-gate-05",
-            "stage-12-gate-07",
-            "stage-06-gate-10"
+            "lp2-specialization-suffix-route-suffix-automaton"
           ]
         },
         {
-          "id": "stage-14-gate-02",
+          "id": "lp2-specialization-suffix-route-suffix-automaton",
           "index": 2,
-          "title": "多项式 ln / exp（选修）",
+          "title": "SAM 与 endpos 专题",
           "kind": "learning",
+          "sectionId": "lp2-sec-specialization-suffix-route",
+          "sectionTitle": "A · 字符串结构路线",
+          "routeId": "lp2-route-suffix-route",
+          "scope": "elective",
+          "optional": true,
+          "topicIds": [
+            "algorithm-content-feishu-part-4-8"
+          ],
+          "luoguDifficulty": [],
+          "description": "独立选修SAM路线：状态等价、后缀链接、克隆与endpos，验证状态对应的子串集合。",
+          "goals": [
+            "解释状态等价和endpos集合",
+            "证明克隆与后缀链接保持结构含义",
+            "与暴力生成的子串集合核对计数"
+          ],
+          "learningTitle": "SAM 与 endpos 专题",
+          "learningDescription": "独立选修SAM路线：状态等价、后缀链接、克隆与endpos，验证状态对应的子串集合。",
+          "prerequisites": {
+            "gateIds": [
+              "lp2-strings-prefix-set-trie"
+            ],
+            "topicIds": [
+              "algorithm-content-feishu-part-4-4"
+            ]
+          },
+          "threadGateIds": [
+            "lp2-specialization-suffix-route-suffix-array",
+            "lp2-specialization-suffix-route-palindrome-lyndon"
+          ]
+        },
+        {
+          "id": "lp2-specialization-suffix-route-palindrome-lyndon",
+          "index": 3,
+          "title": "回文自动机或 Lyndon 分解",
+          "kind": "learning",
+          "sectionId": "lp2-sec-specialization-suffix-route",
+          "sectionTitle": "A · 字符串结构路线",
+          "routeId": "lp2-route-suffix-route",
+          "scope": "elective",
+          "optional": true,
+          "topicIds": [
+            "algorithm-content-feishu-part-4-6",
+            "xcpc-lyndon-分解-1"
+          ],
+          "luoguDifficulty": [],
+          "description": "任选独立专题，明确先修、结构不变量和计数应用，不能只看模板就记录掌握。",
+          "goals": [
+            "为所选字符串结构写出不变量",
+            "独立实现插入或分解并解释边界",
+            "核对结构表达的回文或分解结果"
+          ],
+          "learningTitle": "回文自动机或 Lyndon 分解",
+          "learningDescription": "任选独立专题，明确先修、结构不变量和计数应用，不能只看模板就记录掌握。",
+          "prerequisites": {
+            "gateIds": [
+              "lp2-strings-substring-palindrome-manacher"
+            ],
+            "topicIds": [
+              "algorithm-content-feishu-part-4-3"
+            ]
+          },
+          "threadGateIds": [
+            "lp2-specialization-suffix-route-suffix-automaton",
+            "lp2-specialization-suffix-route-practice-assessment"
+          ]
+        },
+        {
+          "id": "lp2-specialization-suffix-route-practice-assessment",
+          "index": 4,
+          "title": "混练验收：字符串结构路线",
+          "kind": "challenge",
+          "sectionId": "lp2-sec-specialization-suffix-route",
+          "sectionTitle": "A · 字符串结构路线",
+          "routeId": "lp2-route-suffix-route",
+          "scope": "route",
+          "optional": true,
+          "topicIds": [
+            "algorithm-content-feishu-part-4-7"
+          ],
+          "luoguDifficulty": [],
+          "description": "围绕字符串结构路线完成变化任务与独立应用，核对方法选择、实现和边界。",
+          "goals": [
+            "后缀数组 / LCP 或后缀自动机二选一形成完整基础专题，再按需要选择另一个；不把前者强制设为后者先修。",
+            "独立完成字符串结构路线的变化任务，说明选择方法的理由",
+            "检查边界或用小规模对照验证，并记录本段的一次错误与修正"
+          ],
+          "learningTitle": "字符串结构路线 · 独立验收",
+          "learningDescription": "组合运用后缀数组与 LCP 专题，先比较不同方法，再独立完成无标签任务并记录验证结果。",
+          "prerequisites": {
+            "gateIds": [
+              "lp2-specialization-suffix-route-suffix-array"
+            ],
+            "topicIds": [
+              "algorithm-content-feishu-part-4-7"
+            ]
+          },
+          "threadGateIds": [
+            "lp2-specialization-suffix-route-palindrome-lyndon",
+            "lp2-specialization-algebra-route-newton"
+          ]
+        },
+        {
+          "id": "lp2-specialization-algebra-route-newton",
+          "index": 5,
+          "title": "多项式求逆与 Newton",
+          "kind": "learning",
+          "sectionId": "lp2-sec-specialization-algebra-route",
+          "sectionTitle": "B · 高级代数与计数路线",
+          "routeId": "lp2-route-algebra-route",
+          "scope": "route",
+          "optional": true,
+          "topicIds": [
+            "algorithm-多项式求逆"
+          ],
+          "luoguDifficulty": [],
+          "description": "先修NTT分支与形式级数，推导倍增精度、常数项可逆条件和截断范围。",
+          "goals": [
+            "推导精度翻倍的求逆公式",
+            "检查常数项可逆与截断长度",
+            "验证原多项式乘结果在所需精度内等于一"
+          ],
+          "learningTitle": "多项式求逆与 Newton",
+          "learningDescription": "先修NTT分支与形式级数，推导倍增精度、常数项可逆条件和截断范围。",
+          "prerequisites": {
+            "gateIds": [
+              "lp2-advanced-math-convolution-route-fft-ntt"
+            ],
+            "topicIds": [
+              "algorithm-content-xcpc-fft-ntt-1",
+              "xcpc-原根-阶-1"
+            ]
+          },
+          "threadGateIds": [
+            "lp2-specialization-suffix-route-practice-assessment",
+            "lp2-specialization-algebra-route-formal-exp-log"
+          ]
+        },
+        {
+          "id": "lp2-specialization-algebra-route-formal-exp-log",
+          "index": 6,
+          "title": "多项式 ln / exp",
+          "kind": "learning",
+          "sectionId": "lp2-sec-specialization-algebra-route",
+          "sectionTitle": "B · 高级代数与计数路线",
+          "routeId": "lp2-route-algebra-route",
+          "scope": "elective",
+          "optional": true,
           "topicIds": [
             "algorithm-多项式-ln",
             "algorithm-多项式-exp"
           ],
-          "cf": {
-            "min": 2500,
-            "max": null
-          },
-          "luoguDifficulty": [
-            "省选/NOI−",
-            "NOI/NOI+/CTS"
-          ],
-          "description": "学习多项式 ln、多项式 exp的适用条件、基本实现与复杂度，再用独立练习验证。",
+          "luoguDifficulty": [],
+          "description": "分别验证常数项、积分逆元和特征条件，沿用Newton但独立核对公式。",
           "goals": [
-            "解释多项式 ln、多项式 exp的核心不变量与适用边界",
-            "独立写出实现并说明时间与空间复杂度",
-            "完成基础练习与一道迁移题，记录失败原因"
+            "分别检查ln和exp的常数项条件",
+            "核验积分分母在当前数域可逆",
+            "用低次展开或互逆关系验证结果"
           ],
+          "learningTitle": "多项式 ln / exp",
+          "learningDescription": "分别验证常数项、积分逆元和特征条件，沿用Newton但独立核对公式。",
           "prerequisites": {
-            "gateIds": [],
-            "topicIds": []
+            "gateIds": [
+              "lp2-specialization-algebra-route-newton"
+            ],
+            "topicIds": [
+              "algorithm-多项式求逆"
+            ]
           },
-          "optional": true,
-          "scope": "题目难度仅为本关迁移练习的选题窗口；初学专项题可低于此区间。",
-          "learningTitle": "多项式选修 · 让求导、积分与求逆协作",
-          "learningDescription": "在快速乘法与求逆基础上，将形式导数、积分和迭代接成 ln 与 exp 运算。逐项核对常数项及模数条件，这是一条代数深入支线，可以按题目需求回补而非全员必修。",
           "threadGateIds": [
-            "stage-14-gate-01",
-            "stage-13-gate-05",
-            "stage-12-gate-07"
+            "lp2-specialization-algebra-route-newton",
+            "lp2-specialization-algebra-route-bit-convolution"
           ]
         },
         {
-          "id": "stage-14-gate-03",
-          "index": 3,
-          "title": "FWT：异或与位运算卷积（选修）",
+          "id": "lp2-specialization-algebra-route-bit-convolution",
+          "index": 7,
+          "title": "FWT 与集合幂级数分支",
           "kind": "learning",
-          "topicIds": [
-            "xcpc-fwt-fmt-1"
-          ],
-          "cf": {
-            "min": 2500,
-            "max": null
-          },
-          "luoguDifficulty": [
-            "省选/NOI−",
-            "NOI/NOI+/CTS"
-          ],
-          "description": "学习FWT的适用条件、基本实现与复杂度，再用独立练习验证。",
-          "goals": [
-            "解释FWT的核心不变量与适用边界",
-            "独立写出实现并说明时间与空间复杂度",
-            "完成基础练习与一道迁移题，记录失败原因"
-          ],
-          "prerequisites": {
-            "gateIds": [],
-            "topicIds": []
-          },
+          "sectionId": "lp2-sec-specialization-algebra-route",
+          "sectionTitle": "B · 高级代数与计数路线",
+          "routeId": "lp2-route-algebra-route",
+          "scope": "elective",
           "optional": true,
-          "scope": "题目难度仅为本关迁移练习的选题窗口；初学专项题可低于此区间。",
-          "learningTitle": "位运算选修 · 为异或组合换一种变换",
-          "learningDescription": "普通卷积按下标相加合并贡献，FWT 面对的却是异或、与或等位运算关系。先识别组合规则再选变换，对照状压枚举的朴素做法理解加速，按位运算计数主线选修。",
-          "threadGateIds": [
-            "stage-08-gate-05",
-            "stage-12-gate-07",
-            "stage-10-gate-10"
-          ]
-        },
-        {
-          "id": "stage-14-gate-04",
-          "index": 4,
-          "title": "混练：DP 状态、代数转化与证明",
-          "kind": "mixed",
           "topicIds": [
-            "algorithm-content-xcpc-计数dp-1",
-            "algorithm-content-xcpc-生成函数-1",
-            "algorithm-content-feishu-part-1-6"
+            "xcpc-fwt-fmt-1",
+            "xcpc-集合幂级数-1"
           ],
-          "cf": {
-            "min": 2500,
-            "max": null
-          },
-          "luoguDifficulty": [
-            "省选/NOI−",
-            "NOI/NOI+/CTS"
-          ],
-          "description": "混合使用计数 DP、生成函数、构造；选题时隐藏专题标签，先独立辨型再实现。",
+          "luoguDifficulty": [],
+          "description": "按位运算卷积与子集代数分别补先修，证明变换/逆变换与原模型对应。",
           "goals": [
-            "在不看标签与题解的情况下提出完整思路",
-            "独立实现并通过所选平台的评测",
-            "复盘关键转化、错误解法与复杂度瓶颈"
+            "明确卷积使用的位运算或子集关系",
+            "推导正逆变换并核验系数运算",
+            "与直接枚举合并条件的卷积比较"
           ],
+          "learningTitle": "FWT 与集合幂级数分支",
+          "learningDescription": "按位运算卷积与子集代数分别补先修，证明变换/逆变换与原模型对应。",
           "prerequisites": {
-            "gateIds": [],
-            "topicIds": []
+            "gateIds": [
+              "lp2-advanced-dp-tree-subset-dp-subset",
+              "lp2-number-counting-congruence-inverses-extended-gcd"
+            ],
+            "topicIds": [
+              "xcpc-普通型-1",
+              "xcpc-枚举子集-超集-1",
+              "xcpc-扩展欧几里得-1",
+              "xcpc-逆元-1"
+            ]
           },
-          "optional": false,
-          "scope": "区间只用于选择综合新题，不保证单题涵盖列出的所有算法。",
-          "learningTitle": "表达混练 · 从状态走到代数再回到证明",
-          "learningDescription": "把陌生计数问题先写成可验证的状态，再尝试改写成生成函数或构造关系。比较不同表达保留了哪些信息，不要求使用高阶选修，重点是完整推导与反例检查。",
           "threadGateIds": [
-            "stage-09-gate-07",
-            "stage-13-gate-05",
-            "stage-12-gate-11"
+            "lp2-specialization-algebra-route-formal-exp-log",
+            "lp2-specialization-algebra-route-burnside"
           ]
         },
         {
-          "id": "stage-14-gate-05",
-          "index": 5,
-          "title": "Burnside / Pólya：等价类计数（选修）",
+          "id": "lp2-specialization-algebra-route-burnside",
+          "index": 8,
+          "title": "群作用与等价类计数",
           "kind": "learning",
+          "sectionId": "lp2-sec-specialization-algebra-route",
+          "sectionTitle": "B · 高级代数与计数路线",
+          "routeId": "lp2-route-algebra-route",
+          "scope": "elective",
+          "optional": true,
           "topicIds": [
             "xcpc-burnside引理-1",
             "xcpc-polya定理-1"
           ],
-          "cf": {
-            "min": 2500,
-            "max": null
-          },
-          "luoguDifficulty": [
-            "省选/NOI−",
-            "NOI/NOI+/CTS"
-          ],
-          "description": "学习Burnside引理、Pólya 定理的适用条件、基本实现与复杂度，再用独立练习验证。",
+          "luoguDifficulty": [],
+          "description": "另走群作用与轨道计数路线，补等价关系、作用与不动点；不设多项式先修。",
           "goals": [
-            "解释Burnside引理、Pólya 定理的核心不变量与适用边界",
-            "独立写出实现并说明时间与空间复杂度",
-            "完成基础练习与一道迁移题，记录失败原因"
+            "定义群作用、轨道与等价关系",
+            "计算各作用的不动点数量",
+            "用小规模对象分组核对等价类数"
           ],
+          "learningTitle": "群作用与等价类计数",
+          "learningDescription": "另走群作用与轨道计数路线，补等价关系、作用与不动点；不设多项式先修。",
           "prerequisites": {
             "gateIds": [
-              "stage-14-gate-04"
+              "lp2-number-counting-combinations-combination-model"
             ],
-            "topicIds": []
+            "topicIds": [
+              "algorithm-content-feishu-part-5-6-1",
+              "xcpc-杨辉三角-1",
+              "xcpc-多重集组合数-1"
+            ]
           },
-          "optional": true,
-          "scope": "题目难度仅为本关迁移练习的选题窗口；初学专项题可低于此区间。",
-          "learningTitle": "计数选修 · 把对称方案看成同一类",
-          "learningDescription": "容斥处理重复出现，等价类计数还需要分清旋转或置换下哪些方案相同。先明确群作用与不动点，再学习 Burnside 和 Pólya；这是对称计数的可选支线，不是所有计数题的通用公式。",
           "threadGateIds": [
-            "stage-06-gate-11",
-            "stage-06-gate-09",
-            "stage-13-gate-05"
+            "lp2-specialization-algebra-route-bit-convolution",
+            "lp2-specialization-algebra-route-practice-assessment"
           ]
         },
         {
-          "id": "stage-14-gate-06",
-          "index": 6,
-          "title": "集合幂级数：子集卷积（选修）",
-          "kind": "learning",
-          "topicIds": [
-            "xcpc-集合幂级数-1",
-            "algorithm-fmt-sos"
-          ],
-          "cf": {
-            "min": 2500,
-            "max": null
-          },
-          "luoguDifficulty": [
-            "省选/NOI−",
-            "NOI/NOI+/CTS"
-          ],
-          "description": "学习集合幂级数、子集变换的适用条件、基本实现与复杂度，再用独立练习验证。",
-          "goals": [
-            "解释集合幂级数、子集变换的核心不变量与适用边界",
-            "独立写出实现并说明时间与空间复杂度",
-            "完成基础练习与一道迁移题，记录失败原因"
-          ],
-          "prerequisites": {
-            "gateIds": [
-              "stage-14-gate-04"
-            ],
-            "topicIds": []
-          },
-          "optional": true,
-          "scope": "题目难度仅为本关迁移练习的选题窗口；初学专项题可低于此区间。",
-          "learningTitle": "集合选修 · 沿子集关系组合贡献",
-          "learningDescription": "状压 DP 用掩码表示集合，集合幂级数进一步组织子集间的合并与卷积。比较普通卷积和子集卷积的下标规则，再借助子集变换减少重复枚举，按集合计数需求深入。",
-          "threadGateIds": [
-            "stage-08-gate-05",
-            "stage-14-gate-03",
-            "stage-12-gate-07"
-          ]
-        },
-        {
-          "id": "stage-14-gate-07",
-          "index": 7,
-          "title": "动态树：树上结构的变化（选修）",
-          "kind": "learning",
-          "topicIds": [
-            "algorithm-content-feishu-part-6-16"
-          ],
-          "cf": {
-            "min": 2500,
-            "max": null
-          },
-          "luoguDifficulty": [
-            "省选/NOI−",
-            "NOI/NOI+/CTS"
-          ],
-          "description": "学习动态树的适用条件、基本实现与复杂度，再用独立练习验证。",
-          "goals": [
-            "解释动态树的核心不变量与适用边界",
-            "独立写出实现并说明时间与空间复杂度",
-            "完成基础练习与一道迁移题，记录失败原因"
-          ],
-          "prerequisites": {
-            "gateIds": [
-              "stage-14-gate-04"
-            ],
-            "topicIds": []
-          },
-          "optional": true,
-          "scope": "题目难度仅为本关迁移练习的选题窗口；初学专项题可低于此区间。",
-          "learningTitle": "树结构选修 · 当连接关系也会变化",
-          "learningDescription": "重链剖分通常依赖固定树形，动态树支线则要应对连接、断开与路径访问的变化。先理清要维护的结构不变量，再按具体方法补齐平衡树基础，避免把静态树模板直接套入。",
-          "threadGateIds": [
-            "stage-10-gate-01",
-            "stage-12-gate-06",
-            "stage-12-gate-03"
-          ]
-        },
-        {
-          "id": "stage-14-gate-08",
-          "index": 8,
-          "title": "混练：树、离线与动态图关系",
-          "kind": "mixed",
-          "topicIds": [
-            "xcpc-重链剖分-1",
-            "algorithm-可撤销并查集",
-            "algorithm-content-feishu-part-9-3-1"
-          ],
-          "cf": {
-            "min": 2500,
-            "max": null
-          },
-          "luoguDifficulty": [
-            "省选/NOI−",
-            "NOI/NOI+/CTS"
-          ],
-          "description": "混合使用重链剖分、可撤销并查集、CDQ 分治；选题时隐藏专题标签，先独立辨型再实现。",
-          "goals": [
-            "在不看标签与题解的情况下提出完整思路",
-            "独立实现并通过所选平台的评测",
-            "复盘关键转化、错误解法与复杂度瓶颈"
-          ],
-          "prerequisites": {
-            "gateIds": [
-              "stage-14-gate-04"
-            ],
-            "topicIds": []
-          },
-          "optional": false,
-          "scope": "区间只用于选择综合新题，不保证单题涵盖列出的所有算法。",
-          "learningTitle": "动态混练 · 比较在线维护与离线回滚",
-          "learningDescription": "同样是关系随时间变化，可以考虑固定树路径处理、离线分治或可撤销结构。先根据题意判断能否预知操作，再选择表达方式；不必依赖动态树选修，也能形成完整解法。",
-          "threadGateIds": [
-            "stage-10-gate-01",
-            "stage-12-gate-03",
-            "stage-12-gate-01"
-          ]
-        },
-        {
-          "id": "stage-14-gate-09",
+          "id": "lp2-specialization-algebra-route-practice-assessment",
           "index": 9,
-          "title": "支配树或一般图匹配（选修）",
-          "kind": "learning",
+          "title": "混练验收：高级代数与计数路线",
+          "kind": "challenge",
+          "sectionId": "lp2-sec-specialization-algebra-route",
+          "sectionTitle": "B · 高级代数与计数路线",
+          "routeId": "lp2-route-algebra-route",
+          "scope": "route",
+          "optional": true,
           "topicIds": [
-            "xcpc-支配树-1",
-            "algorithm-一般图最大匹配-带花树"
+            "algorithm-多项式求逆"
           ],
-          "cf": {
-            "min": 2500,
-            "max": null
-          },
-          "luoguDifficulty": [
-            "省选/NOI−",
-            "NOI/NOI+/CTS"
-          ],
-          "description": "学习支配树、带花树的适用条件、基本实现与复杂度，再用独立练习验证。",
+          "luoguDifficulty": [],
+          "description": "围绕高级代数与计数路线完成变化任务与独立应用，核对方法选择、实现和边界。",
           "goals": [
-            "解释支配树、带花树的核心不变量与适用边界",
-            "独立写出实现并说明时间与空间复杂度",
-            "完成基础练习与一道迁移题，记录失败原因"
+            "多项式、位运算卷积、等价类计数分别独立选题；不能把它们当成一条必修链。",
+            "独立完成高级代数与计数路线的变化任务，说明选择方法的理由",
+            "检查边界或用小规模对照验证，并记录本段的一次错误与修正"
           ],
+          "learningTitle": "高级代数与计数路线 · 独立验收",
+          "learningDescription": "组合运用多项式求逆与 Newton，先比较不同方法，再独立完成无标签任务并记录验证结果。",
           "prerequisites": {
             "gateIds": [
-              "stage-14-gate-08"
+              "lp2-specialization-algebra-route-newton"
             ],
-            "topicIds": []
+            "topicIds": [
+              "algorithm-多项式求逆"
+            ]
           },
-          "optional": true,
-          "scope": "题目难度仅为本关迁移练习的选题窗口；初学专项题可低于此区间。",
-          "learningTitle": "图论选修 · 沿结构或匹配再选一支",
-          "learningDescription": "在图论主线中，可以研究必经关系形成的支配树，也可以从二分图匹配深入一般图匹配。两者解决的任务不同，先选一条与题目相关的支线，补齐定义与证明后再实现。",
           "threadGateIds": [
-            "stage-05-gate-09",
-            "stage-09-gate-09",
-            "stage-10-gate-02"
+            "lp2-specialization-algebra-route-burnside",
+            "lp2-specialization-dynamic-tree-route-link-cut"
           ]
         },
         {
-          "id": "stage-14-gate-10",
+          "id": "lp2-specialization-dynamic-tree-route-link-cut",
           "index": 10,
-          "title": "Lyndon 分解与字符串结构（选修）",
+          "title": "辅助树、旋转与动态树",
           "kind": "learning",
+          "sectionId": "lp2-sec-specialization-dynamic-tree-route",
+          "sectionTitle": "C · 动态结构路线",
+          "routeId": "lp2-route-dynamic-tree-route",
+          "scope": "route",
+          "optional": true,
           "topicIds": [
-            "xcpc-lyndon-分解-1"
+            "algorithm-content-feishu-part-6-16",
+            "xcpc-splay-1"
           ],
-          "cf": {
-            "min": 2500,
-            "max": null
-          },
-          "luoguDifficulty": [
-            "省选/NOI−",
-            "NOI/NOI+/CTS"
-          ],
-          "description": "学习Lyndon 分解的适用条件、基本实现与复杂度，再用独立练习验证。",
+          "luoguDifficulty": [],
+          "description": "补旋转和辅助树不变量，完成链接、切断与路径维护；Treap分裂合并不能替代旋转先修。",
           "goals": [
-            "解释Lyndon 分解的核心不变量与适用边界",
-            "独立写出实现并说明时间与空间复杂度",
-            "完成基础练习与一道迁移题，记录失败原因"
+            "解释辅助树和原树的不同含义",
+            "维护旋转、访问与懒标记不变量",
+            "将链接切断和路径查询与朴素森林比较"
           ],
+          "learningTitle": "辅助树、旋转与动态树",
+          "learningDescription": "补旋转和辅助树不变量，完成链接、切断与路径维护；Treap分裂合并不能替代旋转先修。",
           "prerequisites": {
             "gateIds": [
-              "stage-14-gate-08"
+              "lp2-graph-trees-tree-queries-lca",
+              "lp2-range-data-segment-lazy-lazy-add"
             ],
-            "topicIds": []
+            "topicIds": [
+              "xcpc-倍增-1",
+              "algorithm-content-feishu-part-7-3-3",
+              "xcpc-带标记的线段树-1"
+            ]
           },
-          "optional": true,
-          "scope": "题目难度仅为本关迁移练习的选题窗口；初学专项题可低于此区间。",
-          "learningTitle": "字符串选修 · 从字典序寻找分解结构",
-          "learningDescription": "后缀排序和前缀匹配提供了比较字符串的工具，Lyndon 分解进一步利用字典序组织整串。观察最小表示与重复结构中的关联，沿字符串兴趣支线练习，不要求先学完全部自动机。",
           "threadGateIds": [
-            "stage-11-gate-07",
-            "stage-10-gate-06",
-            "stage-13-gate-03"
+            "lp2-specialization-algebra-route-practice-assessment",
+            "lp2-specialization-dynamic-tree-route-practice-assessment"
           ]
         },
         {
-          "id": "stage-14-gate-11",
+          "id": "lp2-specialization-dynamic-tree-route-practice-assessment",
           "index": 11,
-          "title": "构造、贪心与 DP：多解重建",
+          "title": "混练验收：动态结构路线",
+          "kind": "challenge",
+          "sectionId": "lp2-sec-specialization-dynamic-tree-route",
+          "sectionTitle": "C · 动态结构路线",
+          "routeId": "lp2-route-dynamic-tree-route",
+          "scope": "route",
+          "optional": true,
+          "topicIds": [
+            "algorithm-content-feishu-part-6-16",
+            "xcpc-splay-1"
+          ],
+          "luoguDifficulty": [],
+          "description": "围绕动态结构路线完成变化任务与独立应用，核对方法选择、实现和边界。",
+          "goals": [
+            "从旋转与辅助树不变量到链接 / 切断与路径维护，完成动态树的完整验证。",
+            "独立完成动态结构路线的变化任务，说明选择方法的理由",
+            "检查边界或用小规模对照验证，并记录本段的一次错误与修正"
+          ],
+          "learningTitle": "动态结构路线 · 独立验收",
+          "learningDescription": "组合运用辅助树、旋转与动态树，先比较不同方法，再独立完成无标签任务并记录验证结果。",
+          "prerequisites": {
+            "gateIds": [
+              "lp2-specialization-dynamic-tree-route-link-cut"
+            ],
+            "topicIds": [
+              "algorithm-content-feishu-part-6-16",
+              "xcpc-splay-1"
+            ]
+          },
+          "threadGateIds": [
+            "lp2-specialization-dynamic-tree-route-link-cut",
+            "lp2-specialization-special-graph-route-special-matching"
+          ]
+        },
+        {
+          "id": "lp2-specialization-special-graph-route-special-matching",
+          "index": 12,
+          "title": "一般图匹配专题",
           "kind": "learning",
+          "sectionId": "lp2-sec-specialization-special-graph-route",
+          "sectionTitle": "D · 特殊图论路线",
+          "routeId": "lp2-route-special-graph-route",
+          "scope": "route",
+          "optional": true,
+          "topicIds": [
+            "algorithm-一般图最大匹配-带花树",
+            "algorithm-一般图最大权匹配"
+          ],
+          "luoguDifficulty": [],
+          "description": "根据具体题目选择匹配分支，补交错树/花等直接先修，证明收缩与恢复正确。",
+          "goals": [
+            "指出交错结构与收缩对象",
+            "说明收缩后匹配如何恢复",
+            "与小图全部匹配枚举核对结果"
+          ],
+          "learningTitle": "一般图匹配专题",
+          "learningDescription": "根据具体题目选择匹配分支，补交错树/花等直接先修，证明收缩与恢复正确。",
+          "prerequisites": {
+            "gateIds": [
+              "lp2-advanced-graphs-relations-matching-bipartite"
+            ],
+            "topicIds": [
+              "xcpc-二分图判定-1",
+              "xcpc-匈牙利算法-1"
+            ]
+          },
+          "threadGateIds": [
+            "lp2-specialization-dynamic-tree-route-practice-assessment",
+            "lp2-specialization-special-graph-route-dominators"
+          ]
+        },
+        {
+          "id": "lp2-specialization-special-graph-route-dominators",
+          "index": 13,
+          "title": "支配树专题",
+          "kind": "learning",
+          "sectionId": "lp2-sec-specialization-special-graph-route",
+          "sectionTitle": "D · 特殊图论路线",
+          "routeId": "lp2-route-special-graph-route",
+          "scope": "elective",
+          "optional": true,
+          "topicIds": [
+            "xcpc-支配树-1"
+          ],
+          "luoguDifficulty": [],
+          "description": "在有向可达语义下定义支配，逐步推导算法，验证删除点后的可达性对照。",
+          "goals": [
+            "用可达性定义某点的支配关系",
+            "解释算法维护的中间结构",
+            "与删除顶点后的可达性暴力比较"
+          ],
+          "learningTitle": "支配树专题",
+          "learningDescription": "在有向可达语义下定义支配，逐步推导算法，验证删除点后的可达性对照。",
+          "prerequisites": {
+            "gateIds": [
+              "lp2-advanced-graphs-graph-decomposition-scc"
+            ],
+            "topicIds": [
+              "algorithm-强连通分量-tarjan-"
+            ]
+          },
+          "threadGateIds": [
+            "lp2-specialization-special-graph-route-special-matching",
+            "lp2-specialization-special-graph-route-practice-assessment"
+          ]
+        },
+        {
+          "id": "lp2-specialization-special-graph-route-practice-assessment",
+          "index": 14,
+          "title": "混练验收：特殊图论路线",
+          "kind": "challenge",
+          "sectionId": "lp2-sec-specialization-special-graph-route",
+          "sectionTitle": "D · 特殊图论路线",
+          "routeId": "lp2-route-special-graph-route",
+          "scope": "route",
+          "optional": true,
+          "topicIds": [
+            "algorithm-一般图最大匹配-带花树",
+            "algorithm-一般图最大权匹配"
+          ],
+          "luoguDifficulty": [],
+          "description": "围绕特殊图论路线完成变化任务与独立应用，核对方法选择、实现和边界。",
+          "goals": [
+            "明确选一个具体专题，补齐直接先修后，完成证明、实现与独立应用。",
+            "独立完成特殊图论路线的变化任务，说明选择方法的理由",
+            "检查边界或用小规模对照验证，并记录本段的一次错误与修正"
+          ],
+          "learningTitle": "特殊图论路线 · 独立验收",
+          "learningDescription": "组合运用一般图匹配专题，先比较不同方法，再独立完成无标签任务并记录验证结果。",
+          "prerequisites": {
+            "gateIds": [
+              "lp2-specialization-special-graph-route-special-matching"
+            ],
+            "topicIds": [
+              "algorithm-一般图最大匹配-带花树",
+              "algorithm-一般图最大权匹配"
+            ]
+          },
+          "threadGateIds": [
+            "lp2-specialization-special-graph-route-dominators",
+            "lp2-specialization-capstone-solution-reconstruction"
+          ]
+        },
+        {
+          "id": "lp2-specialization-capstone-solution-reconstruction",
+          "index": 15,
+          "title": "构造、贪心与 DP 多解重建",
+          "kind": "learning",
+          "sectionId": "lp2-sec-specialization-capstone",
+          "sectionTitle": "E · 综合成果与复盘",
+          "routeId": null,
+          "scope": "core",
+          "optional": false,
           "topicIds": [
             "algorithm-content-feishu-part-1-6",
             "algorithm-content-feishu-part-1-5",
-            "xcpc-进阶-4"
+            "xcpc-状态-1"
           ],
-          "cf": {
-            "min": 2500,
-            "max": null
-          },
-          "luoguDifficulty": [
-            "省选/NOI−",
-            "NOI/NOI+/CTS"
-          ],
-          "description": "学习构造、贪心、进阶计数 DP的适用条件、基本实现与复杂度，再用独立练习验证。",
+          "luoguDifficulty": [],
+          "description": "基于已学方向比较多种方法，给反例、充分性和方案还原；不要求所有高级路线先学完。",
           "goals": [
-            "解释构造、贪心、进阶计数 DP的核心不变量与适用边界",
-            "独立写出实现并说明时间与空间复杂度",
-            "完成基础练习与一道迁移题，记录失败原因"
+            "比较同一任务的构造、贪心或DP解法",
+            "给出每种方法的成立条件或反例",
+            "恢复方案并逐项检查原题限制"
           ],
+          "learningTitle": "构造、贪心与 DP 多解重建",
+          "learningDescription": "基于已学方向比较多种方法，给反例、充分性和方案还原；不要求所有高级路线先学完。",
           "prerequisites": {
             "gateIds": [
-              "stage-14-gate-08"
+              "lp2-basic-dp-dp-selection-dp-greedy-search",
+              "lp2-basic-optimization-method-selection-optimize-from-brute"
             ],
-            "topicIds": []
+            "topicIds": [
+              "xcpc-最优子结构-1",
+              "xcpc-无后效性-1",
+              "algorithm-content-feishu-part-1-5",
+              "algorithm-枚举",
+              "algorithm-二分答案",
+              "algorithm-content-feishu-part-1-9"
+            ]
           },
-          "optional": false,
-          "scope": "题目难度仅为本关迁移练习的选题窗口；初学专项题可低于此区间。",
-          "learningTitle": "贪心再进阶 · 让构造与 DP 互相校验",
-          "learningDescription": "从必要条件、交换论证和状态枚举出发，为同一问题重建不同解法。用小规模 DP 检验贪心或构造的猜想，再给出独立证明，逐渐把零散技巧整理成可迁移的推理路线。",
           "threadGateIds": [
-            "stage-12-gate-11",
-            "stage-04-gate-09",
-            "stage-09-gate-07"
+            "lp2-specialization-special-graph-route-practice-assessment",
+            "lp2-specialization-capstone-project-review"
           ]
         },
         {
-          "id": "stage-14-gate-12",
-          "index": 12,
-          "title": "挑战：自选两条主线的陌生综合题",
-          "kind": "challenge",
+          "id": "lp2-specialization-capstone-project-review",
+          "index": 16,
+          "title": "专题成果与无标签复盘",
+          "kind": "learning",
+          "sectionId": "lp2-sec-specialization-capstone",
+          "sectionTitle": "E · 综合成果与复盘",
+          "routeId": null,
+          "scope": "core",
+          "optional": false,
           "topicIds": [
-            "algorithm-content-feishu-part-1-6",
-            "xcpc-进阶-4",
-            "algorithm-最小割模型"
+            "xcpc-对拍-1",
+            "xcpc-时空复杂度分析-1"
           ],
-          "cf": {
-            "min": 2500,
-            "max": null
-          },
-          "luoguDifficulty": [
-            "省选/NOI−",
-            "NOI/NOI+/CTS"
-          ],
-          "description": "本阶段以构造、进阶计数 DP、最小割模型等已学方法为参考，混排新题，检验独立推导与组合能力。",
+          "luoguDifficulty": [],
+          "description": "选定一条主线提交理论、实现、正确性、复杂度、失败案例；跨两个已学方向完成综合任务并安排后续训练。",
           "goals": [
-            "在不看标签与题解的情况下提出完整思路",
-            "独立实现并通过所选平台的评测",
-            "复盘关键转化、错误解法与复杂度瓶颈"
+            "整理所选专题的模型、证明和实现",
+            "保留独立应用与失败案例的复盘",
+            "指出下一步训练要补的具体能力"
           ],
+          "learningTitle": "专题成果与无标签复盘",
+          "learningDescription": "选定一条主线提交理论、实现、正确性、复杂度、失败案例；跨两个已学方向完成综合任务并安排后续训练。",
           "prerequisites": {
             "gateIds": [
-              "stage-14-gate-11"
+              "lp2-specialization-capstone-solution-reconstruction"
             ],
-            "topicIds": []
+            "topicIds": [
+              "algorithm-content-feishu-part-1-6",
+              "algorithm-content-feishu-part-1-5",
+              "xcpc-状态-1"
+            ]
           },
-          "optional": false,
-          "scope": "区间只用于选择综合新题，不保证单题涵盖列出的所有算法。",
-          "learningTitle": "开放挑战 · 用两条主线解释陌生问题",
-          "learningDescription": "从已经深入的两条主线挑选陌生综合题，先独立推导再复盘可替换的表达。把新发现接回构造、计数或图模型的既有节点，形成个人知识树，不以学完全部选修作为终点。",
           "threadGateIds": [
-            "stage-14-gate-11",
-            "stage-13-gate-05",
-            "stage-13-gate-09"
+            "lp2-specialization-capstone-solution-reconstruction",
+            "lp2-specialization-capstone-practice-assessment"
+          ]
+        },
+        {
+          "id": "lp2-specialization-capstone-practice-assessment",
+          "index": 17,
+          "title": "混练验收：综合成果与复盘",
+          "kind": "challenge",
+          "sectionId": "lp2-sec-specialization-capstone",
+          "sectionTitle": "E · 综合成果与复盘",
+          "routeId": null,
+          "scope": "core",
+          "optional": false,
+          "topicIds": [
+            "algorithm-content-feishu-part-1-6",
+            "algorithm-content-feishu-part-1-5",
+            "xcpc-状态-1",
+            "xcpc-对拍-1",
+            "xcpc-时空复杂度分析-1"
+          ],
+          "luoguDifficulty": [],
+          "description": "围绕综合成果与复盘完成变化任务与独立应用，核对方法选择、实现和边界。",
+          "goals": [
+            "选定一个专题完成成果包，再使用两个已学方向解决综合任务；无须全修高级路线。",
+            "独立完成综合成果与复盘的变化任务，说明选择方法的理由",
+            "检查边界或用小规模对照验证，并记录本段的一次错误与修正"
+          ],
+          "learningTitle": "综合成果与复盘 · 独立验收",
+          "learningDescription": "组合运用构造、贪心与 DP 多解重建、专题成果与无标签复盘，先比较不同方法，再独立完成无标签任务并记录验证结果。",
+          "prerequisites": {
+            "gateIds": [
+              "lp2-specialization-capstone-solution-reconstruction",
+              "lp2-specialization-capstone-project-review"
+            ],
+            "topicIds": [
+              "algorithm-content-feishu-part-1-6",
+              "algorithm-content-feishu-part-1-5",
+              "xcpc-状态-1",
+              "xcpc-对拍-1",
+              "xcpc-时空复杂度分析-1"
+            ]
+          },
+          "threadGateIds": [
+            "lp2-specialization-capstone-project-review"
           ]
         }
       ]
@@ -6891,9 +10276,14 @@
   ],
   "summary": {
     "stages": 15,
-    "gates": 169,
-    "optionalGates": 10,
-    "topicCount": 154
+    "sections": 58,
+    "gates": 201,
+    "optionalGates": 69,
+    "topicCount": 188,
+    "coreGates": 132,
+    "recommendedGates": 7,
+    "electiveGates": 35,
+    "routeGates": 27
   }
 };
 });

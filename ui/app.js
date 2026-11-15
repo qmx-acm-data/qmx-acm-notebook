@@ -5351,6 +5351,12 @@ ${entry2.node.fullLabel}` : ""}`;
       if (concrete && topics.has(concrete.id)) topics.set(id, topics.get(concrete.id));
     }
     const sharedNotes = list(opts.notes).filter((note) => note?.noteScope === "public" && topics.has(note.nodeId));
+    const publicContents = new Map(list(opts.gateContents).filter((content) => gateById.has(content.gateId)).map((content) => [content.gateId, content]));
+    const canManage = opts.canManage === true && typeof opts.onSaveGate === "function";
+    function contentGate(gate) {
+      const content = publicContents.get(gate.id);
+      return content ? { ...gate, description: content.description, learningDescription: content.description, goals: [...content.goals] } : gate;
+    }
     const viewKey = text2(opts.progressKey) || `${opts.account?.id ?? "local"}:${text2(opts.curriculum?.id) || "main"}`;
     const remembered = views.get(viewKey);
     let progress = { ...opts.progress || {}, gates: { ...opts.progress?.gates || {} } };
@@ -5358,7 +5364,10 @@ ${entry2.node.fullLabel}` : ""}`;
     let gateId = gateById.has(remembered?.gateId) && gateById.get(remembered.gateId).stage.id === stageId ? remembered.gateId : gateById.has(progress.gateId) && gateById.get(progress.gateId).stage.id === stageId ? progress.gateId : null;
     let destroyed = false, busy2 = false, celebrationTimer, saveError = "";
     let root2, routeScroll, detail, summary, stageButton;
-    let stageDialog, evidenceDialog, shareDialog;
+    let stageDialog, evidenceDialog, personalDialog, publicDialog;
+    let personalGateId = null, publicGateId = null;
+    let personalInput, personalError;
+    let publicDescription, publicGoals, publicTitle, publicUrl, publicError;
     let evidenceForm, evidenceError, evidenceGateId = null;
     let previousFocus, lastCelebrated = null;
     let detailController = null;
@@ -5373,9 +5382,21 @@ ${entry2.node.fullLabel}` : ""}`;
     const isCompleted = (id) => gateProgress(id)?.status === "completed";
     const completedCount = (gates) => list(gates).filter((gate) => isCompleted(gate.id)).length;
     const validGates = (stage) => list(stage.gates).filter((gate) => gateById.has(gate.id));
+    const foundationGates = (gates) => gates.filter((gate) => gate.scope === "core" || gate.scope === "route" || !gate.scope && !gate.optional);
+    const stageBasis = (stage) => foundationGates(validGates(stage)).filter((gate) => stage.completionMode === "routes" || gate.scope !== "route");
+    function completionText(stage) {
+      const gates = stageBasis(stage);
+      if (stage.completionMode !== "routes") return `核心 ${completedCount(gates)} / ${gates.length} 关`;
+      const routes = list(stage.sections).filter((section) => section.scope === "route");
+      const finished = routes.filter((section) => {
+        const group = gates.filter((gate) => gate.routeId === section.routeId);
+        return group.length > 0 && completedCount(group) === group.length;
+      }).length;
+      return `${finished} / ${routes.length} 条路线基础完成`;
+    }
     function stageCurrent(stage) {
-      const gates = validGates(stage);
-      return gates.find((gate) => gateProgress(gate.id)?.status === "learning") || gates.find((gate) => !isCompleted(gate.id)) || gates[0];
+      const all = validGates(stage), core = foundationGates(all);
+      return all.find((gate) => gateProgress(gate.id)?.status === "learning") || core.find((gate) => !isCompleted(gate.id)) || all.find((gate) => !isCompleted(gate.id)) || all[0];
     }
     function currentEntry() {
       return gateById.get(gateId);
@@ -5404,7 +5425,7 @@ ${entry2.node.fullLabel}` : ""}`;
         parent.append(el2("span", "alp-range", "入门导览"));
         return;
       }
-      add(parent, el2("span", "alp-range alp-range-cf", cfLabel(cf)));
+      add(parent, el2("span", cf ? "alp-range alp-range-cf" : "alp-range", cfLabel(cf)));
       if (list(luogu).length) parent.append(el2("span", "alp-range", `洛谷参考：${list(luogu).join(" / ")}`));
     }
     function statusOf(gate, stage) {
@@ -5431,25 +5452,43 @@ ${entry2.node.fullLabel}` : ""}`;
     function renderSummary() {
       summary.replaceChildren();
       const done = records().filter(({ gate }) => isCompleted(gate.id)).length;
-      for (const [value, label] of [[`${stages.length} 阶段`, "以综合做题能力为目标"], [`${gateById.size} 关`, "先广后深 · 学习与混练"], [`${done} / ${gateById.size}`, "已记录完成的关卡"]]) {
+      for (const [value, label] of [[`${stages.filter((stage) => !isOrientation(stage)).length} 章 + 导览`, "按主干知识逐章学完整"], [`${gateById.size} 关`, "分段学习 · 混练与验收"], [`${done} / ${gateById.size}`, "已记录完成，含选修与分路线"]]) {
         const stat = el2("div", "alp-stat");
         add(stat, el2("strong", "", value), el2("span", "", label));
         summary.append(stat);
       }
-      const resumed = records().find(({ gate }) => gateProgress(gate.id)?.status === "learning") || records().find(({ gate }) => !isCompleted(gate.id));
+      const resumed = records().find(({ gate }) => gateProgress(gate.id)?.status === "learning") || records().find(({ gate }) => foundationGates([gate]).length && !isCompleted(gate.id)) || records().find(({ gate }) => !isCompleted(gate.id));
       if (resumed) summary.append(control(`继续 第${stageNumber(resumed.stage)}章 · 第${gateNumber(resumed.gate)}关 →`, "alp-button alp-button-primary alp-resume", () => selectGate(resumed.gate.id, { focus: true })));
       else summary.append(el2("span", "alp-all-complete", "✓ 已完成全部关卡记录，可随时回顾"));
+      const historical = Object.entries(progress.gates).filter(([id]) => !gateById.has(id) && gateProgress(id));
+      if (historical.length) {
+        const archive = el2("details", "alp-history");
+        archive.append(el2("summary", "", `旧版学习记录 · ${historical.length} 条已保留`));
+        archive.append(el2("p", "alp-fine-print", "章节已重新编排，旧记录保留供回顾，不自动算作新版关卡完成。"));
+        const names = new Map(list(opts.curriculum?.legacyGates).map((gate) => [gate.id, gate]));
+        for (const [id] of historical) {
+          const record = gateProgress(id);
+          const previous = names.get(id);
+          const item = el2("div", "alp-history-item");
+          add(item, el2("strong", "", previous ? `${previous.stageTitle} · ${previous.title}` : `旧版关卡 ${id}`), el2("span", "", record.status === "completed" ? "已记录完成" : "学习中"));
+          if (record.problemUrl) item.append(el2("p", "", text2(record.problemUrl)));
+          if (record.reflection) item.append(el2("p", "", text2(record.reflection)));
+          if (record.updatedAt && Number.isFinite(Date.parse(text2(record.updatedAt)))) item.append(el2("small", "", new Date(text2(record.updatedAt)).toLocaleString("zh-CN")));
+          archive.append(item);
+        }
+        summary.append(archive);
+      }
     }
     function renderAchievements() {
       const container = root2.querySelector(".alp-achievements");
       container.replaceChildren();
       const completed = records().filter(({ gate }) => isCompleted(gate.id));
-      const finishedStage = stages.some((stage) => validGates(stage).length && completedCount(validGates(stage)) === validGates(stage).length);
+      const finishedStage = stages.some((stage) => !isOrientation(stage) && stage.completionMode !== "routes" && stageBasis(stage).length > 0 && completedCount(stageBasis(stage)) === stageBasis(stage).length);
       const reflectionCount = records().filter(({ gate }) => text2(gateProgress(gate.id)?.reflection).trim()).length;
       const items = [
         ["迈出第一步", completed.length > 0, "完成第一关的学习记录"],
         ["综合初试", completed.some(({ gate }) => ["mixed", "challenge"].includes(gate.kind || "")), "完成一次综合练习或阶段挑战"],
-        ["章节里程碑", finishedStage, "完成一章的全部关卡记录"],
+        ["章节里程碑", finishedStage, "完成一章核心关卡，推荐与选修分别记录"],
         ["复盘积累", reflectionCount >= 3, `为至少 3 关留下复盘，当前 ${reflectionCount} 关`]
       ];
       container.append(el2("span", "alp-achievement-heading", "我的学习足迹"));
@@ -5464,7 +5503,7 @@ ${entry2.node.fullLabel}` : ""}`;
       const grid = stageDialog.querySelector(".alp-stage-grid");
       grid.replaceChildren();
       stages.forEach((stage) => {
-        const gates = validGates(stage), done = completedCount(gates), complete = gates.length > 0 && done === gates.length;
+        const gates = stageBasis(stage), done = completedCount(gates), complete = stage.completionMode !== "routes" && gates.length > 0 && done === gates.length;
         const card = control("", "alp-stage-card", () => {
           if (busy2) return;
           stageDialog.close();
@@ -5482,7 +5521,7 @@ ${entry2.node.fullLabel}` : ""}`;
         bar.max = gates.length || 1;
         bar.value = done;
         bar.setAttribute("aria-label", `第${stageNumber(stage)}章完成 ${done} / ${gates.length} 关`);
-        add(card, el2("span", "alp-stage-count", `${done} / ${gates.length} 关已完成`), bar);
+        add(card, el2("span", "alp-stage-count", completionText(stage)), bar);
         grid.append(card);
       });
     }
@@ -5495,7 +5534,15 @@ ${entry2.node.fullLabel}` : ""}`;
     }
     function renderRoute(stage) {
       const route = el2("div", "alp-route");
+      let previousSection;
       validGates(stage).forEach((gate) => {
+        if (gate.sectionId && gate.sectionId !== previousSection) {
+          previousSection = gate.sectionId;
+          const section = list(stage.sections).find((item) => item.id === gate.sectionId);
+          const heading = el2("div", "alp-section-marker");
+          add(heading, el2("strong", "", section?.title || gate.sectionTitle), el2("span", "", section?.scope === "route" ? "独立路线 · 按需进入" : section?.scope === "elective" ? "选修扩展" : section?.scope === "recommended" ? "推荐进阶" : "核心学习段"));
+          route.append(heading);
+        }
         const status = statusOf(gate, stage), selected2 = gateId === gate.id;
         const row2 = control("", "alp-checkpoint", () => selectGate(gate.id, { focus: true, center: false }));
         row2.dataset.gateId = gate.id;
@@ -5507,13 +5554,14 @@ ${entry2.node.fullLabel}` : ""}`;
         const symbol = status === "completed" ? "✓" : status === "learning" ? "▶" : String(gateNumber(gate));
         const copy = el2("span", "alp-checkpoint-copy");
         add(copy, el2("strong", "", `第${gateNumber(gate)}关 ${gate.title}`));
-        if (gate.learningTitle) copy.append(el2("span", "alp-checkpoint-story", gate.learningTitle));
-        copy.append(el2("span", "alp-checkpoint-subtitle", `${kinds[gate.kind || ""] || "学习关"}${gate.optional ? " · 选修" : ""} · ${learningPosition(stage, gate.cf || stage.cf)}`));
+        if (gate.learningTitle && gate.learningTitle !== gate.title) copy.append(el2("span", "alp-checkpoint-story", gate.learningTitle));
+        const scope2 = gate.scope === "route" ? "路线基础" : gate.scope === "recommended" ? "推荐进阶" : gate.scope === "elective" || gate.optional ? "选修" : "核心";
+        copy.append(el2("span", "alp-checkpoint-subtitle", `${kinds[gate.kind || ""] || "学习关"} · ${scope2}${gate.cf || isOrientation(stage) ? ` · ${learningPosition(stage, gate.cf || stage.cf)}` : ""}`));
         add(row2, el2("span", "alp-checkpoint-number", symbol), copy, el2("span", "alp-checkpoint-status", `${status === "completed" ? "✓ " : status === "learning" ? "▶ " : "○ "}${statusText}`));
         route.append(row2);
         if (gate.kind === "mixed" || gate.kind === "challenge") {
           const checkpoint = el2("div", "alp-route-milestone");
-          checkpoint.append(el2("span", "", gate.kind === "challenge" ? "阶段终点 · 完成独立解题与复盘" : "混合检验 · 回收前序知识"));
+          checkpoint.append(el2("span", "", gate.kind === "challenge" ? "成果检验 · 独立应用与复盘" : "混合检验 · 选择已学工具"));
           route.append(checkpoint);
         }
       });
@@ -5526,7 +5574,7 @@ ${entry2.node.fullLabel}` : ""}`;
       const entry2 = currentEntry();
       detail.replaceChildren();
       if (!entry2) return;
-      const { gate, stage } = entry2, record = gateProgress(gate.id);
+      const { stage } = entry2, gate = contentGate(entry2.gate), record = gateProgress(gate.id);
       const readingPath = [
         { label: "闯关学习", onClick() {
           detailController?.close();
@@ -5540,53 +5588,108 @@ ${entry2.node.fullLabel}` : ""}`;
       detailController?.setPath(readingPath);
       const heading = el2("h3", "alp-gate-title", gate.title);
       heading.tabIndex = -1;
-      const label = el2("div", "alp-detail-eyebrow", `第${stageNumber(stage)}章 · 第${gateNumber(gate)}关`);
+      const label = el2("div", "alp-detail-eyebrow", `第${stageNumber(stage)}章 · 第${gateNumber(gate)}关${gate.sectionTitle ? ` · ${gate.sectionTitle}` : ""}`);
       const header = el2("div", "alp-detail-header"), title = el2("div", "alp-detail-title");
-      add(title, label, heading, el2("span", "alp-kind", `${kinds[gate.kind || ""] || "学习关"}${gate.optional ? " · 选修" : ""}`));
+      const scopeLabel = gate.scope === "route" ? "路线基础" : gate.scope === "recommended" ? "推荐进阶" : gate.scope === "elective" ? "选修" : gate.scope === "core" ? "核心" : gate.optional ? "选修" : "";
+      add(title, label, heading, el2("span", "alp-kind", `${kinds[gate.kind || ""] || "学习关"}${scopeLabel ? ` · ${scopeLabel}` : ""}`));
       const open2 = control("打开详情", "alp-button alp-button-secondary alp-detail-open-button reading-detail-trigger", () => {
         if (detailController || typeof ReadingDetail?.open !== "function") return;
         detailController = ReadingDetail.open({ content: detail, mount: host, title: "关卡详情", path: readingPath, onClose() {
           detailController = null;
         } });
       });
-      add(header, title, open2);
+      const headerActions = el2("div", "alp-detail-header-actions");
+      headerActions.append(open2);
+      if (canManage) {
+        const content = publicContents.get(gate.id);
+        const official = content ? content.practiceList : list(gate.practiceLists).find((item) => practiceUrl(item.url));
+        const edit = control(practiceUrl(official?.url) ? "编辑官方精选题单" : "＋ 添加官方精选题单", "alp-button alp-button-secondary alp-official-add-button", () => openPublic(gate.id, true));
+        edit.disabled = busy2;
+        headerActions.append(edit, control("编辑公共关卡", "alp-text-button alp-public-edit-button", () => openPublic(gate.id)));
+      }
+      add(header, title, headerActions);
       detail.append(header);
-      const related = list(gate.topicIds).map((id) => topics.get(id)).filter(present);
-      const notes = renderNotes(gate, related);
-      const ranges = el2("div", "alp-ranges");
-      rangeTags(ranges, gate.cf || stage.cf, gate.luoguDifficulty || stage.luoguDifficulty, isOrientation(stage));
-      if (gate.learningTitle || gate.learningDescription) {
+      const publicVersion = publicContents.get(gate.id);
+      if (publicVersion) detail.append(el2("p", "alp-public-version", `公共版${publicVersion.updatedAt && Number.isFinite(Date.parse(publicVersion.updatedAt)) ? ` · 更新于 ${new Date(publicVersion.updatedAt).toLocaleDateString("zh-CN")}` : ""}`));
+      const introduction = text2(gate.learningDescription).trim() || text2(gate.description).trim();
+      if (introduction || gate.learningTitle) {
         const story = el2("div", "alp-learning-story");
-        if (gate.learningTitle) story.append(el2("strong", "", gate.learningTitle));
-        if (gate.learningDescription) story.append(el2("p", "", gate.learningDescription));
+        if (gate.learningTitle && gate.learningTitle !== gate.title) story.append(el2("strong", "", gate.learningTitle));
+        if (introduction) {
+          const sentences = introduction.match(/[^。！？]+[。！？]?/gu) || [introduction];
+          const lead = introduction.length > 180 ? sentences[0].length <= 180 ? sentences[0] : introduction.slice(0, 170) : introduction;
+          story.append(el2("p", "alp-description", lead));
+          if (lead !== introduction) {
+            const expanded2 = el2("details", "alp-intro-more");
+            add(expanded2, el2("summary", "", "继续阅读导读"), el2("p", "", introduction.slice(lead.length).trim()));
+            story.append(expanded2);
+          }
+        }
         detail.append(story);
       }
-      add(detail, el2("p", "alp-description", gate.description || stage.description), ranges, !isOrientation(stage) && el2("p", "alp-fine-print", "题目难度用于选题；知识点等级单独显示，两者不作换算。"));
-      const goals = list(gate.goals);
+      const related = list(gate.topicIds).map((id) => topics.get(id)).filter(present);
+      if (record) renderTasks(gate, related, record);
+      else {
+        detail.append(renderOfficialPractice(gate));
+        if (gate.kind === "learning") renderNotes(gate, related);
+      }
+      const goals = [...new Set(list(gate.goals).map((goal) => text2(goal).trim()).filter(Boolean))];
       if (goals.length) {
-        detail.append(sectionHeading("本关目标"));
+        const core = el2("section", "alp-core-goals");
+        core.append(sectionHeading("本关核心目标"));
         const ul = el2("ul", "alp-goals");
         goals.forEach((goal) => ul.append(el2("li", "", goal)));
-        detail.append(ul);
+        add(core, ul);
+        detail.append(core);
       }
+      const learningPanel = el2("section", "alp-learning-panel"), progressHeading = el2("div", "alp-progress-heading");
+      const status = el2("span", "alp-progress-status", record?.status === "completed" ? "✓ 已记录完成" : record?.status === "learning" ? "▶ 学习中" : "○ 尚未记录");
+      status.dataset.status = record?.status === "completed" ? "completed" : record?.status === "learning" ? "learning" : "todo";
+      add(progressHeading, sectionHeading("我的学习"), status);
+      learningPanel.append(progressHeading);
       const actions = el2("div", "alp-actions");
       const complete = control(record?.status === "completed" ? "编辑完成记录" : "✓ 记录本关完成", "alp-button alp-button-primary alp-complete-button", () => openEvidence(gate.id));
       complete.disabled = busy2 || !canSave;
       actions.append(complete);
-      const learning = control(record?.status === "completed" ? "撤销完成，设为学习中" : record?.status === "learning" ? "编辑学习记录" : "▶ 开始学习", "alp-button alp-button-secondary alp-learning-button", () => {
-        if (record?.status === "learning") openEvidence(gate.id, "learning");
-        else saveStatus(gate.id, "learning");
+      const learning = control(record?.status === "completed" ? "撤销完成，设为学习中" : record?.status === "learning" ? "查看学习任务" : "▶ 开始学习", "alp-button alp-button-secondary alp-learning-button", async () => {
+        if (!record || record.status === "completed") await saveStatus(gate.id, "learning");
+        if (!destroyed) detail.querySelector(".alp-task-list")?.scrollIntoView({ block: "nearest", behavior: "smooth" });
       });
       learning.disabled = busy2 || !canSave;
       actions.append(learning);
-      add(detail, actions, el2("p", "alp-fine-print", "完成状态由自己记录，用于学习追踪；不代表系统判题通过。"));
-      if (!canSave) detail.append(el2("p", "alp-inline-error", "当前无法保存学习进度，请稍后重试。"));
+      add(learningPanel, actions, el2("p", "alp-fine-print alp-progress-hint", "自己记录学习状态，不代表系统判题通过。"));
+      if (!canSave) learningPanel.append(el2("p", "alp-inline-error", "当前无法保存学习进度，请稍后重试。"));
       if (saveError) {
         const error = el2("p", "alp-inline-error", saveError);
         error.setAttribute("role", "alert");
-        detail.append(error);
+        learningPanel.append(error);
       }
-      detail.append(sectionHeading("关联知识点"));
+      if (record && (record.problemUrl || record.reflection || record.updatedAt)) {
+        const saved = el2("div", "alp-saved-record");
+        if (record.problemUrl) saved.append(el2("p", "alp-saved-url", record.problemUrl));
+        if (record.reflection) saved.append(el2("p", "alp-saved-reflection", record.reflection));
+        if (record.updatedAt && Number.isFinite(Date.parse(record.updatedAt))) saved.append(el2("span", "alp-saved-date", `记录于 ${new Date(record.updatedAt).toLocaleString("zh-CN")}`));
+        learningPanel.append(saved);
+      }
+      const utilities = el2("footer", "alp-detail-utilities"), utilityActions = el2("div", "alp-utility-actions");
+      if (related[0] && typeof opts.onUpload === "function") {
+        const upload = control("＋ 补充学习笔记", "alp-text-button alp-upload-button", () => {
+          if (opts.canUpload !== false) opts.onUpload(related[0].node.id);
+        });
+        upload.disabled = opts.canUpload === false;
+        if (upload.disabled) upload.title = "登录并获得仓库写入权限后可补充共享笔记";
+        utilityActions.append(upload);
+      }
+      utilities.append(utilityActions);
+      learningPanel.append(utilities);
+      detail.append(learningPanel);
+      const supplementary = el2("div", "alp-supplementary");
+      const knowledge = el2("details", "alp-detail-fold alp-knowledge-fold");
+      add(knowledge, el2("summary", "", `关联知识与难度${related.length ? ` · ${related.length} 项` : ""}`));
+      const knowledgeBody = el2("div", "alp-fold-body"), ranges = el2("div", "alp-ranges");
+      rangeTags(ranges, gate.cf || stage.cf, gate.luoguDifficulty || stage.luoguDifficulty, isOrientation(stage));
+      knowledgeBody.append(ranges);
+      if (!isOrientation(stage)) knowledgeBody.append(el2("p", "alp-fine-print", "题目难度用于选题；知识点等级独立显示，两者不作换算。"));
       if (related.length) {
         const group = el2("div", "alp-topics");
         related.forEach((topic) => {
@@ -5600,61 +5703,148 @@ ${entry2.node.fullLabel}` : ""}`;
           }
           group.append(card);
         });
-        detail.append(group);
-      } else detail.append(el2("p", "alp-fine-print", "此关的知识点正在整理，可先按学习目标练习。"));
+        knowledgeBody.append(group);
+      } else knowledgeBody.append(el2("p", "alp-fine-print", "知识点正在整理，可先按本关目标学习。"));
+      knowledge.append(knowledgeBody);
+      supplementary.append(knowledge);
       const thread = list(gate.threadGateIds).map((id) => gateById.get(id)).filter(present);
-      if (thread.length) {
-        detail.append(sectionHeading("把知识连成线"));
-        const links = el2("div", "alp-thread");
-        thread.forEach((item) => {
-          const before = item.stageIndex < entry2.stageIndex || item.stageIndex === entry2.stageIndex && item.index < entry2.index;
-          links.append(control(`${before ? "↩ 回顾" : "↗ 延伸"} · 第${stageNumber(item.stage)}章第${gateNumber(item.gate)}关 ${item.gate.title}`, "alp-prerequisite alp-thread-link", () => selectGate(item.gate.id, { focus: true })));
-        });
-        detail.append(links);
-      }
       const requiredGates = list(gate.prerequisites?.gateIds).map((id) => gateById.get(id)).filter(present);
       const requiredTopics = list(gate.prerequisites?.topicIds).map((id) => topics.get(id)).filter(present);
-      if (requiredGates.length || requiredTopics.length) {
-        detail.append(sectionHeading("先修与回补"));
-        const group = el2("div", "alp-prerequisites");
-        requiredGates.forEach((required) => group.append(control(`${isCompleted(required.gate.id) ? "✓" : "↩"} 第${stageNumber(required.stage)}章·第${gateNumber(required.gate)}关 ${required.gate.title}`, "alp-prerequisite", () => selectGate(required.gate.id, { focus: true }))));
-        requiredTopics.forEach((topic) => group.append(nodeButton(topic, `↩ ${topic.node.label}`, "alp-prerequisite")));
-        add(detail, group, el2("p", "alp-fine-print", "先修是学习建议，可按实际掌握情况回补或跳学。"));
+      if (thread.length || requiredGates.length || requiredTopics.length) {
+        const connections = el2("details", "alp-detail-fold alp-connections-fold"), connectionBody = el2("div", "alp-fold-body");
+        connections.append(el2("summary", "", "先修、回顾与延伸"));
+        if (requiredGates.length || requiredTopics.length) {
+          connectionBody.append(sectionHeading("先修与回补"));
+          const group = el2("div", "alp-prerequisites");
+          requiredGates.forEach((required) => group.append(control(`${isCompleted(required.gate.id) ? "✓" : "↩"} 第${stageNumber(required.stage)}章·第${gateNumber(required.gate)}关 ${required.gate.title}`, "alp-prerequisite", () => selectGate(required.gate.id, { focus: true }))));
+          requiredTopics.forEach((topic) => group.append(nodeButton(topic, `↩ ${topic.node.label}`, "alp-prerequisite")));
+          add(connectionBody, group, el2("p", "alp-fine-print", "先修是学习建议，可按掌握情况回补或跳学。"));
+        }
+        if (thread.length) {
+          connectionBody.append(sectionHeading("把知识连成线"));
+          const links = el2("div", "alp-thread");
+          thread.forEach((item) => {
+            const before = item.stageIndex < entry2.stageIndex || item.stageIndex === entry2.stageIndex && item.index < entry2.index;
+            links.append(control(`${before ? "↩ 回顾" : "↗ 延伸"} · 第${stageNumber(item.stage)}章第${gateNumber(item.gate)}关 ${item.gate.title}`, "alp-prerequisite alp-thread-link", () => selectGate(item.gate.id, { focus: true })));
+          });
+          connectionBody.append(links);
+        }
+        connections.append(connectionBody);
+        supplementary.append(connections);
       }
-      if (stage.goal) add(detail, sectionHeading(isOrientation(stage) ? "导览目标" : "阶段综合目标"), el2("p", "alp-stage-goal", stage.goal));
-      if (list(stage.completionCriteria).length) {
-        detail.append(sectionHeading(isOrientation(stage) ? "导览完成检验" : "阶段通关检验"));
-        const criteria = el2("ul", "alp-goals alp-stage-criteria");
-        list(stage.completionCriteria).forEach((criterion) => criteria.append(el2("li", "", criterion)));
-        detail.append(criteria);
+      const criteria = [...new Set(list(stage.completionCriteria).map((criterion) => text2(criterion).trim()).filter(Boolean))];
+      if (criteria.length) {
+        const chapterCheck = el2("details", "alp-detail-fold alp-chapter-fold"), chapterBody = el2("div", "alp-fold-body");
+        chapterCheck.append(el2("summary", "", isOrientation(stage) ? "导览完成检验" : "整章完成检验"));
+        const criteriaList = el2("ul", "alp-goals alp-stage-criteria");
+        criteria.forEach((criterion) => criteriaList.append(el2("li", "", criterion)));
+        add(chapterBody, el2("p", "alp-fine-print", "用于回看整章成果，不是额外的本关目标。"), criteriaList);
+        chapterCheck.append(chapterBody);
+        supplementary.append(chapterCheck);
       }
-      if (record) {
-        detail.append(sectionHeading("我的本关记录"));
-        const saved = el2("div", "alp-saved-record");
-        saved.append(el2("strong", "", record.status === "completed" ? "✓ 已记录完成" : "▶ 学习中"));
-        if (record.problemUrl) saved.append(el2("p", "alp-saved-url", record.problemUrl));
-        if (record.reflection) saved.append(el2("p", "alp-saved-reflection", record.reflection));
-        if (record.updatedAt && Number.isFinite(Date.parse(record.updatedAt))) saved.append(el2("span", "alp-saved-date", new Date(record.updatedAt).toLocaleString("zh-CN")));
-        detail.append(saved);
+      detail.append(supplementary);
+    }
+    function taskState(record) {
+      const value = record?.tasks;
+      return value && typeof value === "object" && !Array.isArray(value) ? { ...value } : {};
+    }
+    function practiceUrl(value) {
+      try {
+        const parsed = new URL(text2(value));
+        return ["http:", "https:"].includes(parsed.protocol) && !parsed.username && !parsed.password ? parsed.href : null;
+      } catch {
+        return null;
       }
-      const utilities = el2("footer", "alp-detail-utilities"), utilityActions = el2("div", "alp-utility-actions");
-      const share = control("复制互助卡", "alp-button alp-button-secondary alp-share-button", () => openShare(gate.id));
-      share.disabled = busy2;
-      utilityActions.append(share);
-      if (related[0] && typeof opts.onUpload === "function") {
-        const upload = control("＋ 为本关知识点补充笔记", "alp-text-button alp-upload-button", () => {
-          if (opts.canUpload !== false) opts.onUpload(related[0].node.id);
+    }
+    async function openPractice(url) {
+      try {
+        if (opts.onExternal) await opts.onExternal(url);
+        else window.open(url, "_blank", "noopener,noreferrer");
+      } catch (error) {
+        notify(errorMessage(error, "暂时无法打开题单，请稍后重试。"));
+      }
+    }
+    async function saveTask(gate, name, checked) {
+      if (busy2 || !canSave) return;
+      const previous = gateProgress(gate.id), tasks = { ...taskState(previous), [name]: checked };
+      const finished = tasks.practice === true && (gate.kind !== "learning" || tasks.notes === true);
+      try {
+        await persist(gate.id, { ...previous, tasks, status: previous?.status === "completed" && !finished ? "learning" : previous?.status || "learning", updatedAt: (/* @__PURE__ */ new Date()).toISOString() });
+        if (!destroyed) {
+          renderMain();
+          detail.querySelector(`[data-task="${name}"] input`)?.focus({ preventScroll: true });
+        }
+      } catch (error) {
+        if (!destroyed) {
+          saveError = errorMessage(error, "任务状态未能保存，请重试。");
+          renderDetail();
+        }
+      }
+    }
+    function renderTasks(gate, related, record) {
+      const tasks = taskState(record), ordinary = gate.kind === "learning";
+      const section = el2("section", "alp-task-list");
+      section.setAttribute("aria-label", "本关学习任务");
+      const count = Number(tasks.practice === true) + Number(ordinary && tasks.notes === true);
+      const heading = el2("div", "alp-task-heading");
+      add(heading, sectionHeading("本关学习任务"), el2("span", "alp-note-count", `${count} / ${ordinary ? 2 : 1} 项已完成`));
+      section.append(heading);
+      function task(name, title) {
+        const card = el2("section", "alp-task-card");
+        card.dataset.task = name;
+        const label = el2("label", "alp-task-check"), check = el2("input");
+        check.type = "checkbox";
+        check.checked = tasks[name] === true;
+        check.disabled = busy2 || !canSave;
+        check.addEventListener("change", () => {
+          void saveTask(gate, name, check.checked);
         });
-        upload.disabled = opts.canUpload === false;
-        if (upload.disabled) upload.title = "登录并获得仓库写入权限后可补充共享笔记";
-        utilityActions.append(upload);
+        add(label, check, el2("strong", "", title));
+        card.append(label);
+        return card;
       }
-      utilities.append(utilityActions);
-      if (notes.length) {
-        const authors = [...new Set(notes.map((note) => authorName(note.author)))];
-        add(utilities, sectionHeading("相关笔记贡献者"), el2("p", "alp-contributors", authors.join(" · ")));
+      if (ordinary) {
+        const notes = task("notes", "算法笔记学习");
+        section.append(notes);
+        const noteSection = renderNotes(gate, related);
+        if (noteSection) notes.append(noteSection);
+        else {
+          const links = el2("div", "alp-task-topic-links");
+          related.forEach((topic) => links.append(nodeButton(topic)));
+          notes.append(links);
+        }
       }
-      detail.append(utilities);
+      const practice = task("practice", "对应题单练习");
+      section.append(practice);
+      practice.append(renderOfficialPractice(gate));
+      const personal = el2("div", "alp-personal-list");
+      const savedUrl = practiceUrl(record.practiceUrl) || practiceUrl(record.problemUrl);
+      if (savedUrl) personal.append(control("我的练习题单 ↗", "alp-text-button alp-practice-link alp-personal-link", () => openPractice(savedUrl)));
+      const edit = control(savedUrl ? "编辑我的题单" : "＋ 添加我的题单", "alp-text-button alp-personal-list-button", () => openPersonal(gate.id));
+      edit.disabled = busy2 || !canSave;
+      personal.append(edit);
+      practice.append(personal);
+      section.append(el2("p", "alp-fine-print", ordinary ? "先学习笔记，再完成题单；勾选记录后可记录本关完成。" : "本关为混练或验收，只需完成题单练习。"));
+      detail.append(section);
+    }
+    function renderOfficialPractice(gate) {
+      const section = el2("section", "alp-official-section");
+      section.setAttribute("aria-label", "官方精选题单");
+      const content = publicContents.get(gate.id);
+      const official = content ? content.practiceList : list(gate.practiceLists).find((item) => practiceUrl(item.url));
+      const officialUrl = practiceUrl(official?.url);
+      if (official && officialUrl) {
+        const recommendation = control("", "alp-official-list alp-practice-link", () => openPractice(officialUrl));
+        const copy = el2("span", "alp-official-copy");
+        add(copy, el2("span", "alp-official-label", "官方精选题单"), el2("strong", "", official.title || "本关精选练习"), el2("span", "alp-official-host", new URL(officialUrl).hostname));
+        add(recommendation, copy, el2("span", "alp-list-arrow", "↗"));
+        section.append(recommendation);
+      } else {
+        const empty = el2("div", "alp-official-empty");
+        add(empty, el2("strong", "", "官方精选题单"), el2("span", "alp-fine-print", "本关官方题单尚未发布"));
+        section.append(empty);
+      }
+      return section;
     }
     function renderNotes(gate, related) {
       const ids = new Set(related.map((topic) => topic.node.id));
@@ -5662,23 +5852,38 @@ ${entry2.node.fullLabel}` : ""}`;
         if (topic.node.contentOf) ids.add(topics.get(topic.node.contentOf)?.node.id || topic.node.contentOf);
       });
       const notes = sharedNotes.filter((note) => ids.has(topics.get(note.nodeId)?.node.id)).slice().sort((a, b) => Number(Boolean(b.featured)) - Number(Boolean(a.featured)) || (Date.parse(b.updatedAt) || 0) - (Date.parse(a.updatedAt) || 0));
-      detail.append(sectionHeading("相关公开笔记"));
-      if (notes.length) {
-        const noteList = el2("div", "alp-notes");
-        notes.slice(0, 5).forEach((note) => {
-          const topic = topics.get(note.nodeId);
-          const noteButton = control("", `alp-note${note.featured ? " alp-note-featured" : ""}`, () => {
-            if (typeof opts.onNote === "function") opts.onNote(note, { gateId: gate.id });
-            else opts.onTopic?.(topic.node.id);
-          });
-          if (note.featured) noteButton.append(el2("span", "alp-note-featured-label", "精选"));
-          add(noteButton, el2("strong", "", note.title || "未命名笔记"), el2("span", "", `${authorName(note.author)} · ${topic.node.label}`));
-          noteButton.title = "打开笔记详情";
-          noteList.append(noteButton);
+      if (!notes.length) return null;
+      const section = el2("section", "alp-note-section"), heading = el2("div", "alp-notes-heading");
+      add(heading, sectionHeading(notes.some((note) => note.featured) ? "精选与学习笔记" : "学习笔记"), el2("span", "alp-note-count", `${notes.length} 篇`));
+      section.append(heading);
+      const noteList = el2("div", "alp-notes");
+      notes.forEach((note, index) => {
+        const topic = topics.get(note.nodeId);
+        const noteButton = control("", `alp-note${note.featured ? " alp-note-featured" : ""}`, () => {
+          if (typeof opts.onNote === "function") opts.onNote(note, { gateId: gate.id });
+          else opts.onTopic?.(topic.node.id);
         });
-        detail.append(noteList);
-      } else detail.append(el2("p", "alp-fine-print", "此关尚无相关公开笔记，可以分享自己的理解与复盘。"));
-      return notes;
+        const copy = el2("span", "alp-note-copy");
+        if (note.featured) copy.append(el2("span", "alp-note-featured-label", "精选"));
+        add(copy, el2("strong", "", note.title || "未命名笔记"), el2("span", "alp-note-meta", `${authorName(note.author)} · ${topic.node.label}`));
+        const arrow = el2("span", "alp-note-arrow", "↗");
+        arrow.setAttribute("aria-hidden", "true");
+        add(noteButton, copy, arrow);
+        noteButton.title = "打开笔记详情";
+        if (index < 3) noteList.append(noteButton);
+        else {
+          let more = section.querySelector(".alp-more-notes");
+          if (!more) {
+            more = el2("details", "alp-more-notes");
+            more.append(el2("summary", "", `更多笔记 · ${notes.length - 3} 篇`));
+            section.append(more);
+          }
+          more.append(noteButton);
+        }
+      });
+      section.insertBefore(noteList, section.querySelector(".alp-more-notes"));
+      detail.append(section);
+      return section;
     }
     function renderMain({ center = false } = {}) {
       if (destroyed || !stages.length) return;
@@ -5688,14 +5893,31 @@ ${entry2.node.fullLabel}` : ""}`;
       stageButton.replaceChildren();
       add(stageButton, el2("span", "alp-selected-stage-number", String(stageNumber(stage)).padStart(2, "0")));
       const name = el2("span", "alp-selected-stage-copy");
-      add(name, el2("strong", "", `第${stageNumber(stage)}章 ${stage.title}`), el2("span", "", `${learningPosition(stage)} · ${completedCount(validGates(stage))} / ${validGates(stage).length} 关完成`));
+      add(name, el2("strong", "", `第${stageNumber(stage)}章 ${stage.title}`), el2("span", "", `${completionText(stage)} · 共 ${validGates(stage).length} 关，含扩展`));
       add(stageButton, name, el2("span", "alp-switch-label", "切换阶段 ⌄"));
       const stageIntro2 = root2.querySelector(".alp-stage-intro");
       stageIntro2.replaceChildren();
-      add(stageIntro2, el2("span", "alp-eyebrow", `阶段 ${stageNumber(stage)} · ${isOrientation(stage) ? "入门导览" : "先广后深，独立完成综合题"}`), el2("h2", "alp-stage-title", `第${stageNumber(stage)}章 ${stage.title}`));
+      add(stageIntro2, el2("span", "alp-eyebrow", `阶段 ${stageNumber(stage)} · ${isOrientation(stage) ? "入门导览" : stage.completionMode === "routes" ? "选择具体路线，分别形成成果" : "一章一条主线，学完整再进阶"}`), el2("h2", "alp-stage-title", `第${stageNumber(stage)}章 ${stage.title}`));
       const ranges = el2("div", "alp-ranges");
       rangeTags(ranges, stage.cf, stage.luoguDifficulty, isOrientation(stage));
       add(stageIntro2, ranges, el2("p", "alp-description", stage.description || stage.goal));
+      if (stage.entryText) stageIntro2.append(el2("p", "alp-entry-text", `进入条件：${stage.entryText}`));
+      if (list(stage.sections).length) {
+        const sections = el2("div", "alp-section-overview");
+        for (const section of list(stage.sections)) {
+          const group = foundationGates(validGates(stage).filter((gate) => gate.sectionId === section.id));
+          const done = completedCount(group);
+          const scope2 = section.scope === "route" ? "路线基础" : section.scope === "recommended" ? "推荐进阶" : section.scope === "elective" ? "选修" : "核心";
+          const link = control("", "alp-section-chip", () => {
+            const next = group.find((gate) => !isCompleted(gate.id)) || validGates(stage).find((gate) => gate.sectionId === section.id);
+            if (next) selectGate(next.id, { center: true });
+          });
+          add(link, el2("strong", "", section.title), el2("span", "", `${scope2}${group.length ? ` · ${done} / ${group.length}` : ""}`));
+          if (group.length && done === group.length) link.dataset.completed = "true";
+          sections.append(link);
+        }
+        stageIntro2.append(sections);
+      }
       const orientation = isOrientation(stage);
       root2.querySelector(".alp-footer").hidden = orientation;
       renderRoute(stage);
@@ -5752,6 +5974,175 @@ ${entry2.node.fullLabel}` : ""}`;
       add(label, el2("span", "", labelText), input2);
       return label;
     }
+    function buildPersonalDialog() {
+      const dialog3 = buildDialog2("我的练习题单", "alp-personal-dialog"), form = el2("form", "alp-task-practice-form");
+      form.noValidate = true;
+      personalInput = el2("input");
+      personalInput.type = "url";
+      personalInput.maxLength = 2e3;
+      personalInput.placeholder = "https://…";
+      personalInput.setAttribute("aria-label", "对应题单链接");
+      personalError = el2("p", "alp-inline-error");
+      personalError.hidden = true;
+      personalError.setAttribute("role", "alert");
+      const save = el2("button", "alp-button alp-button-primary", "保存题单");
+      save.type = "submit";
+      const actions = el2("div", "alp-dialog-actions");
+      add(actions, control("取消", "alp-button alp-button-secondary", () => {
+        if (!busy2) dialog3.close();
+      }), save);
+      add(form, el2("p", "alp-fine-print", "仅保存到你的学习记录。留空保存可移除个人题单链接。"), field2("题单链接", personalInput), personalError, actions);
+      form.addEventListener("submit", async (event) => {
+        event.preventDefault();
+        if (busy2 || !canSave || !personalGateId) return;
+        const value = personalInput.value.trim(), url = practiceUrl(value);
+        if (value && !url) {
+          personalError.textContent = "请填写有效的 HTTP 或 HTTPS 题单链接。";
+          personalError.hidden = false;
+          personalInput.focus();
+          return;
+        }
+        personalError.hidden = true;
+        const id = personalGateId;
+        try {
+          await persist(id, { ...gateProgress(id), status: gateProgress(id)?.status || "learning", practiceUrl: url || "", updatedAt: (/* @__PURE__ */ new Date()).toISOString() });
+          if (!destroyed) {
+            dialog3.close();
+            renderMain();
+            detail.querySelector(".alp-personal-list-button")?.focus({ preventScroll: true });
+            notify("题单链接已保存");
+          }
+        } catch (cause) {
+          if (!destroyed) {
+            personalError.textContent = errorMessage(cause, "题单链接未能保存，请重试。");
+            personalError.hidden = false;
+          }
+        }
+      });
+      dialog3.append(form);
+      return dialog3;
+    }
+    function openPersonal(id) {
+      if (busy2 || !canSave || !gateById.has(id)) return;
+      personalGateId = id;
+      personalInput.value = text2(gateProgress(id)?.practiceUrl);
+      personalError.hidden = true;
+      previousFocus = document.activeElement;
+      personalDialog.showModal();
+      personalInput.focus();
+    }
+    function buildPublicDialog() {
+      const dialog3 = buildDialog2("编辑公共关卡", "alp-public-dialog"), form = el2("form", "alp-public-form");
+      form.noValidate = true;
+      publicDescription = el2("textarea");
+      publicDescription.name = "description";
+      publicDescription.rows = 4;
+      publicDescription.maxLength = 6e3;
+      publicGoals = el2("textarea");
+      publicGoals.name = "goals";
+      publicGoals.rows = 5;
+      publicGoals.maxLength = 6e3;
+      publicTitle = el2("input");
+      publicTitle.name = "practiceTitle";
+      publicTitle.maxLength = 120;
+      publicUrl = el2("input");
+      publicUrl.name = "practiceUrl";
+      publicUrl.type = "url";
+      publicUrl.maxLength = 2e3;
+      publicUrl.placeholder = "https://…";
+      publicError = el2("p", "alp-inline-error");
+      publicError.hidden = true;
+      publicError.setAttribute("role", "alert");
+      const recommendation = el2("fieldset", "alp-public-practice");
+      recommendation.append(el2("legend", "", "官方精选题单 · 最多一个"));
+      add(recommendation, field2("题单名称", publicTitle), field2("题单链接", publicUrl));
+      const preview = el2("section", "alp-public-preview");
+      preview.setAttribute("aria-label", "公共版预览");
+      function renderPreview() {
+        preview.replaceChildren(sectionHeading("公共版预览"), el2("p", "alp-preview-description", publicDescription.value.trim()));
+        const goals = el2("ul", "alp-goals");
+        publicGoals.value.split(/\r?\n/u).map((value) => value.trim()).filter(Boolean).forEach((value) => goals.append(el2("li", "", value)));
+        preview.append(goals);
+        const url = practiceUrl(publicUrl.value.trim());
+        if (publicTitle.value.trim() && url) {
+          const card = el2("div", "alp-official-list");
+          const copy = el2("span", "alp-official-copy");
+          add(copy, el2("span", "alp-official-label", "官方精选题单"), el2("strong", "", publicTitle.value.trim()), el2("span", "alp-official-host", new URL(url).hostname));
+          card.append(copy);
+          preview.append(card);
+        }
+      }
+      form.addEventListener("input", renderPreview);
+      dialog3.addEventListener("alp:preview", renderPreview);
+      const save = el2("button", "alp-button alp-button-primary", "发布公共版");
+      save.type = "submit";
+      const actions = el2("div", "alp-dialog-actions");
+      add(actions, control("取消", "alp-button alp-button-secondary", () => {
+        if (!busy2) dialog3.close();
+      }), save);
+      add(form, el2("p", "alp-fine-print", "发布后，所有读者都可看到此简介、学习目标和官方题单。"), field2("关卡简介", publicDescription), field2("核心目标（每行一项）", publicGoals), recommendation, preview, publicError, actions);
+      form.addEventListener("submit", async (event) => {
+        event.preventDefault();
+        if (busy2 || !canManage || !opts.onSaveGate || !publicGateId) return;
+        const description = publicDescription.value.trim(), goals = publicGoals.value.split(/\r?\n/u).map((value2) => value2.trim()).filter(Boolean);
+        const title = publicTitle.value.trim(), value = publicUrl.value.trim(), url = practiceUrl(value);
+        if (!description || !goals.length) {
+          publicError.textContent = "请填写关卡简介和至少一项核心目标。";
+          publicError.hidden = false;
+          (!description ? publicDescription : publicGoals).focus();
+          return;
+        }
+        if (goals.length > 20 || goals.some((goal) => goal.length > 500)) {
+          publicError.textContent = "核心目标最多 20 项，每项不超过 500 字。";
+          publicError.hidden = false;
+          publicGoals.focus();
+          return;
+        }
+        if ((title || value) && (!title || !url)) {
+          publicError.textContent = "官方题单需填写名称和有效的 HTTP 或 HTTPS 链接，或同时留空。";
+          publicError.hidden = false;
+          (!title ? publicTitle : publicUrl).focus();
+          return;
+        }
+        const id = publicGateId;
+        publicError.hidden = true;
+        setBusy(true);
+        try {
+          const saved = await opts.onSaveGate({ gateId: id, description, goals, practiceList: title && url ? { title, url } : null, sha: publicContents.get(id)?.sha || null });
+          if (saved.gateId !== id) throw new Error("返回的公共关卡与当前关卡不一致，请刷新后重试。");
+          if (!destroyed) {
+            publicContents.set(id, saved);
+            dialog3.close();
+            renderMain();
+            detail.querySelector(".alp-public-edit-button")?.focus({ preventScroll: true });
+            notify("公共版已发布");
+          }
+        } catch (cause) {
+          if (!destroyed) {
+            publicError.textContent = errorMessage(cause, "公共版未能发布，请保留输入后重试。");
+            publicError.hidden = false;
+          }
+        } finally {
+          if (!destroyed) setBusy(false);
+        }
+      });
+      dialog3.append(form);
+      return dialog3;
+    }
+    function openPublic(id, focusList = false) {
+      if (busy2 || !canManage || !gateById.has(id)) return;
+      const gate = contentGate(gateById.get(id).gate), content = publicContents.get(id), official = content ? content.practiceList : list(gate.practiceLists).find((item) => practiceUrl(item.url));
+      publicGateId = id;
+      publicDescription.value = text2(gate.learningDescription) || text2(gate.description);
+      publicGoals.value = list(gate.goals).join("\n");
+      publicTitle.value = text2(official?.title);
+      publicUrl.value = text2(official?.url);
+      publicError.hidden = true;
+      previousFocus = document.activeElement;
+      publicDialog.dispatchEvent(new Event("alp:preview"));
+      publicDialog.showModal();
+      (focusList ? publicTitle : publicDescription).focus();
+    }
     function buildEvidenceDialog() {
       const dialog3 = buildDialog2("记录本关学习", "alp-evidence-dialog");
       const form = el2("form", "alp-evidence-form");
@@ -5800,7 +6191,7 @@ ${entry2.node.fullLabel}` : ""}`;
           }
         }
         evidenceError.hidden = true;
-        const nextRecord = { status: status.value, problemUrl, reflection: reflection.value.trim(), updatedAt: (/* @__PURE__ */ new Date()).toISOString() };
+        const nextRecord = { ...gateProgress(evidenceGateId), status: status.value, problemUrl, reflection: reflection.value.trim(), updatedAt: (/* @__PURE__ */ new Date()).toISOString() };
         try {
           await persist(evidenceGateId, nextRecord);
           if (destroyed) return;
@@ -5843,8 +6234,14 @@ ${entry2.node.fullLabel}` : ""}`;
       evidenceForm?.querySelectorAll("button,input,textarea,select").forEach((input2) => {
         input2.disabled = value;
       });
+      for (const dialog3 of [personalDialog, publicDialog]) dialog3?.querySelectorAll("button,input,textarea").forEach((input2) => {
+        input2.disabled = value;
+      });
       evidenceDialog?.querySelector(".alp-dialog-close")?.toggleAttribute("disabled", value);
-      detail.querySelectorAll(".alp-complete-button,.alp-learning-button").forEach((button4) => {
+      detail.querySelectorAll(".alp-public-edit-button,.alp-official-add-button,.alp-personal-list-button").forEach((button4) => {
+        button4.disabled = value;
+      });
+      detail.querySelectorAll('.alp-complete-button,.alp-learning-button,.alp-task-list input,.alp-task-list button[type="submit"]').forEach((button4) => {
         button4.disabled = value || !canSave;
       });
     }
@@ -5866,7 +6263,7 @@ ${entry2.node.fullLabel}` : ""}`;
       if (busy2 || !canSave) return;
       const previous = gateProgress(id);
       try {
-        await persist(id, { status, problemUrl: text2(previous?.problemUrl), reflection: text2(previous?.reflection), updatedAt: (/* @__PURE__ */ new Date()).toISOString() });
+        await persist(id, { ...previous, status, problemUrl: text2(previous?.problemUrl), reflection: text2(previous?.reflection), updatedAt: (/* @__PURE__ */ new Date()).toISOString() });
         if (!destroyed) {
           renderMain();
           notify(status === "learning" ? "已保存为学习中" : "本关完成记录已保存");
@@ -5876,59 +6273,6 @@ ${entry2.node.fullLabel}` : ""}`;
           saveError = errorMessage(error, "进度未能保存，请重试。");
           renderDetail();
         }
-      }
-    }
-    function shareText(id) {
-      const entry2 = gateById.get(id), record = gateProgress(id);
-      if (!entry2) return "";
-      const names = list(entry2.gate.topicIds).map((id2) => topics.get(id2)).filter(present).map((topic) => topic.path.join(" / "));
-      return [
-        "【拾题 · 学习互助卡】",
-        `第${stageNumber(entry2.stage)}章 · 第${gateNumber(entry2.gate)}关 ${entry2.gate.title}`,
-        entry2.gate.learningTitle ? `学习脉络：${entry2.gate.learningTitle}` : "",
-        isOrientation(entry2.stage) ? "学习定位：入门导览" : `目标选题：${cfLabel(entry2.gate.cf || entry2.stage.cf)}；洛谷参考：${list(entry2.gate.luoguDifficulty || entry2.stage.luoguDifficulty).join(" / ") || "按具体题目选择"}`,
-        `知识路径：${names.join("；") || "按本关学习目标"}`,
-        `当前记录：${record?.status === "completed" ? "已完成（本人记录）" : record?.status === "learning" ? "学习中" : "尚未记录"}`,
-        record?.problemUrl ? `练习题目：${record.problemUrl}` : "",
-        record?.reflection ? `我的复盘 / 困惑：${record.reflection}` : "想请教的问题：请补充自己的思路、卡点与尝试。",
-        !isOrientation(entry2.stage) && "一起讨论：关键观察是什么？有没有反例？如何证明复杂度？"
-      ].filter(Boolean).join("\n");
-    }
-    function buildShareDialog() {
-      const dialog3 = buildDialog2("学习互助卡", "alp-share-dialog");
-      const textarea = el2("textarea", "alp-share-text");
-      textarea.readOnly = true;
-      textarea.rows = 11;
-      textarea.setAttribute("aria-label", "互助卡内容");
-      const hint = el2("p", "alp-fine-print", "仅生成文字供你复制，自行选择是否分享给队友。复盘中的个人内容也会包含在卡片里。");
-      const actions = el2("div", "alp-dialog-actions");
-      const copy = control("复制文字", "alp-button alp-button-primary", async () => {
-        try {
-          await navigator.clipboard.writeText(textarea.value);
-          notify("互助卡已复制，可自行分享给队友");
-        } catch (_) {
-          textarea.focus();
-          textarea.select();
-          hint.textContent = "无法自动复制，内容已选中，请按 Ctrl+C 或使用系统复制。";
-        }
-      });
-      add(actions, copy);
-      add(dialog3, textarea, hint, actions);
-      return dialog3;
-    }
-    async function openShare(id) {
-      const content = shareText(id);
-      if (!content) return;
-      try {
-        await navigator.clipboard.writeText(content);
-        notify("互助卡已复制，包含本关路径及你的记录，可自行分享");
-      } catch (_) {
-        if (destroyed) return;
-        previousFocus = document.activeElement;
-        shareDialog.querySelector("textarea").value = content;
-        shareDialog.showModal();
-        shareDialog.querySelector("textarea").focus();
-        shareDialog.querySelector("textarea").select();
       }
     }
     root2 = el2("section", "alp");
@@ -5979,9 +6323,10 @@ ${entry2.node.fullLabel}` : ""}`;
     stageDialog = buildDialog2("选择学习阶段", "alp-stage-dialog");
     stageDialog.append(el2("p", "alp-picker-hint", "以综合做题能力为主线，先广后深；阶段可以自由切换，已有基础可直接跳学。"), el2("div", "alp-stage-grid"));
     evidenceDialog = buildEvidenceDialog();
-    shareDialog = buildShareDialog();
+    personalDialog = buildPersonalDialog();
+    publicDialog = buildPublicDialog();
     const footer = el2("p", "alp-footer", "CF 区间和洛谷等级分别用于选题参考，不作等价换算。知识点难度与题目难度独立；阅读和勾选不能代替独立做题。");
-    add(root2, summary, legend, achievements, success, main, footer, stageDialog, evidenceDialog, shareDialog);
+    add(root2, summary, legend, achievements, success, main, footer, stageDialog, evidenceDialog, personalDialog, publicDialog);
     host.replaceChildren(root2);
     remember();
     renderMain({ center: true });
@@ -5992,7 +6337,7 @@ ${entry2.node.fullLabel}` : ""}`;
         detailController?.close();
         detailController = null;
         clearTimeout(celebrationTimer);
-        [stageDialog, evidenceDialog, shareDialog].forEach((dialog3) => {
+        [stageDialog, evidenceDialog, personalDialog, publicDialog].forEach((dialog3) => {
           if (dialog3.open) dialog3.close();
         });
         root2.remove();
@@ -6110,9 +6455,26 @@ ${entry2.node.fullLabel}` : ""}`;
           account: getAccount(),
           notes: getAlgorithmNotes(),
           canUpload: Boolean(getAccount() && getPermissions().push),
+          canManage: Boolean(getAccount() && getPermissions().admin === true),
+          gateContents: options.getLearningGateContents(),
+          onSaveGate: async (input2) => {
+            if (getBusy()) throw new Error("请等待当前操作完成");
+            if (!getAccount() || getPermissions().admin !== true) throw new Error("只有管理员可以修改公共关卡");
+            const source = repo(), owner = accountId();
+            setBusy(true);
+            try {
+              const saved = await options.saveLearningGate({ ...input2, repo: source });
+              if (source !== repo() || owner !== accountId()) throw new Error("账号或仓库已改变，请重新同步");
+              options.setLearningGateContents([...options.getLearningGateContents().filter((content) => content.gateId !== saved.gateId), saved]);
+              return saved;
+            } finally {
+              setBusy(false);
+            }
+          },
           onProgress: saveLearningProgress,
           onTopic: openLearningTopic,
           onNote: openAlgorithmNoteDetail,
+          onExternal: options.openExternal,
           onUpload: (id) => {
             algorithmSelectedNode = id;
             openAlgorithmNoteEditor();
@@ -6283,6 +6645,7 @@ ${entry2.node.fullLabel}` : ""}`;
     }
     function resetRepository() {
       setAlgorithmNotes([]);
+      options.setLearningGateContents([]);
       setAlgorithmTopics([]);
       setAlgorithmTree(AlgorithmDirectory.hydrate(global2.QMX_ALGORITHM_TREE, []));
     }
@@ -6470,6 +6833,7 @@ ${entry2.node.fullLabel}` : ""}`;
       s.records = (Array.isArray(payload.records) ? payload.records : []).filter((record) => record.kind === "document");
       s.algorithmNotes = (Array.isArray(payload.algorithmNotes) ? payload.algorithmNotes : []).filter((record) => record.kind === "algorithm-note");
       s.algorithmTopics = Array.isArray(payload.algorithmTopics) ? payload.algorithmTopics : [];
+      s.learningGateContents = Array.isArray(payload.learningGateContents) ? payload.learningGateContents : [];
       s.algorithmTree = AlgorithmDirectory.hydrate(window.QMX_ALGORITHM_TREE, s.algorithmTopics);
       s.issues = (Array.isArray(payload.issues) ? payload.issues : []).filter((record) => record.kind === "issue");
       s.permissions = payload.permissions || {};
@@ -6696,11 +7060,16 @@ ${entry2.node.fullLabel}` : ""}`;
     const { highlightCodeBlock, decorateCodeBlocks, codeBlockClick } = CodeBlocks.create({ toast, errorMessage: errorMessage2 });
     const algorithms = createAlgorithmWorkspace({ getAlgorithmNotes: () => s.algorithmNotes, setAlgorithmNotes: (value) => {
       s.algorithmNotes = value;
+    }, getLearningGateContents: () => s.learningGateContents || [], setLearningGateContents: (value) => {
+      s.learningGateContents = value;
+    }, saveLearningGate: (input2) => {
+      if (!bridge3) throw new Error("请在桌面客户端登录管理员账户后修改公共关卡");
+      return bridge3.saveLearningGate(input2);
     }, getAlgorithmTopics: () => s.algorithmTopics, setAlgorithmTopics: (value) => {
       s.algorithmTopics = value;
     }, getAlgorithmTree: () => s.algorithmTree, setAlgorithmTree: (value) => {
       s.algorithmTree = value;
-    }, getAccount: () => s.account, getPermissions: () => s.permissions, getLocal: () => s.local, getBusy: () => s.busy, getReadingDetail: () => ReadingDetail, accountId, repo, uuid, setBusy, persistLocal, call, render: render6, renderMarkdown, authorName: authorName2, date, tags, toast, errorMessage: errorMessage2 });
+    }, getAccount: () => s.account, getPermissions: () => s.permissions, getLocal: () => s.local, getBusy: () => s.busy, getReadingDetail: () => ReadingDetail, accountId, repo, uuid, setBusy, persistLocal, call, openExternal, render: render6, renderMarkdown, authorName: authorName2, date, tags, toast, errorMessage: errorMessage2 });
     const { renderAlgorithmNotes } = algorithms;
     function renderMarkdown(container, body) {
       const source = String(body || "还没有题解内容。可以从记录错因开始。");
@@ -6820,6 +7189,7 @@ ${entry2.node.fullLabel}` : ""}`;
                 s.issues = (Array.isArray(data.issues) ? data.issues : []).map((r) => ({ ...r, repo: currentRepo, serverUrl: currentServer, sourceKey: repoSource(currentRepo, currentServer) }));
                 s.algorithmNotes = Array.isArray(data.algorithmNotes) ? data.algorithmNotes : [];
                 s.algorithmTopics = Array.isArray(data.algorithmTopics) ? data.algorithmTopics : [];
+                s.learningGateContents = Array.isArray(data.learningGateContents) ? data.learningGateContents : [];
                 s.algorithmTree = AlgorithmDirectory.hydrate(window.QMX_ALGORITHM_TREE, s.algorithmTopics);
                 s.lastSync = (/* @__PURE__ */ new Date()).toISOString();
                 s.comments.clear();
@@ -7056,6 +7426,7 @@ ${entry2.node.fullLabel}` : ""}`;
       s.issues = [];
       s.algorithmNotes = [];
       s.algorithmTopics = [];
+      s.learningGateContents = [];
       s.lastSync = null;
       s.algorithmTree = AlgorithmDirectory.hydrate(window.QMX_ALGORITHM_TREE, []);
     }, resetSourceView: () => {

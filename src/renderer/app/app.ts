@@ -131,6 +131,7 @@ import { createAlgorithmWorkspace } from '../algorithms/workspace.js';
     s.records = (Array.isArray((payload as AppPayload).records) ? (payload as AppPayload).records! : []).filter(record => record.kind === 'document');
     s.algorithmNotes = (Array.isArray((payload as AppPayload).algorithmNotes) ? (payload as AppPayload).algorithmNotes! : []).filter(record => record.kind === 'algorithm-note');
     s.algorithmTopics = Array.isArray((payload as AppPayload).algorithmTopics) ? (payload as AppPayload).algorithmTopics : [];
+    s.learningGateContents = Array.isArray((payload as AppPayload).learningGateContents) ? (payload as AppPayload).learningGateContents : [];
     s.algorithmTree = AlgorithmDirectory.hydrate(window.QMX_ALGORITHM_TREE, s.algorithmTopics);
     s.issues = (Array.isArray((payload as AppPayload).issues) ? (payload as AppPayload).issues! : []).filter(record => record.kind === 'issue');
     s.permissions = (payload as AppPayload).permissions || {};
@@ -259,7 +260,7 @@ import { createAlgorithmWorkspace } from '../algorithms/workspace.js';
     reader.renderLibrary(items);
   }
   const { highlightCodeBlock, decorateCodeBlocks, codeBlockClick } = CodeBlocks.create({ toast, errorMessage });
-  const algorithms = createAlgorithmWorkspace({ getAlgorithmNotes: () => s.algorithmNotes, setAlgorithmNotes: value => { s.algorithmNotes = value; }, getAlgorithmTopics: () => s.algorithmTopics, setAlgorithmTopics: value => { s.algorithmTopics = value; }, getAlgorithmTree: () => s.algorithmTree, setAlgorithmTree: value => { s.algorithmTree = value; }, getAccount: () => s.account, getPermissions: () => s.permissions, getLocal: () => s.local, getBusy: () => s.busy, getReadingDetail: () => ReadingDetail, accountId, repo, uuid, setBusy, persistLocal, call, render, renderMarkdown, authorName, date, tags, toast, errorMessage });
+  const algorithms = createAlgorithmWorkspace({ getAlgorithmNotes: () => s.algorithmNotes, setAlgorithmNotes: value => { s.algorithmNotes = value; }, getLearningGateContents: () => s.learningGateContents || [], setLearningGateContents: value => { s.learningGateContents = value; }, saveLearningGate: input => { if (!bridge) throw new Error('请在桌面客户端登录管理员账户后修改公共关卡'); return bridge.saveLearningGate(input); }, getAlgorithmTopics: () => s.algorithmTopics, setAlgorithmTopics: value => { s.algorithmTopics = value; }, getAlgorithmTree: () => s.algorithmTree, setAlgorithmTree: value => { s.algorithmTree = value; }, getAccount: () => s.account, getPermissions: () => s.permissions, getLocal: () => s.local, getBusy: () => s.busy, getReadingDetail: () => ReadingDetail, accountId, repo, uuid, setBusy, persistLocal, call, openExternal, render, renderMarkdown, authorName, date, tags, toast, errorMessage });
   const { renderAlgorithmNotes } = algorithms;
   function renderMarkdown(container: HTMLElement, body: unknown) {
     const source = String(body || '还没有题解内容。可以从记录错因开始。');
@@ -328,6 +329,7 @@ import { createAlgorithmWorkspace } from '../algorithms/workspace.js';
               s.issues = (Array.isArray(data.issues) ? data.issues : []).map((r: AppRecord) => ({ ...r, repo: currentRepo, serverUrl: currentServer, sourceKey: repoSource(currentRepo, currentServer) }));
               s.algorithmNotes = Array.isArray(data.algorithmNotes) ? data.algorithmNotes : [];
               s.algorithmTopics = Array.isArray(data.algorithmTopics) ? data.algorithmTopics : [];
+              s.learningGateContents = Array.isArray(data.learningGateContents) ? data.learningGateContents : [];
               s.algorithmTree = AlgorithmDirectory.hydrate(window.QMX_ALGORITHM_TREE, s.algorithmTopics);
               s.lastSync = new Date().toISOString();
               s.comments.clear();
@@ -410,7 +412,7 @@ import { createAlgorithmWorkspace } from '../algorithms/workspace.js';
   $('#submit-form')!.addEventListener('input', () => { clearTimeout(draftTimer); draftTimer = setTimeout(saveDraft, 650); });
   $('#submit-form')!.elements.platform.addEventListener('change', () => { const form = $('#submit-form')!; form.elements.rating.value = ''; form.elements.difficulty.value = ''; setEditorPlatform(form.elements.platform.value, false); });
   $('#save-local-button')!.addEventListener('click', () => saveRecord(false)); $('#submit-form')!.addEventListener('submit', event => { event.preventDefault(); saveRecord(true); });
-  const settingsUI = createSettings({ demo, bridge, themeStorage: THEME_STORAGE, getBusy: () => s.busy, setBusy, getSettings: () => s.settings, setSettings: value => { s.settings = value; }, getAccount: () => s.account, getAuthStatus: () => s.authStatus, getPermissions: () => s.permissions, setPermissionsRepo: value => { s.permissions.repo = value; }, getError: () => s.error, setError: value => { s.error = value; }, getLocal: () => s.local, repo, repoSource, quotaBlocked, reauthNeeded, call, applyPayload, resetRepositoryData: () => { s.records = []; s.issues = []; s.algorithmNotes = []; s.algorithmTopics = []; s.lastSync = null; s.algorithmTree = AlgorithmDirectory.hydrate(window.QMX_ALGORITHM_TREE, []); }, resetSourceView: () => { s.comments.clear(); s.selected = null; reader.resetDetail(); }, clearComments: () => s.comments.clear(), refreshFilters, render, renderUpdate: () => updates.renderUpdate(), updateStatus, sync, writeDemo, toast, errorMessage });
+  const settingsUI = createSettings({ demo, bridge, themeStorage: THEME_STORAGE, getBusy: () => s.busy, setBusy, getSettings: () => s.settings, setSettings: value => { s.settings = value; }, getAccount: () => s.account, getAuthStatus: () => s.authStatus, getPermissions: () => s.permissions, setPermissionsRepo: value => { s.permissions.repo = value; }, getError: () => s.error, setError: value => { s.error = value; }, getLocal: () => s.local, repo, repoSource, quotaBlocked, reauthNeeded, call, applyPayload, resetRepositoryData: () => { s.records = []; s.issues = []; s.algorithmNotes = []; s.algorithmTopics = []; s.learningGateContents = []; s.lastSync = null; s.algorithmTree = AlgorithmDirectory.hydrate(window.QMX_ALGORITHM_TREE, []); }, resetSourceView: () => { s.comments.clear(); s.selected = null; reader.resetDetail(); }, clearComments: () => s.comments.clear(), refreshFilters, render, renderUpdate: () => updates.renderUpdate(), updateStatus, sync, writeDemo, toast, errorMessage });
   const { readTheme, applyTheme, applyCodeSettings, renderRepoSelector, renderSettingsRepoList, renderAccount, startLoginFromBanner, accountAction, cancelLogin } = settingsUI;
   $('#sidebar-toggle')!.addEventListener('click', event => {
     const wasPinned = sidebarPinned; applySidebar(!wasPinned);
