@@ -201,6 +201,50 @@ function render(options?: Options | null): Controller {
   let matchingNotes: Note[] = [];
   let focusedId: string | null | undefined = state.selectedNode;
   let disposed = false, expandedReader: Reader | undefined | null = null;
+  const treeItems = new Map<string, HTMLElement>();
+  const tooltip = element('div', 'alg-tooltip');
+  tooltip.id = `${uid}-tooltip`; tooltip.setAttribute('role', 'tooltip'); tooltip.hidden = true;
+  document.body.append(tooltip);
+  const tooltipEvents = new AbortController();
+  let tooltipTarget: HTMLElement | null = null;
+  function hideTooltip() {
+    if (tooltipTarget) {
+      const ids = (tooltipTarget.getAttribute('aria-describedby') || '').split(/\s+/).filter(id => id && id !== tooltip.id);
+      if (ids.length) tooltipTarget.setAttribute('aria-describedby', ids.join(' ')); else tooltipTarget.removeAttribute('aria-describedby');
+    }
+    tooltipTarget = null; tooltip.hidden = true;
+  }
+  function tooltipFor(target: EventTarget | null): HTMLElement | null {
+    if (!(target instanceof Element)) return null;
+    const item = target.closest<HTMLElement>('[data-alg-tooltip]') || target.closest<HTMLElement>('.alg-tree-item')?.querySelector<HTMLElement>(':scope > .alg-tree-row[data-alg-tooltip]');
+    return item && (shell.contains(item) || pane.contains(item)) ? item : null;
+  }
+  function showTooltip(target: HTMLElement | null) {
+    if (target === tooltipTarget) return;
+    hideTooltip();
+    if (!target?.dataset.algTooltip) return;
+    tooltipTarget = target; tooltip.textContent = target.dataset.algTooltip;
+    target.setAttribute('aria-describedby', [target.getAttribute('aria-describedby'), tooltip.id].filter(Boolean).join(' '));
+    tooltip.hidden = false;
+    const viewport = window.visualViewport;
+    const left = viewport?.offsetLeft || 0, top = viewport?.offsetTop || 0;
+    const width = viewport?.width || innerWidth, height = viewport?.height || innerHeight;
+    tooltip.style.maxWidth = `${Math.min(420, Math.max(0, width - 16))}px`;
+    tooltip.style.maxHeight = `${Math.max(0, height - 16)}px`;
+    const anchor = target.getBoundingClientRect(), rect = tooltip.getBoundingClientRect();
+    tooltip.style.left = `${Math.max(left + 8, Math.min(anchor.left, left + width - rect.width - 8))}px`;
+    const below = anchor.bottom + 8;
+    tooltip.style.top = `${Math.max(top + 8, Math.min(below + rect.height <= top + height - 8 ? below : anchor.top - rect.height - 8, top + height - rect.height - 8))}px`;
+  }
+  document.addEventListener('pointerover', event => { if (event.pointerType !== 'touch') showTooltip(tooltipFor(event.target)); }, { signal: tooltipEvents.signal });
+  document.addEventListener('pointerout', event => { if (tooltipTarget && !tooltipTarget.contains(event.relatedTarget as Node | null)) showTooltip(tooltipFor(event.relatedTarget)); }, { signal: tooltipEvents.signal });
+  document.addEventListener('focusin', event => showTooltip(tooltipFor(event.target)), { signal: tooltipEvents.signal });
+  document.addEventListener('focusout', event => { if (tooltipTarget && !tooltipTarget.contains(event.relatedTarget as Node | null)) hideTooltip(); }, { signal: tooltipEvents.signal });
+  document.addEventListener('scroll', hideTooltip, { capture: true, passive: true, signal: tooltipEvents.signal });
+  document.addEventListener('keydown', event => { if (event.key === 'Escape') hideTooltip(); }, { signal: tooltipEvents.signal });
+  document.addEventListener('pointerdown', hideTooltip, { signal: tooltipEvents.signal });
+  window.addEventListener('resize', hideTooltip, { passive: true, signal: tooltipEvents.signal });
+  window.addEventListener('blur', hideTooltip, { signal: tooltipEvents.signal });
   function detailPath(): PathItem[] {
     const reading = state.reading && notes.find(note => noteKey(note) === state.reading);
     const entries: Entry[] = []; let entry = byId.get((reading as Note | undefined)?.nodeId || state.selectedNode);
@@ -214,13 +258,13 @@ function render(options?: Options | null): Controller {
   }
   let filtering = false;
   function badge(node: DirectoryNode) {
-    if (isDirectory(node)) { const directory = element('span', 'alg-node-kind', '目录'); directory.title = '目录可保存说明和笔记，具体算法在子节点中分级'; return directory; }
+    if (isDirectory(node)) { const directory = element('span', 'alg-node-kind', '目录'); directory.dataset.algTooltip = '目录可保存说明和笔记，具体算法在子节点中分级'; return directory; }
     const level = levelOf(node);
     const el = element('span', `alg-badge alg-tone-${level ? level.tone : 'neutral'}`, level ? level.label : node.color === 'parent' ? '目录' : '未分级');
     const origin = node.difficultySource?.kind === 'user-md' ? '用户颜色文档' : node.rating?.type === 'category' ? '分类基础门槛' : node.rating?.type === 'entry' ? '入口或任务形式' : '本项目逐项定稿';
     const range = node.rating?.range;
     const coverage = range && node.children?.length ? `；覆盖 D${range.min}–D${range.max}` : '';
-    el.title = level ? `学习难度：${level.label}；依据：${origin}${coverage}${node.scope ? `。学习范围：${node.scope}` : ''}${node.rationale ? `。${node.rationale}` : ''}` : node.color === 'parent' ? '目录' : '未指定难度';
+    el.dataset.algTooltip = level ? `学习难度：${level.label}；依据：${origin}${coverage}${node.scope ? `。学习范围：${node.scope}` : ''}${node.rationale ? `。${node.rationale}` : ''}` : node.color === 'parent' ? '目录' : '未指定难度';
     return el;
   }
   function attributeBadge(node: DirectoryNode) {
@@ -262,17 +306,27 @@ function render(options?: Options | null): Controller {
   function selectNode(id: string, focusPane?: boolean) {
     if (!byId.has(id)) return;
     expandedReader?.close();
+    hideTooltip();
+    const previous = state.selectedNode;
     state.selectedNode = id; state.reading = null; state.listScroll = 0; state.paneScroll = 0;
+    const previousFocus = focusedId;
     focusedId = id; expandAncestors(id);
     const oldScroll = treeScroller.scrollTop;
-    renderTree(); treeScroller.scrollTop = oldScroll; renderPane(); pane.scrollTop = 0;
+    // Reuse visible rows so a selection does not interrupt scrolling or pointer feedback.
+    if (treeItems.has(id)) {
+      if (previous) treeItems.get(previous)?.setAttribute('aria-selected', 'false');
+      if (previousFocus) { const row = treeItems.get(previousFocus); if (row) row.tabIndex = -1; }
+      const row = treeItems.get(id)!; row.setAttribute('aria-selected', 'true'); row.tabIndex = 0;
+    } else renderTree();
+    treeScroller.scrollTop = oldScroll; renderPane(); pane.scrollTop = 0;
     if (typeof opts.onSelect === 'function') opts.onSelect(id);
     if (focusPane) pane.focus({ preventScroll: true });
   }
   function focusRow(id: string) {
     focusedId = id;
-    tree.querySelectorAll<HTMLElement>('[role="treeitem"]').forEach(row => { row.tabIndex = row.dataset.nodeId === id ? 0 : -1; });
-    const target = Array.from(tree.querySelectorAll<HTMLElement>('[role="treeitem"]')).find(row => row.dataset.nodeId === id);
+    treeItems.forEach((row, nodeId) => { if (row.tabIndex === 0 && nodeId !== id) row.tabIndex = -1; });
+    const target = treeItems.get(id);
+    if (target) target.tabIndex = 0;
     if (target) { target.focus({ preventScroll: true }); target.scrollIntoView({ block: 'nearest', inline: 'nearest' }); }
   }
   function isExpanded(id: string) { return filtering ? included.has(id) && !state.expanded.has(`collapsed-filter:${id}`) : state.expanded.has(id); }
@@ -284,6 +338,7 @@ function render(options?: Options | null): Controller {
     const oldScroll = treeScroller.scrollTop; renderTree(); treeScroller.scrollTop = oldScroll; focusRow(id);
   }
   function renderTree() {
+    hideTooltip(); treeItems.clear();
     tree.replaceChildren(); visible = [];
     const hasResults = included.size > 0;
     if (!hasResults) {
@@ -294,6 +349,7 @@ function render(options?: Options | null): Controller {
         const kids = (entry.node.children || []).filter(child => included.has(child.id));
         const item = element('div', 'alg-tree-item'); item.setAttribute('role', 'treeitem');
         item.dataset.nodeId = entry.node.id;
+        treeItems.set(entry.node.id, item);
         item.dataset.depth = String(entry.depth);
         item.dataset.kind = entry.node.color === 'parent' ? 'directory' : 'topic';
         item.setAttribute('aria-level', String(entry.depth + 1));
@@ -312,7 +368,7 @@ function render(options?: Options | null): Controller {
         const attr = attributeBadge(entry.node); if (attr) metadata.append(attr);
         copy.append(metadata); row.append(copy);
         const count = element('span', 'alg-node-count', counts.get(entry.node.id)); count.title = '当前范围内含子目录的笔记总数'; row.append(count);
-        row.title = `${entry.path.join(' / ')}${entry.node.fullLabel && entry.node.fullLabel !== entry.node.label ? `\n${entry.node.fullLabel}` : ''}`;
+        row.dataset.algTooltip = `${entry.path.join(' / ')}${entry.node.fullLabel && entry.node.fullLabel !== entry.node.label ? `\n${entry.node.fullLabel}` : ''}`;
          if (opts.canManage && typeof opts.onAddTopic === 'function') {
            const add = button('＋', 'alg-add-topic', event => { event.stopPropagation(); opts.onAddTopic!(entry.node.id); });
            add.title = `在“${entry.node.label}”下添加算法`; add.setAttribute('aria-label', add.title); row.append(add);
@@ -394,6 +450,7 @@ function render(options?: Options | null): Controller {
     return card;
   }
   function renderPane() {
+    hideTooltip();
     expandedReader?.setPath(detailPath());
     pane.replaceChildren();
     const selected = byId.get(state.selectedNode)!;
@@ -538,6 +595,7 @@ function render(options?: Options | null): Controller {
     destroy() {
       if (disposed) return;
       expandedReader?.close();
+      hideTooltip(); tooltipEvents.abort(); tooltip.remove(); treeItems.clear();
       state.treeScroll = treeScroller.scrollTop; state.paneScroll = pane.scrollTop; disposed = true;
       if (active === controller) active = null;
     }

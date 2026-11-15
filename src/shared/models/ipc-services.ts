@@ -1,6 +1,7 @@
 import type { AuthAccount } from './auth';
 import type { SourceScope } from './bootstrap';
 import type { Contest, ContestSourceId } from './contests';
+import type { Palette } from './settings';
 import type { AlgorithmNoteRecord, DocumentRecord } from './records';
 
 /** Renderer authoring inputs; main still performs all validation and ownership checks. */
@@ -37,6 +38,7 @@ export interface SettingsUpdate {
   serverUrl?: string;
   clientId?: string;
   theme?: string;
+  palette?: Palette;
   displayName?: string;
   autoSync?: boolean;
   codeFontSize?: number;

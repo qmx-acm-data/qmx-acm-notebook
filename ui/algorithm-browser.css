@@ -50,7 +50,7 @@ body[data-theme="dark"] .alg-browser {
 .alg-button { display: inline-flex; justify-content: center; align-items: center; min-height: 38px; padding: 8px 15px; border: 1px solid var(--line); border-radius: 7px; background: var(--surface); color: var(--text); font-size: 13px !important; font-weight: 600 !important; line-height: 1.5; }
 .alg-button:hover:not(:disabled) { border-color: var(--accent); background: var(--accent-soft); }
 .alg-button.alg-button-primary { border-color: var(--accent); background: var(--accent); color: #fff; }
-body[data-theme="dark"] .alg-button.alg-button-primary { background: #527e64; border-color: #527e64; color: #fff; }
+
 .alg-text-button { padding: 4px 0; border: 0; background: transparent; color: var(--text) !important; font-size: 13px !important; text-underline-offset: 4px; }
 .alg-text-button:hover { text-decoration: underline; }
 .alg-filters { padding: 18px 20px 15px; background: var(--surface, #fff); border: 1px solid var(--line); border-radius: var(--radius, 12px); }
@@ -86,7 +86,7 @@ body[data-theme="dark"] .alg-button.alg-button-primary { background: #527e64; bo
 .alg-sidebar { min-width: 0; position: sticky; top: 16px; border: 1px solid var(--line); border-radius: var(--radius, 12px); overflow: hidden; background: var(--surface); }
 .alg-tree-heading { display: flex; gap: 12px; align-items: center; justify-content: space-between; padding: 16px; border-bottom: 1px solid var(--line); font-size: 14px; }
 .alg-tree-status { font-size: 12px; font-weight: 400; color: var(--alg-muted); }
-.alg-tree-scroll { max-height: calc(100dvh - 440px); min-height: 320px; overflow-y: auto; overflow-x: hidden; overscroll-behavior: contain; scrollbar-width: thin; padding: 8px; scroll-padding-block: 8px; }
+.alg-tree-scroll { max-height: calc(100dvh - 440px); min-height: 320px; overflow-y: auto; overflow-x: hidden; overscroll-behavior-y: auto; scrollbar-width: thin; padding: 8px; scroll-padding-block: 8px; }
 .alg-tree { width: 100%; min-width: 0; }
 .alg-tree-item { outline: none; min-width: 0; position: relative; }
 .alg-tree-row { position: relative; display: flex; gap: 6px; min-height: 51px; align-items: center; border: 1px solid var(--line); border-radius: 7px; margin: 4px 0; padding: 7px 7px 7px 3px; background: var(--surface-soft); cursor: pointer; transition: background .12s; }
@@ -104,7 +104,10 @@ body[data-theme="dark"] .alg-button.alg-button-primary { background: #527e64; bo
 .alg-tree-item[data-kind="directory"] > .alg-tree-row .alg-disclosure { background: var(--accent-soft); border: 1px solid var(--line); font-size: 15px !important; }
 .alg-tree-item[data-kind="topic"] > .alg-tree-row .alg-tree-label { font-weight: 450; }
 .alg-tree-group .alg-tree-group { margin-top: 4px; margin-bottom: 6px; }
-.alg-tree-row:hover { background: var(--surface-soft); }
+.alg-tree-item[data-depth] > .alg-tree-row:hover { background: color-mix(in srgb,var(--accent) 9%,var(--surface)); border-color: var(--accent); }
+.alg-tree-item[aria-selected="true"] > .alg-tree-row:hover { background: var(--accent-soft); }
+.alg-tree-row { transition: none; }
+.alg-tooltip { position: fixed; z-index: 10000; width: max-content; max-width: min(420px,calc(100vw - 16px)); max-height: calc(100dvh - 16px); overflow: hidden; padding: 9px 12px; border: 1px solid var(--line); border-radius: 8px; background: var(--surface); color: var(--text); box-shadow: 0 4px 16px #0002; font-size: 12px; line-height: 1.7; white-space: pre-line; overflow-wrap: anywhere; pointer-events: none; }
 .alg-tree-item[aria-selected="true"] > .alg-tree-row { border-color: color-mix(in srgb,var(--accent) 50%,var(--line)); background: var(--accent-soft); box-shadow: inset 3px 0 0 var(--accent); }
 .alg-tree-item:focus-visible { outline: none !important; }
 .alg-tree-item:focus-visible > .alg-tree-row { outline: 2px solid var(--accent); outline-offset: -2px; }

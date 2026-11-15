@@ -1308,6 +1308,39 @@ test('legacy same-path custom server settings survive source-aware migration', a
   }
 });
 
+test('appearance settings persist independent mode and palette without changing repository or unknown fields', async () => {
+  const h = harness({ account: null, files: { 'settings.json': { repo: REPO, theme: 'dark', palette: 'porcelain', retained: { legacy: true } } } });
+  for (const palette of ['porcelain', 'blue', 'violet', 'rose', 'amber', 'teal']) {
+    const saved = await h.invoke('saveSettings', { palette });
+    assert.equal(saved.settings.palette, palette);
+    assert.equal(saved.settings.theme, 'dark');
+    assert.equal(saved.settings.repo, REPO);
+    assert.deepEqual(saved.settings.retained, { legacy: true });
+    assert.equal(h.stored('settings.json').palette, palette);
+  }
+  await h.invoke('saveSettings', { theme: 'light' });
+  assert.equal(h.stored('settings.json').palette, 'teal');
+  const before = structuredClone(h.stored('settings.json'));
+  for (const palette of ['cards', 'unknown', '', null, {}, 1]) {
+    await assert.rejects(h.invoke('saveSettings', { theme: 'dark', palette }), /配色/);
+    assert.deepEqual(h.stored('settings.json'), before, 'invalid palettes cannot partially save brightness');
+  }
+});
+
+test('legacy appearance migrates cards to light amber and preserves an explicit palette', async () => {
+  for (const [input, theme, palette] of [
+    [{ theme: 'cards' }, 'light', 'amber'],
+    [{ theme: 'cards', palette: 'rose' }, 'light', 'rose'],
+    [{ theme: 'dark', palette: 'bad' }, 'dark', 'porcelain'],
+    [{ theme: 'light' }, 'light', 'porcelain']
+  ]) {
+    const h = harness({ account: null, files: { 'settings.json': { repo: REPO, ...input } } });
+    const state = await h.invoke('bootstrap');
+    assert.equal(state.settings.theme, theme);
+    assert.equal(state.settings.palette, palette);
+  }
+});
+
 test('Gitea cache never adopts an ambiguous GitHub legacy cache', async () => {
   const h = harness({ account: null, files: {
     'settings.json': { repo: REPO, serverUrl: 'http://git.example.test', repositories: [{ id: 'custom', repo: REPO, serverUrl: 'http://git.example.test' }], activeRepoId: 'custom' },

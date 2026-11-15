@@ -26,7 +26,7 @@ assert.equal(search.tagHits({tags:['a','a','b']}, new Set(['a','b'])), 2);
   await page.locator('.mastery-buttons button').last().click(); await page.locator('#detail-back-button').click();
   assert.equal(await page.locator('#search-input').inputValue(),'关键词'); assert.equal(await page.locator('.record-card.selected').getAttribute('data-key'),'two'); assert.match((await page.locator('#tag-filter-trigger').innerText()).trim(),/^标签\s*⌄$/);
   await page.locator('.record-card.selected').focus(); await page.keyboard.press('Enter'); await page.keyboard.press('Escape');
-  for(const theme of ['light','dark','cards']) {await page.selectOption('#theme-select',theme); assert.equal(await page.locator('#record-list').evaluate(n=>getComputedStyle(n).display),'grid');}
+  for(const theme of ['light','dark']) {await page.selectOption('#theme-select',theme); assert.equal(await page.locator('#record-list').evaluate(n=>getComputedStyle(n).display),'grid');}
   await page.locator('#submit-button').click(); assert.equal(await page.locator('[name="tags"]').getAttribute('type'),'hidden'); await page.locator('#record-tag-open').click(); assert.match(await page.locator('#tag-picker-dialog-options').innerText(),/旧标签 · 历史/);
   await page.locator('#tag-picker-dialog-options input[value="甲"]').check(); await page.locator('#tag-picker-dialog-options input[value="乙"]').check(); assert.equal(await page.locator('[name="tags"]').inputValue(),''); await page.locator('#tag-picker-confirm').click(); assert.equal(await page.locator('[name="tags"]').inputValue(),'甲, 乙');
   await page.locator('#request-tag-open').click(); await page.locator('#request-tag-dialog-name').fill('新算法'); await page.locator('#tag-request-form button[type="submit"]').click();

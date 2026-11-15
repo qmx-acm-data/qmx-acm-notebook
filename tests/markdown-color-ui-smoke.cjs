@@ -62,7 +62,7 @@ $\href{javascript:alert(1)}{unsafe}$ $\htmlStyle{position:fixed;color:red}{unsaf
     assert.equal(await reader.locator('font[color]').count(), 0);
     assert.equal(await reader.locator('code span').count(), 0);
     assert.match(await reader.locator('code').innerText(), /<span style="color:red">literal<\/span>/);
-    for (const theme of ['light', 'dark', 'cards']) {
+    for (const theme of ['light', 'dark']) {
       await page.evaluate(value => document.body.dataset.theme = value, theme);
       const actual = await reader.evaluate(root => {
         const get = selector => getComputedStyle(root.querySelector(selector)).color;
@@ -88,6 +88,6 @@ $\href{javascript:alert(1)}{unsafe}$ $\htmlStyle{position:fixed;color:red}{unsaf
     assert.deepEqual(await page.evaluate(() => window.openedUrls), ['https://www.bilibili.com/video/BV1xx411c7mD/', 'https://b23.tv/AbCd12']);
     assert.equal(await page.evaluate(() => window.fragmentScrolls), 2);
     assert.deepEqual(errors, []);
-    console.log('PASS Markdown colors: safe span/font foregrounds, restricted CSS, literal code, KaTeX named/hex/scoped colors, 3 themes, video links and local anchors');
+    console.log('PASS Markdown colors: safe span/font foregrounds, restricted CSS, literal code, KaTeX named/hex/scoped colors, 2 themes, video links and local anchors');
   } finally { await browser.close(); }
 })().catch(error => { console.error(error); process.exitCode = 1; });

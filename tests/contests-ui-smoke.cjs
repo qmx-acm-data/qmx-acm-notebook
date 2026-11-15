@@ -203,7 +203,7 @@ const fixture = { fetchedAt: iso(0), platforms: [
     assert.deepEqual(await page.evaluate(() => contestCalls), [false, true, true, false, false, false], 'focus refreshes after TTL without waiting for the timer');
     await page.evaluate(fixture => finishContests(fixture), fixture);
     await page.waitForFunction(() => !document.querySelector('#contests-refresh').disabled);
-    for (const theme of ['dark', 'cards', 'light']) {
+    for (const theme of ['dark', 'light']) {
       await page.locator('#theme-select').selectOption(theme);
       await page.setViewportSize({ width: 390, height: 844 });
       assert(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth), `${theme} narrow viewport has no horizontal overflow`);
@@ -457,6 +457,6 @@ const fixture = { fetchedAt: iso(0), platforms: [
     }
     await typesPage.close();
     console.log('ATCODER TYPES PASS: ABC/ARC/AGC by ID, sponsored AHC by official title, unknown/practice unlabelled, non-AtCoder excluded, restore badges and responsive layout');
-    console.log('CONTESTS UI PASS: compact toolbar and planner/contests/overview board, four compact source links, one globally sorted list with three contests per source, stacked compact rows and ellipsized titles, source status/tooltips, background/forced/TTL refresh and focus throttling, ticking and start/end boundaries with stable board DOM, keyboard focus fallback, rejection retention, Beijing timezone, escaped title, external links, rail navigation, three themes and responsive fields without clipping or overlap, durations and decline controls, selective restore modal and rollback, honest preview');
+    console.log('CONTESTS UI PASS: compact toolbar and planner/contests/overview board, four compact source links, one globally sorted list with three contests per source, stacked compact rows and ellipsized titles, source status/tooltips, background/forced/TTL refresh and focus throttling, ticking and start/end boundaries with stable board DOM, keyboard focus fallback, rejection retention, Beijing timezone, escaped title, external links, rail navigation, two themes and responsive fields without clipping or overlap, durations and decline controls, selective restore modal and rollback, honest preview');
   } finally { await browser.close(); }
 })().catch(error => { console.error(error); process.exitCode = 1; });

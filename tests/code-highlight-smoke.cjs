@@ -39,7 +39,7 @@ async function navigate(page) {
     await page.click('.record-card');
     await page.waitForSelector('.markdown-body pre code .token');
     const colors = {};
-    for (const theme of ['light', 'dark', 'cards']) {
+    for (const theme of ['light', 'dark']) {
       await page.selectOption('#theme-select', theme);
       colors[theme] = await page.evaluate(() => {
         const code = document.querySelector('.markdown-body pre code');
@@ -50,7 +50,7 @@ async function navigate(page) {
         return { keyword: pick('keyword'), number: pick('number'), comment: pick('comment') };
       });
     }
-    for (const theme of ['light', 'dark', 'cards']) {
+    for (const theme of ['light', 'dark']) {
       assert.equal(typeof colors[theme].keyword, 'string', `${theme} keyword color`);
       assert.equal(typeof colors[theme].number, 'string', `${theme} number color`);
       assert.notEqual(colors[theme].keyword, colors[theme].number, `${theme} tokens must be colored differently`);

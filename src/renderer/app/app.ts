@@ -54,6 +54,7 @@ import { createAlgorithmWorkspace } from '../algorithms/workspace.js';
   const webPreview = demo && ['http:', 'https:'].includes(location.protocol);
   const STORAGE = 'acm-notebook.demo.v1';
   const THEME_STORAGE = 'acm-notebook.theme';
+  const PALETTE_STORAGE = 'acm-notebook.palette';
   const SIDEBAR_STORAGE = 'acm-notebook.sidebar';
   const stateLabels: Record<string, string> = { unreviewed: '待复习', reviewing: '复习中', mastered: '已掌握' };
   const views: Record<string, [string, string, string]> = {
@@ -138,7 +139,7 @@ import { createAlgorithmWorkspace } from '../algorithms/workspace.js';
     s.settings = (payload as AppPayload).settings && typeof (payload as AppPayload).settings === 'object' ? (payload as AppPayload).settings! : {};
     s.local = normalizeLocal((payload as AppPayload).local);
     s.account = (payload as AppPayload).account || null; s.lastSync = (payload as AppPayload).lastSync || null; s.error = (payload as AppPayload).error ? errorMessage((payload as AppPayload).error) : '';
-    applyTheme(s.settings.theme || readTheme());
+    applyAppearance(s.settings);
     applyCodeSettings();
     renderRepoSelector();
   }
@@ -291,7 +292,7 @@ import { createAlgorithmWorkspace } from '../algorithms/workspace.js';
   function setBusy(value: boolean) {
     if (!value && updateLockedControls) { updateLockedControls.forEach(([node, disabled]) => { node.disabled = disabled; }); updateLockedControls = null; }
     s.busy = value;
-    ['sync-button', 'account-button', 'settings-button', 'theme-select', 'submit-button', 'save-local-button', 'publish-button', 'account-login', 'account-logout', 'account-switch', 'account-refresh', 'banner-login-button'].forEach(id => { const node = document.getElementById(id); if (node) (node as AppDisabledControl).disabled = value; });
+    ['sync-button', 'account-button', 'settings-button', 'theme-select', 'palette-select', 'submit-button', 'save-local-button', 'publish-button', 'account-login', 'account-logout', 'account-switch', 'account-refresh', 'banner-login-button'].forEach(id => { const node = document.getElementById(id); if (node) (node as AppDisabledControl).disabled = value; });
     $$<AppDisabledControl>('[data-close], #settings-form input, #settings-form select, #settings-form button').forEach(node => { node.disabled = value; });
     $$<HTMLInputElement | HTMLTextAreaElement>('#submit-form input, #submit-form textarea').forEach(node => { node.readOnly = value; });
     $$<HTMLSelectElement | HTMLButtonElement>('#submit-form select, #editor-difficulty-picker select, #editor-difficulty-picker button').forEach(node => { node.disabled = value; });
@@ -412,8 +413,8 @@ import { createAlgorithmWorkspace } from '../algorithms/workspace.js';
   $('#submit-form')!.addEventListener('input', () => { clearTimeout(draftTimer); draftTimer = setTimeout(saveDraft, 650); });
   $('#submit-form')!.elements.platform.addEventListener('change', () => { const form = $('#submit-form')!; form.elements.rating.value = ''; form.elements.difficulty.value = ''; setEditorPlatform(form.elements.platform.value, false); });
   $('#save-local-button')!.addEventListener('click', () => saveRecord(false)); $('#submit-form')!.addEventListener('submit', event => { event.preventDefault(); saveRecord(true); });
-  const settingsUI = createSettings({ demo, bridge, themeStorage: THEME_STORAGE, getBusy: () => s.busy, setBusy, getSettings: () => s.settings, setSettings: value => { s.settings = value; }, getAccount: () => s.account, getAuthStatus: () => s.authStatus, getPermissions: () => s.permissions, setPermissionsRepo: value => { s.permissions.repo = value; }, getError: () => s.error, setError: value => { s.error = value; }, getLocal: () => s.local, repo, repoSource, quotaBlocked, reauthNeeded, call, applyPayload, resetRepositoryData: () => { s.records = []; s.issues = []; s.algorithmNotes = []; s.algorithmTopics = []; s.learningGateContents = []; s.lastSync = null; s.algorithmTree = AlgorithmDirectory.hydrate(window.QMX_ALGORITHM_TREE, []); }, resetSourceView: () => { s.comments.clear(); s.selected = null; reader.resetDetail(); }, clearComments: () => s.comments.clear(), refreshFilters, render, renderUpdate: () => updates.renderUpdate(), updateStatus, sync, writeDemo, toast, errorMessage });
-  const { readTheme, applyTheme, applyCodeSettings, renderRepoSelector, renderSettingsRepoList, renderAccount, startLoginFromBanner, accountAction, cancelLogin } = settingsUI;
+  const settingsUI = createSettings({ demo, bridge, themeStorage: THEME_STORAGE, paletteStorage: PALETTE_STORAGE, getBusy: () => s.busy, setBusy, getSettings: () => s.settings, setSettings: value => { s.settings = value; }, getAccount: () => s.account, getAuthStatus: () => s.authStatus, getPermissions: () => s.permissions, setPermissionsRepo: value => { s.permissions.repo = value; }, getError: () => s.error, setError: value => { s.error = value; }, getLocal: () => s.local, repo, repoSource, quotaBlocked, reauthNeeded, call, applyPayload, resetRepositoryData: () => { s.records = []; s.issues = []; s.algorithmNotes = []; s.algorithmTopics = []; s.learningGateContents = []; s.lastSync = null; s.algorithmTree = AlgorithmDirectory.hydrate(window.QMX_ALGORITHM_TREE, []); }, resetSourceView: () => { s.comments.clear(); s.selected = null; reader.resetDetail(); }, clearComments: () => s.comments.clear(), refreshFilters, render, renderUpdate: () => updates.renderUpdate(), updateStatus, sync, writeDemo, toast, errorMessage });
+  const { readTheme, readPalette, applyTheme, applyPalette, applyAppearance, applyCodeSettings, renderRepoSelector, renderSettingsRepoList, renderAccount, startLoginFromBanner, accountAction, cancelLogin } = settingsUI;
   $('#sidebar-toggle')!.addEventListener('click', event => {
     const wasPinned = sidebarPinned; applySidebar(!wasPinned);
     if (wasPinned) { sidebarHovered = false; sidebarFocused = false; (event.currentTarget as HTMLElement).blur(); updateSidebar(); }
@@ -464,9 +465,10 @@ import { createAlgorithmWorkspace } from '../algorithms/workspace.js';
   window.addEventListener('online', updateStatus); window.addEventListener('offline', updateStatus);
   document.addEventListener('keydown', event => { if (event.key === '/' && !event.ctrlKey && !event.metaKey && !['INPUT', 'TEXTAREA', 'SELECT'].includes(document.activeElement?.tagName as string) && !document.querySelector('dialog[open]')) { event.preventDefault(); if (['home', 'tricks', 'algorithms'].includes(s.view)) { navigate('public'); } $('#search-input')!.focus(); } });
   async function bootstrap() {
-    applyTheme(readTheme()); applySidebar(readSidebar()); render();
+    const initialTheme = readTheme(), initialPalette = readPalette();
+    applyTheme(initialTheme); applyPalette(initialPalette); applySidebar(readSidebar()); render();
     if (demo) {
-      s.settings = cached?.settings || {};
+      s.settings = cached?.settings || { theme: initialTheme, palette: initialPalette };
       if (!Array.isArray(s.settings.repositories) || !s.settings.repositories.length) {
         s.settings.repositories = [
           { id: 'ctgu-2026', name: '三峡大学 2026 题解库 (校内)', repo: 'ctguacm/2026', serverUrl: 'http://172.25.5.128:3000' },
@@ -481,7 +483,7 @@ import { createAlgorithmWorkspace } from '../algorithms/workspace.js';
       s.issues = examples.filter(record => record.kind === 'issue').map(record => ({ ...record, repo: s.permissions.repo }));
       s.local = normalizeLocal(cached?.local || { records: [examples[2]], favorites: [key(examples[1])], mastery: { [key(examples[1])]: 'reviewing' }, draft: {} });
       s.local.records = s.local.records.map(record => record.id === 'demo-local-3' && record.pid === 'dp_f' && record.rating == null ? { ...examples[2] } : record);
-      applyTheme(s.settings.theme || readTheme());
+      applyAppearance(s.settings);
       applyCodeSettings();
       renderRepoSelector();
     }

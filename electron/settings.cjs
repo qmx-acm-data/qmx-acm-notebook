@@ -16,7 +16,8 @@ function createSettingsStore({ read, repoParts, normalizeServerUrl, repositoryKe
         ],
         activeRepoId: 'qmx-official',
         clientId: exports.TEAM_CLIENT_ID,
-        theme: 'light'
+        theme: 'light',
+        palette: 'porcelain'
     };
     function normalizeRepositories(input, fallbackRepo = defaults.repo, fallbackServerUrl = defaults.serverUrl) {
         // Assertions preserve primitive property reads and the original failure paths.
@@ -81,6 +82,17 @@ function createSettingsStore({ read, repoParts, normalizeServerUrl, repositoryKe
         }
         return { repositories: validRepos, activeRepoId: active.id, repo: active.repo, serverUrl: active.serverUrl };
     }
+    function normalizePalette(value, fallback) {
+        switch (value) {
+            case 'porcelain':
+            case 'blue':
+            case 'violet':
+            case 'rose':
+            case 'amber':
+            case 'teal': return value;
+            default: return fallback;
+        }
+    }
     function settings() {
         // Do not guard null: the legacy reader throws on stored.repo after spreading it.
         const stored = read('settings.json', {});
@@ -90,6 +102,8 @@ function createSettingsStore({ read, repoParts, normalizeServerUrl, repositoryKe
         const normalized = normalizeRepositories({ ...raw, repo: requestedRepo, activeRepoId: requestedActiveId }, defaults.repo, defaults.serverUrl);
         const value = {
             ...raw,
+            theme: raw.theme === 'cards' ? 'light' : raw.theme,
+            palette: normalizePalette(stored.palette, stored.theme === 'cards' && stored.palette === undefined ? 'amber' : defaults.palette),
             repositories: normalized.repositories,
             activeRepoId: normalized.activeRepoId,
             repo: normalized.repo,

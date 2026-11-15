@@ -42,5 +42,5 @@
 .planner-editor .planner-deadline-trigger{justify-content:flex-start;min-height:39px;padding:9px 11px;font-size:13px}
 body[data-theme="dark"] .planner-deadline-time{color-scheme:dark}
 body[data-theme="dark"] .planner-deadline-popover{box-shadow:0 12px 44px #0007}
-body[data-theme="dark"] .planner-deadline-day[aria-pressed="true"],body[data-theme="dark"] .planner-deadline-footer .planner-deadline-confirm{border-color:#527e64;background:#527e64;color:#f3fff5}
+
 @media(max-width:420px){.planner-deadline-popover{width:296px;padding:13px}.planner-deadline-day{height:30px}}

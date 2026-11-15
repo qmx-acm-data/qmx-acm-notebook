@@ -70,7 +70,7 @@ body[data-theme="dark"] .alp-state-mark[data-status="learning"] { color: #10233e
 .alp-columns { display: grid; grid-template-columns: minmax(0, 1fr) minmax(290px, 35%); gap: 24px; padding: 20px; min-width: 0; align-items: start; background: var(--bg, #f4f7f4); }
 .alp-columns > .alp-route-scroll, .alp-columns > .alp-detail { border: 1px solid var(--line); border-radius: 10px; }
 .alp-columns > .alp-route-scroll { background-color: var(--surface, #fff); }
-.alp-route-scroll { padding: 25px 29px 35px; max-height: 810px; min-height: 520px; overflow-y: auto; overflow-x: hidden; overscroll-behavior: contain; scrollbar-width: thin; background: radial-gradient(color-mix(in srgb, var(--alp-dash) 35%, transparent) .7px, transparent .7px); background-size: 18px 18px; scroll-padding: 22px; }
+.alp-route-scroll { padding: 25px 29px 35px; max-height: 810px; min-height: 520px; overflow-y: auto; overflow-x: hidden; overscroll-behavior-y: auto; scrollbar-width: thin; background: radial-gradient(color-mix(in srgb, var(--alp-dash) 35%, transparent) .7px, transparent .7px); background-size: 18px 18px; scroll-padding: 22px; }
 .alp-route { max-width: 640px; position: relative; margin: 0 auto; min-width: 0; padding: 5px 0; }
 .alp-route::before { content: ''; position: absolute; top: 30px; bottom: 35px; left: 50%; width: 3px; background: var(--line); }
 .alp-checkpoint { position: relative; display: flex; align-items: center; gap: 12px; width: 91%; min-height: 87px; border: 1px dashed var(--alp-dash); border-radius: 11px; background: var(--surface, #fff); margin: 0 0 21px; padding: 15px; text-align: left; transition: border-color .16s, box-shadow .16s, background .16s; }

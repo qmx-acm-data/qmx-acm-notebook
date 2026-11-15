@@ -361,7 +361,7 @@ async function assertNoOverflow(page, label) {
     assert.equal(await page.locator('.alg-tree-item[tabindex="0"]').count(), 1, 'the tree has one keyboard tab stop');
 
     let measured = 0;
-    for (const theme of ['light', 'dark', 'cards']) {
+    for (const theme of ['light', 'dark']) {
       await page.locator('#theme-select').selectOption(theme);
       await page.waitForFunction(theme => document.body.dataset.theme === theme, theme);
       // All categories and all badges appear in unfiltered, fully expanded tree.
@@ -382,7 +382,7 @@ async function assertNoOverflow(page, label) {
       await assertNoOverflow(page, `${theme} 390px directory`);
       await page.setViewportSize({ width: 1440, height: 940 });
     }
-    console.log(`Algorithm text contrast: ${measured} computed-style samples >= 4.5 across light/dark/cards`);
+    console.log(`Algorithm text contrast: ${measured} computed-style samples >= 4.5 across light/dark`);
 
     for (const permission of [{ signedIn: false, push: false }, { signedIn: true, push: false }]) {
       const restricted = await openAlgorithms(browser, errors, permission);
