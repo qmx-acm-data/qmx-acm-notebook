@@ -89,7 +89,7 @@ function harness({ files = {}, account = { id: 42, login: 'alice' }, backend = {
   class FakeGitHub {
     constructor(options) { this.options = options; }
   }
-  for (const method of ['saveDocument', 'deleteDocument', 'deleteIssue', 'sync', 'profile', 'identity', 'saveAlgorithmNote', 'saveAlgorithmTopic', 'comment', 'comments', 'getTagCatalog', 'requestTag', 'getTagReview', 'reviewTag']) {
+  for (const method of ['saveDocument', 'deleteDocument', 'deleteIssue', 'sync', 'saveLearningGate', 'profile', 'identity', 'saveAlgorithmNote', 'saveAlgorithmTopic', 'comment', 'comments', 'getTagCatalog', 'requestTag', 'getTagReview', 'reviewTag']) {
     FakeGitHub.prototype[method] = async function (...args) {
       calls.push({ method, args: clone(args), options: clone(this.options) });
       if (backend[method]) return backend[method](...args, this.options);
@@ -155,7 +155,7 @@ function harness({ files = {}, account = { id: 42, login: 'alice' }, backend = {
       if (name === './external-links.cjs') return require(appPath('electron/external-links.cjs'));
       if (name === './ipc-handlers.cjs') return require(appPath('electron/ipc-handlers.cjs'));
       if (name === './session.cjs') return require(appPath('electron/session.cjs'));
-      if (name === './github.cjs') return { GitHub: FakeGitHub, normalizeServerUrl, repositoryKey, repoParts(repo) { if (!/^[\w.-]+\/[\w.-]+$/.test(repo || '')) throw new Error('Invalid repo'); return repo.split('/'); } };
+      if (name === './github.cjs') return { GitHub: FakeGitHub, normalizeServerUrl, repositoryKey, parseLearningGateContent: require(appPath('electron/github.cjs')).parseLearningGateContent, repoParts(repo) { if (!/^[\w.-]+\/[\w.-]+$/.test(repo || '')) throw new Error('Invalid repo'); return repo.split('/'); } };
       throw new Error(`Unexpected dependency ${name}`);
     }, __dirname: path.dirname(MAIN),
   });

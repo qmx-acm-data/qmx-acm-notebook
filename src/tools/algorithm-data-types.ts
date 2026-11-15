@@ -84,7 +84,22 @@ export interface CodeforcesRange {
   max: number | null;
 }
 
+export type LearningScope = 'core' | 'recommended' | 'elective' | 'route';
+export interface LearningSection {
+  id: string;
+  title: string;
+  scope: LearningScope;
+  routeId: string | null;
+  description: string;
+  completionCriteria: string[];
+  gateIds: string[];
+  prerequisites: { gateIds: string[]; topicIds: string[] };
+}
 export interface LearningGate extends Record<string, unknown> {
+  sectionId?: string;
+  sectionTitle?: string;
+  routeId?: string | null;
+  scope?: LearningScope;
   id: string;
   index: number;
   kind: string;
@@ -104,6 +119,10 @@ export interface LearningGate extends Record<string, unknown> {
 }
 
 export interface LearningStage extends Record<string, unknown> {
+  entryText?: string;
+  completionMode?: 'core' | 'routes';
+  sections?: LearningSection[];
+  completionCriteria?: string[];
   id: string;
   index: number;
   type?: string;
@@ -122,6 +141,11 @@ export interface LearningSummary {
   gates: number;
   optionalGates: number;
   topicCount: number;
+  sections?: number;
+  coreGates?: number;
+  recommendedGates?: number;
+  electiveGates?: number;
+  routeGates?: number;
 }
 
 export interface AlgorithmLearningData extends Record<string, unknown> {

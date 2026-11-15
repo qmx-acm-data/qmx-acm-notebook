@@ -4,7 +4,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const { app, BrowserWindow, ipcMain, shell, safeStorage, net } = require('electron');
 const fs = require("node:fs");
 const path = require("node:path");
-const { GitHub, repoParts, normalizeServerUrl, repositoryKey } = require('./github.cjs');
+const { GitHub, repoParts, normalizeServerUrl, repositoryKey, parseLearningGateContent } = require('./github.cjs');
 const { randomUUID } = require('node:crypto');
 const { spawn } = require('node:child_process');
 const { createUpdater } = require('./updater.cjs');
@@ -117,6 +117,23 @@ function ensureSource(key, generation = loginGeneration) {
     if (key !== sourceScope().sourceKey || generation !== loginGeneration)
         throw new Error('账号或仓库配置已改变，请重新同步');
 }
+function cachedLearningContents(value, scope = sourceScope()) {
+    if (!Array.isArray(value))
+        return [];
+    return value.flatMap((raw) => {
+        if (!raw || typeof raw !== 'object' || Array.isArray(raw))
+            return [];
+        const record = raw;
+        if (record.repo !== undefined && record.repo !== scope.repo || record.sourceKey !== undefined && record.sourceKey !== scope.sourceKey || record.serverUrl !== undefined && record.serverUrl !== scope.serverUrl)
+            return [];
+        try {
+            return [annotate(parseLearningGateContent({ ...record, schema: 1 }, String(record.gateId), record.sha), scope)];
+        }
+        catch {
+            return [];
+        }
+    });
+}
 function state(error) {
     const s = settings(), scope = sourceScope(s), cache = read('cache.json', {});
     const c = repoCache(cache, s.repo, s.serverUrl);
@@ -125,6 +142,7 @@ function state(error) {
         records: matching ? (c.records || []).filter(r => r.kind === 'document').map(r => annotate(r, scope)) : [],
         algorithmNotes: matching ? (c.algorithmNotes || []).map(r => annotate(r, scope)) : [],
         algorithmTopics: matching && Array.isArray(c.algorithmTopics) ? c.algorithmTopics.map(topic => annotate(topic, scope)) : [],
+        learningGateContents: matching ? cachedLearningContents(c.learningGateContents, scope) : [],
         issues: matching ? (c.issues || (c.records || []).filter(r => r.kind === 'issue')).map(r => annotate(r, scope)) : [],
         lastSync: matching ? c.lastSync : null,
         tagCatalog: matching && c.tagCatalog ? c.tagCatalog : require('../ui/tag-presets.js'),
@@ -219,6 +237,18 @@ function setup() {
         saveRepoCache(old, updated);
         return result.topic;
     }));
+    handle('saveLearningGate', data => writeOperation(async () => {
+        requireWritableSource();
+        const scope = sourceScope(), gen = loginGeneration;
+        const result = await client().saveLearningGate(data);
+        ensureSource(scope.sourceKey, gen);
+        const old = read('cache.json', {}), c = repoCache(old, scope.repo, scope.serverUrl);
+        const contents = cachedLearningContents(c.learningGateContents, scope).filter(content => content.gateId !== result.gateId);
+        const saved = annotate(result, scope);
+        contents.push(saved);
+        saveRepoCache(old, { ...(c.repo === scope.repo ? c : {}), repo: scope.repo, learningGateContents: contents }, scope);
+        return saved;
+    }));
     handle('refreshAccount', async () => {
         if (!token)
             throw new Error('请先登录 GitHub');
@@ -241,7 +271,7 @@ function setup() {
                 tagCatalogError = error.status === 401 ? '标签目录授权已失效，请重新登录' : '标签目录暂未更新，继续使用已缓存的标签';
             }
             ensureSource(scope.sourceKey, gen);
-            const updated = { ...result, repo, tagCatalog, tagCatalogError, algorithmNotes: Array.isArray(result.algorithmNotes) ? result.algorithmNotes : [], algorithmTopics: Array.isArray(result.algorithmTopics) ? result.algorithmTopics : [] };
+            const updated = { ...result, repo, tagCatalog, tagCatalogError, algorithmNotes: Array.isArray(result.algorithmNotes) ? result.algorithmNotes : [], algorithmTopics: Array.isArray(result.algorithmTopics) ? result.algorithmTopics : [], learningGateContents: cachedLearningContents(result.learningGateContents, scope) };
             saveRepoCache(old, updated);
             if (token) {
                 try {

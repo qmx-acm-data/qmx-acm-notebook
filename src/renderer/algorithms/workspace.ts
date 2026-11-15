@@ -56,8 +56,21 @@ export function createAlgorithmWorkspace(options: Options): Controller {
     if (algorithmMode === 'path') {
       learningController = LearningPath.render({ host, tree: getAlgorithmTree(), curriculum: global.QMX_ALGORITHM_LEARNING_PATH,
         progress: getLocal().learningPaths?.[learningProgressKey()] || { gates: {} }, progressKey: learningProgressKey(), account: getAccount(), notes: getAlgorithmNotes() as LearningPathNote[], canUpload: Boolean(getAccount() && getPermissions().push),
+        canManage: Boolean(getAccount() && getPermissions().admin === true), gateContents: options.getLearningGateContents(),
+        onSaveGate: async input => {
+          if (getBusy()) throw new Error('请等待当前操作完成');
+          if (!getAccount() || getPermissions().admin !== true) throw new Error('只有管理员可以修改公共关卡');
+          const source = repo(), owner = accountId();
+          setBusy(true);
+          try {
+            const saved = await options.saveLearningGate({ ...input, repo: source });
+            if (source !== repo() || owner !== accountId()) throw new Error('账号或仓库已改变，请重新同步');
+            options.setLearningGateContents([...options.getLearningGateContents().filter(content => content.gateId !== saved.gateId), saved]);
+            return saved;
+          } finally { setBusy(false); }
+        },
         onProgress: saveLearningProgress, onTopic: openLearningTopic,
-        onNote: openAlgorithmNoteDetail,
+        onNote: openAlgorithmNoteDetail, onExternal: options.openExternal,
         onUpload: id => { algorithmSelectedNode = id; openAlgorithmNoteEditor(); }, toast });
       return;
     }
@@ -133,6 +146,6 @@ export function createAlgorithmWorkspace(options: Options): Controller {
   function openAlgorithmNoteEditor() { if (!getAccount() || !getPermissions().push) { toast('请先登录具有仓库写入权限的 GitHub 账户'); return; } const form=$('#algorithm-note-form')!; form.reset(); const node=form.elements.nodeId as unknown as HTMLSelectElement; node.replaceChildren(...algorithmNodes().map(n=>{const o=element('option','',n.label);o.value=n.id;return o;})); node.value=algorithmSelectedNode!; form.elements.noteScope.value=getPermissions().admin ? 'public' : 'personal'; form.elements.noteScope.disabled=!getPermissions().admin; $('#algorithm-note-error')!.hidden=true; $('#algorithm-note-dialog')!.showModal(); }
   $('#algorithm-note-form')!.addEventListener('submit', async event => { event.preventDefault(); const form=event.currentTarget as AppSelectorMap['#algorithm-note-form'];if(getBusy())return;const data=Object.fromEntries(new FormData(form)) as Record<string, string>;const note={title:data.noteTitle,noteScope:getPermissions().admin ? form.elements.noteScope.value : 'personal',nodeId:data.nodeId,tags:String(data.noteTags||'').split(/[,，、]/).map(x=>x.trim()).filter(Boolean),body:data.body,featured:data.featured === 'on',clientId:uuid(),repo:repo()};setBusy(true);try{const result=await call('saveAlgorithmNote',note);setAlgorithmNotes([...getAlgorithmNotes().filter(x=>x.path!==result.path),result]);$('#algorithm-note-dialog')!.close();render();toast('算法笔记已保存')}catch(error){$('#algorithm-note-error')!.textContent=errorMessage(error);$('#algorithm-note-error')!.hidden=false}finally{setBusy(false)}});
   function setSelectedNode(id: string | null) { algorithmSelectedNode = id; }
-  function resetRepository() { setAlgorithmNotes([]); setAlgorithmTopics([]); setAlgorithmTree(AlgorithmDirectory.hydrate(global.QMX_ALGORITHM_TREE, [])); }
+  function resetRepository() { setAlgorithmNotes([]); options.setLearningGateContents([]); setAlgorithmTopics([]); setAlgorithmTree(AlgorithmDirectory.hydrate(global.QMX_ALGORITHM_TREE, [])); }
   return { get algorithmSelectedNode() { return algorithmSelectedNode; }, get algorithmMode() { return algorithmMode; }, get algorithmPendingTopic() { return algorithmPendingTopic; }, get learningController() { return learningController; }, get algorithmTopicRequest() { return algorithmTopicRequest; }, setSelectedNode, algorithmNodes, learningProgressKey, setAlgorithmMode, openLearningTopic, saveLearningProgress, renderAlgorithmNotes, updateAlgorithmTopicKind, openAlgorithmTopicEditor, isMineNote, openAlgorithmNoteDetail, openAlgorithmNoteEditor, resetRepository };
 }

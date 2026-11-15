@@ -6,7 +6,22 @@ export interface LearningPathRange {
   max?: number;
 }
 
+export type LearningPathScope = 'core' | 'recommended' | 'elective' | 'route';
+export interface LearningPathSection {
+  id: string;
+  title: string;
+  scope: LearningPathScope;
+  routeId: string | null;
+  description: string;
+  completionCriteria: string[];
+  gateIds: string[];
+  prerequisites?: { gateIds?: string[]; topicIds?: string[] };
+}
 export interface LearningPathGate {
+  sectionId?: string;
+  sectionTitle?: string;
+  routeId?: string | null;
+  scope?: LearningPathScope;
   id: string;
   title?: string;
   kind?: string;
@@ -19,10 +34,14 @@ export interface LearningPathGate {
   goals?: string[];
   topicIds?: string[];
   threadGateIds?: string[];
+  practiceLists?: { title: string; url: string }[];
   prerequisites?: { gateIds?: string[]; topicIds?: string[] };
 }
 
 export interface LearningPathStage {
+  sections?: LearningPathSection[];
+  entryText?: string;
+  completionMode?: 'core' | 'routes';
   id: string;
   index?: number;
   title?: string;
@@ -36,6 +55,8 @@ export interface LearningPathStage {
 }
 
 export interface LearningPathCurriculum {
+  revision?: number;
+  legacyGates?: { id: string; title: string; stageTitle: string }[];
   id?: string;
   stages?: LearningPathStage[];
 }
@@ -67,6 +88,8 @@ export interface LearningPathGateProgress {
   [key: string]: unknown;
   status?: unknown;
   problemUrl?: unknown;
+  practiceUrl?: unknown;
+  tasks?: unknown;
   reflection?: unknown;
   updatedAt?: unknown;
 }
@@ -95,10 +118,14 @@ export interface LearningPathOptions {
   account?: { id?: unknown } | null;
   notes?: LearningPathNote[];
   canUpload?: boolean;
+  canManage?: boolean;
+  gateContents?: import('../src/shared/models/learning-content').LearningGateContent[];
+  onSaveGate?: (input: Omit<import('../src/shared/models/learning-content').SaveLearningGateInput, 'repo'>) => Promise<import('../src/shared/models/learning-content').LearningGateContent>;
   onProgress?: (progress: LearningPathSavedProgress) => unknown;
   onTopic?: (id: string) => unknown;
   onNote?: (note: LearningPathNote, context: { gateId: string }) => unknown;
   onUpload?: (id: string) => unknown;
+  onExternal?: (url: string) => unknown;
   toast?: (message: string) => unknown;
 }
 

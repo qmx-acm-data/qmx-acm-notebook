@@ -1,3 +1,4 @@
+import type { LearningGateContent, SaveLearningGateInput } from '../models/learning-content';
 import type { BootstrapPayload } from '../models/bootstrap';
 import type { LocalDataSnapshot, LocalUpdate } from '../models/records';
 import type { PlannerActionArgs, PlannerSnapshot } from '../models/planner';
@@ -41,6 +42,7 @@ export interface ServiceMethods {
   propose(record: DocumentWriteInput): Promise<SavedDocument>;
   saveDocument(record: DocumentWriteInput): Promise<SavedDocument>;
   saveAlgorithmTopic(data: AlgorithmTopicInput): Promise<AlgorithmTopic>;
+  saveLearningGate(data: SaveLearningGateInput): Promise<LearningGateContent>;
   saveAlgorithmNote(record: AlgorithmNoteInput): Promise<SavedDocument>;
   deleteDocument(record: DeleteDocumentInput): Promise<DeletedDocument>;
   deleteIssue(record: IssueInput): Promise<DeletedIssue>;

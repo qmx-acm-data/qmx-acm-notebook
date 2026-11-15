@@ -1,3 +1,4 @@
+import type { LearningGateContent } from './learning-content';
 import type { LocalDataSnapshot } from './records';
 import type { AuthStatus } from './auth';
 import type { PlannerSnapshot } from './planner';
@@ -12,6 +13,7 @@ export interface BootstrapPayload {
   records: CachedDocument[];
   algorithmNotes: CachedEntry[];
   algorithmTopics: CachedEntry[];
+  learningGateContents: LearningGateContent[];
   issues: CachedEntry[];
   local: LocalDataSnapshot;
   lastSync: unknown;
