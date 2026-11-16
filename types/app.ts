@@ -35,6 +35,7 @@ export interface AppPayload {
   [key: string]: unknown;
   records?: AppRecord[]; algorithmNotes?: AppRecord[]; algorithmTopics?: import('../src/shared/models/algorithm-directory').AlgorithmDirectoryTopic[];
   learningGateContents?: import('../src/shared/models/learning-content').LearningGateContent[];
+  learningCurriculum?: import('../src/shared/models/learning-curriculum').LearningCurriculumDocument | null;
   issues?: AppRecord[]; local?: unknown; settings?: AppSettings; account?: AppAccount | null;
   permissions?: { repo?: string; push?: boolean; admin?: boolean }; lastSync?: string | null;
   tagCatalog?: AppTagCatalog; authStatus?: { status: string }; appVersion?: string;
@@ -45,6 +46,7 @@ export interface AppState {
   view: string; libraryScope: string; records: AppRecord[]; algorithmNotes: AppRecord[];
   algorithmTopics?: import('../src/shared/models/algorithm-directory').AlgorithmDirectoryTopic[];
   learningGateContents?: import('../src/shared/models/learning-content').LearningGateContent[];
+  learningCurriculum?: import('../src/shared/models/learning-curriculum').LearningCurriculumDocument | null;
   algorithmTree: import('../src/shared/models/algorithm-directory').AlgorithmDirectoryNode;
   local: AppLocal; settings: AppSettings; account: AppAccount | null; authStatus: { status: string };
   permissions: { repo?: string; push?: boolean; admin?: boolean }; issues: AppRecord[];

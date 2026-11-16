@@ -1,3 +1,4 @@
+import type { LearningCurriculumDocument } from './learning-curriculum';
 import type { LearningGateContent } from './learning-content';
 import type { LocalDataSnapshot } from './records';
 import type { AuthStatus } from './auth';
@@ -14,6 +15,7 @@ export interface BootstrapPayload {
   algorithmNotes: CachedEntry[];
   algorithmTopics: CachedEntry[];
   learningGateContents: LearningGateContent[];
+  learningCurriculum: LearningCurriculumDocument | null;
   issues: CachedEntry[];
   local: LocalDataSnapshot;
   lastSync: unknown;

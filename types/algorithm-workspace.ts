@@ -2,6 +2,9 @@
 export interface AlgorithmWorkspaceOptions {
   getAlgorithmNotes(): import('./app').AppState['algorithmNotes'];
   setAlgorithmNotes(notes: import('./app').AppState['algorithmNotes']): void;
+  getLearningCurriculum(): import('../src/shared/models/learning-curriculum').LearningCurriculumDocument | null;
+  setLearningCurriculum(document: import('../src/shared/models/learning-curriculum').LearningCurriculumDocument | null): void;
+  saveLearningCurriculum(input: import('../src/shared/models/learning-curriculum').SaveLearningCurriculumInput): Promise<import('../src/shared/models/learning-curriculum').LearningCurriculumDocument>;
   getLearningGateContents(): import('../src/shared/models/learning-content').LearningGateContent[];
   setLearningGateContents(contents: import('../src/shared/models/learning-content').LearningGateContent[]): void;
   saveLearningGate(input: import('../src/shared/models/learning-content').SaveLearningGateInput): Promise<import('../src/shared/models/learning-content').LearningGateContent>;

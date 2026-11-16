@@ -34,7 +34,11 @@ var __importStar = (this && this.__importStar) || (function () {
     };
 })();
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.documentContent = exports.issueBody = exports.issueRecord = exports.parseAlgorithmNote = exports.parseDocument = exports.identify = exports.GitHub = exports.LEARNING_GATES_PREFIX = void 0;
+exports.documentContent = exports.issueBody = exports.issueRecord = exports.parseAlgorithmNote = exports.parseDocument = exports.identify = exports.GitHub = exports.LEARNING_CURRICULUM_PATH = exports.LEARNING_GATES_PREFIX = void 0;
+exports.learningCurriculumGateIds = learningCurriculumGateIds;
+exports.validateLearningCurriculumLayout = validateLearningCurriculumLayout;
+exports.parseLearningCurriculumContent = parseLearningCurriculumContent;
+exports.parseLearningCurriculumText = parseLearningCurriculumText;
 exports.parseLearningGateContent = parseLearningGateContent;
 exports.parseLearningGateText = parseLearningGateText;
 exports.normalizeServerUrl = normalizeServerUrl;
@@ -50,6 +54,100 @@ exports.LEARNING_GATES_PREFIX = 'algorithms/learning-path/gates/';
 // Relative to emitted electron/github.cjs; only the validated formal curriculum may define identities.
 const learningCurriculum = require('../ui/algorithm-learning-path-data.js');
 const learningGateIds = new Set(learningCurriculum.stages.flatMap(stage => stage.gates.map(gate => gate.id)));
+const customGateId = /^custom-[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/;
+exports.LEARNING_CURRICULUM_PATH = 'algorithms/learning-path/curriculum.json';
+const builtinTopics = require('../ui/algorithm-tree.js');
+const { builtinIndex: curriculumTopicIndex } = require('./algorithm-topics.cjs');
+function learningCurriculumGateIds(document) {
+    return document ? new Set(document.layout.stages.flatMap(stage => stage.gates.map(gate => gate.id))) : new Set(learningGateIds);
+}
+function validateLearningCurriculumLayout(value, topics = []) {
+    const fields = learningFields(value);
+    if (!Array.isArray(fields.stages) || fields.stages.length !== learningCurriculum.stages.length)
+        throw new Error('公共课程必须包含全部正式章节');
+    const seenStages = new Set(), seenGates = new Set();
+    const topicIds = new Set(curriculumTopicIndex(builtinTopics, [...topics]).keys());
+    const stages = fields.stages.map(raw => {
+        const stage = learningFields(raw), id = learningText(stage.id, '章节标识', 200);
+        const builtin = learningCurriculum.stages.find(item => item.id === id);
+        if (!builtin || seenStages.has(id))
+            throw new Error('公共课程章节标识无效或重复');
+        seenStages.add(id);
+        if (!Array.isArray(stage.gates) || !stage.gates.length || stage.gates.length > 100)
+            throw new Error('每章关卡须为1-100项');
+        const gates = stage.gates.map(rawGate => {
+            const gate = learningFields(rawGate), gateId = learningText(gate.id, '关卡标识', 200);
+            const builtinGate = learningGateIds.has(gateId);
+            if ((!builtinGate && !customGateId.test(gateId)) || seenGates.has(gateId))
+                throw new Error('公共课程关卡标识无效或重复');
+            if (builtinGate && !builtin.gates.some(item => item.id === gateId))
+                throw new Error('正式关卡不能移动到其他章节');
+            seenGates.add(gateId);
+            if (seenGates.size > 1000)
+                throw new Error('公共课程关卡总数不能超过1000');
+            const sectionId = learningText(gate.sectionId, '学习段标识', 200), section = builtin.sections.find(item => item.id === sectionId);
+            if (!section)
+                throw new Error('学习段必须属于当前正式章节');
+            if (gate.kind !== 'learning' && gate.kind !== 'mixed' && gate.kind !== 'challenge')
+                throw new Error('关卡类型无效');
+            if (gate.scope !== 'core' && gate.scope !== 'recommended' && gate.scope !== 'elective' && gate.scope !== 'route')
+                throw new Error('关卡范围无效');
+            if (gate.scope === 'route' && (section.scope !== 'route' || !section.routeId))
+                throw new Error('路线关卡必须属于正式路线学习段');
+            const clean = { id: gateId, title: learningText(gate.title, '关卡标题', 160), kind: gate.kind, sectionId, scope: gate.scope };
+            if (builtinGate) {
+                if (gate.description !== undefined || gate.goals !== undefined || gate.topicIds !== undefined)
+                    throw new Error('正式关卡布局不能覆盖学习内容');
+            }
+            else {
+                clean.description = learningText(gate.description, '关卡说明', 6000, true);
+                if (!Array.isArray(gate.goals) || !gate.goals.length || gate.goals.length > 20)
+                    throw new Error('学习目标须为1-20项');
+                clean.goals = gate.goals.map(goal => learningText(goal, '学习目标', 500));
+                if (clean.goals.join('\n').length > 6000)
+                    throw new Error('学习目标总长度不能超过6000字符');
+                if (!Array.isArray(gate.topicIds) || gate.topicIds.length > 20)
+                    throw new Error('关联算法须为0-20项');
+                clean.topicIds = gate.topicIds.map(topic => {
+                    const topicId = learningText(topic, '关联算法标识', 200);
+                    if (!topicIds.has(topicId))
+                        throw new Error('关联算法标识不存在');
+                    return topicId;
+                });
+            }
+            return clean;
+        });
+        return { id, title: learningText(stage.title, '章节标题', 160), gates };
+    });
+    return { stages };
+}
+function parseLearningCurriculumContent(value, sha, topics = []) {
+    const fields = learningFields(value), author = learningFields(fields.author);
+    if (fields.schema !== 1)
+        throw new Error('公共课程版本不受支持');
+    if (typeof sha !== 'string' || !/^[A-Za-z0-9_-]{1,200}$/.test(sha))
+        throw new Error('公共课程缺少有效SHA');
+    if (!Number.isSafeInteger(author.id) || author.id < 1)
+        throw new Error('公共课程缺少可信作者');
+    if (typeof fields.updatedAt !== 'string' || !Number.isFinite(Date.parse(fields.updatedAt)))
+        throw new Error('公共课程缺少有效更新时间');
+    const result = { layout: validateLearningCurriculumLayout(fields.layout, topics), sha, updatedAt: fields.updatedAt, author: { id: author.id, login: learningText(author.login, '作者', 100) } };
+    if (node_buffer_1.Buffer.byteLength(JSON.stringify({ schema: 1, layout: result.layout, updatedAt: result.updatedAt, author: result.author }), 'utf8') > 1000000)
+        throw new Error('公共课程文件过大');
+    return result;
+}
+function parseLearningCurriculumText(text, sha, topics = []) {
+    if (typeof text !== 'string' || node_buffer_1.Buffer.byteLength(text, 'utf8') > 1000000)
+        throw new Error('公共课程文件过大');
+    let value;
+    try {
+        value = JSON.parse(text);
+    }
+    catch {
+        throw new Error('公共课程JSON无法解析');
+    }
+    return parseLearningCurriculumContent(value, sha, topics);
+}
 function learningFields(value) {
     if (!value || typeof value !== 'object' || Array.isArray(value))
         throw new Error('公共关卡内容格式错误');
@@ -66,7 +164,7 @@ function learningText(value, name, max, multiline = false) {
 function learningContentFields(value) {
     const fields = learningFields(value);
     const gateId = learningText(fields.gateId, '关卡标识', 200);
-    if (!learningGateIds.has(gateId))
+    if (!learningGateIds.has(gateId) && !customGateId.test(gateId))
         throw new Error('关卡标识不在正式学习路径中');
     const description = learningText(fields.description, '关卡说明', 6000, true);
     if (!Array.isArray(fields.goals) || !fields.goals.length || fields.goals.length > 20)
@@ -310,6 +408,44 @@ class GitHub {
             await this.request(this.contentEndpoint(target.path), { method: 'PUT', body: JSON.stringify({ message: `取消精选算法笔记：${meta.title || target.path}`, content: node_buffer_1.Buffer.from(text).toString('base64'), branch, sha: current.sha }) });
         }
     }
+    async currentLearningCurriculum(branch) {
+        const current = await this.currentDocument(exports.LEARNING_CURRICULUM_PATH, branch);
+        if (!current)
+            return null;
+        const additions = await this.currentDocument(TOPICS_PATH, branch);
+        return parseLearningCurriculumText(current.text, current.sha, additions ? parseTopics(additions.text) : []);
+    }
+    async saveLearningCurriculum(input) {
+        const fields = learningFields(input);
+        if (typeof fields.repo !== 'string')
+            throw new Error('公共课程必须指定当前仓库');
+        this.checkScope(fields);
+        if (fields.sha !== null && (typeof fields.sha !== 'string' || !/^[A-Za-z0-9_-]{1,200}$/.test(fields.sha)))
+            throw new Error('请显式提供新增null或编辑SHA');
+        if (!this.token)
+            throw new Error('请先登录GitHub');
+        const { user, branch } = await this.writeContext();
+        const { data: repository } = await this.request(`/repos/${this.repo}`);
+        if (repository.permissions?.admin !== true)
+            throw new Error('只有仓库管理员（admin）可以修改公共课程');
+        if (!Number.isSafeInteger(user.id) || user.id < 1 || typeof user.login !== 'string')
+            throw new Error('无法确认GitHub登录用户身份');
+        const current = await this.currentDocument(exports.LEARNING_CURRICULUM_PATH, branch);
+        if (fields.sha === null ? current !== null : !current || current.sha !== fields.sha)
+            throw new Error('公共课程SHA冲突，请先同步后重新编辑');
+        const additions = await this.currentDocument(TOPICS_PATH, branch);
+        const topics = additions ? parseTopics(additions.text) : [];
+        const provisional = parseLearningCurriculumContent({ schema: 1, layout: fields.layout, updatedAt: new Date().toISOString(), author: { id: user.id, login: user.login } }, fields.sha || 'pending', topics);
+        const payload = { schema: 1, layout: provisional.layout, updatedAt: provisional.updatedAt, author: provisional.author };
+        const text = JSON.stringify(payload, null, 2) + '\n';
+        if (node_buffer_1.Buffer.byteLength(text, 'utf8') > 1000000)
+            throw new Error('公共课程文件过大');
+        const { data } = await this.request(this.contentEndpoint(exports.LEARNING_CURRICULUM_PATH), { method: 'PUT', body: JSON.stringify({ message: '更新公共学习课程布局', content: node_buffer_1.Buffer.from(text).toString('base64'), branch, ...(fields.sha === null ? {} : { sha: fields.sha }) }) });
+        const sha = data.content?.sha;
+        if (typeof sha !== 'string' || !/^[A-Za-z0-9_-]{1,200}$/.test(sha))
+            throw new Error('公共课程写入结果未知，请先同步核实');
+        return { ...provisional, sha, repo: this.repo, serverUrl: this.serverUrl, sourceKey: repositoryKey(this.repo, this.serverUrl) };
+    }
     async saveLearningGate(input) {
         const fields = learningFields(input);
         if (typeof fields.repo !== 'string')
@@ -326,6 +462,9 @@ class GitHub {
             throw new Error('只有仓库管理员（admin）可以修改公共关卡');
         if (!Number.isSafeInteger(user.id) || user.id < 1 || typeof user.login !== 'string')
             throw new Error('无法确认GitHub登录用户身份');
+        const curriculum = await this.currentLearningCurriculum(branch);
+        if (!learningCurriculumGateIds(curriculum).has(clean.gateId))
+            throw new Error('关卡不在当前已发布公共课程中，请先同步');
         const path = `${exports.LEARNING_GATES_PREFIX}${clean.gateId}.json`, current = await this.currentDocument(path, branch);
         if (fields.sha === null ? current !== null : !current || current.sha !== fields.sha)
             throw new Error('公共关卡SHA冲突，请先同步后重新编辑');
@@ -577,15 +716,33 @@ class GitHub {
                 return this.recordResult(d.path, text, d.sha, branch);
             })));
         }
+        const readPublicBlob = async (item) => {
+            const sha = item.sha;
+            if (typeof sha !== 'string' || !/^[A-Za-z0-9_-]{1,200}$/.test(sha))
+                throw new Error('公共课程缺少有效SHA');
+            let text = blobs[sha];
+            if (text === undefined) {
+                const { data } = await this.request(`/repos/${this.repo}/git/blobs/${sha}`);
+                const blob = data;
+                if (typeof blob.content !== 'string' || (blob.encoding !== 'base64' && !(this.serverUrl && !blob.encoding)))
+                    throw new Error('Git 服务未返回完整公共课程文件');
+                text = node_buffer_1.Buffer.from(blob.content, 'base64').toString('utf8');
+                blobs[sha] = text;
+            }
+            return text;
+        };
         const additions = tree.tree.find(item => item.type === 'blob' && item.path === TOPICS_PATH);
-        const algorithmTopics = additions ? parseTopics((await this.currentDocument(TOPICS_PATH, branch))?.text).map(topic => ({ ...topic, ...scope })) : [];
-        const gateFiles = tree.tree.filter(item => item.type === 'blob' && typeof item.path === 'string' && item.path.startsWith(exports.LEARNING_GATES_PREFIX) && item.path.endsWith('.json'));
-        if (gateFiles.length > learningGateIds.size)
-            throw new Error('公共关卡文件数量超过正式课程范围');
+        const algorithmTopics = additions ? parseTopics(await readPublicBlob(additions)).map(topic => ({ ...topic, ...scope })) : [];
+        const curriculumFile = tree.tree.find(item => item.type === 'blob' && item.path === exports.LEARNING_CURRICULUM_PATH);
+        const curriculum = curriculumFile ? { ...parseLearningCurriculumText(await readPublicBlob(curriculumFile), curriculumFile.sha, algorithmTopics), ...scope } : null;
+        const activeGateIds = learningCurriculumGateIds(curriculum);
+        const gateFiles = tree.tree.filter(item => item.type === 'blob' && typeof item.path === 'string' && item.path.startsWith(exports.LEARNING_GATES_PREFIX) && item.path.endsWith('.json') && activeGateIds.has(item.path.slice(exports.LEARNING_GATES_PREFIX.length, -5)));
+        if (gateFiles.length > activeGateIds.size)
+            throw new Error('公共关卡文件数量超过当前课程范围');
         const learningGateContents = [], seenGates = new Set();
         for (const item of gateFiles) {
             const gateId = item.path.slice(exports.LEARNING_GATES_PREFIX.length, -5);
-            if (!learningGateIds.has(gateId) || seenGates.has(gateId))
+            if (!activeGateIds.has(gateId) || seenGates.has(gateId))
                 throw new Error('公共关卡文件标识无效或重复');
             seenGates.add(gateId);
             const sha = item.sha;
@@ -604,11 +761,11 @@ class GitHub {
             learningGateContents.push({ ...parseLearningGateText(text, gateId, sha), ...scope });
         }
         return {
-            algorithmTopics, learningGateContents,
+            algorithmTopics, learningGateContents, learningCurriculum: curriculum,
             records: records.filter(r => r.kind === 'document'),
             algorithmNotes: records.filter(r => r.kind === 'algorithm-note'),
             issues: issues.filter(x => !x.pull_request && !/<!--\s*qmx-tag-request\s+[\s\S]*?-->/i.test(String(x.body || ''))).map(x => ({ ...issueRecord(x), ...scope })),
-            blobs: Object.fromEntries([...docs, ...gateFiles].map(d => [d.sha, blobs[d.sha]])), branch, lastSync: new Date().toISOString(),
+            blobs: Object.fromEntries([...docs, ...gateFiles, ...(curriculumFile ? [curriculumFile] : []), ...(additions ? [additions] : [])].map(d => [d.sha, blobs[d.sha]])), branch, lastSync: new Date().toISOString(),
         };
     }
     // Legacy entry points now publish Markdown directly instead of opening Issues or PRs.
