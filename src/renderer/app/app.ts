@@ -12,6 +12,7 @@ import { createNotebookIPC } from '../ipc/boundary.js';
 import { createNormalizer } from '../records/local.js';
 'use strict';
 import { createFilters } from '../library/filters.js';
+import { recordAuthorName } from '../library/authors.js';
 import { createEditor } from '../library/editor.js';
 import { createLibraryReader } from '../library/reader.js';
 import { createSettings } from '../account/settings.js';
@@ -103,6 +104,12 @@ import { createAlgorithmWorkspace } from '../algorithms/workspace.js';
   function records() { return [...s.records.filter(record => record.kind === 'document' && sameRepo(record)), ...s.issues.filter(record => record.kind === 'issue' && sameRepo(record)), ...s.local.records.filter(record => record.kind === 'local' && visibleLocal(record))]; }
   function isLocal(record: AppRecord) { return record.kind === 'local'; }
   function isMine(record: AppRecord) { return isLocal(record) ? visibleLocal(record) : record.kind === 'document' && accountId() !== null && String(record.authorId) === accountId(); }
+  function isOwnSolution(record: AppRecord) {
+    if (isLocal(record)) return visibleLocal(record);
+    // Account IDs belong to GitHub; the same number on a self-hosted source
+    // does not identify the signed-in user. Keep this view separate from edit permissions.
+    return record.kind === 'document' && sameRepo(record) && repoSource().startsWith('https://api.github.com|') && isMine(record);
+  }
   function canEditRemote(record: AppRecord | null | undefined) { return record?.kind === 'document' && isMine(record) && sameRepo(record) && s.permissions.push === true; }
   function favorite(record: AppRecord) { return reader.favorite(record); }
   function mastery(record: AppRecord) { return reader.mastery(record); }
@@ -199,7 +206,7 @@ import { createAlgorithmWorkspace } from '../algorithms/workspace.js';
     accountButton.title = account ? 'GitHub 账户' : '登录 GitHub 账户';
     if (account) accountButton.removeAttribute('aria-label'); else accountButton.setAttribute('aria-label', accountButton.title);
   }
-  const filters = createFilters({ getRecords: records, getView: () => s.view, getScope: () => s.libraryScope, getAccount: () => s.account, getTagCatalog: () => s.tagCatalog, getBusy: () => s.busy, favorite, mastery, isLocal, authorName, render });
+  const filters = createFilters({ getRecords: records, getView: () => s.view, getScope: () => s.libraryScope, getTagCatalog: () => s.tagCatalog, getBusy: () => s.busy, favorite, mastery, isLocal, isOwnSolution, recordAuthorName: record => recordAuthorName(record, s.account), render });
   const { facets, facetNames, platformNames, luoguLevels, luoguTones, facetValue, fillFacetOptions, refreshFilters, tagGroups, fillTagOptions, openTagPicker, closeTagPicker, renderEditorTags, ranges, updateFacetCounts, setDifficultyPlatform, clearDifficulty, filteredRecords, clearFilters, colorRatingInput, colorLuoguSelection } = filters;
   async function openTagDialog() {
     const select = $('#request-tag-category')!; select.replaceChildren();
@@ -256,7 +263,7 @@ import { createAlgorithmWorkspace } from '../algorithms/workspace.js';
     $('#library-scope-controls')!.hidden = s.view !== 'public';
     $('#library-public-button')!.setAttribute('aria-pressed', String(s.libraryScope !== 'local'));
     $('#library-local-button')!.setAttribute('aria-pressed', String(s.libraryScope === 'local'));
-    $('#library-local-count')!.textContent = (s.local.records.filter(record => record.kind === 'local' && visibleLocal(record)).length) as unknown as string;
+    $('#library-local-count')!.textContent = (all.filter(isOwnSolution).length) as unknown as string;
     const items = filteredRecords(); $('#result-count')!.textContent = (items.length) as unknown as string;
     $('.list-heading > span:last-child')!.textContent = facets.tags.size ? '标签命中数 ↓ · 相关度 / 更新时间' : $('#search-input')!.value.trim() ? '匹配程度 ↓' : '最近更新 ↓';
     reader.renderLibrary(items);

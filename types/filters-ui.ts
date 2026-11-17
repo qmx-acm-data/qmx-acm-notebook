@@ -12,13 +12,13 @@ export interface FiltersUIOptions {
   getRecords(): FiltersRecord[];
   getView(): import('./app').AppState['view'];
   getScope(): import('./app').AppState['libraryScope'];
-  getAccount(): import('./app').AppState['account'];
   getTagCatalog(): import('./app').AppState['tagCatalog'];
   getBusy(): boolean;
   favorite(record: FiltersRecord): boolean;
   mastery(record: FiltersRecord): string;
   isLocal(record: FiltersRecord): boolean;
-  authorName(author: unknown): string;
+  isOwnSolution(record: FiltersRecord): boolean;
+  recordAuthorName(record: FiltersRecord): string;
   render(): void;
 }
 

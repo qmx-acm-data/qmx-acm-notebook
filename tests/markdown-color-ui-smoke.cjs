@@ -50,6 +50,7 @@ $\href{javascript:alert(1)}{unsafe}$ $\htmlStyle{position:fixed;color:red}{unsaf
     }, source);
     await page.goto(pathToFileURL(appPath('ui/index.html')).href);
     await page.locator('.rail-nav-item[data-view="public"]').click();
+    await page.locator('.record-card .card-title').click();
     const reader = page.locator('#detail-panel .markdown-body');
     await reader.locator('.katex').first().waitFor();
     assert.equal(await reader.locator('.notebook-math-error').count(), 0);

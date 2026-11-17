@@ -365,14 +365,14 @@
       if (!target.contains(event.relatedTarget) && tipTarget === target) dismissTip();
     });
   }
-  function element(tag, className, text3) {
+  function element(tag, className, text4) {
     const node2 = document.createElement(tag);
     if (className) node2.className = className;
-    if (text3 !== void 0) node2.textContent = String(text3);
+    if (text4 !== void 0) node2.textContent = String(text4);
     return node2;
   }
-  function button(text3, className, action2) {
-    const node2 = element("button", className, text3);
+  function button(text4, className, action2) {
+    const node2 = element("button", className, text4);
     node2.type = "button";
     node2.addEventListener("click", action2);
     return node2;
@@ -399,8 +399,8 @@
     return Number.isNaN(date.getTime()) ? "时间未知" : date.toLocaleString("zh-CN", { month: "2-digit", day: "2-digit", hour: "2-digit", minute: "2-digit" });
   }
   function errorText(error) {
-    const text3 = typeof error === "string" ? error : error?.message;
-    return String(text3 || "操作失败，请稍后重试。");
+    const text4 = typeof error === "string" ? error : error?.message;
+    return String(text4 || "操作失败，请稍后重试。");
   }
   function safeURL(value, code, profileOnly = false) {
     try {
@@ -413,10 +413,10 @@
       return null;
     }
   }
-  function external(text3, url, code, className) {
+  function external(text4, url, code, className) {
     const safe = safeURL(url, code);
-    if (!safe || typeof bridge?.openExternal !== "function") return element("span", className, text3);
-    const link = element("a", className, text3);
+    if (!safe || typeof bridge?.openExternal !== "function") return element("span", className, text4);
+    const link = element("a", className, text4);
     link.href = safe;
     link.addEventListener("click", async (event) => {
       event.preventDefault();
@@ -509,10 +509,10 @@
     panel.append(metrics);
     panel.append(element("p", "platform-sum-note", "解题数为各平台已解题数相加，同一道题跨平台不去重；未知数据不计为 0。"));
   }
-  function svgElement(tag, attributes = {}, text3) {
+  function svgElement(tag, attributes = {}, text4) {
     const node2 = document.createElementNS("http://www.w3.org/2000/svg", tag);
     for (const [name, value] of Object.entries(attributes)) node2.setAttribute(name, String(value));
-    if (text3 !== void 0) node2.textContent = String(text3);
+    if (text4 !== void 0) node2.textContent = String(text4);
     return node2;
   }
   function drawRatingChart(code) {
@@ -685,7 +685,7 @@
     months.replaceChildren(...Array.from({ length: weeks }, (_, week) => element("span", "", monthLabels.get(week) || "")));
     scroll.classList.add(`platform-heatmap-weeks-${weeks}`);
     const weekdays = element("div", "platform-heatmap-weekdays");
-    for (const text3 of ["一", "", "三", "", "五", "", "日"]) weekdays.append(element("span", "", text3));
+    for (const text4 of ["一", "", "三", "", "五", "", "日"]) weekdays.append(element("span", "", text4));
     const calendar = element("div", "platform-heatmap-calendar");
     calendar.append(weekdays, grid);
     scroll.append(months, calendar);
@@ -1031,14 +1031,14 @@
     const actual = [date.getFullYear(), date.getMonth(), date.getDate(), date.getHours(), date.getMinutes(), date.getSeconds(), date.getMilliseconds()];
     return !Number.isNaN(date.getTime()) && actual.every((part, index) => part === expected[index]);
   }
-  function node(tag, className, text3) {
+  function node(tag, className, text4) {
     const result = document.createElement(tag);
     if (className) result.className = className;
-    if (text3 !== void 0) result.textContent = text3;
+    if (text4 !== void 0) result.textContent = text4;
     return result;
   }
-  function action(text3, className, callback, label) {
-    const result = node("button", className, text3);
+  function action(text4, className, callback, label) {
+    const result = node("button", className, text4);
     result.type = "button";
     if (label) result.setAttribute("aria-label", label);
     result.addEventListener("click", callback);
@@ -1090,8 +1090,8 @@
     calendar.setAttribute("role", "group");
     calendar.setAttribute("aria-labelledby", month.id);
     const shortcuts = node("div", "planner-deadline-shortcuts");
-    for (const [text3, offset] of [["今天", 0], ["明天", 1], ["+7天", 7]]) {
-      shortcuts.append(action(text3, "planner-deadline-shortcut", () => {
+    for (const [text4, offset] of [["今天", 0], ["明天", 1], ["+7天", 7]]) {
+      shortcuts.append(action(text4, "planner-deadline-shortcut", () => {
         const date = /* @__PURE__ */ new Date();
         date.setHours(12, 0, 0, 0);
         date.setDate(date.getDate() + offset);
@@ -1344,14 +1344,14 @@
   var completedOpen = { problems: false, tasks: false };
   var deleteTarget = "";
   var lastFocus;
-  var el = (tag, className, text3) => {
+  var el = (tag, className, text4) => {
     const node2 = document.createElement(tag);
     if (className) node2.className = className;
-    if (text3 !== void 0) node2.textContent = String(text3);
+    if (text4 !== void 0) node2.textContent = String(text4);
     return node2;
   };
-  function button2(text3, className, action2) {
-    const node2 = el("button", className, text3);
+  function button2(text4, className, action2) {
+    const node2 = el("button", className, text4);
     node2.type = "button";
     node2.addEventListener("click", action2);
     return node2;
@@ -1848,10 +1848,10 @@
   function create({ demo, getSettings, setSettings, getView, getLoading, canRefresh, call, writeDemo, toast, errorMessage: errorMessage2, openExternal }) {
     const $ = (selector, root2 = document) => root2.querySelector(selector);
     const $$ = (selector, root2 = document) => Array.from(root2.querySelectorAll(selector));
-    function element4(tag, className, text3) {
+    function element4(tag, className, text4) {
       const node2 = document.createElement(tag);
       if (className) node2.className = className;
-      if (text3 !== void 0) node2.textContent = String(text3);
+      if (text4 !== void 0) node2.textContent = String(text4);
       return node2;
     }
     function append(parent, ...children) {
@@ -2120,12 +2120,12 @@
           else contestRestoreSelection.delete(entry2.key);
           updateContestRestoreCount();
         });
-        const text3 = element4("span", "contest-restore-option-copy");
+        const text4 = element4("span", "contest-restore-option-copy");
         const details = entry2.start !== null && entry2.end !== null && entry2.end > entry2.start ? `${contestTime(entry2.startTime)} · 赛时 ${contestDuration(entry2.end - entry2.start).replace(/ 0秒$/, "").trim()}${entry2.end <= Date.now() ? " · 已结束" : ""}` : "暂无赛程详情（可恢复隐藏偏好）";
         const heading = append(element4("span", "contest-restore-option-heading"), contestTypeBadge(entry2.platform.id, entry2), element4("strong", "", `${entry2.platform.name} · ${entry2.title || `比赛 ${entry2.id}`}`));
-        append(text3, heading, element4("small", "", details));
+        append(text4, heading, element4("small", "", details));
         label.title = `${entry2.platform.name} · ${entry2.title || `比赛 ${entry2.id}`}`;
-        append(label, checkbox, text3);
+        append(label, checkbox, text4);
         options.append(label);
       }
       if (!contestRestoreEntries.length) options.append(element4("p", "contest-empty", "当前缓存中找不到已隐藏的比赛，刷新赛程后再试。"));
@@ -2240,9 +2240,9 @@
       if (getUpdateCapability()?.supported === false) $("#update-notice").textContent = getUpdateCapability().reason;
       const latest = update.latestVersion ? ` ${update.latestVersion}` : "";
       const labels = { checking: "正在检查更新…", available: `发现新版本${latest}，可点击检查更新进行升级。`, downloading: `正在下载新版本${latest}…`, ready: `新版本${latest}的签名和文件已校验，正在准备更新。`, installing: "本地记录已备份，退出后将备份并替换程序文件，完成后自动重启。", error: "更新失败，请点击检查更新重试。" };
-      let text3 = labels[update.phase] || (update.available === false && !!update.message ? `当前版本 ${getAppVersion() || update.currentVersion || "未知"}，暂无可用更新。` : "可随时检查更新，无需登录 GitHub。");
+      let text4 = labels[update.phase] || (update.available === false && !!update.message ? `当前版本 ${getAppVersion() || update.currentVersion || "未知"}，暂无可用更新。` : "可随时检查更新，无需登录 GitHub。");
       if (update.phase === "checking" || update.phase === "available" || update.phase === "downloading" || update.phase === "ready" || update.phase === "installing" || update.phase === "error" || update.available === false) {
-        if (update.message) text3 += ` ${update.message}`;
+        if (update.message) text4 += ` ${update.message}`;
       }
       const progress = $("#update-progress");
       progress.hidden = update.phase !== "downloading";
@@ -2250,18 +2250,18 @@
       if (percent === null) progress.removeAttribute("value");
       else {
         progress.value = Math.min(100, Math.max(0, percent));
-        if (!progress.hidden) text3 += ` ${Math.round(progress.value)}%`;
+        if (!progress.hidden) text4 += ` ${Math.round(progress.value)}%`;
       }
-      if (!progress.hidden && Number.isFinite(update.downloaded) && Number.isFinite(update.total) && update.total > 0) text3 += `（${(update.downloaded / 1048576).toFixed(1)} / ${(update.total / 1048576).toFixed(1)} MB）`;
+      if (!progress.hidden && Number.isFinite(update.downloaded) && Number.isFinite(update.total) && update.total > 0) text4 += `（${(update.downloaded / 1048576).toFixed(1)} / ${(update.total / 1048576).toFixed(1)} MB）`;
       if (update.downloadKind === "delta" && Number.isFinite(update.total) && Number.isFinite(update.fullSize) && update.fullSize > update.total) {
-        text3 += ` 差分下载 ${(update.total / 1048576).toFixed(2)} MB，完整包 ${(update.fullSize / 1048576).toFixed(1)} MB。`;
+        text4 += ` 差分下载 ${(update.total / 1048576).toFixed(2)} MB，完整包 ${(update.fullSize / 1048576).toFixed(1)} MB。`;
       }
-      if (update.downloadKind === "delta" && update.deltaSteps > 1) text3 += ` 连续应用 ${update.deltaSteps} 个补丁，完成后统一安装。`;
+      if (update.downloadKind === "delta" && update.deltaSteps > 1) text4 += ` 连续应用 ${update.deltaSteps} 个补丁，完成后统一安装。`;
       if (update.downloadKind === "full" && ["available", "downloading", "ready"].includes(update.phase)) {
         const reasons = { "no-patch-path": "未找到从当前版本到新版的完整补丁链", "base-mismatch": "本机应用文件与补丁基础包不匹配", "metadata-unavailable": "差分清单或历史记录暂不可用", "patch-failed": "补丁下载、重建或校验失败" };
-        if (reasons[update.deltaReason]) text3 += ` 使用完整包：${reasons[update.deltaReason]}。`;
+        if (reasons[update.deltaReason]) text4 += ` 使用完整包：${reasons[update.deltaReason]}。`;
       }
-      $("#update-status").textContent = text3;
+      $("#update-status").textContent = text4;
       $("#update-status").classList.toggle("update-error", update.phase === "error");
       $("#check-update-button").textContent = updateReady && update.phase === "error" ? "重试安装" : "检查更新";
     }
@@ -2394,10 +2394,10 @@
   var CodeBlocks = { create: create3 };
   function create3({ toast, errorMessage: errorMessage2 }) {
     const $$ = (selector, root2 = document) => Array.from(root2.querySelectorAll(selector));
-    function element4(tag, className, text3) {
+    function element4(tag, className, text4) {
       const node2 = document.createElement(tag);
       if (className) node2.className = className;
-      if (text3 !== void 0) node2.textContent = String(text3);
+      if (text4 !== void 0) node2.textContent = String(text4);
       return node2;
     }
     function append(parent, ...children) {
@@ -2445,9 +2445,9 @@
       pre.scrollTop = Math.min(preTop, Math.max(0, pre.scrollHeight - pre.clientHeight));
       pre.scrollLeft = preLeft;
     }
-    function legacyCopyText(text3) {
+    function legacyCopyText(text4) {
       const area = element4("textarea", "clipboard-helper");
-      area.value = text3;
+      area.value = text4;
       area.setAttribute("readonly", "");
       area.setAttribute("aria-hidden", "true");
       document.body.append(area);
@@ -2462,17 +2462,17 @@
       return ok;
     }
     async function copyCodeBlock(pre, actionButton) {
-      const text3 = codeBlockText(pre);
-      if (!text3) {
+      const text4 = codeBlockText(pre);
+      if (!text4) {
         toast("代码块为空");
         return;
       }
       let copied = false;
       try {
-        await navigator.clipboard.writeText(text3);
+        await navigator.clipboard.writeText(text4);
         copied = true;
       } catch (_) {
-        copied = legacyCopyText(text3);
+        copied = legacyCopyText(text4);
       }
       clearTimeout(actionButton._codeResetTimer);
       if (copied) {
@@ -2504,7 +2504,7 @@
         toast(language ? `暂不支持 ${language} 代码的格式化` : "未能识别代码语言，无法格式化");
         return;
       }
-      const format = typeof window.notebook?.formatCode === "function" ? (text3, lang) => createNotebookIPC(window.notebook).formatCode(text3, lang) : typeof window.formatCode === "function" ? (text3, lang) => Promise.resolve(window.formatCode(text3, lang)) : null;
+      const format = typeof window.notebook?.formatCode === "function" ? (text4, lang) => createNotebookIPC(window.notebook).formatCode(text4, lang) : typeof window.formatCode === "function" ? (text4, lang) => Promise.resolve(window.formatCode(text4, lang)) : null;
       if (!format) {
         toast("格式化功能尚未启用");
         return;
@@ -2645,7 +2645,7 @@
     const aligns = cap[2].replace(tokenizer.rules.other.tableAlignChars, "").split("|");
     if (headers.length !== aligns.length) return;
     const align = aligns.map((value) => tokenizer.rules.other.tableAlignRight.test(value) ? "right" : tokenizer.rules.other.tableAlignCenter.test(value) ? "center" : tokenizer.rules.other.tableAlignLeft.test(value) ? "left" : null);
-    const cells = (values, header) => values.map((text3, index) => ({ text: text3, tokens: tokenizer.lexer.inline(text3), header, align: align[index] }));
+    const cells = (values, header) => values.map((text4, index) => ({ text: text4, tokens: tokenizer.lexer.inline(text4), header, align: align[index] }));
     const rows = cap[3]?.trim() ? cap[3].replace(tokenizer.rules.other.tableRowBlankLine, "").split("\n") : [];
     return { type: "table", raw: cap[0], header: cells(headers, true), align, rows: rows.map((row2) => cells(splitCells(row2, headers.length, formula2), false)) };
   }
@@ -2745,15 +2745,15 @@
     } else end = closing(source, right, left.length);
     if (end === void 0 || end < left.length) return;
     const raw = source.slice(0, end + right.length);
-    let text3 = environment ? raw : source.slice(left.length, end);
-    if (!text3.trim()) return;
+    let text4 = environment ? raw : source.slice(left.length, end);
+    if (!text4.trim()) return;
     const aliases = { displaymath: "", math: "" };
-    const wrapper = environment || /^\s*\\begin\{([A-Za-z]+\*?)\}([\s\S]*)\\end\{\1\}\s*$/.exec(text3)?.[1];
+    const wrapper = environment || /^\s*\\begin\{([A-Za-z]+\*?)\}([\s\S]*)\\end\{\1\}\s*$/.exec(text4)?.[1];
     if (Object.prototype.hasOwnProperty.call(aliases, wrapper)) {
-      const inner = environment ? source.slice(left.length, end) : text3.replace(/^\s*\\begin\{[^}]+\}/, "").replace(/\\end\{[^}]+\}\s*$/, "");
-      text3 = aliases[wrapper] ? `\\begin{${aliases[wrapper]}}${inner}\\end{${aliases[wrapper]}}` : inner;
+      const inner = environment ? source.slice(left.length, end) : text4.replace(/^\s*\\begin\{[^}]+\}/, "").replace(/\\end\{[^}]+\}\s*$/, "");
+      text4 = aliases[wrapper] ? `\\begin{${aliases[wrapper]}}${inner}\\end{${aliases[wrapper]}}` : inner;
     }
-    return { raw, text: text3, display };
+    return { raw, text: text4, display };
   }
   function mathToken(source, block) {
     const indent = block ? /^ {0,3}/.exec(source)[0].length : 0;
@@ -2817,14 +2817,14 @@
     let macros = {};
     for (const node2 of container.querySelectorAll(".notebook-math-source")) {
       if (node2.classList.contains("notebook-math-rendered") || node2.classList.contains("notebook-math-error") || node2.closest("pre,code,kbd,samp,script,style,textarea")) continue;
-      const text3 = node2.textContent;
+      const text4 = node2.textContent;
       try {
         const nextMacros = structuredClone(macros);
-        katex.render(text3, node2, { displayMode: node2.dataset.mathDisplay === "true", throwOnError: true, trust: false, strict: "ignore", maxExpand: 1e3, maxSize: 20, macros: nextMacros, globalGroup: true, output: "htmlAndMathml" });
+        katex.render(text4, node2, { displayMode: node2.dataset.mathDisplay === "true", throwOnError: true, trust: false, strict: "ignore", maxExpand: 1e3, maxSize: 20, macros: nextMacros, globalGroup: true, output: "htmlAndMathml" });
         macros = nextMacros;
         node2.classList.add("notebook-math-rendered");
       } catch (error) {
-        node2.replaceChildren(container.ownerDocument.createTextNode(text3));
+        node2.replaceChildren(container.ownerDocument.createTextNode(text4));
         node2.classList.add("notebook-math-error");
         node2.setAttribute("role", "note");
         node2.title = `公式语法或命令不受支持：${String(error.message || error).slice(0, 500)}`;
@@ -2835,11 +2835,11 @@
 
   // src/renderer/reading/markdown-color.ts
   function color(value, document2) {
-    const text3 = String(value || "").trim();
-    if (!/^(?:#[\da-f]{3,4}|#[\da-f]{6}|#[\da-f]{8}|[a-z]+|(?:rgb|rgba|hsl|hsla)\([\d\s.,%+\-/degturnrad]+\))$/i.test(text3)) return "";
-    if (/^(?:inherit|initial|unset|revert|revert-layer|currentcolor)$/i.test(text3)) return "";
+    const text4 = String(value || "").trim();
+    if (!/^(?:#[\da-f]{3,4}|#[\da-f]{6}|#[\da-f]{8}|[a-z]+|(?:rgb|rgba|hsl|hsla)\([\d\s.,%+\-/degturnrad]+\))$/i.test(text4)) return "";
+    if (/^(?:inherit|initial|unset|revert|revert-layer|currentcolor)$/i.test(text4)) return "";
     const style = document2.createElement("span").style;
-    style.color = text3;
+    style.color = text4;
     return style.color;
   }
   function foreground(node2, document2) {
@@ -3019,13 +3019,13 @@
   }
 
   // src/renderer/library/filters.ts
-  function createFilters({ getRecords, getView, getScope, getAccount, getTagCatalog, getBusy, favorite, mastery, isLocal, authorName: authorName2, render: render6 }) {
+  function createFilters({ getRecords, getView, getScope, getTagCatalog, getBusy, favorite, mastery, isLocal, isOwnSolution, recordAuthorName: recordAuthorName2, render: render6 }) {
     const $ = (selector, root2 = document) => root2.querySelector(selector);
     const $$ = (selector, root2 = document) => Array.from(root2.querySelectorAll(selector));
-    function element4(tag, className, text3) {
+    function element4(tag, className, text4) {
       const node2 = document.createElement(tag);
       if (className) node2.className = className;
-      if (text3 !== void 0) node2.textContent = String(text3);
+      if (text4 !== void 0) node2.textContent = String(text4);
       return node2;
     }
     function append(parent, ...children) {
@@ -3043,7 +3043,7 @@
     const facetNames = { platform: "平台", tags: "标签", authors: "作者", native: "难度" };
     const platformNames = { CF: "Codeforces", LG: "洛谷", AT: "AtCoder", NC: "牛客", LC: "LeetCode", Oth: "其他平台" };
     function facetValue(record, group) {
-      return group === "platform" ? Search.normalizePlatform(record.platform) : group === "authors" ? authorName2(record.author || (isLocal(record) ? getAccount()?.login || "我（本地）" : "")) : "";
+      return group === "platform" ? Search.normalizePlatform(record.platform) : group === "authors" ? recordAuthorName2(record) : "";
     }
     function fillFacetOptions(container, group, values, search = "") {
       container.replaceChildren();
@@ -3118,31 +3118,65 @@
       if (historical.length) groups.push({ id: "history", name: "历史标签", tags: historical, historical: true });
       return groups;
     }
+    const tagOptionsViews = /* @__PURE__ */ new WeakMap();
     function fillTagOptions(container, selected2, query, onChange2) {
-      container.replaceChildren();
-      const counts = /* @__PURE__ */ new Map();
-      getRecords().forEach((r) => new Set(r.tags || []).forEach((t) => counts.set(t, (counts.get(t) || 0) + 1)));
-      tagGroups([...selected2]).forEach((group) => {
-        const matching = group.tags.filter((t) => `${group.name} ${t}`.toLowerCase().includes(query.toLowerCase()));
-        if (!matching.length) return;
-        container.append(element4("strong", "tag-category-heading", group.name));
-        matching.forEach((value) => {
-          const label = element4("label", "facet-option");
-          const input3 = element4("input");
-          input3.type = "checkbox";
-          input3.value = value;
-          input3.checked = selected2.has(value);
-          input3.disabled = getBusy();
-          input3.addEventListener("change", () => {
-            input3.checked ? selected2.add(value) : selected2.delete(value);
-            $$('input[type="checkbox"]', container).filter((n) => n.value === value).forEach((n) => n.checked = input3.checked);
-            onChange2();
+      let view = tagOptionsViews.get(container);
+      if (!view || view.selected !== selected2) {
+        const counts = /* @__PURE__ */ new Map();
+        getRecords().forEach((r) => new Set(r.tags || []).forEach((t) => counts.set(t, (counts.get(t) || 0) + 1)));
+        const inputs = /* @__PURE__ */ new Map();
+        const fragment = document.createDocumentFragment();
+        const groups = tagGroups([...selected2]).map((group) => {
+          const heading = element4("strong", "tag-category-heading", group.name);
+          fragment.append(heading);
+          const options = group.tags.map((value) => {
+            const label = element4("label", "facet-option"), input3 = element4("input");
+            input3.type = "checkbox";
+            input3.value = value;
+            input3.checked = selected2.has(value);
+            input3.disabled = getBusy();
+            const duplicates = inputs.get(value) || [];
+            duplicates.push(input3);
+            inputs.set(value, duplicates);
+            append(label, input3, element4("span", "", value + (group.historical ? " · 历史" : "")), element4("small", "", counts.get(value) || 0));
+            fragment.append(label);
+            return { label, input: input3, search: `${group.name} ${value}`.toLowerCase() };
           });
-          append(label, input3, element4("span", "", value + (group.historical ? " · 历史" : "")), element4("small", "", counts.get(value) || 0));
-          container.append(label);
+          return { heading, options };
         });
+        const empty = element4("p", "facet-help", "没有匹配的标签");
+        fragment.append(empty);
+        view = { selected: selected2, onChange: onChange2, groups, inputs, empty };
+        tagOptionsViews.set(container, view);
+        container.onchange = (event) => {
+          const current = tagOptionsViews.get(container), input3 = event.target;
+          if (!current || !(input3 instanceof HTMLInputElement) || input3.type !== "checkbox") return;
+          if (getBusy()) {
+            input3.checked = current.selected.has(input3.value);
+            return;
+          }
+          input3.checked ? current.selected.add(input3.value) : current.selected.delete(input3.value);
+          current.inputs.get(input3.value)?.forEach((node2) => {
+            node2.checked = input3.checked;
+          });
+          current.onChange();
+        };
+        container.replaceChildren(fragment);
+      }
+      view.onChange = onChange2;
+      const search = query.toLowerCase();
+      let matches = 0;
+      view.groups.forEach((group) => {
+        let groupMatches = 0;
+        group.options.forEach((option) => {
+          const visible = option.search.includes(search);
+          if (option.label.hidden !== !visible) option.label.hidden = !visible;
+          if (visible) groupMatches++;
+        });
+        if (group.heading.hidden !== !groupMatches) group.heading.hidden = !groupMatches;
+        matches += groupMatches;
       });
-      if (!container.children.length) container.append(element4("p", "facet-help", "没有匹配的标签"));
+      view.empty.hidden = matches > 0;
     }
     let tagPickerContext = null;
     function openTagPicker(mode) {
@@ -3154,6 +3188,7 @@
       $("#tag-picker-search").value = "";
       fillTagOptions($("#tag-picker-dialog-options"), tagPickerContext.selected, "", () => {
       });
+      document.body.classList.add("tag-picker-open");
       $("#tag-picker-dialog").showModal();
       $("#tag-picker-search").focus();
     }
@@ -3162,6 +3197,7 @@
       const context = tagPickerContext;
       tagPickerContext = null;
       $("#tag-picker-dialog").close();
+      document.body.classList.remove("tag-picker-open");
       if (!apply) return;
       if (context.mode === "filter") {
         facets.tags.clear();
@@ -3245,7 +3281,7 @@
       const scores = /* @__PURE__ */ new Map();
       const difficultyActive = [min, max, lgMin, lgMax].some((v) => v !== null) || facets.native.size > 0;
       return getRecords().filter((record) => {
-        if (getView() === "public" && record.kind !== (getScope() === "local" ? "local" : "document")) return false;
+        if (getView() === "public" && (getScope() === "local" ? !isOwnSolution(record) : record.kind !== "document")) return false;
         if (getView() === "favorites" && !favorite(record)) return false;
         if (facets.platform.size && !facets.platform.has(facetValue(record, "platform"))) return false;
         if (facets.tags.size && !(record.tags || []).some((tag) => facets.tags.has(String(tag)))) return false;
@@ -3288,14 +3324,64 @@
     }, openTagPicker, closeTagPicker, renderEditorTags, ranges, updateFacetCounts, setDifficultyPlatform, clearDifficulty, filteredRecords, clearFilters, luoguLevels: luoguLevels2, luoguTones, colorRatingInput, colorLuoguSelection };
   }
 
+  // src/renderer/library/authors.ts
+  function text2(value) {
+    return typeof value === "string" ? value.trim() : "";
+  }
+  function identity(value) {
+    const id = typeof value === "number" || typeof value === "string" ? String(value) : "";
+    return /^[1-9]\d{0,15}$/.test(id) && Number.isSafeInteger(Number(id)) ? id : null;
+  }
+  function githubSource(record) {
+    if (record.kind === "local") return true;
+    if (record.sourceKey) return record.sourceKey.startsWith("https://api.github.com|");
+    return !record.serverUrl || /^https:\/\/(?:api\.)?github\.com\/?$/i.test(record.serverUrl);
+  }
+  function recordAuthor(record, account) {
+    const value = record.author && typeof record.author === "object" ? record.author : null;
+    const explicit = text2(record.author) || text2(value?.name) || text2(value?.login);
+    const owner = record.kind === "local" ? identity(record.ownerId) : identity(record.authorId);
+    const currentOwner = githubSource(record) && owner !== null && owner === identity(account?.id);
+    const accountLogin = currentOwner ? text2(account?.login) : "";
+    const name = explicit || accountLogin || (record.kind === "local" ? "本地学习者" : "匿名学习者");
+    if (!githubSource(record)) return { name, avatarUrl: null, avatarData: null };
+    const id = record.kind === "local" ? identity(record.ownerId) : identity(record.authorId);
+    const login = text2(value?.login) || (record.kind === "local" ? accountLogin : text2(record.author));
+    const validLogin = /^[A-Za-z0-9](?:[A-Za-z0-9-]{0,37}[A-Za-z0-9])?$/.test(login) && !login.includes("--") && !["unknown", "anonymous"].includes(login.toLowerCase());
+    const avatarUrl = id ? `https://avatars.githubusercontent.com/u/${id}?s=64` : record.kind !== "local" && validLogin ? `https://avatars.githubusercontent.com/${encodeURIComponent(login)}?s=64` : null;
+    const avatarData = currentOwner && typeof account?.avatarData === "string" && /^data:image\/(?:png|jpeg|gif|webp);base64,[A-Za-z0-9+/=]+$/i.test(account.avatarData) ? account.avatarData : null;
+    return { name, avatarUrl, avatarData };
+  }
+  function recordAuthorName(record, account) {
+    return recordAuthor(record, account).name;
+  }
+  function authorAvatar(author) {
+    const avatar = document.createElement("span");
+    avatar.className = "mini-avatar";
+    avatar.setAttribute("aria-hidden", "true");
+    avatar.textContent = author.name.slice(0, 1);
+    const source = author.avatarData || author.avatarUrl;
+    if (source) {
+      const image = document.createElement("img");
+      image.alt = "";
+      image.referrerPolicy = "no-referrer";
+      image.loading = "lazy";
+      image.decoding = "async";
+      image.addEventListener("error", () => image.remove(), { once: true });
+      image.src = source;
+      avatar.append(image);
+    }
+    return avatar;
+  }
+
   // src/renderer/library/editor.ts
   function createEditor(options) {
     const { demo, getEditor, setEditor, getLocal, setLocal, getRecords, setRecords, getIssues, setIssues, getComments, getSelected, setSelected, getBusy, setBusy, getAccount, getPermissions, accountId, repo, key, uuid, isLocal, visibleLocal, canEditRemote, sameRepo, records, platformCode, colorRatingInput, renderEditorTags, cancelDraftSave, persistLocal, call, refreshFilters, navigate, render: render6, openDetail, toast, errorMessage: errorMessage2 } = options;
     const $ = (selector) => document.querySelector(selector);
-    function element4(tag, className, text3) {
+    function element4(tag, className, text4) {
       const node2 = document.createElement(tag);
       if (className) node2.className = className;
-      if (text3 !== void 0) node2.textContent = String(text3);
+      if (text4 !== void 0) node2.textContent = String(text4);
       return node2;
     }
     function formDraft() {
@@ -3305,6 +3391,7 @@
     function fillForm(draft) {
       const form = $("#submit-form");
       form.reset();
+      for (const name of ["tags", "rating", "difficulty", "luoguDifficulty"]) form.elements[name].value = "";
       Object.entries(draft || {}).forEach(([name, value]) => {
         const input3 = form.elements.namedItem(name);
         if (input3) input3.value = String(value ?? "");
@@ -3568,6 +3655,10 @@
 ${data.reason.trim()}` : "", data.trick.trim() ? `## Trick
 ${data.trick.trim()}` : ""].filter(Boolean).join("\n\n") : data.body;
       const record = { ...existing || {}, ...getEditor().sourceProblemId ? { sourceProblemId: getEditor().sourceProblemId, sourceProblemRepo: getEditor().sourceProblemRepo } : {}, clientId, ownerId: existing && !remote ? existing.ownerId : existing?.ownerId ?? accountId(), title: data.title.trim() || data.pid.trim() || "未命名错题", pid: data.platform === "CF" && data.pid.trim() ? `CF${data.pid.trim().replace(/^CF/i, "")}` : data.pid.trim(), platform: data.platform, rating: data.rating.trim() ? Number(data.rating) : null, difficulty: data.difficulty.trim(), luoguDifficulty: data.platform === "LG" ? "" : data.luoguDifficulty.trim(), tags: data.tags.split(/[,，、]/).map((tag) => tag.trim()).filter(Boolean), problemUrl: parsed.href, url: parsed.href, body, updatedAt: (/* @__PURE__ */ new Date()).toISOString() };
+      if (!remote && !record.author) {
+        const ownerIsCurrent = record.ownerId != null && String(record.ownerId) === accountId();
+        record.author = ownerIsCurrent ? getAccount()?.login || "本地学习者" : "本地学习者";
+      }
       setBusy(true);
       $("#submit-error").hidden = true;
       let wroteRemote = false;
@@ -3602,7 +3693,8 @@ ${data.trick.trim()}` : ""].filter(Boolean).join("\n\n") : data.body;
           } else throw error;
         }
         const savedRecord = records().find((item) => key(item) === getSelected());
-        form.reset();
+        fillForm(void 0);
+        renderEditorTags();
         $("#submit-dialog").close();
         setEditor(null);
         refreshFilters();
@@ -3700,10 +3792,10 @@ ${data.trick.trim()}` : ""].filter(Boolean).join("\n\n") : data.body;
     const { demo, stateLabels, getLocal, setLocal, getAccount, getPermissions, getView, getLibraryScope, getSelected, setSelected, getComments, getBusy, setBusy, getLoading, getError, getRecords, key, isLocal, visibleLocal, canEditRemote, sameRepo, platformCode, authorName: authorName2, date, quotaBlocked, renderMarkdown, persistLocal, call, render: render6, clearFilters, openSubmit, openLocalSolution, deleteRecord, deleteDiscussion, openExternal, toast, errorMessage: errorMessage2 } = options;
     const $ = (selector, root2 = document) => root2.querySelector(selector);
     const $$ = (selector, root2 = document) => Array.from(root2.querySelectorAll(selector));
-    function element4(tag, className, text3) {
+    function element4(tag, className, text4) {
       const node2 = document.createElement(tag);
       if (className) node2.className = className;
-      if (text3 !== void 0) node2.textContent = String(text3);
+      if (text4 !== void 0) node2.textContent = String(text4);
       return node2;
     }
     function append(parent, ...children) {
@@ -3738,10 +3830,10 @@ ${data.trick.trim()}` : ""].filter(Boolean).join("\n\n") : data.body;
       return element4("span", `difficulty-badge tone-${info.tone}`, `洛谷 · ${record.luoguDifficulty}`);
     }
     function difficultyBadge(record) {
-      const { tone, rank, label: text3 } = Search.difficulty(record);
-      if (!text3) return null;
+      const { tone, rank, label: text4 } = Search.difficulty(record);
+      if (!text4) return null;
       const code = Search.normalizePlatform(record.platform);
-      const label = element4("span", `difficulty-badge tone-${tone}${rank ? ` rank-${rank}` : ""}`, text3);
+      const label = element4("span", `difficulty-badge tone-${tone}${rank ? ` rank-${rank}` : ""}`, text4);
       label.title = `${demo ? "演示值 · " : ""}${code === "CF" ? "Codeforces 原生 Rating 色阶" : code === "LG" ? "洛谷原生难度名称 · 颜色仅用于界面展示" : "平台原始数值 / 难度"}，不跨平台换算`;
       return label;
     }
@@ -3766,7 +3858,7 @@ ${data.trick.trim()}` : ""].filter(Boolean).join("\n\n") : data.body;
     function openDetail(record) {
       if (focusedDetail) return;
       setSelected(key(record));
-      readerPosition = { window: global2.scrollY, list: $("#record-list").scrollTop, panel: $("#detail-panel").scrollTop, focus: document.activeElement };
+      readerPosition = { window: global2.scrollY, list: $("#record-list").scrollTop, horizontal: $("#record-list").scrollLeft, panel: $("#detail-panel").scrollTop, focus: document.activeElement };
       focusedDetail = true;
       document.body.classList.add("reading-detail");
       render6();
@@ -3785,6 +3877,7 @@ ${data.trick.trim()}` : ""].filter(Boolean).join("\n\n") : data.body;
       render6();
       if (readerPosition) {
         $("#record-list").scrollTop = readerPosition.list;
+        $("#record-list").scrollLeft = readerPosition.horizontal;
         $("#detail-panel").scrollTop = readerPosition.panel;
         global2.scrollTo(0, readerPosition.window);
         const card = $$(".record-card").find((n) => n.dataset.key === getSelected());
@@ -3805,8 +3898,21 @@ ${data.trick.trim()}` : ""].filter(Boolean).join("\n\n") : data.body;
       if (!items.some((record2) => key(record2) === getSelected())) setSelected(items[0] ? key(items[0]) : null);
       const list2 = $("#record-list");
       list2.replaceChildren();
+      const publicList = getView() === "public";
+      $("#library-panel").classList.toggle("public-problem-list", publicList);
+      if (publicList) {
+        const heading = element4("div", "problem-list-columns");
+        heading.setAttribute("aria-hidden", "true");
+        ["平台", "题号", "算法标签", "题目", "难度", "作者", "更新"].forEach((label) => heading.append(element4("span", "", label)));
+        list2.append(heading);
+      }
+      const fragment = document.createDocumentFragment();
       items.forEach((record2) => {
-        const card = button5("", `record-card${key(record2) === getSelected() ? " selected" : ""}`, () => {
+        const card = button5("", `record-card${!publicList && key(record2) === getSelected() ? " selected" : ""}`, () => {
+          if (publicList) {
+            openDetail(record2);
+            return;
+          }
           setSelected(key(record2));
           $$(".record-card").forEach((n) => {
             const active3 = n.dataset.key === getSelected();
@@ -3816,8 +3922,8 @@ ${data.trick.trim()}` : ""].filter(Boolean).join("\n\n") : data.body;
           renderDetail(record2);
         });
         card.dataset.key = key(record2);
-        card.title = "单击预览，双击打开详情；Enter 打开详情";
-        card.setAttribute("aria-pressed", key(record2) === getSelected() ? "true" : "false");
+        card.title = publicList ? "点击题目阅读题解；返回后保留列表位置" : "单击预览，双击打开详情；Enter 打开详情";
+        if (!publicList) card.setAttribute("aria-pressed", key(record2) === getSelected() ? "true" : "false");
         card.addEventListener("dblclick", () => openDetail(record2));
         card.addEventListener("keydown", (event) => {
           if (event.key === "Enter") {
@@ -3825,10 +3931,46 @@ ${data.trick.trim()}` : ""].filter(Boolean).join("\n\n") : data.body;
             openDetail(record2);
           }
         });
-        append(card, append(element4("div", "card-meta"), platformLabel(record2), element4("span", "", record2.pid || `#${record2.number || "本地"}`), difficultyBadge(record2), supplementaryDifficultyBadge(record2), badge(record2)), element4("h2", "card-title", record2.title || "未命名错题"), tags(record2), append(element4("div", "card-footer"), element4("span", `card-state ${mastery(record2)}`, stateLabels[mastery(record2)]), element4("span", "", `${favorite(record2) ? "★ · " : ""}${date(record2.updatedAt)}`)));
-        list2.append(card);
+        if (publicList) {
+          card.classList.add("problem-list-row");
+          const platform = platformLabel(record2);
+          const identity2 = element4("span", "problem-id", record2.pid || "—");
+          const algorithms = tags(record2);
+          algorithms.classList.add("problem-algorithms");
+          algorithms.title = (record2.tags || []).join(" · ");
+          const problem = append(element4("div", "problem-summary"), element4("h2", "card-title", record2.title || "未命名错题"));
+          const difficulty2 = element4("span", "problem-difficulty");
+          const native = difficultyBadge(record2);
+          if (native) difficulty2.append(native);
+          if (platformCode(record2.platform) !== "LG" && record2.luoguDifficulty) difficulty2.append(supplementaryDifficultyBadge(record2));
+          if (!difficulty2.childElementCount) difficulty2.append(element4("span", "problem-difficulty-empty", "未标注"));
+          const author = recordAuthor(record2, getAccount());
+          const authorCell = append(element4("span", "problem-author"), authorAvatar(author), element4("span", "record-author-name", author.name));
+          authorCell.title = author.name;
+          authorCell.setAttribute("aria-label", `作者 ${author.name}`);
+          const updated = element4("time", "problem-updated", date(record2.updatedAt));
+          const timestamp = new Date(record2.updatedAt);
+          if (Number.isFinite(timestamp.getTime())) updated.dateTime = timestamp.toISOString();
+          append(card, platform, identity2, algorithms, problem, difficulty2, authorCell, updated);
+          if (favorite(record2)) {
+            const mark = element4("span", "problem-favorite", "★");
+            mark.setAttribute("aria-label", "已收藏");
+            problem.querySelector("h2").append(mark);
+          }
+        } else {
+          const author = recordAuthor(record2, getAccount());
+          const authorLine = append(element4("div", "card-author"), authorAvatar(author), element4("span", "record-author-name", author.name));
+          authorLine.setAttribute("aria-label", `作者 ${author.name}`);
+          append(card, append(element4("div", "card-meta"), platformLabel(record2), element4("span", "", record2.pid || `#${record2.number || "本地"}`), difficultyBadge(record2), supplementaryDifficultyBadge(record2), badge(record2)), element4("h2", "card-title", record2.title || "未命名错题"), tags(record2), authorLine, append(element4("div", "card-footer"), element4("span", `card-state ${mastery(record2)}`, stateLabels[mastery(record2)]), element4("span", "", `${favorite(record2) ? "★ · " : ""}${date(record2.updatedAt)}`)));
+        }
+        fragment.append(card);
       });
+      list2.append(fragment);
       if (!items.length) list2.append(empty(getLoading() ? "正在载入题库" : getView() === "public" && getLibraryScope() === "local" ? "还没有本地题解" : "这里还没有题目", getLoading() ? "等待客户端返回你的学习数据。" : "试试调整筛选，或记下第一道值得回顾的错题。", { label: "清空筛选", fn: clearFilters }));
+      if (publicList) {
+        $("#detail-panel").replaceChildren();
+        return;
+      }
       const record = items.find((item) => key(item) === getSelected());
       if (record) renderDetail(record);
       else {
@@ -3857,7 +3999,7 @@ ${data.trick.trim()}` : ""].filter(Boolean).join("\n\n") : data.body;
       const scroll = panel.scrollTop;
       panel.replaceChildren();
       if (focusedDetail) {
-        const back = button5("← 返回题目网格", "button secondary detail-back", closeDetail);
+        const back = button5("← 返回题目列表", "button secondary detail-back", closeDetail);
         back.id = "detail-back-button";
         panel.append(back);
       } else {
@@ -3875,8 +4017,8 @@ ${data.trick.trim()}` : ""].filter(Boolean).join("\n\n") : data.body;
         actions.append(localSolution);
       }
       append(panel, append(element4("div", "detail-top"), append(element4("div", "detail-meta"), platformLabel(record), element4("span", "", record.pid || `#${record.number || "本地"}`), difficultyBadge(record), supplementaryDifficultyBadge(record), badge(record)), actions), element4("h2", "detail-title", record.title || "未命名错题"));
-      const author = authorName2(record.author);
-      append(panel, append(element4("div", "author-row"), element4("span", "mini-avatar", author.slice(0, 1)), element4("span", "", author), element4("span", "separator", "·"), element4("span", "", `更新于 ${date(record.updatedAt)}`), record.kind === "document" ? element4("span", "badge document", "正式题解") : null));
+      const author = recordAuthor(record, getAccount());
+      append(panel, append(element4("div", "author-row"), authorAvatar(author), element4("span", "record-author-name", author.name), element4("span", "separator", "·"), element4("span", "", `更新于 ${date(record.updatedAt)}`), record.kind === "document" ? element4("span", "badge document", "正式题解") : null));
       const tagrow = tags(record);
       tagrow.classList.add("detail-tags");
       append(panel, tagrow, element4("hr", "detail-divider"), element4("div", "body-label", "思路与复盘"));
@@ -3990,10 +4132,10 @@ ${data.trick.trim()}` : ""].filter(Boolean).join("\n\n") : data.body;
   function createSettings(options) {
     const { demo, bridge: bridge3, themeStorage, paletteStorage, getBusy, setBusy, getSettings, setSettings, getAccount, getAuthStatus, getPermissions, setPermissionsRepo, getError, setError, getLocal, repo, repoSource, quotaBlocked, reauthNeeded, call, applyPayload, resetRepositoryData, resetSourceView, clearComments, refreshFilters, render: render6, renderUpdate, updateStatus, sync, writeDemo, toast, errorMessage: errorMessage2 } = options;
     const $ = (selector, root2 = document) => root2.querySelector(selector);
-    function element4(tag, className, text3) {
+    function element4(tag, className, text4) {
       const node2 = document.createElement(tag);
       if (className) node2.className = className;
-      if (text3 !== void 0) node2.textContent = String(text3);
+      if (text4 !== void 0) node2.textContent = String(text4);
       return node2;
     }
     function append(parent, ...children) {
@@ -4581,14 +4723,14 @@ ${data.trick.trim()}` : ""].filter(Boolean).join("\n\n") : data.body;
   };
   var active2 = null;
   var instanceId = 0;
-  function element2(tag, className, text3) {
+  function element2(tag, className, text4) {
     const el3 = document.createElement(tag);
     if (className) el3.className = className;
-    if (text3 !== void 0) el3.textContent = String(text3);
+    if (text4 !== void 0) el3.textContent = String(text4);
     return el3;
   }
-  function button3(text3, className, action2) {
-    const el3 = element2("button", className, text3);
+  function button3(text4, className, action2) {
+    const el3 = element2("button", className, text4);
     el3.type = "button";
     el3.addEventListener("click", action2);
     return el3;
@@ -5453,10 +5595,10 @@ ${entry2.node.fullLabel}` : ""}`;
   var serial = 0;
   var kinds = { learning: "学习关", mixed: "综合练习", challenge: "阶段挑战" };
   var grades = { basic: ["D1 · 入门", "basic"], beginner: ["D2 · 初级", "beginner"], intermediate: ["D3 · 中级", "intermediate"], advanced: ["D4 · 高级", "advanced"], expert: ["D5 · 挑战", "expert"] };
-  function el2(tag, className, text3) {
+  function el2(tag, className, text4) {
     const node2 = document.createElement(tag);
     if (className) node2.className = className;
-    if (text3 !== void 0 && text3 !== null) node2.textContent = String(text3);
+    if (text4 !== void 0 && text4 !== null) node2.textContent = String(text4);
     return node2;
   }
   function add(parent, ...children) {
@@ -5465,8 +5607,8 @@ ${entry2.node.fullLabel}` : ""}`;
     });
     return parent;
   }
-  function control(text3, className, action2) {
-    const node2 = el2("button", className, text3);
+  function control(text4, className, action2) {
+    const node2 = el2("button", className, text4);
     node2.type = "button";
     node2.addEventListener("click", action2);
     return node2;
@@ -5474,7 +5616,7 @@ ${entry2.node.fullLabel}` : ""}`;
   function list(value) {
     return Array.isArray(value) ? value : [];
   }
-  function text2(value) {
+  function text3(value) {
     return typeof value === "string" ? value : "";
   }
   function cfLabel(value) {
@@ -5484,7 +5626,7 @@ ${entry2.node.fullLabel}` : ""}`;
   function authorName(author) {
     if (typeof author === "string") return author;
     const value = author;
-    return text2(value?.name) || text2(value?.login) || "未署名";
+    return text3(value?.name) || text3(value?.login) || "未署名";
   }
   function render5(options) {
     if (!options?.host) throw new TypeError("NotebookLearningPath.render requires a host.");
@@ -5499,7 +5641,7 @@ ${entry2.node.fullLabel}` : ""}`;
     });
     function walk(node2, path) {
       if (!node2 || typeof node2.id !== "string") return;
-      const entry2 = { node: node2, path: [...path, text2(node2.label) || "未命名知识点"] };
+      const entry2 = { node: node2, path: [...path, text3(node2.label) || "未命名知识点"] };
       topics.set(node2.id, entry2);
       list(node2.legacyIds).forEach((id) => topics.set(id, entry2));
       list(node2.children).forEach((child) => walk(child, entry2.path));
@@ -5517,7 +5659,7 @@ ${entry2.node.fullLabel}` : ""}`;
       const content = publicContents.get(gate.id);
       return content ? { ...gate, description: content.description, learningDescription: content.description, goals: [...content.goals] } : gate;
     }
-    const viewKey = text2(opts.progressKey) || `${opts.account?.id ?? "local"}:${text2(opts.curriculum?.id) || "main"}`;
+    const viewKey = text3(opts.progressKey) || `${opts.account?.id ?? "local"}:${text3(opts.curriculum?.id) || "main"}`;
     const remembered = views.get(viewKey);
     let progress = { ...opts.progress || {}, gates: { ...opts.progress?.gates || {} } };
     let stageId = stageById.has(remembered?.stageId) ? remembered.stageId : stageById.has(progress.stageId) ? progress.stageId : stages[0]?.id;
@@ -5631,9 +5773,9 @@ ${entry2.node.fullLabel}` : ""}`;
           const previous = names.get(id);
           const item = el2("div", "alp-history-item");
           add(item, el2("strong", "", previous ? `${previous.stageTitle} · ${previous.title}` : `旧版关卡 ${id}`), el2("span", "", record.status === "completed" ? "已记录完成" : "学习中"));
-          if (record.problemUrl) item.append(el2("p", "", text2(record.problemUrl)));
-          if (record.reflection) item.append(el2("p", "", text2(record.reflection)));
-          if (record.updatedAt && Number.isFinite(Date.parse(text2(record.updatedAt)))) item.append(el2("small", "", new Date(text2(record.updatedAt)).toLocaleString("zh-CN")));
+          if (record.problemUrl) item.append(el2("p", "", text3(record.problemUrl)));
+          if (record.reflection) item.append(el2("p", "", text3(record.reflection)));
+          if (record.updatedAt && Number.isFinite(Date.parse(text3(record.updatedAt)))) item.append(el2("small", "", new Date(text3(record.updatedAt)).toLocaleString("zh-CN")));
           archive.append(item);
         }
         summary.append(archive);
@@ -5644,7 +5786,7 @@ ${entry2.node.fullLabel}` : ""}`;
       container.replaceChildren();
       const completed = records().filter(({ gate }) => isCompleted(gate.id));
       const finishedStage = stages.some((stage) => !isOrientation(stage) && stage.completionMode !== "routes" && stageBasis(stage).length > 0 && completedCount(stageBasis(stage)) === stageBasis(stage).length);
-      const reflectionCount = records().filter(({ gate }) => text2(gateProgress(gate.id)?.reflection).trim()).length;
+      const reflectionCount = records().filter(({ gate }) => text3(gateProgress(gate.id)?.reflection).trim()).length;
       const items = [
         ["迈出第一步", completed.length > 0, "完成第一关的学习记录"],
         ["综合初试", completed.some(({ gate }) => ["mixed", "challenge"].includes(gate.kind || "")), "完成一次综合练习或阶段挑战"],
@@ -5771,7 +5913,7 @@ ${entry2.node.fullLabel}` : ""}`;
       detail.append(header);
       const publicVersion = publicContents.get(gate.id);
       if (publicVersion) detail.append(el2("p", "alp-public-version", `公共版${publicVersion.updatedAt && Number.isFinite(Date.parse(publicVersion.updatedAt)) ? ` · 更新于 ${new Date(publicVersion.updatedAt).toLocaleDateString("zh-CN")}` : ""}`));
-      const introduction = text2(gate.learningDescription).trim() || text2(gate.description).trim();
+      const introduction = text3(gate.learningDescription).trim() || text3(gate.description).trim();
       if (introduction || gate.learningTitle) {
         const story = el2("div", "alp-learning-story");
         if (gate.learningTitle && gate.learningTitle !== gate.title) story.append(el2("strong", "", gate.learningTitle));
@@ -5793,7 +5935,7 @@ ${entry2.node.fullLabel}` : ""}`;
         detail.append(renderOfficialPractice(gate));
         if (gate.kind === "learning") renderNotes(gate, related);
       }
-      const goals = [...new Set(list(gate.goals).map((goal) => text2(goal).trim()).filter(Boolean))];
+      const goals = [...new Set(list(gate.goals).map((goal) => text3(goal).trim()).filter(Boolean))];
       if (goals.length) {
         const core = el2("section", "alp-core-goals");
         core.append(sectionHeading("本关核心目标"));
@@ -5892,7 +6034,7 @@ ${entry2.node.fullLabel}` : ""}`;
         connections.append(connectionBody);
         supplementary.append(connections);
       }
-      const criteria = [...new Set(list(stage.completionCriteria).map((criterion) => text2(criterion).trim()).filter(Boolean))];
+      const criteria = [...new Set(list(stage.completionCriteria).map((criterion) => text3(criterion).trim()).filter(Boolean))];
       if (criteria.length) {
         const chapterCheck = el2("details", "alp-detail-fold alp-chapter-fold"), chapterBody = el2("div", "alp-fold-body");
         chapterCheck.append(el2("summary", "", isOrientation(stage) ? "导览完成检验" : "整章完成检验"));
@@ -5910,7 +6052,7 @@ ${entry2.node.fullLabel}` : ""}`;
     }
     function practiceUrl(value) {
       try {
-        const parsed = new URL(text2(value));
+        const parsed = new URL(text3(value));
         return ["http:", "https:"].includes(parsed.protocol) && !parsed.username && !parsed.password ? parsed.href : null;
       } catch {
         return null;
@@ -6185,7 +6327,7 @@ ${entry2.node.fullLabel}` : ""}`;
     function openPersonal(id) {
       if (busy2 || !canSave || !gateById.has(id)) return;
       personalGateId = id;
-      personalInput.value = text2(gateProgress(id)?.practiceUrl);
+      personalInput.value = text3(gateProgress(id)?.practiceUrl);
       personalError.hidden = true;
       previousFocus = document.activeElement;
       personalDialog.showModal();
@@ -6293,10 +6435,10 @@ ${entry2.node.fullLabel}` : ""}`;
       if (busy2 || !canManage || !gateById.has(id)) return;
       const gate = contentGate(gateById.get(id).gate), content = publicContents.get(id), official = content ? content.practiceList : list(gate.practiceLists).find((item) => practiceUrl(item.url));
       publicGateId = id;
-      publicDescription.value = text2(gate.learningDescription) || text2(gate.description);
+      publicDescription.value = text3(gate.learningDescription) || text3(gate.description);
       publicGoals.value = list(gate.goals).join("\n");
-      publicTitle.value = text2(official?.title);
-      publicUrl.value = text2(official?.url);
+      publicTitle.value = text3(official?.title);
+      publicUrl.value = text3(official?.url);
       publicError.hidden = true;
       previousFocus = document.activeElement;
       publicDialog.dispatchEvent(new Event("alp:preview"));
@@ -6423,7 +6565,7 @@ ${entry2.node.fullLabel}` : ""}`;
       if (busy2 || !canSave) return;
       const previous = gateProgress(id);
       try {
-        await persist(id, { ...previous, status, problemUrl: text2(previous?.problemUrl), reflection: text2(previous?.reflection), updatedAt: (/* @__PURE__ */ new Date()).toISOString() });
+        await persist(id, { ...previous, status, problemUrl: text3(previous?.problemUrl), reflection: text3(previous?.reflection), updatedAt: (/* @__PURE__ */ new Date()).toISOString() });
         if (!destroyed) {
           renderMain();
           notify(status === "learning" ? "已保存为学习中" : "本关完成记录已保存");
@@ -6587,14 +6729,14 @@ ${entry2.node.fullLabel}` : ""}`;
   var kindLabels = { learning: "学习", mixed: "混练", challenge: "验收" };
   var scopeLabels = { core: "核心", recommended: "推荐", elective: "选修", route: "分路线" };
   var serial2 = 0;
-  function element3(tag, className = "", text3) {
+  function element3(tag, className = "", text4) {
     const node2 = document.createElement(tag);
     node2.className = className;
-    if (text3 !== void 0) node2.textContent = text3;
+    if (text4 !== void 0) node2.textContent = text4;
     return node2;
   }
-  function button4(text3, action2, className = "") {
-    const node2 = element3("button", `alp-curriculum-button ${className}`, text3);
+  function button4(text4, action2, className = "") {
+    const node2 = element3("button", `alp-curriculum-button ${className}`, text4);
     node2.type = "button";
     node2.addEventListener("click", action2);
     return node2;
@@ -6974,8 +7116,8 @@ ${entry2.node.fullLabel}` : ""}`;
     function rowFor(id) {
       return Array.from(rows.querySelectorAll(".alp-curriculum-row")).find((row2) => row2.dataset.gateId === id);
     }
-    function showError3(text3) {
-      error.textContent = text3;
+    function showError3(text4) {
+      error.textContent = text4;
       error.hidden = false;
     }
     function validate() {
@@ -7102,10 +7244,10 @@ ${entry2.node.fullLabel}` : ""}`;
     const global2 = window;
     const { getAlgorithmNotes, setAlgorithmNotes, getAlgorithmTopics, setAlgorithmTopics, getAlgorithmTree, setAlgorithmTree, getAccount, getPermissions, getLocal, getBusy, getReadingDetail, accountId, repo, uuid, setBusy, persistLocal, call, render: render6, renderMarkdown, authorName: authorName2, date, tags, toast, errorMessage: errorMessage2 } = options;
     const $ = (selector) => document.querySelector(selector);
-    function element4(tag, className, text3) {
+    function element4(tag, className, text4) {
       const node2 = document.createElement(tag);
       if (className) node2.className = className;
-      if (text3 !== void 0) node2.textContent = String(text3);
+      if (text4 !== void 0) node2.textContent = String(text4);
       return node2;
     }
     function append(parent, ...children) {
@@ -7483,10 +7625,10 @@ ${entry2.node.fullLabel}` : ""}`;
     } });
     let toastTimer;
     let draftTimer;
-    function element4(tag, className, text3) {
+    function element4(tag, className, text4) {
       const node2 = document.createElement(tag);
       if (className) node2.className = className;
-      if (text3 !== void 0) node2.textContent = String(text3);
+      if (text4 !== void 0) node2.textContent = String(text4);
       return node2;
     }
     function append(parent, ...children) {
@@ -7551,6 +7693,10 @@ ${entry2.node.fullLabel}` : ""}`;
     }
     function isMine(record) {
       return isLocal(record) ? visibleLocal(record) : record.kind === "document" && accountId() !== null && String(record.authorId) === accountId();
+    }
+    function isOwnSolution(record) {
+      if (isLocal(record)) return visibleLocal(record);
+      return record.kind === "document" && sameRepo(record) && repoSource().startsWith("https://api.github.com|") && isMine(record);
     }
     function canEditRemote(record) {
       return record?.kind === "document" && isMine(record) && sameRepo(record) && s.permissions.push === true;
@@ -7711,7 +7857,7 @@ ${entry2.node.fullLabel}` : ""}`;
       if (account) accountButton.removeAttribute("aria-label");
       else accountButton.setAttribute("aria-label", accountButton.title);
     }
-    const filters = createFilters({ getRecords: records, getView: () => s.view, getScope: () => s.libraryScope, getAccount: () => s.account, getTagCatalog: () => s.tagCatalog, getBusy: () => s.busy, favorite, mastery, isLocal, authorName: authorName2, render: render6 });
+    const filters = createFilters({ getRecords: records, getView: () => s.view, getScope: () => s.libraryScope, getTagCatalog: () => s.tagCatalog, getBusy: () => s.busy, favorite, mastery, isLocal, isOwnSolution, recordAuthorName: (record) => recordAuthorName(record, s.account), render: render6 });
     const { facets, facetNames, platformNames, luoguLevels: luoguLevels2, luoguTones, facetValue, fillFacetOptions, refreshFilters, tagGroups, fillTagOptions, openTagPicker, closeTagPicker, renderEditorTags, ranges, updateFacetCounts, setDifficultyPlatform, clearDifficulty, filteredRecords, clearFilters, colorRatingInput, colorLuoguSelection } = filters;
     async function openTagDialog() {
       const select2 = $("#request-tag-category");
@@ -7835,7 +7981,7 @@ ${entry2.node.fullLabel}` : ""}`;
       $("#library-scope-controls").hidden = s.view !== "public";
       $("#library-public-button").setAttribute("aria-pressed", String(s.libraryScope !== "local"));
       $("#library-local-button").setAttribute("aria-pressed", String(s.libraryScope === "local"));
-      $("#library-local-count").textContent = s.local.records.filter((record) => record.kind === "local" && visibleLocal(record)).length;
+      $("#library-local-count").textContent = all.filter(isOwnSolution).length;
       const items = filteredRecords();
       $("#result-count").textContent = items.length;
       $(".list-heading > span:last-child").textContent = facets.tags.size ? "标签命中数 ↓ · 相关度 / 更新时间" : $("#search-input").value.trim() ? "匹配程度 ↓" : "最近更新 ↓";

@@ -65,19 +65,30 @@ async function contrast(page, selector, label) {
   return samples.length;
 }
 
-async function libraryLayout(page, label) {
+async function libraryLayout(page, label, publicList = false) {
   const layout = await page.evaluate(() => {
     const split = document.querySelector('.split-view'), list = document.querySelector('#record-list'), detail = document.querySelector('#detail-panel'), card = list.querySelector('.record-card');
     const rect = node => { const { x, y, width, height } = node.getBoundingClientRect(); return { x, y, width, height }; };
     const style = getComputedStyle(card), listStyle = getComputedStyle(list);
-    return { display: getComputedStyle(split).display, list: rect(list), detail: rect(detail), card: rect(card), radius: parseFloat(style.borderRadius), gap: parseFloat(listStyle.gap), border: parseFloat(style.borderTopWidth), padding: parseFloat(style.paddingTop), columns: listStyle.gridTemplateColumns.split(' ').length };
+    return { publicList: document.querySelector('#library-panel').classList.contains('public-problem-list'), row: card.classList.contains('problem-list-row'), display: getComputedStyle(split).display, split: rect(split), list: rect(list), detail: rect(detail), card: rect(card), radius: parseFloat(style.borderRadius), gap: parseFloat(listStyle.gap), border: parseFloat(style.borderTopWidth), divider: parseFloat(style.borderBottomWidth), padding: parseFloat(style.paddingTop), columns: listStyle.gridTemplateColumns.split(' ').length };
   });
   assert.equal(layout.display, 'grid', `${label}: split library remains a grid`);
-  assert.ok(layout.list.x + layout.list.width <= layout.detail.x + 2, `${label}: cards stay left of the reader ${JSON.stringify(layout)}`);
-  assert.ok(layout.list.width >= 280 && layout.list.width <= layout.detail.width * 1.9, `${label}: moderate list width ${JSON.stringify(layout)}`);
-  assert.ok(layout.card.height >= 110 && layout.card.height <= 260, `${label}: card is neither a dense row nor an oversized tile ${JSON.stringify(layout)}`);
-  assert.ok(layout.gap >= 8 && layout.gap <= 20 && layout.radius >= 6 && layout.border >= 1 && layout.padding >= 10, `${label}: separated bounded cards ${JSON.stringify(layout)}`);
-  assert.ok(layout.columns >= 1 && layout.columns <= 2, `${label}: moderate desktop columns`);
+  assert.equal(layout.publicList, publicList, `${label}: library scopes use problem rows and favorites use cards`);
+  assert.equal(layout.row, publicList, `${label}: compatible record-card has the correct presentation`);
+  if (publicList) {
+    assert.equal(await page.locator('#detail-panel').isVisible(), false, `${label}: public list has no preview panel`);
+    assert.equal(await page.locator('#detail-panel').textContent(), '', `${label}: public list does not render a hidden preview`);
+    assert.equal(await page.locator('.problem-list-row.selected, .problem-list-row[aria-pressed]').count(), 0, `${label}: public rows have no automatic selection`);
+    assert.ok(Math.abs(layout.list.width - layout.split.width) <= 2, `${label}: public list spans the workspace ${JSON.stringify(layout)}`);
+    assert.ok(layout.card.height >= 38 && layout.card.height <= 46 && layout.radius === 0 && layout.divider >= 1, `${label}: compact rows remain about 42px tall ${JSON.stringify(layout)}`);
+    assert.ok(layout.card.width >= layout.list.width - 20, `${label}: public rows span the list`);
+  } else {
+    assert.ok(layout.list.x + layout.list.width <= layout.detail.x + 2, `${label}: cards stay left of the reader ${JSON.stringify(layout)}`);
+    assert.ok(layout.list.width >= 280 && layout.list.width <= layout.detail.width * 1.9, `${label}: moderate list width ${JSON.stringify(layout)}`);
+    assert.ok(layout.card.height >= 110 && layout.card.height <= 260, `${label}: card is neither a dense row nor an oversized tile ${JSON.stringify(layout)}`);
+    assert.ok(layout.gap >= 8 && layout.gap <= 20 && layout.radius >= 6 && layout.border >= 1 && layout.padding >= 10, `${label}: separated bounded cards ${JSON.stringify(layout)}`);
+    assert.ok(layout.columns >= 1 && layout.columns <= 2, `${label}: moderate desktop columns`);
+  }
   return layout;
 }
 
@@ -86,7 +97,7 @@ async function semanticSnapshot(page) {
     const style = selector => { const node = document.querySelector(selector); if (!node) throw Error(`Missing semantic fixture: ${selector}`); const s = getComputedStyle(node); return { color: s.color, background: s.backgroundColor }; };
     return {
       difficulty: style('.record-card .difficulty-badge'), platform: style('.record-card .platform-label'), tag: style('.record-card .tag'),
-      mastery: style('.record-card .card-state'), keyword: style('.markdown-body .token.keyword'), number: style('.markdown-body .token.number'),
+      keyword: style('.markdown-body .token.keyword'), number: style('.markdown-body .token.number'),
       explicitForeground: style('.markdown-body .notebook-foreground')
     };
   });
@@ -133,7 +144,7 @@ async function semanticSnapshot(page) {
 
     let samples = 0, geometryBaseline;
     for (const theme of themes) {
-      let semanticBaseline, layoutBaseline;
+      let semanticBaseline, layoutBaseline, favoriteMasteryBaseline;
       const accents = new Set();
       for (const palette of palettes) {
         const label = `${theme}/${palette}`;
@@ -142,13 +153,29 @@ async function semanticSnapshot(page) {
         assert.equal(saved.theme, theme, `${label}: switching palette preserves brightness`);
         assert.equal(saved.palette, palette, `${label}: switching brightness preserves palette`);
         await navigate(page, 'public');
+        const layout = await libraryLayout(page, label, true);
+        samples += await contrast(page, '#page-title, #page-description, .card-title, .problem-id, .problem-author, .problem-updated, .problem-list-columns > span, .list-heading, #library-public-button, #library-local-button, #submit-button', `${label} public list`);
+        await page.locator('.problem-list-row[data-key="appearance-1"] .card-title').click();
         await page.waitForSelector('.markdown-body .token.keyword');
-        const layout = await libraryLayout(page, label);
-        if (geometryBaseline) assert.ok(Math.abs(layout.card.height - geometryBaseline.card.height) <= 1 && Math.abs(layout.list.width - geometryBaseline.list.width) <= 1 && Math.abs(layout.radius - geometryBaseline.radius) <= 1, `${label}: light and dark share card geometry`);
+        assert.equal(await page.locator('body').evaluate(node => node.classList.contains('reading-detail')), true, `${label}: title opens focused public reading`);
+        if (geometryBaseline) assert.ok(Math.abs(layout.card.height - geometryBaseline.card.height) <= 1 && Math.abs(layout.list.width - geometryBaseline.list.width) <= 1 && Math.abs(layout.radius - geometryBaseline.radius) <= 1, `${label}: light and dark share public row geometry`);
         else geometryBaseline = layout;
         if (layoutBaseline) assert.ok(Math.abs(layout.card.height - layoutBaseline.card.height) <= 1 && Math.abs(layout.list.width - layoutBaseline.list.width) <= 1, `${label}: palette must not alter layout`);
         else layoutBaseline = layout;
         const semantics = await semanticSnapshot(page);
+        // Library rows omit card-state; detail mastery controls use the palette's
+        // action accent. Retain invariant card-state colors in favorites below.
+        const mastery = await page.locator('#detail-panel .mastery-buttons button').evaluateAll(nodes => nodes.map(node => {
+          const s = getComputedStyle(node), probe = document.createElement('span');
+          node.append(probe); probe.style.color = 'var(--accent)'; probe.style.backgroundColor = 'var(--accent-soft)';
+          const accent = { color: getComputedStyle(probe).color, background: getComputedStyle(probe).backgroundColor }; probe.remove();
+          return { text: node.textContent, pressed: node.getAttribute('aria-pressed'), color: s.color, background: s.backgroundColor, accent };
+        }));
+        assert.deepEqual(mastery.map(state => state.text), ['待复习', '复习中', '已掌握'], `${label}: sample every mastery state`);
+        const activeMastery = mastery.filter(state => state.pressed === 'true');
+        assert.equal(activeMastery.length, 1, `${label}: selected mastery state remains explicit`);
+        assert.equal(activeMastery[0].text, '已掌握', `${label}: focused public reader retains saved mastery`);
+        assert.deepEqual({ color: activeMastery[0].color, background: activeMastery[0].background }, activeMastery[0].accent, `${label}: active public mastery uses the current action accent`);
         if (semanticBaseline) assert.deepEqual(semantics, semanticBaseline, `${label}: palette preserves difficulty/platform/tag/mastery/syntax/author colors`);
         else semanticBaseline = semantics;
         assert.notEqual(semantics.keyword.color, semantics.number.color, `${label}: distinct syntax classes`);
@@ -156,13 +183,30 @@ async function semanticSnapshot(page) {
         accents.add(await page.locator('#submit-button').evaluate(node => getComputedStyle(node).backgroundColor));
         await page.locator('#detail-panel .code-block').hover();
         await page.waitForFunction(() => getComputedStyle(document.querySelector('#detail-panel .code-actions')).opacity === '1');
-        samples += await contrast(page, '#page-title, #page-description, .card-title, .detail-title, .list-heading, #library-public-button, #library-local-button, #submit-button, #open-detail-button, .code-action-button, #detail-panel .markdown-body p:not(:has(.notebook-foreground)), #detail-panel .markdown-body h2', label);
+        samples += await contrast(page, '.mastery-buttons button, .detail-title, #detail-back-button, .code-action-button, #detail-panel .markdown-body p:not(:has(.notebook-foreground)), #detail-panel .markdown-body h2', `${label} public reader`);
         await noOverflow(page, label);
+        await page.locator('#detail-back-button').click();
+        assert.equal(await page.locator('.problem-list-row[data-key="appearance-1"]').evaluate(node => node === document.activeElement), true, `${label}: back restores the originating public row focus`);
+        await libraryLayout(page, `${label} returned`, true);
         await navigate(page, 'public', true);
-        assert.equal(await page.locator('.record-card').count(), 1, `${label}: local scope remains isolated`);
-        await libraryLayout(page, `${label} local`);
+        assert.equal(await page.locator('.record-card').count(), 5, `${label}: own scope includes four uploaded documents and the visible local record`);
+        assert.equal(await page.locator('#library-local-count').innerText(), '5', `${label}: own scope count matches its document/local union`);
+        await libraryLayout(page, `${label} local`, true);
+        assert.equal(await page.locator('.record-card .card-state').count(), 0, `${label}: own rows omit card-only mastery metadata`);
+        samples += await contrast(page, '.card-title, .problem-id, .problem-author .record-author-name, .problem-updated, .problem-list-columns > span', `${label} local list`);
+        await page.locator('.problem-list-row[data-key="appearance-local"] .card-title').click();
+        assert.equal(await page.locator('body').evaluate(node => node.classList.contains('reading-detail')), true, `${label}: local title opens focused reading`);
+        assert.equal(await page.locator('#detail-panel .mastery-buttons button[aria-pressed="true"]').innerText(), '复习中', `${label}: local reader retains saved reviewing state`);
+        samples += await contrast(page, '#detail-panel .mastery-buttons button, #detail-panel .detail-title, #detail-back-button', `${label} local reader`);
+        await page.locator('#detail-back-button').click();
+        assert.equal(await page.locator('.problem-list-row[data-key="appearance-local"]').evaluate(node => node === document.activeElement), true, `${label}: back restores originating local row focus`);
+        await libraryLayout(page, `${label} local returned`, true);
         await navigate(page, 'favorites');
         assert.equal(await page.locator('.record-card').count(), 2, `${label}: favorites retain public and local entries`);
+        await libraryLayout(page, `${label} favorites`);
+        assert.equal(await page.locator('.record-card .card-state').count(), 2, `${label}: favorites retain mastery card semantics`);
+        const favoriteMastery = await page.locator('.record-card .card-state').evaluateAll(nodes => nodes.map(node => ({ text: node.textContent, color: getComputedStyle(node).color, background: getComputedStyle(node).backgroundColor })));
+        if (favoriteMasteryBaseline) assert.deepEqual(favoriteMastery, favoriteMasteryBaseline, `${label}: palette preserves favorite mastered/reviewing state colors`); else favoriteMasteryBaseline = favoriteMastery;
         await navigate(page, 'home');
         samples += await contrast(page, '.home-intro h2, .planner-heading h2, .planner-count, .planner-add-button, .planner-empty, .platform-dashboard-empty strong, .platform-dashboard-empty p, .platform-button, .contests-heading h2, .contest-empty', `${label} home`);
         await page.click('.planner-add-tasks .planner-deadline-trigger');
@@ -240,7 +284,7 @@ async function semanticSnapshot(page) {
     await page.waitForFunction(() => document.body.dataset.theme === 'light' && document.body.dataset.palette === 'amber');
     assert.deepEqual(errors, []);
     assert.deepEqual(contrastFailures, [], 'All feature text meets computed contrast requirements');
-    console.log(`APPEARANCE UI PASS: independent 2x6 controls, committed/reload/save/failure/cancel state, bounded left cards, local/public/favorites, semantic colors, ${samples} contrast samples, 390px feature overflow`);
+    console.log(`APPEARANCE UI PASS: independent 2x6 controls, committed/reload/save/failure/cancel state, compact public/local rows without preview, title/focused-reader/back, bounded favorites cards, semantic colors, ${samples} contrast samples, 390px feature overflow`);
   } finally { await browser.close(); }
 })().catch(error => { if (contrastFailures.length) console.error('APPEARANCE CONTRAST FAILURES\n' + JSON.stringify(contrastFailures, null, 2)); console.error(error); process.exitCode = 1; });
 
@@ -248,8 +292,9 @@ async function navigateBehindDialog(page) {
   // Exercise the existing local-save path while the modal remains open, as reading-prefs-smoke does.
   await page.evaluate(() => {
     document.querySelector('.rail-nav-item[data-view="public"]').click();
-    document.querySelector('#library-public-button').click();
-    document.querySelector('.mastery-buttons button').click();
+    document.querySelector('#library-local-button').click();
+    document.querySelector('.problem-list-row[data-key="appearance-local"] .card-title').click();
+    document.querySelector('#detail-panel .mastery-buttons button').click();
   });
   await page.waitForFunction(() => !document.querySelector('#settings-form button[type="submit"]').disabled);
 }
