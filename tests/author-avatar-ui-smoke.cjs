@@ -79,7 +79,9 @@ async function openPage(browser, cached = false) {
       document('public-reserved-login', { authorId: 0, author: 'anonymous' }),
       document('public-double-hyphen', { author: 'invalid--login' }),
       document('custom-source', { authorId: 101, author: { name: '自建源作者', login: 'current-login' }, serverUrl: customServer, sourceKey: `${customServer}|${repo}` }),
-      document('custom-legacy', { authorId: '101', author: '自建源旧作者', serverUrl: customServer })
+      document('custom-legacy', { authorId: '101', author: '自建源旧作者', serverUrl: customServer }),
+      document('custom-missing', { authorId: 101, serverUrl: customServer, sourceKey: `${customServer}|${repo}` }),
+      document('custom-blank', { authorId: '101', author: '', serverUrl: customServer })
     ];
     const localRecord = (id, extra) => ({ ...base, id, clientId: `client-${id}`, kind: 'local', title: id, pid: id, problemUrl: `https://codeforces.com/fixture/${id}`, ...extra });
     const fixture = window.authorAvatarFixture = {
@@ -150,9 +152,9 @@ async function openPage(browser, cached = false) {
     await page.locator('#detail-back-button').click();
     assert.equal(await page.locator('#record-list script, #record-list .record-author-name img').count(), 0);
 
-    await switchRepository(page, 'custom', 2);
-    assert.equal(await page.locator('#record-list .problem-list-row').count(), 2);
-    for (const [id, name] of [['custom-source', '自建源作者'], ['custom-legacy', '自建源旧作者']]) {
+    await switchRepository(page, 'custom', 4);
+    assert.equal(await page.locator('#record-list .problem-list-row').count(), 4);
+    for (const [id, name] of [['custom-source', '自建源作者'], ['custom-legacy', '自建源旧作者'], ['custom-missing', '匿名学习者'], ['custom-blank', '匿名学习者']]) {
       const target = page.locator('#record-list .record-card').filter({ has: page.locator('.card-title', { hasText: id }) });
       await author(target.locator('.problem-author'), name);
       await target.click();
@@ -191,7 +193,7 @@ async function openPage(browser, cached = false) {
 
     // Cached account avatars apply to an owned legacy record, never to unbound locals or custom sources.
     const cached = await openPage(browser, true);
-    await switchRepository(cached.page, 'custom', 2);
+    await switchRepository(cached.page, 'custom', 4);
     for (const target of await cached.page.locator('#record-list .record-card').all()) {
       assert.equal(await target.locator('.mini-avatar img').count(), 0, 'custom source collision cannot use the account cache');
       await target.click();
