@@ -1,4 +1,5 @@
 import { Search } from '../lib/search.js';
+import { authorAvatar, recordAuthor } from './authors.js';
 /** Record previews, focused reading, and issue comments; the app supplies persistence and editing. */
 type Options = import('../../../types/library-reader').LibraryReaderOptions;
 type Controller = import('../../../types/library-reader').LibraryReaderController;
@@ -34,18 +35,18 @@ export function createLibraryReader(options: Options): Controller {
   function tags(record: AppRecord) { const row = element('div', 'tag-row'); (Array.isArray(record.tags) ? record.tags : []).forEach(tag => { let hash = 0; for (const char of String(tag)) hash = (hash + char.codePointAt(0)!) % 5; row.append(element('span', `tag tag-color-${hash}`, tag)); }); return row; }
   function empty(title: string, description: string, action?: { label: string; fn: (event: MouseEvent) => unknown }) { const box = element('div', 'empty-state'); append(box, element('div', 'empty-icon', '⌑'), element('h3', '', title), element('p', '', description)); if (action) box.append(button(action.label, 'button secondary', action.fn)); return box; }
   let focusedDetail = false;
-  let readerPosition: { window: number; list: number; panel: number; focus: Element | null } | null = null;
+  let readerPosition: { window: number; list: number; horizontal: number; panel: number; focus: Element | null } | null = null;
   let commentRequest = 0;
   function openDetail(record: AppRecord) {
     if (focusedDetail) return;
-    setSelected(key(record)); readerPosition = { window: global.scrollY, list: $('#record-list')!.scrollTop, panel: $('#detail-panel')!.scrollTop, focus: document.activeElement };
+    setSelected(key(record)); readerPosition = { window: global.scrollY, list: $('#record-list')!.scrollTop, horizontal: $('#record-list')!.scrollLeft, panel: $('#detail-panel')!.scrollTop, focus: document.activeElement };
     focusedDetail = true; document.body.classList.add('reading-detail'); render(); $('#detail-back-button')?.focus(); global.scrollTo(0, 0);
   }
   function resetDetail() { focusedDetail = false; document.body.classList.remove('reading-detail'); }
   function isFocusedDetail() { return focusedDetail; }
   function closeDetail() {
     resetDetail(); render();
-    if (readerPosition) { $('#record-list')!.scrollTop = readerPosition.list; $('#detail-panel')!.scrollTop = readerPosition.panel; global.scrollTo(0, readerPosition.window); const card = $$('.record-card').find(n => n.dataset.key === getSelected()); card?.focus({ preventScroll: true }); }
+    if (readerPosition) { $('#record-list')!.scrollTop = readerPosition.list; $('#record-list')!.scrollLeft = readerPosition.horizontal; $('#detail-panel')!.scrollTop = readerPosition.panel; global.scrollTo(0, readerPosition.window); const card = $$('.record-card').find(n => n.dataset.key === getSelected()); card?.focus({ preventScroll: true }); }
   }
   function renderFocusedDetail() {
     if (!focusedDetail) return false;
@@ -56,14 +57,49 @@ export function createLibraryReader(options: Options): Controller {
   function renderLibrary(items: AppRecord[]) {
     if (!items.some(record => key(record) === getSelected())) setSelected(items[0] ? key(items[0]) : null);
     const list = $('#record-list')!; list.replaceChildren();
+    const publicList = getView() === 'public';
+    $('#library-panel')!.classList.toggle('public-problem-list', publicList);
+    if (publicList) {
+      const heading = element('div', 'problem-list-columns'); heading.setAttribute('aria-hidden', 'true');
+      ['平台', '题号', '算法标签', '题目', '难度', '作者', '更新'].forEach(label => heading.append(element('span', '', label)));
+      list.append(heading);
+    }
+    const fragment = document.createDocumentFragment();
     items.forEach(record => {
-      const card = button('', `record-card${key(record) === getSelected() ? ' selected' : ''}`, () => { setSelected(key(record)); $$('.record-card').forEach(n => { const active = n.dataset.key === getSelected(); n.classList.toggle('selected', active); n.setAttribute('aria-pressed', String(active)); }); renderDetail(record); }); card.dataset.key = key(record); card.title = '单击预览，双击打开详情；Enter 打开详情'; card.setAttribute('aria-pressed', key(record) === getSelected() ? 'true' : 'false');
+      const card = button('', `record-card${!publicList && key(record) === getSelected() ? ' selected' : ''}`, () => {
+        if (publicList) { openDetail(record); return; }
+        setSelected(key(record)); $$('.record-card').forEach(n => { const active = n.dataset.key === getSelected(); n.classList.toggle('selected', active); n.setAttribute('aria-pressed', String(active)); }); renderDetail(record);
+      });
+      card.dataset.key = key(record); card.title = publicList ? '点击题目阅读题解；返回后保留列表位置' : '单击预览，双击打开详情；Enter 打开详情';
+      if (!publicList) card.setAttribute('aria-pressed', key(record) === getSelected() ? 'true' : 'false');
       card.addEventListener('dblclick', () => openDetail(record));
       card.addEventListener('keydown', event => { if (event.key === 'Enter') { event.preventDefault(); openDetail(record); } });
-      append(card, append(element('div', 'card-meta'), platformLabel(record), element('span', '', record.pid || `#${record.number || '本地'}`), difficultyBadge(record), supplementaryDifficultyBadge(record), badge(record)), element('h2', 'card-title', record.title || '未命名错题'), tags(record), append(element('div', 'card-footer'), element('span', `card-state ${mastery(record)}`, stateLabels[mastery(record)]), element('span', '', `${favorite(record) ? '★ · ' : ''}${date(record.updatedAt)}`)));
-      list.append(card);
+      if (publicList) {
+        card.classList.add('problem-list-row');
+        const platform = platformLabel(record);
+        const identity = element('span', 'problem-id', record.pid || '—');
+        const algorithms = tags(record); algorithms.classList.add('problem-algorithms'); algorithms.title = (record.tags || []).join(' · ');
+        const problem = append(element('div', 'problem-summary'), element('h2', 'card-title', record.title || '未命名错题'));
+        const difficulty = element('span', 'problem-difficulty');
+        const native = difficultyBadge(record); if (native) difficulty.append(native);
+        if (platformCode(record.platform) !== 'LG' && record.luoguDifficulty) difficulty.append(supplementaryDifficultyBadge(record));
+        if (!difficulty.childElementCount) difficulty.append(element('span', 'problem-difficulty-empty', '未标注'));
+        const author = recordAuthor(record, getAccount());
+        const authorCell = append(element('span', 'problem-author'), authorAvatar(author), element('span', 'record-author-name', author.name)); authorCell.title = author.name; authorCell.setAttribute('aria-label', `作者 ${author.name}`);
+        const updated = element('time', 'problem-updated', date(record.updatedAt));
+        const timestamp = new Date(record.updatedAt as string); if (Number.isFinite(timestamp.getTime())) updated.dateTime = timestamp.toISOString();
+        append(card, platform, identity, algorithms, problem, difficulty, authorCell, updated);
+        if (favorite(record)) { const mark = element('span', 'problem-favorite', '★'); mark.setAttribute('aria-label', '已收藏'); problem.querySelector('h2')!.append(mark); }
+      } else {
+        const author = recordAuthor(record, getAccount());
+        const authorLine = append(element('div', 'card-author'), authorAvatar(author), element('span', 'record-author-name', author.name)); authorLine.setAttribute('aria-label', `作者 ${author.name}`);
+        append(card, append(element('div', 'card-meta'), platformLabel(record), element('span', '', record.pid || `#${record.number || '本地'}`), difficultyBadge(record), supplementaryDifficultyBadge(record), badge(record)), element('h2', 'card-title', record.title || '未命名错题'), tags(record), authorLine, append(element('div', 'card-footer'), element('span', `card-state ${mastery(record)}`, stateLabels[mastery(record)]), element('span', '', `${favorite(record) ? '★ · ' : ''}${date(record.updatedAt)}`)));
+      }
+      fragment.append(card);
     });
+    list.append(fragment);
     if (!items.length) list.append(empty(getLoading() ? '正在载入题库' : getView() === 'public' && getLibraryScope() === 'local' ? '还没有本地题解' : '这里还没有题目', getLoading() ? '等待客户端返回你的学习数据。' : '试试调整筛选，或记下第一道值得回顾的错题。', { label: '清空筛选', fn: clearFilters }));
+    if (publicList) { $('#detail-panel')!.replaceChildren(); return; }
     const record = items.find(item => key(item) === getSelected());
     if (record) renderDetail(record);
     else {
@@ -74,7 +110,7 @@ export function createLibraryReader(options: Options): Controller {
   async function changeLocal(change: () => void) { if (getBusy()) return; setBusy(true); const before = structuredClone(getLocal()); change(); render(); try { await persistLocal(); } catch (error) { setLocal(before); render(); toast(`未能保存：${errorMessage(error)}`); } finally { setBusy(false); } }
   function renderDetail(record: AppRecord) {
     const panel = $('#detail-panel')!; const scroll = panel.scrollTop; panel.replaceChildren();
-    if (focusedDetail) { const back = button('← 返回题目网格', 'button secondary detail-back', closeDetail); back.id = 'detail-back-button'; panel.append(back); } else { const open = button('打开详情 ↗', 'button primary detail-open', () => openDetail(record)); open.id = 'open-detail-button'; panel.append(open); }
+    if (focusedDetail) { const back = button('← 返回题目列表', 'button secondary detail-back', closeDetail); back.id = 'detail-back-button'; panel.append(back); } else { const open = button('打开详情 ↗', 'button primary detail-open', () => openDetail(record)); open.id = 'open-detail-button'; panel.append(open); }
     const actions = append(element('div', 'detail-actions'), button(favorite(record) ? '★ 已收藏' : '☆ 收藏', 'button secondary', () => changeLocal(() => { getLocal().favorites = favorite(record) ? getLocal().favorites.filter(value => String(value) !== key(record)) : [...getLocal().favorites, key(record)]; })), button('原题 ↗', 'button subtle', () => openExternal(record.problemUrl || record.url)));
     if (record.kind === 'document') {
       const localSolution = button('＋ 本地题解', 'button subtle public-local-solution', () => openLocalSolution(record));
@@ -82,7 +118,7 @@ export function createLibraryReader(options: Options): Controller {
       actions.append(localSolution);
     }
     append(panel, append(element('div', 'detail-top'), append(element('div', 'detail-meta'), platformLabel(record), element('span', '', record.pid || `#${record.number || '本地'}`), difficultyBadge(record), supplementaryDifficultyBadge(record), badge(record)), actions), element('h2', 'detail-title', record.title || '未命名错题'));
-    const author = authorName(record.author); append(panel, append(element('div', 'author-row'), element('span', 'mini-avatar', author.slice(0, 1)), element('span', '', author), element('span', 'separator', '·'), element('span', '', `更新于 ${date(record.updatedAt)}`), record.kind === 'document' ? element('span', 'badge document', '正式题解') : null));
+    const author = recordAuthor(record, getAccount()); append(panel, append(element('div', 'author-row'), authorAvatar(author), element('span', 'record-author-name', author.name), element('span', 'separator', '·'), element('span', '', `更新于 ${date(record.updatedAt)}`), record.kind === 'document' ? element('span', 'badge document', '正式题解') : null));
     const tagrow = tags(record); tagrow.classList.add('detail-tags'); append(panel, tagrow, element('hr', 'detail-divider'), element('div', 'body-label', '思路与复盘'));
     const body = element('div', 'markdown-body'); renderMarkdown(body, record.body); panel.append(body);
     const masteryButtons = element('div', 'mastery-buttons'); Object.entries(stateLabels).forEach(([value, label]) => { const control = button(label, mastery(record) === value ? 'active' : '', () => changeLocal(() => { getLocal().mastery[key(record)] = value; })); control.setAttribute('aria-pressed', mastery(record) === value ? 'true' : 'false'); masteryButtons.append(control); });

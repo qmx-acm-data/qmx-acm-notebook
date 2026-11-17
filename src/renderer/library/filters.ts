@@ -7,7 +7,7 @@ type AppTagGroup = import('../../../types/app').AppTagGroup;
 type AppQuery = import('../../../types/app').AppQuery;
 type AppQueryAll = import('../../../types/app').AppQueryAll;
 
-export function createFilters({ getRecords, getView, getScope, getAccount, getTagCatalog, getBusy, favorite, mastery, isLocal, authorName, render }: Options): Controller {
+export function createFilters({ getRecords, getView, getScope, getTagCatalog, getBusy, favorite, mastery, isLocal, isOwnSolution, recordAuthorName, render }: Options): Controller {
   const $: AppQuery = <T extends Element = HTMLElement>(selector: string, root: ParentNode = document) => root.querySelector<T>(selector);
   const $$: AppQueryAll = <T extends Element = HTMLElement>(selector: string, root: ParentNode = document) => Array.from(root.querySelectorAll<T>(selector));
   function element<K extends keyof HTMLElementTagNameMap>(tag: K, className?: string, text?: unknown): HTMLElementTagNameMap[K] { const node = document.createElement(tag); if (className) node.className = className; if (text !== undefined) node.textContent = String(text); return node; }
@@ -17,7 +17,7 @@ export function createFilters({ getRecords, getView, getScope, getAccount, getTa
   const facets: Record<string, Set<string>> = { platform: new Set(), tags: new Set(), authors: new Set(), native: new Set() };
   const facetNames: Record<string, string> = { platform: '平台', tags: '标签', authors: '作者', native: '难度' };
   const platformNames: Record<string, string> = { CF: 'Codeforces', LG: '洛谷', AT: 'AtCoder', NC: '牛客', LC: 'LeetCode', Oth: '其他平台' };
-  function facetValue(record: AppRecord, group: string) { return group === 'platform' ? Search.normalizePlatform(record.platform) : group === 'authors' ? authorName(record.author || (isLocal(record) ? getAccount()?.login || '我（本地）' : '')) : ''; }
+  function facetValue(record: AppRecord, group: string) { return group === 'platform' ? Search.normalizePlatform(record.platform) : group === 'authors' ? recordAuthorName(record) : ''; }
   function fillFacetOptions(container: HTMLElement, group: string, values: unknown[], search = '') {
     container.replaceChildren();
     const counts = new Map<string, number>(); values.forEach(value => counts.set(String(value), (counts.get(String(value)) || 0) + 1));
@@ -56,18 +56,56 @@ export function createFilters({ getRecords, getView, getScope, getAccount, getTa
     if (historical.length) groups.push({ id: 'history', name: '历史标签', tags: historical, historical: true });
     return groups;
   }
+  type TagOption = { label: HTMLLabelElement; input: HTMLInputElement; search: string };
+  type TagOptionsView = { selected: Set<string>; onChange: () => void; groups: { heading: HTMLElement; options: TagOption[] }[]; inputs: Map<string, HTMLInputElement[]>; empty: HTMLElement };
+  const tagOptionsViews = new WeakMap<HTMLElement, TagOptionsView>();
   function fillTagOptions(container: HTMLElement, selected: Set<string>, query: string, onChange: () => void) {
-    container.replaceChildren();
-    const counts = new Map<string, number>(); getRecords().forEach(r => new Set(r.tags || []).forEach(t => counts.set(t, (counts.get(t) || 0) + 1)));
-    tagGroups([...selected]).forEach(group => {
-      const matching = group.tags.filter(t => `${group.name} ${t}`.toLowerCase().includes(query.toLowerCase())); if (!matching.length) return;
-      container.append(element('strong', 'tag-category-heading', group.name));
-      matching.forEach(value => { const label = element('label', 'facet-option'); const input = element('input'); input.type = 'checkbox'; input.value = value; input.checked = selected.has(value); input.disabled = getBusy();
-        input.addEventListener('change', () => { input.checked ? selected.add(value) : selected.delete(value); $$<HTMLInputElement>('input[type="checkbox"]', container).filter(n => n.value === value).forEach(n => n.checked = input.checked); onChange(); });
-        append(label, input, element('span', '', value + (group.historical ? ' · 历史' : '')), element('small', '', counts.get(value) || 0)); container.append(label);
+    let view = tagOptionsViews.get(container);
+    // A new selected Set marks a new picker session. Count records and create
+    // nodes once; typing and toggling within that session keep the same DOM.
+    if (!view || view.selected !== selected) {
+      const counts = new Map<string, number>();
+      getRecords().forEach(r => new Set(r.tags || []).forEach(t => counts.set(t, (counts.get(t) || 0) + 1)));
+      const inputs = new Map<string, HTMLInputElement[]>();
+      const fragment = document.createDocumentFragment();
+      const groups = tagGroups([...selected]).map(group => {
+        const heading = element('strong', 'tag-category-heading', group.name); fragment.append(heading);
+        const options = group.tags.map(value => {
+          const label = element('label', 'facet-option'), input = element('input');
+          input.type = 'checkbox'; input.value = value; input.checked = selected.has(value); input.disabled = getBusy();
+          const duplicates = inputs.get(value) || []; duplicates.push(input); inputs.set(value, duplicates);
+          append(label, input, element('span', '', value + (group.historical ? ' · 历史' : '')), element('small', '', counts.get(value) || 0)); fragment.append(label);
+          return { label, input, search: `${group.name} ${value}`.toLowerCase() };
+        });
+        return { heading, options };
       });
+      const empty = element('p', 'facet-help', '没有匹配的标签'); fragment.append(empty);
+      view = { selected, onChange, groups, inputs, empty };
+      tagOptionsViews.set(container, view);
+      container.onchange = event => {
+        const current = tagOptionsViews.get(container), input = event.target;
+        if (!current || !(input instanceof HTMLInputElement) || input.type !== 'checkbox') return;
+        if (getBusy()) { input.checked = current.selected.has(input.value); return; }
+        input.checked ? current.selected.add(input.value) : current.selected.delete(input.value);
+        current.inputs.get(input.value)?.forEach(node => { node.checked = input.checked; });
+        current.onChange();
+      };
+      container.replaceChildren(fragment);
+    }
+    view.onChange = onChange;
+    const search = query.toLowerCase();
+    let matches = 0;
+    view.groups.forEach(group => {
+      let groupMatches = 0;
+      group.options.forEach(option => {
+        const visible = option.search.includes(search);
+        if (option.label.hidden !== !visible) option.label.hidden = !visible;
+        if (visible) groupMatches++;
+      });
+      if (group.heading.hidden !== !groupMatches) group.heading.hidden = !groupMatches;
+      matches += groupMatches;
     });
-    if (!container.children.length) container.append(element('p', 'facet-help', '没有匹配的标签'));
+    view.empty.hidden = matches > 0;
   }
   let tagPickerContext: { mode: string; original: Set<string>; selected: Set<string> } | null = null;
   function openTagPicker(mode: string) {
@@ -78,11 +116,12 @@ export function createFilters({ getRecords, getView, getScope, getAccount, getTa
     $('#tag-picker-hint')!.textContent = mode === 'filter' ? '命中任一已选标签的题目将显示；确定后应用筛选。' : '选择一个或多个标签，点击确定后加入错题。';
     $('#tag-picker-search')!.value = '';
     fillTagOptions($('#tag-picker-dialog-options')!, tagPickerContext.selected, '', () => {});
+    document.body.classList.add('tag-picker-open');
     $('#tag-picker-dialog')!.showModal(); $('#tag-picker-search')!.focus();
   }
   function closeTagPicker(apply: boolean) {
     if (!tagPickerContext) return;
-    const context = tagPickerContext; tagPickerContext = null; $('#tag-picker-dialog')!.close();
+    const context = tagPickerContext; tagPickerContext = null; $('#tag-picker-dialog')!.close(); document.body.classList.remove('tag-picker-open');
     if (!apply) return;
     if (context.mode === 'filter') {
       facets.tags.clear(); context.selected.forEach(tag => facets.tags.add(tag)); refreshFilters(); render();
@@ -126,7 +165,7 @@ export function createFilters({ getRecords, getView, getScope, getAccount, getTa
     const scores = new Map<AppRecord, number>();
     const difficultyActive = [min,max,lgMin,lgMax].some(v=>v!==null) || facets.native.size>0;
     return getRecords().filter(record => {
-      if (getView() === 'public' && record.kind !== (getScope() === 'local' ? 'local' : 'document')) return false;
+      if (getView() === 'public' && (getScope() === 'local' ? !isOwnSolution(record) : record.kind !== 'document')) return false;
       if (getView() === 'favorites' && !favorite(record)) return false;
       if (facets.platform.size && !facets.platform.has(facetValue(record,'platform'))) return false;
       if (facets.tags.size && !(record.tags || []).some(tag=>facets.tags.has(String(tag)))) return false;

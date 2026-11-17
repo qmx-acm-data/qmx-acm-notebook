@@ -26,6 +26,8 @@ async function openPage(browser, signedIn = false) {
   }, signedIn);
   await page.goto(pathToFileURL(appPath('ui/index.html')).href);
   try { await page.locator('.rail-nav-item[data-view="public"]').click(); } catch (error) { console.error('PAGE STARTUP ERRORS', errors); throw error; }
+  await page.locator('#record-list .problem-list-row').click();
+  assert.equal(await page.locator('body').evaluate(node => node.classList.contains('reading-detail')), true, 'public row opens focused detail');
   await page.waitForSelector('#local-solution-button');
   return { page, errors };
 }
@@ -66,14 +68,23 @@ async function openPage(browser, signedIn = false) {
     assert.equal(await page.inputValue('#record-body'), 'My completed local solution', 'saved same-problem local record is reused');
     assert.equal(await page.locator('#submit-title').innerText(), '编辑本地记录');
     await page.click('[data-close="submit-dialog"]');
+    await page.click('#detail-back-button');
     await page.click('#library-local-button');
     assert.equal(await page.locator('#library-local-button').getAttribute('aria-pressed'), 'true');
-    assert.equal(await page.locator('.record-card').count(), 1, 'local scope lists unbound local solutions and hides foreign-owned records');
+    assert.equal(await page.locator('.record-card').count(), 1, 'anonymous own scope lists unbound local solutions and hides foreign-owned records');
+    assert.equal(await page.locator('#library-local-count').innerText(), '1', 'anonymous count matches visible local records');
+    assert.equal(await page.locator('.problem-list-row').count(), 1, 'own solutions use the same compact rows as public problems');
     assert.equal(await page.locator('.record-card .card-title').innerText(), 'Public problem');
+    assert.equal(await page.locator('.record-card .record-author-name').innerText(), '本地学习者', 'anonymous new solution is not attributed to the public problem author');
     await page.locator('.record-card').click();
+    assert.equal(await page.locator('body').evaluate(node => node.classList.contains('reading-detail')), true, 'local row opens focused detail');
+    assert.equal(await page.locator('#open-detail-button').count(), 0, 'local detail needs no preview step');
     assert.equal(await page.locator('#edit-record-button').innerText(), '编辑本地记录');
+    await page.click('#detail-back-button');
     await page.click('#library-public-button');
     assert.equal(await page.locator('.record-card').count(), 1, 'public scope restores remote problems');
+    assert.equal(await page.locator('#local-solution-button').count(), 0, 'public list has no preview actions');
+    await page.locator('#record-list .problem-list-row').click();
     assert.equal(await page.locator('#local-solution-button').count(), 1);
     assert.deepEqual(errors, []);
     await page.close();
@@ -90,6 +101,12 @@ async function openPage(browser, signedIn = false) {
     assert.equal(persisted.find(record => record.id === 'owned-local').ownerId, '101');
     assert.equal(persisted.find(record => record.id === 'foreign-local').body, 'Foreign private solution');
     assert.equal(await owned.page.evaluate(() => fixture.remoteCalls), 0);
+    await owned.page.click('#detail-back-button');
+    await owned.page.click('#library-local-button');
+    assert.equal(await owned.page.locator('.record-card').count(), 2, 'signed-in own scope includes owned and unbound local records but excludes another author document');
+    assert.equal(await owned.page.locator('#library-local-count').innerText(), '2', 'signed-in scope count matches visible records');
+    assert.deepEqual((await owned.page.locator('.record-card').evaluateAll(nodes => nodes.map(node => node.dataset.key))).sort(), ['owned-local', 'unbound-local']);
+    assert.equal(await owned.page.locator('.record-card[data-key="owned-local"] .record-author-name').innerText(), 'Other author', 'legacy explicit local author metadata is retained');
     assert.deepEqual(owned.errors, []);
     console.log('PUBLIC LOCAL SOLUTION PASS (anonymous/no push, metadata, private isolation, per-problem drafts, existing-record reuse, no publishing)');
   } finally { await browser.close(); }

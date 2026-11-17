@@ -14,7 +14,14 @@ export function createEditor(options: Options): Controller {
   const $ = <S extends EditorSelector>(selector: S): EditorSelectorMap[S] | null => document.querySelector<EditorSelectorMap[S]>(selector);
   function element<K extends keyof HTMLElementTagNameMap>(tag: K, className?: string, text?: unknown): HTMLElementTagNameMap[K] { const node = document.createElement(tag); if (className) node.className = className; if (text !== undefined) node.textContent = String(text); return node; }
   function formDraft(): AppFormDraft { const form = $('#submit-form')!; return Object.fromEntries(['url', 'title', 'pid', 'platform', 'tags', 'reason', 'body', 'trick', 'rating', 'difficulty', 'luoguDifficulty'].map(name => [name, String((form.elements.namedItem(name) as AppControl | null)?.value || '')])) as AppFormDraft; }
-  function fillForm(draft: Record<string, unknown> | undefined) { const form = $('#submit-form')!; form.reset(); Object.entries(draft || {}).forEach(([name, value]) => { const input = form.elements.namedItem(name) as AppControl | null; if (input) input.value = String(value ?? ''); }); }
+  function fillForm(draft: Record<string, unknown> | undefined) {
+    const form = $('#submit-form')!;
+    form.reset();
+    // Hidden inputs use value as their reset default, so reset() alone retains
+    // the previous record's tags and difficulty. Apply only this source's data.
+    for (const name of ['tags', 'rating', 'difficulty', 'luoguDifficulty'] as const) form.elements[name].value = '';
+    Object.entries(draft || {}).forEach(([name, value]) => { const input = form.elements.namedItem(name) as AppControl | null; if (input) input.value = String(value ?? ''); });
+  }
   const editorLuoguLevels = ['入门','普及-','普及','普及+/提高-','提高','提高+/省选-','省选/NOI-','NOI/NOI+/CTS'];
   const editorLuoguTones = ['red','orange','yellow','green','cyan','blue','purple','black'];
   function renderEditorDifficulty() {
@@ -140,6 +147,10 @@ export function createEditor(options: Options): Controller {
     const clientId = getEditor()!.clientId;
     const body = !existing ? [data.body, data.reason.trim() ? `## 错因分析\n${data.reason.trim()}` : '', data.trick.trim() ? `## Trick\n${data.trick.trim()}` : ''].filter(Boolean).join('\n\n') : data.body;
     const record = { ...(existing || {}), ...(getEditor()!.sourceProblemId ? { sourceProblemId: getEditor()!.sourceProblemId, sourceProblemRepo: getEditor()!.sourceProblemRepo } : {}), clientId, ownerId: existing && !remote ? existing.ownerId : existing?.ownerId ?? accountId(), title: data.title.trim() || data.pid.trim() || '未命名错题', pid: data.platform === 'CF' && data.pid.trim() ? `CF${data.pid.trim().replace(/^CF/i, '')}` : data.pid.trim(), platform: data.platform, rating: data.rating.trim() ? Number(data.rating) : null, difficulty: data.difficulty.trim(), luoguDifficulty: data.platform === 'LG' ? '' : data.luoguDifficulty.trim(), tags: data.tags.split(/[,，、]/).map(tag => tag.trim()).filter(Boolean), problemUrl: parsed.href, url: parsed.href, body, updatedAt: new Date().toISOString() };
+    if (!remote && !record.author) {
+      const ownerIsCurrent = record.ownerId != null && String(record.ownerId) === accountId();
+      record.author = ownerIsCurrent ? getAccount()?.login || '本地学习者' : '本地学习者';
+    }
     setBusy(true); $('#submit-error')!.hidden = true;
     let wroteRemote = false; const previousLocal = structuredClone(getLocal());
     try {
@@ -165,7 +176,7 @@ export function createEditor(options: Options): Controller {
       delete getLocal().draft[draftKey(getEditor()!.source, getEditor()!.ownerId)];
       try { await persistLocal(); } catch (error) { if (wroteRemote) { toast('GitHub 已更新，本地清理未保存，请同步核实'); } else throw error; }
       const savedRecord = records().find(item => key(item) === getSelected());
-      form.reset(); $('#submit-dialog')!.close(); setEditor(null); refreshFilters(); navigate('public');
+      fillForm(undefined); renderEditorTags(); $('#submit-dialog')!.close(); setEditor(null); refreshFilters(); navigate('public');
       if (remote) { setSelected(key(savedRecord!)); render(); }
       else openDetail(savedRecord!);
       toast(remote ? '正式题解已保存到 GitHub' : '已保存本地记录，收藏后可从个人收藏访问');

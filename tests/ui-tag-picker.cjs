@@ -15,6 +15,8 @@ const { chromium } = require('playwright');
       window.notebook = { bootstrap: async()=>({records:docs,local:{records:[],favorites:[],mastery:{},draft:{}},settings:{autoSync:false},account:{id:1,login:'user'},permissions:{repo,push:true},tagCatalog:{categories:[{id:'dp',name:'动态规划',tags:[{id:'a',name:'甲'},{id:'b',name:'乙'}]}]}}), updateLocal:async()=>{} };
     });
     await page.goto(pathToFileURL(appPath('ui/index.html')).href);
+    await page.waitForFunction(() => document.querySelector('#count-public').textContent === '2');
+    await page.keyboard.press('/');
     await page.waitForSelector('.record-card');
     assert.match((await page.locator('#tag-filter-trigger').innerText()).trim(), /^标签\s*⌄$/);
     assert.equal(await page.locator('#tag-filter-trigger').evaluate(el => {
@@ -30,7 +32,7 @@ const { chromium } = require('playwright');
     await page.click('#clear-filters'); await page.click('#submit-button');
     await page.click('#record-tag-open'); await page.locator('#tag-picker-dialog-options input[value="甲"]').check(); await page.click('#tag-picker-close');
     assert.equal(await page.locator('[name="tags"]').inputValue(),'','close cancels editor selections');
-    await page.click('#record-tag-open'); await page.locator('#tag-picker-search').fill('乙'); assert.equal(await page.locator('#tag-picker-dialog-options input').count(),1); await page.locator('#tag-picker-dialog-options input[value="乙"]').check(); await page.click('#tag-picker-confirm');
+    await page.click('#record-tag-open'); await page.locator('#tag-picker-search').fill('乙'); assert.equal(await page.locator('#tag-picker-dialog-options input:visible').count(),1); await page.locator('#tag-picker-dialog-options input[value="乙"]').check(); await page.click('#tag-picker-confirm');
     assert.equal(await page.locator('[name="tags"]').inputValue(),'乙'); assert.deepEqual(errors,[]);
     console.log('TAG PICKER PASS: dialog, category search, multi-select, cancel/close rollback, confirm applies to filter/editor');
   } finally { await browser.close(); }

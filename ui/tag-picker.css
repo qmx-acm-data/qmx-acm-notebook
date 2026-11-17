@@ -1,0 +1,26 @@
+/* Keep tag hover and scrolling on the simple paint path, including when the
+   picker is opened over the editor and Electron uses software rendering. */
+#tag-picker-dialog::backdrop,
+body.tag-picker-open #submit-dialog::backdrop { backdrop-filter: none; }
+#tag-picker-dialog { box-shadow: 0 8px 28px #0003; }
+#tag-picker-dialog-options {
+  contain: layout paint;
+  isolation: isolate;
+  overscroll-behavior: contain;
+  scroll-behavior: auto;
+  scrollbar-gutter: stable;
+}
+/* The headings are siblings of all options. Making each one sticky caused
+   every past heading to stack on the same rows and intercept the pointer. */
+#tag-picker-dialog-options .tag-category-heading { position: static; z-index: auto; }
+#tag-picker-dialog-options .facet-option {
+  transition: none;
+  animation: none;
+  background: transparent;
+}
+#tag-picker-dialog-options .facet-option:hover,
+#tag-picker-dialog-options .facet-option:focus-within {
+  background: var(--accent-soft);
+  box-shadow: inset 3px 0 var(--accent);
+}
+#tag-picker-dialog-options .facet-option input { cursor: pointer; }

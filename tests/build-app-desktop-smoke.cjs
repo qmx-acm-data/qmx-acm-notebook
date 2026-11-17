@@ -84,7 +84,7 @@ async function loadTestAdapters(page, appRoot) {
     await waitForApp(page);
     await page.locator('.sidebar-rail .rail-nav-item[data-view="public"]').click();
     await page.locator('#library-local-button').click();
-    await page.locator('#record-list').getByRole('heading', { name: 'TypeScript persistence check', exact: true }).waitFor({ state: 'visible' });
+    await page.locator('#record-list .problem-list-row[data-key="local:ts-record"]').getByRole('heading', { name: 'TypeScript persistence check' }).waitFor({ state: 'visible' });
     const restored = await page.evaluate(async () => (await window.notebook.bootstrap()).local);
     assert.equal(restored.records[0].id, 'local:ts-record');
     assert.deepEqual(restored.records[0].opaque, { legacy: ['keep', 0, null] });

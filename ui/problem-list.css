@@ -1,0 +1,47 @@
+/* Compact public index; local and favorite cards retain their own presentation. */
+.mini-avatar { position: relative; flex: none; overflow: hidden; }
+.mini-avatar img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; border-radius: inherit; }
+.card-author { display: flex; align-items: center; gap: 7px; margin-top: 9px; color: var(--text); font-size: 11px; min-width: 0; }
+.card-author .mini-avatar, .problem-author .mini-avatar { width: 20px; height: 20px; font-size: 10px; }
+.record-author-name { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; min-width: 0; }
+body .problem-author { display: flex; align-items: center; gap: 6px; }
+body[data-view="public"]:not(.reading-detail) main { padding-top: 10px; }
+body[data-view="public"]:not(.reading-detail) .page-heading { margin-bottom: 6px; }
+body[data-view="public"]:not(.reading-detail) .page-heading h1 { font-size: 25px; margin-top: 4px; margin-bottom: 5px; }
+body[data-view="public"]:not(.reading-detail) .page-heading .eyebrow { display: none; }
+body .public-problem-list .library-scope-controls { padding: 10px 14px 0; }
+body .public-problem-list .search-workbench.filterbar { padding: 10px 14px; }
+body .public-problem-list .search-main .search-box { padding: 8px 11px; }
+body .public-problem-list .filter-controls { margin-top: 8px; gap: 7px; }
+body .public-problem-list .split-view { display: grid; grid-template-columns: minmax(0,1fr); gap: 0; background: transparent; border: 0; overflow: visible; }
+body .public-problem-list .record-list-panel { min-width: 0; border: 1px solid var(--line); border-radius: 8px; background: var(--surface); overflow: hidden; }
+body .public-problem-list .list-heading { padding: 6px 14px; background: var(--surface); border-bottom: 1px solid var(--line); }
+body .public-problem-list .record-list { display: block; padding: 0; max-height: 72vh; overflow: auto; scrollbar-gutter: stable; }
+.problem-list-columns, body .public-problem-list .problem-list-row { display: grid; grid-template-columns: 76px 88px 190px minmax(150px,1fr) 140px 116px 62px; gap: 12px; align-items: center; min-width: 940px; }
+.problem-list-columns { position: sticky; top: 0; z-index: 1; padding: 10px 14px; color: var(--text); background: var(--surface-soft); border-bottom: 1px solid var(--line); font-size: 11px; font-weight: 600; }
+body .public-problem-list .problem-list-row { min-height: 42px; width: 100%; padding: 8px 14px; border: 0; border-bottom: 1px solid var(--line); border-radius: 0; background: var(--surface); box-shadow: none; text-align: left; transition: none; }
+body .public-problem-list .problem-list-row:last-child { border-bottom: 0; }
+body .public-problem-list .problem-list-row:hover { background: color-mix(in srgb,var(--accent) 5%,var(--surface)); }
+body .public-problem-list .problem-list-row:focus-visible { outline: 2px solid var(--accent); outline-offset: -2px; }
+.problem-id { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: var(--text); font-size: 12px; font-weight: 500; font-variant-numeric: tabular-nums; }
+body .problem-list-row > .platform-label { font-size: 10px; background: transparent; padding: 0; white-space: nowrap; }
+.problem-summary { min-width: 0; }
+body .public-problem-list .problem-list-row .card-title { display: block; margin: 0; font-size: 13px; line-height: 1.55; font-weight: 550; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; color: var(--accent); }
+body .public-problem-list .problem-list-row:hover .card-title { text-decoration: underline; text-underline-offset: 3px; }
+body .public-problem-list .problem-list-row .tag-row { display: flex; flex-wrap: nowrap; gap: 4px; margin: 0; min-width: 0; overflow: hidden; }
+body .public-problem-list .problem-list-row .tag { flex: none; padding: 2px 5px; font-size: 10px; line-height: 1.4; white-space: nowrap; }
+.problem-difficulty { display: flex; flex-wrap: nowrap; gap: 4px; min-width: 0; overflow: hidden; }
+body .problem-difficulty .difficulty-badge { font-size: 10px; padding: 2px 5px; white-space: nowrap; line-height: 1.4; }
+.problem-difficulty-empty, .problem-updated { color: color-mix(in srgb,var(--text) 24%,var(--muted)); font-size: 11px; }
+.problem-author { min-width: 0; font-size: 11px; font-weight: 500; color: var(--text); white-space: nowrap; overflow: hidden; }
+.problem-updated { font-variant-numeric: tabular-nums; white-space: nowrap; }
+.problem-favorite { color: var(--feature-favorites, var(--accent)); margin-left: 6px; font-size: 11px; }
+body:not(.reading-detail) .public-problem-list .detail-panel { display: none; }
+body.reading-detail .public-problem-list .detail-panel { display: block; border: 0; background: var(--surface); }
+@media (max-width:1100px) {
+  .problem-list-columns, body .public-problem-list .problem-list-row { grid-template-columns: 70px 80px 150px minmax(150px,1fr) 120px 106px 60px; gap: 10px; min-width: 880px; }
+}
+@media (max-width:760px) {
+  body .public-problem-list .record-list { max-height: 72vh; }
+  .problem-list-columns, body .public-problem-list .problem-list-row { padding-left: 10px; padding-right: 10px; }
+}
