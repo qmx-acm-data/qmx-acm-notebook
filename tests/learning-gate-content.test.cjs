@@ -21,6 +21,7 @@ function fixture({ admin = true, push = true, file = null, sha = 'old-sha', fail
     if (pathname === `/repos/team/notebook/git/blobs/${currentSha}`) return failBlob ? reply({ message: 'blob unavailable' }, failBlob) : reply({ encoding: 'base64', content: Buffer.from(stored).toString('base64') });
     if (pathname === '/repos/team/notebook/git/trees/main') return reply({ tree: stored === null ? [] : [{ type: 'blob', path: `${LEARNING_GATES_PREFIX}${gateId}.json`, sha: currentSha }] });
     if (pathname === '/repos/team/notebook/issues') return reply([]);
+    if (pathname === '/repos/team/notebook/contents/algorithms/learning-path/curriculum.json') return reply({}, 404);
     throw new Error(`Unexpected request ${pathname}`);
   };
   return { gh: new GitHub({ repo: 'team/notebook', token, fetcher, serverUrl }), calls, writes, get saved() { return stored; } };

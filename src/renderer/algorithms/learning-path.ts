@@ -155,8 +155,8 @@ function render(options: Options): Controller {
     const historical = Object.entries(progress.gates).filter(([id]) => !gateById.has(id) && gateProgress(id));
     if (historical.length) {
       const archive = el('details', 'alp-history');
-      archive.append(el('summary', '', `旧版学习记录 · ${historical.length} 条已保留`));
-      archive.append(el('p', 'alp-fine-print', '章节已重新编排，旧记录保留供回顾，不自动算作新版关卡完成。'));
+      archive.append(el('summary', '', `历史学习记录 · ${historical.length} 条已保留`));
+      archive.append(el('p', 'alp-fine-print', '已移除或旧版本关卡的记录保留供回顾，不计入当前课程完成度。'));
       const names = new Map(list(opts.curriculum?.legacyGates).map(gate => [gate.id, gate]));
       for (const [id] of historical) {
         const record = gateProgress(id)!; const previous = names.get(id);

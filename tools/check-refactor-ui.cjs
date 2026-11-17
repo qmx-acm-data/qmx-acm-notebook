@@ -16,6 +16,7 @@ const suites = [
   'algorithm-learning-path-ui-smoke.cjs',
   'algorithm-reading-ui-smoke.cjs',
   'learning-path-tasks-ui-smoke.cjs',
+  'learning-curriculum-ui-smoke.cjs',
   'markdown-format-ui-smoke.cjs',
   'markdown-color-ui-smoke.cjs',
   'platform-ui-smoke.cjs',

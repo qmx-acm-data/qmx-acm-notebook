@@ -95,6 +95,7 @@ export interface AppArguments {
   reviewTag: [data: unknown];
   saveAlgorithmTopic: [data: unknown];
   saveLearningGate: [data: unknown];
+  saveLearningCurriculum: [data: unknown];
   refreshAccount: [];
   sync: [];
   saveSettings: [data: SettingsUpdateView];

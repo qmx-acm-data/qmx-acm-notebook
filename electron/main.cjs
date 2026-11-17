@@ -4,7 +4,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const { app, BrowserWindow, ipcMain, shell, safeStorage, net } = require('electron');
 const fs = require("node:fs");
 const path = require("node:path");
-const { GitHub, repoParts, normalizeServerUrl, repositoryKey, parseLearningGateContent } = require('./github.cjs');
+const { GitHub, repoParts, normalizeServerUrl, repositoryKey, parseLearningGateContent, parseLearningCurriculumContent, learningCurriculumGateIds } = require('./github.cjs');
 const { randomUUID } = require('node:crypto');
 const { spawn } = require('node:child_process');
 const { createUpdater } = require('./updater.cjs');
@@ -117,7 +117,21 @@ function ensureSource(key, generation = loginGeneration) {
     if (key !== sourceScope().sourceKey || generation !== loginGeneration)
         throw new Error('账号或仓库配置已改变，请重新同步');
 }
-function cachedLearningContents(value, scope = sourceScope()) {
+function cachedLearningCurriculum(value, topics, scope = sourceScope()) {
+    if (!value || typeof value !== 'object' || Array.isArray(value))
+        return null;
+    const record = value;
+    if (record.repo !== scope.repo || record.sourceKey !== scope.sourceKey || record.serverUrl !== scope.serverUrl)
+        return null;
+    try {
+        const additions = Array.isArray(topics) ? require('./algorithm-topics.cjs').validateTopics(topics) : [];
+        return annotate(parseLearningCurriculumContent({ ...record, schema: 1 }, record.sha, additions), scope);
+    }
+    catch {
+        return null;
+    }
+}
+function cachedLearningContents(value, scope = sourceScope(), curriculum = null) {
     if (!Array.isArray(value))
         return [];
     return value.flatMap((raw) => {
@@ -125,6 +139,8 @@ function cachedLearningContents(value, scope = sourceScope()) {
             return [];
         const record = raw;
         if (record.repo !== undefined && record.repo !== scope.repo || record.sourceKey !== undefined && record.sourceKey !== scope.sourceKey || record.serverUrl !== undefined && record.serverUrl !== scope.serverUrl)
+            return [];
+        if (!learningCurriculumGateIds(curriculum).has(String(record.gateId)))
             return [];
         try {
             return [annotate(parseLearningGateContent({ ...record, schema: 1 }, String(record.gateId), record.sha), scope)];
@@ -138,11 +154,13 @@ function state(error) {
     const s = settings(), scope = sourceScope(s), cache = read('cache.json', {});
     const c = repoCache(cache, s.repo, s.serverUrl);
     const matching = c.repo === s.repo;
+    const curriculum = matching ? cachedLearningCurriculum(c.learningCurriculum, c.algorithmTopics, scope) : null;
     return {
         records: matching ? (c.records || []).filter(r => r.kind === 'document').map(r => annotate(r, scope)) : [],
         algorithmNotes: matching ? (c.algorithmNotes || []).map(r => annotate(r, scope)) : [],
         algorithmTopics: matching && Array.isArray(c.algorithmTopics) ? c.algorithmTopics.map(topic => annotate(topic, scope)) : [],
-        learningGateContents: matching ? cachedLearningContents(c.learningGateContents, scope) : [],
+        learningGateContents: matching ? cachedLearningContents(c.learningGateContents, scope, curriculum) : [],
+        learningCurriculum: curriculum,
         issues: matching ? (c.issues || (c.records || []).filter(r => r.kind === 'issue')).map(r => annotate(r, scope)) : [],
         lastSync: matching ? c.lastSync : null,
         tagCatalog: matching && c.tagCatalog ? c.tagCatalog : require('../ui/tag-presets.js'),
@@ -237,13 +255,23 @@ function setup() {
         saveRepoCache(old, updated);
         return result.topic;
     }));
+    handle('saveLearningCurriculum', data => writeOperation(async () => {
+        requireWritableSource();
+        const scope = sourceScope(), gen = loginGeneration;
+        const result = await client().saveLearningCurriculum(data);
+        ensureSource(scope.sourceKey, gen);
+        const old = read('cache.json', {}), c = repoCache(old, scope.repo, scope.serverUrl);
+        const saved = annotate(result, scope);
+        saveRepoCache(old, { ...(c.repo === scope.repo ? c : {}), repo: scope.repo, learningCurriculum: saved, learningGateContents: cachedLearningContents(c.learningGateContents, scope, saved) }, scope);
+        return saved;
+    }));
     handle('saveLearningGate', data => writeOperation(async () => {
         requireWritableSource();
         const scope = sourceScope(), gen = loginGeneration;
         const result = await client().saveLearningGate(data);
         ensureSource(scope.sourceKey, gen);
         const old = read('cache.json', {}), c = repoCache(old, scope.repo, scope.serverUrl);
-        const contents = cachedLearningContents(c.learningGateContents, scope).filter(content => content.gateId !== result.gateId);
+        const contents = cachedLearningContents(c.learningGateContents, scope, cachedLearningCurriculum(c.learningCurriculum, c.algorithmTopics, scope)).filter(content => content.gateId !== result.gateId);
         const saved = annotate(result, scope);
         contents.push(saved);
         saveRepoCache(old, { ...(c.repo === scope.repo ? c : {}), repo: scope.repo, learningGateContents: contents }, scope);
@@ -271,7 +299,8 @@ function setup() {
                 tagCatalogError = error.status === 401 ? '标签目录授权已失效，请重新登录' : '标签目录暂未更新，继续使用已缓存的标签';
             }
             ensureSource(scope.sourceKey, gen);
-            const updated = { ...result, repo, tagCatalog, tagCatalogError, algorithmNotes: Array.isArray(result.algorithmNotes) ? result.algorithmNotes : [], algorithmTopics: Array.isArray(result.algorithmTopics) ? result.algorithmTopics : [], learningGateContents: cachedLearningContents(result.learningGateContents, scope) };
+            const curriculum = cachedLearningCurriculum(result.learningCurriculum, result.algorithmTopics, scope);
+            const updated = { ...result, repo, tagCatalog, tagCatalogError, algorithmNotes: Array.isArray(result.algorithmNotes) ? result.algorithmNotes : [], algorithmTopics: Array.isArray(result.algorithmTopics) ? result.algorithmTopics : [], learningCurriculum: curriculum, learningGateContents: cachedLearningContents(result.learningGateContents, scope, curriculum) };
             saveRepoCache(old, updated);
             if (token) {
                 try {

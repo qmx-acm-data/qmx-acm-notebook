@@ -33,6 +33,7 @@
         saveDocument: (...args) => ipcRenderer.invoke('saveDocument', ...args),
         saveAlgorithmTopic: (...args) => ipcRenderer.invoke('saveAlgorithmTopic', ...args),
         saveLearningGate: (...args) => ipcRenderer.invoke('saveLearningGate', ...args),
+        saveLearningCurriculum: (...args) => ipcRenderer.invoke('saveLearningCurriculum', ...args),
         saveAlgorithmNote: (...args) => ipcRenderer.invoke('saveAlgorithmNote', ...args),
         deleteDocument: (...args) => ipcRenderer.invoke('deleteDocument', ...args),
         deleteIssue: (...args) => ipcRenderer.invoke('deleteIssue', ...args),

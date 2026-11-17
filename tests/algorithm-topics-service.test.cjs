@@ -30,6 +30,7 @@ function fixture({ admin = true, push = true, file = null, sha = 'old-sha', fail
       return saved === null ? response({ message: 'Not Found' }, 404) : response({ type: 'file', encoding: 'base64', sha: currentSha, content: Buffer.from(saved).toString('base64') });
     }
     if (pathname === '/repos/team/notebook/git/trees/main') return response({ tree: saved ? [{ type: 'blob', path: TOPICS_PATH, sha: currentSha }] : [] });
+    if (pathname === `/repos/team/notebook/git/blobs/${currentSha}`) return response({ encoding: 'base64', content: Buffer.from(saved).toString('base64') });
     if (pathname === '/repos/team/notebook/issues') return response([]);
     throw new Error('Unexpected request ' + pathname);
   };

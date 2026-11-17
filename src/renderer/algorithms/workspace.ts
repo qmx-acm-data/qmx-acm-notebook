@@ -1,6 +1,8 @@
 import { AlgorithmDirectory } from './directory.js';
 import { AlgorithmBrowser } from './browser.js';
 import { LearningPath } from './learning-path.js';
+import { applyCurriculumLayout } from '../../shared/learning-curriculum.js';
+import { openCurriculumEditor } from './curriculum-editor.js';
 /** Algorithm app integration with the browser and learning-route renderers. */
 type Options = import('../../../types/algorithm-workspace').AlgorithmWorkspaceOptions;
 type Controller = import('../../../types/algorithm-workspace').AlgorithmWorkspaceController;
@@ -28,6 +30,12 @@ export function createAlgorithmWorkspace(options: Options): Controller {
   let algorithmPendingTopic: string | null = null;
   let algorithmController: AlgorithmBrowserController | null = null;
   let learningController: LearningPathController | null = null;
+  let curriculumEditor: ReturnType<typeof openCurriculumEditor> | null = null;
+  function effectiveCurriculum() {
+    const base = global.QMX_ALGORITHM_LEARNING_PATH;
+    const document = options.getLearningCurriculum();
+    return base && document ? applyCurriculumLayout(base, document.layout) : base;
+  }
   function learningProgressKey() { return JSON.stringify([repo(), accountId() || 'anonymous', global.QMX_ALGORITHM_LEARNING_PATH?.id || 'xcpc-learning']); }
   function setAlgorithmMode(mode: string) { if (getBusy()) return; algorithmMode = mode; renderAlgorithmNotes(); }
   function openLearningTopic(id: string) { algorithmPendingTopic = id; setAlgorithmMode('tree'); }
@@ -46,6 +54,7 @@ export function createAlgorithmWorkspace(options: Options): Controller {
   function renderAlgorithmNotes() {
     getReadingDetail()?.closeAll();
     const panel = $('#algorithm-panel')!;
+    curriculumEditor?.destroy(); curriculumEditor = null;
     algorithmController?.destroy(); learningController?.destroy(); learningController = null;
     panel.replaceChildren();
     const modes = element('div', 'algorithm-view-modes'); modes.setAttribute('role', 'group'); modes.setAttribute('aria-label', '算法学习方式');
@@ -54,7 +63,32 @@ export function createAlgorithmWorkspace(options: Options): Controller {
     }
     panel.append(modes); const host = element('div', 'algorithm-view-content'); panel.append(host);
     if (algorithmMode === 'path') {
-      learningController = LearningPath.render({ host, tree: getAlgorithmTree(), curriculum: global.QMX_ALGORITHM_LEARNING_PATH,
+      const canManage = Boolean(getAccount() && getPermissions().admin === true);
+      if (canManage) {
+        const edit = button('编排课程', 'button secondary alp-curriculum-edit-button', () => {
+          if (getBusy() || !getAccount() || getPermissions().admin !== true) return;
+          const base = global.QMX_ALGORITHM_LEARNING_PATH, curriculum = effectiveCurriculum();
+          if (!base || !curriculum) return;
+          curriculumEditor?.destroy();
+          curriculumEditor = openCurriculumEditor({ host, canManage: true, curriculum, baseCurriculum: base,
+            document: options.getLearningCurriculum(), tree: getAlgorithmTree(),
+            onSave: async input => {
+              if (getBusy()) throw new Error('请等待当前操作完成');
+              if (!getAccount() || getPermissions().admin !== true) throw new Error('只有管理员可以编排课程');
+              const source = repo(), owner = accountId(); setBusy(true);
+              try {
+                const saved = await options.saveLearningCurriculum({ ...input, repo: source });
+                if (source !== repo() || owner !== accountId()) throw new Error('账号或仓库已改变，请重新同步');
+                options.setLearningCurriculum(saved); return saved;
+              } finally { setBusy(false); }
+            },
+            onApplied: () => { queueMicrotask(() => { renderAlgorithmNotes(); toast('课程编排已发布'); }); },
+            onClose: () => { curriculumEditor = null; }
+          });
+        });
+        modes.append(edit);
+      }
+      learningController = LearningPath.render({ host, tree: getAlgorithmTree(), curriculum: effectiveCurriculum(),
         progress: getLocal().learningPaths?.[learningProgressKey()] || { gates: {} }, progressKey: learningProgressKey(), account: getAccount(), notes: getAlgorithmNotes() as LearningPathNote[], canUpload: Boolean(getAccount() && getPermissions().push),
         canManage: Boolean(getAccount() && getPermissions().admin === true), gateContents: options.getLearningGateContents(),
         onSaveGate: async input => {
@@ -146,6 +180,6 @@ export function createAlgorithmWorkspace(options: Options): Controller {
   function openAlgorithmNoteEditor() { if (!getAccount() || !getPermissions().push) { toast('请先登录具有仓库写入权限的 GitHub 账户'); return; } const form=$('#algorithm-note-form')!; form.reset(); const node=form.elements.nodeId as unknown as HTMLSelectElement; node.replaceChildren(...algorithmNodes().map(n=>{const o=element('option','',n.label);o.value=n.id;return o;})); node.value=algorithmSelectedNode!; form.elements.noteScope.value=getPermissions().admin ? 'public' : 'personal'; form.elements.noteScope.disabled=!getPermissions().admin; $('#algorithm-note-error')!.hidden=true; $('#algorithm-note-dialog')!.showModal(); }
   $('#algorithm-note-form')!.addEventListener('submit', async event => { event.preventDefault(); const form=event.currentTarget as AppSelectorMap['#algorithm-note-form'];if(getBusy())return;const data=Object.fromEntries(new FormData(form)) as Record<string, string>;const note={title:data.noteTitle,noteScope:getPermissions().admin ? form.elements.noteScope.value : 'personal',nodeId:data.nodeId,tags:String(data.noteTags||'').split(/[,，、]/).map(x=>x.trim()).filter(Boolean),body:data.body,featured:data.featured === 'on',clientId:uuid(),repo:repo()};setBusy(true);try{const result=await call('saveAlgorithmNote',note);setAlgorithmNotes([...getAlgorithmNotes().filter(x=>x.path!==result.path),result]);$('#algorithm-note-dialog')!.close();render();toast('算法笔记已保存')}catch(error){$('#algorithm-note-error')!.textContent=errorMessage(error);$('#algorithm-note-error')!.hidden=false}finally{setBusy(false)}});
   function setSelectedNode(id: string | null) { algorithmSelectedNode = id; }
-  function resetRepository() { setAlgorithmNotes([]); options.setLearningGateContents([]); setAlgorithmTopics([]); setAlgorithmTree(AlgorithmDirectory.hydrate(global.QMX_ALGORITHM_TREE, [])); }
+  function resetRepository() { setAlgorithmNotes([]); options.setLearningGateContents([]); options.setLearningCurriculum(null); setAlgorithmTopics([]); setAlgorithmTree(AlgorithmDirectory.hydrate(global.QMX_ALGORITHM_TREE, [])); }
   return { get algorithmSelectedNode() { return algorithmSelectedNode; }, get algorithmMode() { return algorithmMode; }, get algorithmPendingTopic() { return algorithmPendingTopic; }, get learningController() { return learningController; }, get algorithmTopicRequest() { return algorithmTopicRequest; }, setSelectedNode, algorithmNodes, learningProgressKey, setAlgorithmMode, openLearningTopic, saveLearningProgress, renderAlgorithmNotes, updateAlgorithmTopicKind, openAlgorithmTopicEditor, isMineNote, openAlgorithmNoteDetail, openAlgorithmNoteEditor, resetRepository };
 }
