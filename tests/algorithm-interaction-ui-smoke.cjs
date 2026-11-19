@@ -222,23 +222,37 @@ async function nativeWheelChaining(page, selector, label) {
     await nativeWheelChaining(page, '.alg-tree-scroll', '390px knowledge tree');
 
     // Switch modes with a live tooltip: disposal removes it and its listeners.
-    await immediateTooltip(page, rowSelector(topic.node.id), rowText(topic.node.id), 'before switching to learning path');
+    await immediateTooltip(page, rowSelector(topic.node.id), rowText(topic.node.id), 'before switching to learning roadmap');
     const oldTrigger = await page.locator(rowSelector(topic.node.id)).elementHandle();
     await page.locator('[data-mode="path"]').click();
-    await page.locator('.alp-summary').waitFor();
-    assert.equal(await page.locator('.alg-tooltip').count(), 0, 'switching to learning path destroys the tree tooltip');
+    await page.locator('.arm').waitFor();
+    assert.equal(await page.locator('.alg-tooltip').count(), 0, 'switching to learning roadmap destroys the tree tooltip');
     await oldTrigger.evaluate(target => target.dispatchEvent(new PointerEvent('pointerover', { bubbles: true, pointerType: 'mouse' })));
     assert.equal(await page.locator('.alg-tooltip').count(), 0, 'discarded tree cannot recreate a tooltip');
     await oldTrigger.dispose();
-    await page.locator('.alp-stage-picker').click();
-    await page.locator('.alp-stage-card[data-stage-id="stage-01"]').click();
-    await nativeWheelChaining(page, '.alp-route-scroll', '390px learning route');
+    await page.locator('.arm-actual-button').click();
+    // The approved roadmap uses outer-page vertical scrolling and native inner
+    // horizontal panning at 100%; retain real wheel coverage for this layout.
+    const graph = page.locator('.arm-graph-scroll');
+    await graph.evaluate(element => { element.scrollIntoView({ block: 'start', behavior: 'instant' }); element.scrollLeft = 0; });
+    await page.evaluate(() => new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve))));
+    const graphGeometry = await graph.evaluate(element => ({ client: element.clientWidth, content: element.scrollWidth, vertical: element.scrollHeight - element.clientHeight }));
+    assert.ok(graphGeometry.content > graphGeometry.client + 100, `390px actual-size roadmap genuinely overflows horizontally: ${JSON.stringify(graphGeometry)}`);
+    assert.ok(graphGeometry.vertical <= 1, 'approved roadmap leaves vertical scrolling to the page');
+    const graphBox = await graph.boundingBox();
+    await page.mouse.move(graphBox.x + graphBox.width / 2, Math.max(40, graphBox.y + 120));
+    await page.mouse.wheel(220, 0);
+    await page.waitForFunction(() => document.querySelector('.arm-graph-scroll').scrollLeft > 30);
+    const graphOuter = await page.evaluate(() => scrollY);
+    await page.mouse.wheel(0, 240);
+    await page.waitForFunction(before => scrollY > before + 30, graphOuter);
+    assert.equal(await graph.evaluate(element => element.scrollTop), 0, 'vertical wheel scrolls the page while graph keeps native horizontal position');
     await page.locator('[data-mode="tree"]').click();
     await page.locator('.alg-browser').waitFor();
     assert.equal(await page.locator('.alg-tooltip').count(), 1, 'returning to the tree creates exactly one tooltip');
     assert.equal(await page.locator(itemSelector(topic.node.id)).getAttribute('aria-selected'), 'true', 'mode switch retains selected algorithm');
     assert.deepEqual(errors, [], 'no renderer exceptions');
-    console.log('PASS algorithm interactions: synchronous row/nested badge tooltips, switching, hover/selection, retained tree DOM, focus/Escape/leave/pointerdown/scroll, disposal, light/dark, 390px clamp, native wheel chaining in tree and learning route');
+    console.log('PASS algorithm interactions: synchronous row/nested badge tooltips, switching, hover/selection, retained tree DOM, focus/Escape/leave/pointerdown/scroll, disposal, light/dark, 390px clamp, native tree wheel chaining, roadmap horizontal pan and page scrolling');
   } finally {
     await browser.close();
   }

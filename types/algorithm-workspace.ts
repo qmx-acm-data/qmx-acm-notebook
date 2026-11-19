@@ -19,6 +19,7 @@ export interface AlgorithmWorkspaceOptions {
   getReadingDetail(): import('./reading-detail').ReadingDetailApi;
   accountId(): string | null;
   repo(): string;
+  repoSource(): string;
   uuid(): string;
   setBusy(value: boolean): void;
   persistLocal(): Promise<unknown>;

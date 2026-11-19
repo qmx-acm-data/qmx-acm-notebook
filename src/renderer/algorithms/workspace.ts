@@ -1,6 +1,8 @@
 import { AlgorithmDirectory } from './directory.js';
 import { AlgorithmBrowser } from './browser.js';
-import { LearningPath } from './learning-path.js';
+import { LearningRoadmap } from './roadmap.js';
+import { roadmapData } from './roadmap-data.js';
+import { openRoadmapResources } from './roadmap-resources.js';
 import { applyCurriculumLayout } from '../../shared/learning-curriculum.js';
 import { openCurriculumEditor } from './curriculum-editor.js';
 /** Algorithm app integration with the browser and learning-route renderers. */
@@ -30,13 +32,29 @@ export function createAlgorithmWorkspace(options: Options): Controller {
   let algorithmPendingTopic: string | null = null;
   let algorithmController: AlgorithmBrowserController | null = null;
   let learningController: LearningPathController | null = null;
-  let curriculumEditor: ReturnType<typeof openCurriculumEditor> | null = null;
+  let resources: ReturnType<typeof openRoadmapResources> | null = null;
   function effectiveCurriculum() {
     const base = global.QMX_ALGORITHM_LEARNING_PATH;
     const document = options.getLearningCurriculum();
     return base && document ? applyCurriculumLayout(base, document.layout) : base;
   }
-  function learningProgressKey() { return JSON.stringify([repo(), accountId() || 'anonymous', global.QMX_ALGORITHM_LEARNING_PATH?.id || 'xcpc-learning']); }
+  function learningProgressKey() { return JSON.stringify([options.repoSource(), accountId() || 'anonymous', global.QMX_ALGORITHM_LEARNING_PATH?.id || 'xcpc-learning']); }
+  function learningProgress(): import('../../../types/learning-path').LearningPathProgress {
+    const current = getLocal().learningPaths?.[learningProgressKey()];
+    if (current) return current;
+    if (options.repoSource().startsWith('https://api.github.com|')) {
+      const legacy = JSON.stringify([repo(), accountId() || 'anonymous', global.QMX_ALGORITHM_LEARNING_PATH?.id || 'xcpc-learning']);
+      return getLocal().learningPaths?.[legacy] || { gates: {} };
+    }
+    return { gates: {} };
+  }
+  async function saveRoadmapProgress(next: import('../../../types/learning-path').LearningPathProgress): Promise<void> {
+    if (getBusy()) throw new Error('请等待当前操作完成');
+    const key = learningProgressKey(), previous = getLocal().learningPaths?.[key];
+    setBusy(true); getLocal().learningPaths = { ...(getLocal().learningPaths || {}), [key]: structuredClone(next) };
+    try { await persistLocal(); } catch (error) { if (previous === undefined) delete getLocal().learningPaths![key]; else getLocal().learningPaths![key] = previous; throw error; }
+    finally { setBusy(false); }
+  }
   function setAlgorithmMode(mode: string) { if (getBusy()) return; algorithmMode = mode; renderAlgorithmNotes(); }
   function openLearningTopic(id: string) { algorithmPendingTopic = id; setAlgorithmMode('tree'); }
   async function saveLearningProgress(value: LearningPathSavedProgress) {
@@ -54,58 +72,50 @@ export function createAlgorithmWorkspace(options: Options): Controller {
   function renderAlgorithmNotes() {
     getReadingDetail()?.closeAll();
     const panel = $('#algorithm-panel')!;
-    curriculumEditor?.destroy(); curriculumEditor = null;
+    resources?.destroy(); resources = null;
     algorithmController?.destroy(); learningController?.destroy(); learningController = null;
     panel.replaceChildren();
     const modes = element('div', 'algorithm-view-modes'); modes.setAttribute('role', 'group'); modes.setAttribute('aria-label', '算法学习方式');
-    for (const [mode, title] of [['tree', '知识树'], ['path', '闯关学习']]) {
+    for (const [mode, title] of [['tree', '知识树'], ['path', '学习路线']]) {
       const control = button(title, 'button secondary', () => setAlgorithmMode(mode)); control.dataset.mode = mode; control.setAttribute('aria-pressed', String(algorithmMode === mode)); modes.append(control);
     }
     panel.append(modes); const host = element('div', 'algorithm-view-content'); panel.append(host);
     if (algorithmMode === 'path') {
-      const canManage = Boolean(getAccount() && getPermissions().admin === true);
-      if (canManage) {
-        const edit = button('编排课程', 'button secondary alp-curriculum-edit-button', () => {
-          if (getBusy() || !getAccount() || getPermissions().admin !== true) return;
-          const base = global.QMX_ALGORITHM_LEARNING_PATH, curriculum = effectiveCurriculum();
-          if (!base || !curriculum) return;
-          curriculumEditor?.destroy();
-          curriculumEditor = openCurriculumEditor({ host, canManage: true, curriculum, baseCurriculum: base,
-            document: options.getLearningCurriculum(), tree: getAlgorithmTree(),
-            onSave: async input => {
+      const curriculum = effectiveCurriculum();
+      const mapped = { ...roadmapData, nodes: roadmapData.nodes.map(node => ({ ...node })), indexEntries: roadmapData.indexEntries.map(node => ({ ...node })) };
+      // Administrator-added curriculum entries remain reachable through their exact topic identities.
+      const allGates = (curriculum?.stages || []).flatMap(stage => stage.gates || []);
+      for (const node of [...mapped.nodes, ...mapped.indexEntries]) {
+        const known = new Set(node.topicIds || []);
+        const added = allGates.filter(gate => gate.id.startsWith('custom-') && (gate.topicIds || []).some(id => known.has(id)));
+        node.gateIds = [...new Set([...(node.gateIds || []), ...added.map(gate => gate.id)])];
+      }
+      learningController = LearningRoadmap.render({ host, data: mapped, progress: learningProgress(),
+        onFocus: async id => { await saveRoadmapProgress({ ...learningProgress(), roadmapFocus: id }); }, toast,
+        onOpenResources: node => {
+          if (!curriculum || getBusy()) return;
+          resources?.destroy();
+          resources = openRoadmapResources({ host: host.querySelector<HTMLElement>('.arm') || host, node, curriculum, tree: getAlgorithmTree(), notes: getAlgorithmNotes() as LearningPathNote[],
+            progress: structuredClone(learningProgress()), contents: options.getLearningGateContents(), canManage: Boolean(getAccount() && getPermissions().admin === true),
+            onSaveGate: async input => {
               if (getBusy()) throw new Error('请等待当前操作完成');
-              if (!getAccount() || getPermissions().admin !== true) throw new Error('只有管理员可以编排课程');
-              const source = repo(), owner = accountId(); setBusy(true);
+              if (!getAccount() || getPermissions().admin !== true) throw new Error('只有管理员可以修改公共资料');
+              const source = options.repoSource(), owner = accountId(); setBusy(true);
               try {
-                const saved = await options.saveLearningCurriculum({ ...input, repo: source });
-                if (source !== repo() || owner !== accountId()) throw new Error('账号或仓库已改变，请重新同步');
-                options.setLearningCurriculum(saved); return saved;
+                const saved = await options.saveLearningGate({ ...input, repo: repo() });
+                if (source !== options.repoSource() || owner !== accountId()) throw new Error('账号或资料库已改变，请重新同步');
+                options.setLearningGateContents([...options.getLearningGateContents().filter(content => content.gateId !== saved.gateId), saved]); return saved;
               } finally { setBusy(false); }
             },
-            onApplied: () => { queueMicrotask(() => { renderAlgorithmNotes(); toast('课程编排已发布'); }); },
-            onClose: () => { curriculumEditor = null; }
+            onPersonal: async (gateId, url) => {
+              const previous = learningProgress(), record = previous.gates?.[gateId];
+              const fields = record && typeof record === 'object' && !Array.isArray(record) ? record as Record<string, unknown> : {};
+              await saveRoadmapProgress({ ...previous, gates: { ...(previous.gates || {}), [gateId]: { ...fields, practiceUrl: url } } });
+            },
+            onTopic: openLearningTopic, onNote: (note, gateId) => openAlgorithmNoteDetail(note, { gateId }), onExternal: options.openExternal
           });
-        });
-        modes.append(edit);
-      }
-      learningController = LearningPath.render({ host, tree: getAlgorithmTree(), curriculum: effectiveCurriculum(),
-        progress: getLocal().learningPaths?.[learningProgressKey()] || { gates: {} }, progressKey: learningProgressKey(), account: getAccount(), notes: getAlgorithmNotes() as LearningPathNote[], canUpload: Boolean(getAccount() && getPermissions().push),
-        canManage: Boolean(getAccount() && getPermissions().admin === true), gateContents: options.getLearningGateContents(),
-        onSaveGate: async input => {
-          if (getBusy()) throw new Error('请等待当前操作完成');
-          if (!getAccount() || getPermissions().admin !== true) throw new Error('只有管理员可以修改公共关卡');
-          const source = repo(), owner = accountId();
-          setBusy(true);
-          try {
-            const saved = await options.saveLearningGate({ ...input, repo: source });
-            if (source !== repo() || owner !== accountId()) throw new Error('账号或仓库已改变，请重新同步');
-            options.setLearningGateContents([...options.getLearningGateContents().filter(content => content.gateId !== saved.gateId), saved]);
-            return saved;
-          } finally { setBusy(false); }
-        },
-        onProgress: saveLearningProgress, onTopic: openLearningTopic,
-        onNote: openAlgorithmNoteDetail, onExternal: options.openExternal,
-        onUpload: id => { algorithmSelectedNode = id; openAlgorithmNoteEditor(); }, toast });
+        }
+      });
       return;
     }
     algorithmController = AlgorithmBrowser.render({
@@ -171,7 +181,7 @@ export function createAlgorithmWorkspace(options: Options): Controller {
     const path = [];
     const stage = global.QMX_ALGORITHM_LEARNING_PATH?.stages!.find(item => item.gates!.some(gate => gateId ? gate.id === gateId : gate.topicIds!.includes(note.nodeId)));
     const gate = stage?.gates!.find(item => gateId ? item.id === gateId : item.topicIds!.includes(note.nodeId));
-    path.push({ label: '闯关学习', onClick() { getReadingDetail().closeAll(); } });
+    path.push({ label: '学习路线', onClick() { getReadingDetail().closeAll(); } });
     if (stage) path.push({ label: `第${stage.index}章 ${stage.title}`, onClick() { getReadingDetail().closeAll(); if (gate) learningController?.selectGate(gate.id); } });
     if (gate) path.push({ label: gate.title!, onClick() { noteDetail?.close(); } });
     path.push({ label: note.title || '未命名笔记' });

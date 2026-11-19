@@ -492,7 +492,7 @@ function render(options?: Options | null): Controller {
     }
     const utilities = element('footer', 'alg-detail-utilities');
     if (opts.canManage && typeof opts.onAddTopic === 'function') utilities.append(button('＋ 添加算法', 'alg-text-button alg-add-topic-detail', () => { expandedReader?.close(); opts.onAddTopic!(selected.node.id); }));
-    if (typeof opts.onLearningPath === 'function') utilities.append(button('在学习路径中查看 →', 'alg-text-button alg-add-topic-detail', () => { expandedReader?.close(); opts.onLearningPath!(selected.node.id); }));
+    if (typeof opts.onLearningPath === 'function') utilities.append(button('在学习路线中查看 →', 'alg-text-button alg-add-topic-detail', () => { expandedReader?.close(); opts.onLearningPath!(selected.node.id); }));
     function appendInformation() { if (information.childNodes.length) pane.append(information); if (utilities.childNodes.length) pane.append(utilities); }
     pane.append(detail);
     if (filtering) {
