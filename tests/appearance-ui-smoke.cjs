@@ -215,7 +215,7 @@ async function semanticSnapshot(page) {
         await navigate(page, 'algorithms');
         samples += await contrast(page, '.alg-title, .alg-tree-label, .alg-button-primary, .alg-scope-button, .alg-detail-title, .alg-intro', `${label} algorithms`);
         await page.locator('.algorithm-view-modes [data-mode="path"]').click();
-        samples += await contrast(page, '.alp-stat strong, .alp-stage-title, .alp-detail .alp-gate-title, .alp-button-primary', `${label} learning path`);
+        samples += await contrast(page, '.arm-title, .arm-stage-button strong, .arm-node strong, .arm-node small, .arm-button, .arm-color-note', `${label} learning roadmap`);
         await page.locator('.algorithm-view-modes [data-mode="tree"]').click();
         await page.setViewportSize({ width: 390, height: 844 });
         for (const view of ['home', 'public', 'favorites', 'algorithms', 'tricks']) {

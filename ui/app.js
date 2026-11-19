@@ -20,8 +20,8 @@
     ["purple", ["省选/NOI-", "省选/NOI减", "省选NOI-"]],
     ["black", ["NOI/NOI+/CTS", "NOI/NOI+/CTSC", "NOI+", "NOI/CTSC", "NOI", "CTSC"]]
   ];
-  function difficulty(input3) {
-    const record = input3 || {};
+  function difficulty(input2) {
+    const record = input2 || {};
     const code = normalizePlatform(record.platform);
     const native = String(record.difficulty == null ? "" : record.difficulty).trim();
     const hasRating = record.rating !== void 0 && record.rating !== null && String(record.rating).trim() !== "" && Number.isFinite(Number(record.rating));
@@ -97,10 +97,10 @@
       return urlPid(url) || url;
     }).replace(/\bcf[\s_-]*(\d+)[\s_-]*([a-z]\d*)\b/g, "cf$1$2").replace(/\b(\d+)[\s_-]+([a-z]\d*)\b/g, "$1$2").replace(/\bp[\s_-]+(\d+)\b/g, "p$1");
   }
-  function match(input3, query) {
+  function match(input2, query) {
     const phrase = queryText(query);
     if (!phrase) return 1;
-    const record = input3 || {};
+    const record = input2 || {};
     const terms = Array.from(new Set(phrase.split(/\s+/u)));
     const ids = identifiers(record);
     const title = text(record.title);
@@ -130,8 +130,8 @@
     else if (terms.length > 1 && body.includes(phrase)) score2 += 20;
     return score2;
   }
-  function tagHits(input3, selected2) {
-    const record = input3;
+  function tagHits(input2, selected2) {
+    const record = input2;
     const wanted = selected2 instanceof Set ? selected2 : new Set(selected2 || []);
     return Array.from(new Set(Array.isArray(record?.tags) ? record.tags.map(String) : [])).filter((tag) => wanted.has(tag)).length;
   }
@@ -144,26 +144,26 @@
   function compact2(value) {
     return normalize(value).replace(/[\s_\-()/（）、，,·.:：]/gu, "");
   }
-  function score(query, fields) {
+  function score(query, fields2) {
     const phrase = normalize(query);
     if (!phrase) return 1;
     const terms = phrase.split(/\s+/u).filter(Boolean);
-    const prepared = fields.map((field3) => ({ value: normalize(field3.value), dense: compact2(field3.value), weight: field3.weight || 1 }));
+    const prepared = fields2.map((field2) => ({ value: normalize(field2.value), dense: compact2(field2.value), weight: field2.weight || 1 }));
     let total = 0;
     for (const term of terms) {
       const dense = compact2(term);
       let best = 0;
-      for (const field3 of prepared) {
-        if (!field3.value) continue;
-        const hit = field3.value === term || dense && field3.dense === dense ? 10 : field3.value.startsWith(term) || dense && field3.dense.startsWith(dense) ? 6 : field3.value.includes(term) || dense && field3.dense.includes(dense) ? 3 : 0;
-        best = Math.max(best, hit * field3.weight);
+      for (const field2 of prepared) {
+        if (!field2.value) continue;
+        const hit = field2.value === term || dense && field2.dense === dense ? 10 : field2.value.startsWith(term) || dense && field2.dense.startsWith(dense) ? 6 : field2.value.includes(term) || dense && field2.dense.includes(dense) ? 3 : 0;
+        best = Math.max(best, hit * field2.weight);
       }
       if (!best) return 0;
       total += best;
     }
     if (terms.length > 1) {
       const dense = compact2(phrase);
-      total += Math.max(0, ...prepared.map((field3) => dense && field3.dense.includes(dense) ? 5 * field3.weight : 0));
+      total += Math.max(0, ...prepared.map((field2) => dense && field2.dense.includes(dense) ? 5 * field2.weight : 0));
     }
     return total;
   }
@@ -365,14 +365,14 @@
       if (!target.contains(event.relatedTarget) && tipTarget === target) dismissTip();
     });
   }
-  function element(tag, className, text4) {
+  function element(tag, className, text3) {
     const node2 = document.createElement(tag);
     if (className) node2.className = className;
-    if (text4 !== void 0) node2.textContent = String(text4);
+    if (text3 !== void 0) node2.textContent = String(text3);
     return node2;
   }
-  function button(text4, className, action2) {
-    const node2 = element("button", className, text4);
+  function button(text3, className, action2) {
+    const node2 = element("button", className, text3);
     node2.type = "button";
     node2.addEventListener("click", action2);
     return node2;
@@ -399,8 +399,8 @@
     return Number.isNaN(date.getTime()) ? "时间未知" : date.toLocaleString("zh-CN", { month: "2-digit", day: "2-digit", hour: "2-digit", minute: "2-digit" });
   }
   function errorText(error) {
-    const text4 = typeof error === "string" ? error : error?.message;
-    return String(text4 || "操作失败，请稍后重试。");
+    const text3 = typeof error === "string" ? error : error?.message;
+    return String(text3 || "操作失败，请稍后重试。");
   }
   function safeURL(value, code, profileOnly = false) {
     try {
@@ -413,10 +413,10 @@
       return null;
     }
   }
-  function external(text4, url, code, className) {
+  function external(text3, url, code, className) {
     const safe = safeURL(url, code);
-    if (!safe || typeof bridge?.openExternal !== "function") return element("span", className, text4);
-    const link = element("a", className, text4);
+    if (!safe || typeof bridge?.openExternal !== "function") return element("span", className, text3);
+    const link = element("a", className, text3);
     link.href = safe;
     link.addEventListener("click", async (event) => {
       event.preventDefault();
@@ -486,9 +486,9 @@
   }
   function drawSummary(panel, contests) {
     const metrics = element("div", "platform-metrics");
-    for (const [field3, label, key] of [["solvedCount", "总解题", "solved"], ["submissionCount", "总提交", "submissions"]]) {
-      const values = scope().filter(({ code }) => bound(code) && known(entry(code).data?.[field3]));
-      const total = values.length ? values.reduce((sum, { code }) => sum + entry(code).data[field3], 0) : null;
+    for (const [field2, label, key] of [["solvedCount", "总解题", "solved"], ["submissionCount", "总提交", "submissions"]]) {
+      const values = scope().filter(({ code }) => bound(code) && known(entry(code).data?.[field2]));
+      const total = values.length ? values.reduce((sum, { code }) => sum + entry(code).data[field2], 0) : null;
       const node2 = metric(selected === "ALL" ? `${label} · 已知合计` : label, total, key);
       node2.append(element("small", "platform-coverage", coverage(values.length, scope().length)));
       metrics.append(node2);
@@ -509,10 +509,10 @@
     panel.append(metrics);
     panel.append(element("p", "platform-sum-note", "解题数为各平台已解题数相加，同一道题跨平台不去重；未知数据不计为 0。"));
   }
-  function svgElement(tag, attributes = {}, text4) {
+  function svgElement(tag, attributes = {}, text3) {
     const node2 = document.createElementNS("http://www.w3.org/2000/svg", tag);
     for (const [name, value] of Object.entries(attributes)) node2.setAttribute(name, String(value));
-    if (text4 !== void 0) node2.textContent = String(text4);
+    if (text3 !== void 0) node2.textContent = String(text3);
     return node2;
   }
   function drawRatingChart(code) {
@@ -588,20 +588,20 @@
     heading.append(element("h3", "", "每日解题"));
     const range = activityRange();
     const label = element("label", "platform-period-label", "时间范围");
-    const select2 = element("select", "platform-select");
-    select2.id = "platform-activity-period";
-    select2.setAttribute("aria-label", "每日解题时间范围");
+    const select = element("select", "platform-select");
+    select.id = "platform-activity-period";
+    select.setAttribute("aria-label", "每日解题时间范围");
     for (const [value, title] of [["recent", "最近一年"], [String(range.year - 1), `${range.year - 1} 年`]]) {
       const option = element("option", "", title);
       option.value = value;
-      select2.append(option);
+      select.append(option);
     }
-    select2.value = activityPeriod;
-    select2.addEventListener("change", () => {
-      activityPeriod = select2.value;
+    select.value = activityPeriod;
+    select.addEventListener("change", () => {
+      activityPeriod = select.value;
       updateScope();
     });
-    label.append(select2);
+    label.append(select);
     heading.append(label);
     section.append(heading);
     const available = scope().filter(({ code }) => {
@@ -685,7 +685,7 @@
     months.replaceChildren(...Array.from({ length: weeks }, (_, week) => element("span", "", monthLabels.get(week) || "")));
     scroll.classList.add(`platform-heatmap-weeks-${weeks}`);
     const weekdays = element("div", "platform-heatmap-weekdays");
-    for (const text4 of ["一", "", "三", "", "五", "", "日"]) weekdays.append(element("span", "", text4));
+    for (const text3 of ["一", "", "三", "", "五", "", "日"]) weekdays.append(element("span", "", text3));
     const calendar = element("div", "platform-heatmap-calendar");
     calendar.append(weekdays, grid);
     scroll.append(months, calendar);
@@ -739,17 +739,17 @@
     title.id = "platform-overview-title";
     copy.append(title, element("p", "", "公开主页数据 · 仅保存在本机 · 独立于 GitHub 账户"));
     const actions = element("div", "platform-dashboard-actions");
-    const select2 = element("select", "platform-select");
-    select2.id = "platform-select";
-    select2.setAttribute("aria-label", "选择统计平台");
+    const select = element("select", "platform-select");
+    select.id = "platform-select";
+    select.setAttribute("aria-label", "选择统计平台");
     for (const platform of [{ code: "ALL", name: "全部平台 · 汇总" }, ...platforms]) {
       const option = element("option", "", platform.code === "ALL" ? platform.name : `${platform.code} · ${platform.name}`);
       option.value = platform.code;
-      select2.append(option);
+      select.append(option);
     }
-    select2.value = selected;
-    select2.addEventListener("change", () => {
-      selected = select2.value;
+    select.value = selected;
+    select.addEventListener("change", () => {
+      selected = select.value;
       updateScope();
     });
     const targets = platforms.filter(({ code }) => bound(code));
@@ -770,7 +770,7 @@
     });
     toggle.id = "platform-expand";
     toggle.setAttribute("aria-expanded", String(expanded));
-    actions.append(select2, refresh, settings, toggle);
+    actions.append(select, refresh, settings, toggle);
     heading.append(copy, actions);
     panel.append(heading);
     if (!targets.length) {
@@ -1031,25 +1031,25 @@
     const actual = [date.getFullYear(), date.getMonth(), date.getDate(), date.getHours(), date.getMinutes(), date.getSeconds(), date.getMilliseconds()];
     return !Number.isNaN(date.getTime()) && actual.every((part, index) => part === expected[index]);
   }
-  function node(tag, className, text4) {
+  function node(tag, className, text3) {
     const result = document.createElement(tag);
     if (className) result.className = className;
-    if (text4 !== void 0) result.textContent = text4;
+    if (text3 !== void 0) result.textContent = text3;
     return result;
   }
-  function action(text4, className, callback, label) {
-    const result = node("button", className, text4);
+  function action(text3, className, callback, label) {
+    const result = node("button", className, text3);
     result.type = "button";
     if (label) result.setAttribute("aria-label", label);
     result.addEventListener("click", callback);
     return result;
   }
-  function enhance(input3) {
-    if (enhanced.has(input3)) return enhanced.get(input3);
-    if (!(input3 instanceof HTMLInputElement) || input3.type !== "datetime-local") throw new TypeError("NotebookDeadline.enhance requires a datetime-local input.");
+  function enhance(input2) {
+    if (enhanced.has(input2)) return enhanced.get(input2);
+    if (!(input2 instanceof HTMLInputElement) || input2.type !== "datetime-local") throw new TypeError("NotebookDeadline.enhance requires a datetime-local input.");
     const id = `planner-deadline-${++sequence}`;
-    const button5 = action("", "planner-deadline-trigger", () => {
-      if (input3.disabled || input3.matches(":disabled")) return;
+    const button6 = action("", "planner-deadline-trigger", () => {
+      if (input2.disabled || input2.matches(":disabled")) return;
       if (opened) close();
       else open2();
     });
@@ -1061,12 +1061,12 @@
     path.setAttribute("d", "M5.5 2.5v3m9-3v3M3 8h14M4.5 4h11A1.5 1.5 0 0 1 17 5.5v10a1.5 1.5 0 0 1-1.5 1.5h-11A1.5 1.5 0 0 1 3 15.5v-10A1.5 1.5 0 0 1 4.5 4ZM6.5 11h2m3 0h2m-7 3h2");
     icon.append(path);
     const caption = node("span", "planner-deadline-caption");
-    button5.append(icon, caption);
-    button5.setAttribute("aria-haspopup", "dialog");
-    button5.setAttribute("aria-expanded", "false");
-    button5.setAttribute("aria-controls", id);
-    input3.hidden = true;
-    input3.insertAdjacentElement("afterend", button5);
+    button6.append(icon, caption);
+    button6.setAttribute("aria-haspopup", "dialog");
+    button6.setAttribute("aria-expanded", "false");
+    button6.setAttribute("aria-controls", id);
+    input2.hidden = true;
+    input2.insertAdjacentElement("afterend", button6);
     const popover = node("div", "planner-deadline-popover");
     popover.id = id;
     popover.setAttribute("popover", "auto");
@@ -1090,8 +1090,8 @@
     calendar.setAttribute("role", "group");
     calendar.setAttribute("aria-labelledby", month.id);
     const shortcuts = node("div", "planner-deadline-shortcuts");
-    for (const [text4, offset] of [["今天", 0], ["明天", 1], ["+7天", 7]]) {
-      shortcuts.append(action(text4, "planner-deadline-shortcut", () => {
+    for (const [text3, offset] of [["今天", 0], ["明天", 1], ["+7天", 7]]) {
+      shortcuts.append(action(text3, "planner-deadline-shortcut", () => {
         const date = /* @__PURE__ */ new Date();
         date.setHours(12, 0, 0, 0);
         date.setDate(date.getDate() + offset);
@@ -1141,14 +1141,14 @@
       position();
     }
     function refresh() {
-      const value = parts(input3.value);
+      const value = parts(input2.value);
       caption.textContent = value ? `${Number(value[1].split("-")[1])}/${Number(value[1].split("-")[2])} ${value[2]}` : "截止时间";
-      button5.classList.toggle("has-deadline", Boolean(value));
-      button5.disabled = input3.disabled || input3.matches(":disabled");
-      const label = input3.getAttribute("aria-label") || "截止时间（可选，使用本机时区）";
-      button5.setAttribute("aria-label", value ? `${label}：${value[1]} ${value[2]}` : label);
-      button5.title = value ? `${value[1]} ${input3.value.split("T")[1]}（本机时区）` : label;
-      if (button5.disabled && opened) close();
+      button6.classList.toggle("has-deadline", Boolean(value));
+      button6.disabled = input2.disabled || input2.matches(":disabled");
+      const label = input2.getAttribute("aria-label") || "截止时间（可选，使用本机时区）";
+      button6.setAttribute("aria-label", value ? `${label}：${value[1]} ${value[2]}` : label);
+      button6.title = value ? `${value[1]} ${input2.value.split("T")[1]}（本机时区）` : label;
+      if (button6.disabled && opened) close();
       return api;
     }
     function renderCalendar(focusDate) {
@@ -1212,7 +1212,7 @@
     }
     function position() {
       if (!opened) return;
-      if (!button5.isConnected || button5.disabled) {
+      if (!button6.isConnected || button6.disabled) {
         close();
         return;
       }
@@ -1222,7 +1222,7 @@
       const rightEdge = leftEdge + (viewport?.width || window.innerWidth) - 16;
       const bottomEdge = topEdge + (viewport?.height || window.innerHeight) - 16;
       popover.style.maxHeight = `${Math.max(0, bottomEdge - topEdge)}px`;
-      const anchor = button5.getBoundingClientRect();
+      const anchor = button6.getBoundingClientRect();
       const box = popover.getBoundingClientRect();
       const below = anchor.bottom + 7;
       const above = anchor.top - box.height - 7;
@@ -1239,14 +1239,14 @@
       if (!opened) return;
       opened = false;
       if (active === api) active = null;
-      button5.setAttribute("aria-expanded", "false");
+      button6.setAttribute("aria-expanded", "false");
       cancelAnimationFrame(frame);
       window.removeEventListener("resize", schedulePosition);
       document.removeEventListener("scroll", schedulePosition, true);
       window.visualViewport?.removeEventListener("resize", schedulePosition);
       window.visualViewport?.removeEventListener("scroll", schedulePosition);
       queueMicrotask(() => {
-        if (!active && button5.isConnected && !button5.disabled) button5.focus({ preventScroll: true });
+        if (!active && button6.isConnected && !button6.disabled) button6.focus({ preventScroll: true });
       });
     }
     function close() {
@@ -1255,9 +1255,9 @@
     }
     function open2() {
       refresh();
-      if (opened || button5.disabled || !button5.isConnected) return;
+      if (opened || button6.disabled || !button6.isConnected) return;
       if (active && active !== api) active.close();
-      original = input3.value;
+      original = input2.value;
       originalParts = parts(original);
       draftDate = originalParts?.[1] || "";
       time2.value = originalParts?.[2] || "21:00";
@@ -1266,11 +1266,11 @@
       view = selected2 ? localDay(selected2[0], selected2[1] - 1, 1) : localDay(today.getFullYear(), today.getMonth(), 1);
       clearError();
       renderCalendar();
-      (input3.closest("dialog") || document.body).append(popover);
+      (input2.closest("dialog") || document.body).append(popover);
       popover.showPopover();
       opened = true;
       active = api;
-      button5.setAttribute("aria-expanded", "true");
+      button6.setAttribute("aria-expanded", "true");
       position();
       const focusDate = draftDate || dateKey(today);
       (calendar.querySelector(`[data-date="${focusDate}"]`) || calendar.querySelector("button:not(:disabled)")).focus({ preventScroll: true });
@@ -1280,7 +1280,7 @@
       window.visualViewport?.addEventListener("scroll", schedulePosition);
     }
     function apply() {
-      if (input3.disabled || input3.matches(":disabled")) {
+      if (input2.disabled || input2.matches(":disabled")) {
         close();
         return;
       }
@@ -1298,10 +1298,10 @@
         fail("该本地时间无效，请重新选择日期和时间。", time2);
         return;
       }
-      input3.value = value;
+      input2.value = value;
       refresh();
-      input3.dispatchEvent(new Event("input", { bubbles: true }));
-      input3.dispatchEvent(new Event("change", { bubbles: true }));
+      input2.dispatchEvent(new Event("input", { bubbles: true }));
+      input2.dispatchEvent(new Event("change", { bubbles: true }));
       close();
     }
     popover.addEventListener("beforetoggle", (event) => {
@@ -1315,16 +1315,16 @@
       }
     });
     time2.addEventListener("input", clearError);
-    input3.addEventListener("input", refresh);
-    input3.addEventListener("change", refresh);
-    input3.form?.addEventListener("reset", () => queueMicrotask(() => {
+    input2.addEventListener("input", refresh);
+    input2.addEventListener("change", refresh);
+    input2.form?.addEventListener("reset", () => queueMicrotask(() => {
       close();
       refresh();
     }));
     const observer = new MutationObserver(refresh);
-    observer.observe(input3, { attributes: true, attributeFilter: ["disabled", "value", "aria-label"] });
-    const api = { input: input3, button: button5, popover, refresh, open: open2, close };
-    enhanced.set(input3, api);
+    observer.observe(input2, { attributes: true, attributeFilter: ["disabled", "value", "aria-label"] });
+    const api = { input: input2, button: button6, popover, refresh, open: open2, close };
+    enhanced.set(input2, api);
     refresh();
     return api;
   }
@@ -1344,14 +1344,14 @@
   var completedOpen = { problems: false, tasks: false };
   var deleteTarget = "";
   var lastFocus;
-  var el = (tag, className, text4) => {
+  var el = (tag, className, text3) => {
     const node2 = document.createElement(tag);
     if (className) node2.className = className;
-    if (text4 !== void 0) node2.textContent = String(text4);
+    if (text3 !== void 0) node2.textContent = String(text3);
     return node2;
   };
-  function button2(text4, className, action2) {
-    const node2 = el("button", className, text4);
+  function button2(text3, className, action2) {
+    const node2 = el("button", className, text3);
     node2.type = "button";
     node2.addEventListener("click", action2);
     return node2;
@@ -1359,14 +1359,14 @@
   function field(label, name, type, placeholder, maxLength) {
     const wrap = el("label", "planner-field");
     wrap.append(el("span", "planner-sr-only", label));
-    const input3 = el(type === "textarea" ? "textarea" : "input", "planner-input");
-    input3.name = name;
-    if (type !== "textarea") input3.type = type;
-    if (placeholder) input3.placeholder = placeholder;
-    if (maxLength) input3.maxLength = maxLength;
-    input3.setAttribute("aria-label", label);
-    wrap.append(input3);
-    return { wrap, input: input3 };
+    const input2 = el(type === "textarea" ? "textarea" : "input", "planner-input");
+    input2.name = name;
+    if (type !== "textarea") input2.type = type;
+    if (placeholder) input2.placeholder = placeholder;
+    if (maxLength) input2.maxLength = maxLength;
+    input2.setAttribute("aria-label", label);
+    wrap.append(input2);
+    return { wrap, input: input2 };
   }
   function errorText2(error) {
     return String(typeof error === "string" ? error : error?.message || "保存失败，请重试。").replace(/^Error:\s*/, "");
@@ -1492,17 +1492,17 @@
     const error = el("p", "planner-error");
     error.setAttribute("role", "alert");
     error.hidden = true;
-    const list2 = el("div", "planner-list");
-    list2.id = `planner-${kind}-list`;
-    list2.tabIndex = 0;
-    list2.setAttribute("role", "region");
-    list2.setAttribute("aria-label", kind === "problems" ? "待做题单，可向下滚动" : "学习任务，可向下滚动");
+    const list = el("div", "planner-list");
+    list.id = `planner-${kind}-list`;
+    list.tabIndex = 0;
+    list.setAttribute("role", "region");
+    list.setAttribute("aria-label", kind === "problems" ? "待做题单，可向下滚动" : "学习任务，可向下滚动");
     const more = button2("收起 ▴", "planner-list-toggle", () => {
       collapsed[kind] = !collapsed[kind];
       drawCard(kind);
       more.focus();
     });
-    more.setAttribute("aria-controls", list2.id);
+    more.setAttribute("aria-controls", list.id);
     heading.lastChild.remove();
     heading.append(more);
     const completed = el("details", "planner-completed");
@@ -1514,8 +1514,8 @@
     });
     const hint = el("p", "planner-scroll-hint", "向下滚动查看全部");
     hint.hidden = true;
-    card.append(heading, form, error, list2, hint, completed);
-    const refs = { card, count, form, error, list: list2, more, hint, completed, summary, doneList };
+    card.append(heading, form, error, list, hint, completed);
+    const refs = { card, count, form, error, list, more, hint, completed, summary, doneList };
     cards[kind] = refs;
     return refs;
   }
@@ -1845,13 +1845,13 @@
   };
 
   // src/renderer/home/contests.ts
-  function create({ demo, getSettings, setSettings, getView, getLoading, canRefresh, call, writeDemo, toast, errorMessage: errorMessage2, openExternal }) {
+  function create({ demo, getSettings, setSettings, getView, getLoading, canRefresh, call, writeDemo, toast, errorMessage, openExternal }) {
     const $ = (selector, root2 = document) => root2.querySelector(selector);
     const $$ = (selector, root2 = document) => Array.from(root2.querySelectorAll(selector));
-    function element4(tag, className, text4) {
+    function element4(tag, className, text3) {
       const node2 = document.createElement(tag);
       if (className) node2.className = className;
-      if (text4 !== void 0) node2.textContent = String(text4);
+      if (text3 !== void 0) node2.textContent = String(text3);
       return node2;
     }
     function append(parent, ...children) {
@@ -1860,7 +1860,7 @@
       });
       return parent;
     }
-    function button5(label, className, action2) {
+    function button6(label, className, action2) {
       const node2 = element4("button", className, label);
       node2.type = "button";
       node2.addEventListener("click", action2);
@@ -1948,7 +1948,7 @@
       } catch (error) {
         setSettings({ ...getSettings(), contestOptOuts: previous });
         renderContestCards();
-        toast(`比赛偏好未保存：${errorMessage2(error)}`);
+        toast(`比赛偏好未保存：${errorMessage(error)}`);
       } finally {
         contestPreferencePending = false;
         updateContestPreferenceControls();
@@ -2009,7 +2009,7 @@
         append(chip, contestLink(`${platform.name} ↗`, platform.url, "contest-official-link", `${platform.id}:official`), element4("span", `contest-source-status${source?.error ? " is-error" : source?.stale ? " is-stale" : ""}`, status));
         sources.append(chip);
       }
-      const list2 = element4("div", "contest-list");
+      const list = element4("div", "contest-list");
       const items = mergedContests(now);
       for (const contest of items) {
         const { platform } = contest, active3 = contest.start <= now;
@@ -2029,17 +2029,17 @@
         countdown.dataset.phase = active3 ? "active" : "upcoming";
         countdown.textContent = `${active3 ? "距结束" : "距开始"} ${contestDuration(Number(countdown.dataset.target) - now)}`;
         const duration = element4("span", "contest-duration", `赛时 ${contestDuration(contest.end - contest.start).replace(/ 0秒$/, "").trim()}`);
-        const decline = button5("不参加", "contest-decline", () => {
+        const decline = button6("不参加", "contest-decline", () => {
           void setContestOptOut(platform.id, contest.id, true);
         });
         decline.dataset.contestFocus = `${platform.id}:${contest.id}:decline`;
         decline.setAttribute("aria-label", `不参加：${contest.title}`);
         const titleGroup = append(element4("span", "contest-title-group"), contestTypeBadge(platform.id, contest), title);
         append(row2, element4("span", "contest-platform-label", platform.name), titleGroup, label, schedule, duration, countdown, decline);
-        list2.append(row2);
+        list.append(row2);
       }
-      if (!items.length) list2.append(element4("p", "contest-empty", contestsPending ? "正在载入比赛…" : "暂无可显示的比赛，可通过上方平台链接查看官方赛程。"));
-      grid.append(sources, list2);
+      if (!items.length) list.append(element4("p", "contest-empty", contestsPending ? "正在载入比赛…" : "暂无可显示的比赛，可通过上方平台链接查看官方赛程。"));
+      grid.append(sources, list);
       contestSignature = JSON.stringify(items.map((contest) => [contest.platform.id, contest.id, contest.start <= now ? "active" : "upcoming"]));
       updateContestPreferenceControls();
       if (focus) {
@@ -2120,12 +2120,12 @@
           else contestRestoreSelection.delete(entry2.key);
           updateContestRestoreCount();
         });
-        const text4 = element4("span", "contest-restore-option-copy");
+        const text3 = element4("span", "contest-restore-option-copy");
         const details = entry2.start !== null && entry2.end !== null && entry2.end > entry2.start ? `${contestTime(entry2.startTime)} · 赛时 ${contestDuration(entry2.end - entry2.start).replace(/ 0秒$/, "").trim()}${entry2.end <= Date.now() ? " · 已结束" : ""}` : "暂无赛程详情（可恢复隐藏偏好）";
         const heading = append(element4("span", "contest-restore-option-heading"), contestTypeBadge(entry2.platform.id, entry2), element4("strong", "", `${entry2.platform.name} · ${entry2.title || `比赛 ${entry2.id}`}`));
-        append(text4, heading, element4("small", "", details));
+        append(text3, heading, element4("small", "", details));
         label.title = `${entry2.platform.name} · ${entry2.title || `比赛 ${entry2.id}`}`;
-        append(label, checkbox, text4);
+        append(label, checkbox, text3);
         options.append(label);
       }
       if (!contestRestoreEntries.length) options.append(element4("p", "contest-empty", "当前缓存中找不到已隐藏的比赛，刷新赛程后再试。"));
@@ -2158,7 +2158,7 @@
         setSettings({ ...getSettings(), contestOptOuts: previous });
         renderContestCards();
         const errorNode = $("#contest-restore-error");
-        errorNode.textContent = `比赛偏好未保存：${errorMessage2(error)}`;
+        errorNode.textContent = `比赛偏好未保存：${errorMessage(error)}`;
         errorNode.hidden = false;
       } finally {
         contestPreferencePending = false;
@@ -2171,11 +2171,11 @@
       panel.setAttribute("aria-labelledby", "contests-title");
       const title = element4("h2", "", "比赛提醒");
       title.id = "contests-title";
-      const refresh = button5("刷新赛程", "button secondary", () => {
+      const refresh = button6("刷新赛程", "button secondary", () => {
         void refreshContests(true);
       });
       refresh.id = "contests-refresh";
-      const restore = button5("", "button subtle contest-restore", openContestRestore);
+      const restore = button6("", "button subtle contest-restore", openContestRestore);
       restore.id = "contests-restore";
       const actions = append(element4("div", "contest-actions"), restore, refresh);
       const status = element4("p", "contests-status");
@@ -2229,7 +2229,7 @@
 
   // src/renderer/account/updates.ts
   function create2(options) {
-    const { demo, bridge: bridge3, getAppVersion, getUpdate, setUpdate, getUpdateCapability, getBusy, setBusy, call, cancelDraftSave, getLocalWrite, resetLocalWrite, hasEditor, saveDraft, persistLocal, renderAccount, toast, errorMessage: errorMessage2 } = options;
+    const { demo, bridge: bridge3, getAppVersion, getUpdate, setUpdate, getUpdateCapability, getBusy, setBusy, call, cancelDraftSave, getLocalWrite, resetLocalWrite, hasEditor, saveDraft, persistLocal, renderAccount, toast, errorMessage } = options;
     const $ = (selector) => document.querySelector(selector);
     const $$ = (selector) => Array.from(document.querySelectorAll(selector));
     let updateRunning = false;
@@ -2240,9 +2240,9 @@
       if (getUpdateCapability()?.supported === false) $("#update-notice").textContent = getUpdateCapability().reason;
       const latest = update.latestVersion ? ` ${update.latestVersion}` : "";
       const labels = { checking: "正在检查更新…", available: `发现新版本${latest}，可点击检查更新进行升级。`, downloading: `正在下载新版本${latest}…`, ready: `新版本${latest}的签名和文件已校验，正在准备更新。`, installing: "本地记录已备份，退出后将备份并替换程序文件，完成后自动重启。", error: "更新失败，请点击检查更新重试。" };
-      let text4 = labels[update.phase] || (update.available === false && !!update.message ? `当前版本 ${getAppVersion() || update.currentVersion || "未知"}，暂无可用更新。` : "可随时检查更新，无需登录 GitHub。");
+      let text3 = labels[update.phase] || (update.available === false && !!update.message ? `当前版本 ${getAppVersion() || update.currentVersion || "未知"}，暂无可用更新。` : "可随时检查更新，无需登录 GitHub。");
       if (update.phase === "checking" || update.phase === "available" || update.phase === "downloading" || update.phase === "ready" || update.phase === "installing" || update.phase === "error" || update.available === false) {
-        if (update.message) text4 += ` ${update.message}`;
+        if (update.message) text3 += ` ${update.message}`;
       }
       const progress = $("#update-progress");
       progress.hidden = update.phase !== "downloading";
@@ -2250,18 +2250,18 @@
       if (percent === null) progress.removeAttribute("value");
       else {
         progress.value = Math.min(100, Math.max(0, percent));
-        if (!progress.hidden) text4 += ` ${Math.round(progress.value)}%`;
+        if (!progress.hidden) text3 += ` ${Math.round(progress.value)}%`;
       }
-      if (!progress.hidden && Number.isFinite(update.downloaded) && Number.isFinite(update.total) && update.total > 0) text4 += `（${(update.downloaded / 1048576).toFixed(1)} / ${(update.total / 1048576).toFixed(1)} MB）`;
+      if (!progress.hidden && Number.isFinite(update.downloaded) && Number.isFinite(update.total) && update.total > 0) text3 += `（${(update.downloaded / 1048576).toFixed(1)} / ${(update.total / 1048576).toFixed(1)} MB）`;
       if (update.downloadKind === "delta" && Number.isFinite(update.total) && Number.isFinite(update.fullSize) && update.fullSize > update.total) {
-        text4 += ` 差分下载 ${(update.total / 1048576).toFixed(2)} MB，完整包 ${(update.fullSize / 1048576).toFixed(1)} MB。`;
+        text3 += ` 差分下载 ${(update.total / 1048576).toFixed(2)} MB，完整包 ${(update.fullSize / 1048576).toFixed(1)} MB。`;
       }
-      if (update.downloadKind === "delta" && update.deltaSteps > 1) text4 += ` 连续应用 ${update.deltaSteps} 个补丁，完成后统一安装。`;
+      if (update.downloadKind === "delta" && update.deltaSteps > 1) text3 += ` 连续应用 ${update.deltaSteps} 个补丁，完成后统一安装。`;
       if (update.downloadKind === "full" && ["available", "downloading", "ready"].includes(update.phase)) {
         const reasons = { "no-patch-path": "未找到从当前版本到新版的完整补丁链", "base-mismatch": "本机应用文件与补丁基础包不匹配", "metadata-unavailable": "差分清单或历史记录暂不可用", "patch-failed": "补丁下载、重建或校验失败" };
-        if (reasons[update.deltaReason]) text4 += ` 使用完整包：${reasons[update.deltaReason]}。`;
+        if (reasons[update.deltaReason]) text3 += ` 使用完整包：${reasons[update.deltaReason]}。`;
       }
-      $("#update-status").textContent = text4;
+      $("#update-status").textContent = text3;
       $("#update-status").classList.toggle("update-error", update.phase === "error");
       $("#check-update-button").textContent = updateReady && update.phase === "error" ? "重试安装" : "检查更新";
     }
@@ -2276,7 +2276,7 @@
         await getLocalWrite();
       } catch (error) {
         resetLocalWrite();
-        throw new Error(`本地数据尚未保存，更新已停止：${errorMessage2(error)}`);
+        throw new Error(`本地数据尚未保存，更新已停止：${errorMessage(error)}`);
       }
       try {
         if (hasEditor()) await saveDraft(true);
@@ -2320,7 +2320,7 @@
         installing = true;
         receiveUpdate({ phase: "installing" });
       } catch (error) {
-        receiveUpdate({ phase: "error", message: errorMessage2(error) });
+        receiveUpdate({ phase: "error", message: errorMessage(error) });
       } finally {
         if (!installing) {
           setBusy(false);
@@ -2392,12 +2392,12 @@
 
   // src/renderer/reading/code-blocks.ts
   var CodeBlocks = { create: create3 };
-  function create3({ toast, errorMessage: errorMessage2 }) {
+  function create3({ toast, errorMessage }) {
     const $$ = (selector, root2 = document) => Array.from(root2.querySelectorAll(selector));
-    function element4(tag, className, text4) {
+    function element4(tag, className, text3) {
       const node2 = document.createElement(tag);
       if (className) node2.className = className;
-      if (text4 !== void 0) node2.textContent = String(text4);
+      if (text3 !== void 0) node2.textContent = String(text3);
       return node2;
     }
     function append(parent, ...children) {
@@ -2445,9 +2445,9 @@
       pre.scrollTop = Math.min(preTop, Math.max(0, pre.scrollHeight - pre.clientHeight));
       pre.scrollLeft = preLeft;
     }
-    function legacyCopyText(text4) {
+    function legacyCopyText(text3) {
       const area = element4("textarea", "clipboard-helper");
-      area.value = text4;
+      area.value = text3;
       area.setAttribute("readonly", "");
       area.setAttribute("aria-hidden", "true");
       document.body.append(area);
@@ -2462,17 +2462,17 @@
       return ok;
     }
     async function copyCodeBlock(pre, actionButton) {
-      const text4 = codeBlockText(pre);
-      if (!text4) {
+      const text3 = codeBlockText(pre);
+      if (!text3) {
         toast("代码块为空");
         return;
       }
       let copied = false;
       try {
-        await navigator.clipboard.writeText(text4);
+        await navigator.clipboard.writeText(text3);
         copied = true;
       } catch (_) {
-        copied = legacyCopyText(text4);
+        copied = legacyCopyText(text3);
       }
       clearTimeout(actionButton._codeResetTimer);
       if (copied) {
@@ -2504,7 +2504,7 @@
         toast(language ? `暂不支持 ${language} 代码的格式化` : "未能识别代码语言，无法格式化");
         return;
       }
-      const format = typeof window.notebook?.formatCode === "function" ? (text4, lang) => createNotebookIPC(window.notebook).formatCode(text4, lang) : typeof window.formatCode === "function" ? (text4, lang) => Promise.resolve(window.formatCode(text4, lang)) : null;
+      const format = typeof window.notebook?.formatCode === "function" ? (text3, lang) => createNotebookIPC(window.notebook).formatCode(text3, lang) : typeof window.formatCode === "function" ? (text3, lang) => Promise.resolve(window.formatCode(text3, lang)) : null;
       if (!format) {
         toast("格式化功能尚未启用");
         return;
@@ -2515,7 +2515,7 @@
       actionButton.textContent = "格式化中…";
       try {
         const result = await format(source, language);
-        if (typeof result !== "string" && result?.error) throw new Error(errorMessage2(result.error));
+        if (typeof result !== "string" && result?.error) throw new Error(errorMessage(result.error));
         const formatted = typeof result === "string" ? result : result?.code;
         if (typeof formatted !== "string" || !formatted.trim()) {
           toast(language ? `暂不支持 ${language} 代码的格式化` : "未能识别代码语言，无法格式化");
@@ -2532,7 +2532,7 @@
         toast("已格式化代码块");
         announceCodeStatus(pre, "已格式化");
       } catch (error) {
-        const message2 = "格式化失败：" + errorMessage2(error);
+        const message2 = "格式化失败：" + errorMessage(error);
         toast(message2);
         announceCodeStatus(pre, message2);
       } finally {
@@ -2645,7 +2645,7 @@
     const aligns = cap[2].replace(tokenizer.rules.other.tableAlignChars, "").split("|");
     if (headers.length !== aligns.length) return;
     const align = aligns.map((value) => tokenizer.rules.other.tableAlignRight.test(value) ? "right" : tokenizer.rules.other.tableAlignCenter.test(value) ? "center" : tokenizer.rules.other.tableAlignLeft.test(value) ? "left" : null);
-    const cells = (values, header) => values.map((text4, index) => ({ text: text4, tokens: tokenizer.lexer.inline(text4), header, align: align[index] }));
+    const cells = (values, header) => values.map((text3, index) => ({ text: text3, tokens: tokenizer.lexer.inline(text3), header, align: align[index] }));
     const rows = cap[3]?.trim() ? cap[3].replace(tokenizer.rules.other.tableRowBlankLine, "").split("\n") : [];
     return { type: "table", raw: cap[0], header: cells(headers, true), align, rows: rows.map((row2) => cells(splitCells(row2, headers.length, formula2), false)) };
   }
@@ -2745,15 +2745,15 @@
     } else end = closing(source, right, left.length);
     if (end === void 0 || end < left.length) return;
     const raw = source.slice(0, end + right.length);
-    let text4 = environment ? raw : source.slice(left.length, end);
-    if (!text4.trim()) return;
+    let text3 = environment ? raw : source.slice(left.length, end);
+    if (!text3.trim()) return;
     const aliases = { displaymath: "", math: "" };
-    const wrapper = environment || /^\s*\\begin\{([A-Za-z]+\*?)\}([\s\S]*)\\end\{\1\}\s*$/.exec(text4)?.[1];
+    const wrapper = environment || /^\s*\\begin\{([A-Za-z]+\*?)\}([\s\S]*)\\end\{\1\}\s*$/.exec(text3)?.[1];
     if (Object.prototype.hasOwnProperty.call(aliases, wrapper)) {
-      const inner = environment ? source.slice(left.length, end) : text4.replace(/^\s*\\begin\{[^}]+\}/, "").replace(/\\end\{[^}]+\}\s*$/, "");
-      text4 = aliases[wrapper] ? `\\begin{${aliases[wrapper]}}${inner}\\end{${aliases[wrapper]}}` : inner;
+      const inner = environment ? source.slice(left.length, end) : text3.replace(/^\s*\\begin\{[^}]+\}/, "").replace(/\\end\{[^}]+\}\s*$/, "");
+      text3 = aliases[wrapper] ? `\\begin{${aliases[wrapper]}}${inner}\\end{${aliases[wrapper]}}` : inner;
     }
-    return { raw, text: text4, display };
+    return { raw, text: text3, display };
   }
   function mathToken(source, block) {
     const indent = block ? /^ {0,3}/.exec(source)[0].length : 0;
@@ -2817,14 +2817,14 @@
     let macros = {};
     for (const node2 of container.querySelectorAll(".notebook-math-source")) {
       if (node2.classList.contains("notebook-math-rendered") || node2.classList.contains("notebook-math-error") || node2.closest("pre,code,kbd,samp,script,style,textarea")) continue;
-      const text4 = node2.textContent;
+      const text3 = node2.textContent;
       try {
         const nextMacros = structuredClone(macros);
-        katex.render(text4, node2, { displayMode: node2.dataset.mathDisplay === "true", throwOnError: true, trust: false, strict: "ignore", maxExpand: 1e3, maxSize: 20, macros: nextMacros, globalGroup: true, output: "htmlAndMathml" });
+        katex.render(text3, node2, { displayMode: node2.dataset.mathDisplay === "true", throwOnError: true, trust: false, strict: "ignore", maxExpand: 1e3, maxSize: 20, macros: nextMacros, globalGroup: true, output: "htmlAndMathml" });
         macros = nextMacros;
         node2.classList.add("notebook-math-rendered");
       } catch (error) {
-        node2.replaceChildren(container.ownerDocument.createTextNode(text4));
+        node2.replaceChildren(container.ownerDocument.createTextNode(text3));
         node2.classList.add("notebook-math-error");
         node2.setAttribute("role", "note");
         node2.title = `公式语法或命令不受支持：${String(error.message || error).slice(0, 500)}`;
@@ -2835,11 +2835,11 @@
 
   // src/renderer/reading/markdown-color.ts
   function color(value, document2) {
-    const text4 = String(value || "").trim();
-    if (!/^(?:#[\da-f]{3,4}|#[\da-f]{6}|#[\da-f]{8}|[a-z]+|(?:rgb|rgba|hsl|hsla)\([\d\s.,%+\-/degturnrad]+\))$/i.test(text4)) return "";
-    if (/^(?:inherit|initial|unset|revert|revert-layer|currentcolor)$/i.test(text4)) return "";
+    const text3 = String(value || "").trim();
+    if (!/^(?:#[\da-f]{3,4}|#[\da-f]{6}|#[\da-f]{8}|[a-z]+|(?:rgb|rgba|hsl|hsla)\([\d\s.,%+\-/degturnrad]+\))$/i.test(text3)) return "";
+    if (/^(?:inherit|initial|unset|revert|revert-layer|currentcolor)$/i.test(text3)) return "";
     const style = document2.createElement("span").style;
-    style.color = text4;
+    style.color = text3;
     return style.color;
   }
   function foreground(node2, document2) {
@@ -3022,17 +3022,17 @@
   function createFilters({ getRecords, getView, getScope, getTagCatalog, getBusy, favorite, mastery, isLocal, isOwnSolution, recordAuthorName: recordAuthorName2, render: render6 }) {
     const $ = (selector, root2 = document) => root2.querySelector(selector);
     const $$ = (selector, root2 = document) => Array.from(root2.querySelectorAll(selector));
-    function element4(tag, className, text4) {
+    function element4(tag, className, text3) {
       const node2 = document.createElement(tag);
       if (className) node2.className = className;
-      if (text4 !== void 0) node2.textContent = String(text4);
+      if (text3 !== void 0) node2.textContent = String(text3);
       return node2;
     }
     function append(parent, ...children) {
       children.filter(Boolean).forEach((child) => parent.append(child));
       return parent;
     }
-    function button5(label, className, action2) {
+    function button6(label, className, action2) {
       const node2 = element4("button", className, label);
       node2.type = "button";
       node2.addEventListener("click", action2);
@@ -3052,12 +3052,12 @@
       const options = [.../* @__PURE__ */ new Set([...counts.keys(), ...facets[group]])].sort((a, b) => a.localeCompare(b, "zh-CN"));
       options.filter((value) => (group === "platform" ? platformNames[value] || value : value).toLowerCase().includes(search.toLowerCase())).forEach((value) => {
         const label = element4("label", "facet-option");
-        const input3 = element4("input");
-        input3.type = "checkbox";
-        input3.value = value;
-        input3.checked = facets[group].has(value);
-        input3.addEventListener("change", () => {
-          input3.checked ? facets[group].add(value) : facets[group].delete(value);
+        const input2 = element4("input");
+        input2.type = "checkbox";
+        input2.value = value;
+        input2.checked = facets[group].has(value);
+        input2.addEventListener("change", () => {
+          input2.checked ? facets[group].add(value) : facets[group].delete(value);
           if (group === "platform" && facets.platform.size === 1) {
             const selected2 = [...facets.platform][0];
             setDifficultyPlatform(["CF", "LG"].includes(selected2) ? selected2 : "native");
@@ -3065,7 +3065,7 @@
           updateFacetCounts();
           render6();
         });
-        append(label, input3, element4("span", "", group === "platform" ? platformNames[value] || value : value), element4("small", "", counts.get(value) || 0));
+        append(label, input2, element4("span", "", group === "platform" ? platformNames[value] || value : value), element4("small", "", counts.get(value) || 0));
         container.append(label);
       });
       if (!container.children.length) container.append(element4("p", "facet-help", "没有匹配的选项"));
@@ -3076,7 +3076,7 @@
         const host = $(group === "tags" ? "#tag-filter" : group === "authors" ? "#author-filter" : "#platform-filter");
         const values = group === "tags" ? all.flatMap((r) => Array.isArray(r.tags) ? r.tags : []) : all.map((r) => facetValue(r, group));
         if (group === "tags") {
-          const trigger = button5("", "facet-trigger", () => openTagPicker("filter"));
+          const trigger = button6("", "facet-trigger", () => openTagPicker("filter"));
           append(trigger, document.createTextNode(facetNames[group] + " "), element4("span", "facet-chevron", "⌄"));
           trigger.id = "tag-filter-trigger";
           trigger.setAttribute("aria-haspopup", "dialog");
@@ -3096,7 +3096,7 @@
           search.value = query;
           const options = element4("div", "facet-options");
           search.addEventListener("input", () => fillFacetOptions(options, group, values, search.value));
-          append(popover, search, options, button5("清除本组", "facet-clear", () => {
+          append(popover, search, options, button6("清除本组", "facet-clear", () => {
             facets[group].clear();
             fillFacetOptions(options, group, values, search.value);
             updateFacetCounts();
@@ -3130,17 +3130,17 @@
           const heading = element4("strong", "tag-category-heading", group.name);
           fragment.append(heading);
           const options = group.tags.map((value) => {
-            const label = element4("label", "facet-option"), input3 = element4("input");
-            input3.type = "checkbox";
-            input3.value = value;
-            input3.checked = selected2.has(value);
-            input3.disabled = getBusy();
+            const label = element4("label", "facet-option"), input2 = element4("input");
+            input2.type = "checkbox";
+            input2.value = value;
+            input2.checked = selected2.has(value);
+            input2.disabled = getBusy();
             const duplicates = inputs.get(value) || [];
-            duplicates.push(input3);
+            duplicates.push(input2);
             inputs.set(value, duplicates);
-            append(label, input3, element4("span", "", value + (group.historical ? " · 历史" : "")), element4("small", "", counts.get(value) || 0));
+            append(label, input2, element4("span", "", value + (group.historical ? " · 历史" : "")), element4("small", "", counts.get(value) || 0));
             fragment.append(label);
-            return { label, input: input3, search: `${group.name} ${value}`.toLowerCase() };
+            return { label, input: input2, search: `${group.name} ${value}`.toLowerCase() };
           });
           return { heading, options };
         });
@@ -3149,15 +3149,15 @@
         view = { selected: selected2, onChange: onChange2, groups, inputs, empty };
         tagOptionsViews.set(container, view);
         container.onchange = (event) => {
-          const current = tagOptionsViews.get(container), input3 = event.target;
-          if (!current || !(input3 instanceof HTMLInputElement) || input3.type !== "checkbox") return;
+          const current = tagOptionsViews.get(container), input2 = event.target;
+          if (!current || !(input2 instanceof HTMLInputElement) || input2.type !== "checkbox") return;
           if (getBusy()) {
-            input3.checked = current.selected.has(input3.value);
+            input2.checked = current.selected.has(input2.value);
             return;
           }
-          input3.checked ? current.selected.add(input3.value) : current.selected.delete(input3.value);
-          current.inputs.get(input3.value)?.forEach((node2) => {
-            node2.checked = input3.checked;
+          input2.checked ? current.selected.add(input2.value) : current.selected.delete(input2.value);
+          current.inputs.get(input2.value)?.forEach((node2) => {
+            node2.checked = input2.checked;
           });
           current.onChange();
         };
@@ -3205,23 +3205,23 @@
         refreshFilters();
         render6();
       } else {
-        const field3 = $("#submit-form").elements.tags;
-        field3.value = [...context.selected].join(", ");
+        const field2 = $("#submit-form").elements.tags;
+        field2.value = [...context.selected].join(", ");
         renderEditorTags();
-        field3.dispatchEvent(new Event("input", { bubbles: true }));
+        field2.dispatchEvent(new Event("input", { bubbles: true }));
       }
     }
     function renderEditorTags() {
-      const field3 = $("#submit-form").elements.tags;
-      const selected2 = new Set(field3.value.split(/[,，、]/).map((t) => t.trim()).filter(Boolean));
+      const field2 = $("#submit-form").elements.tags;
+      const selected2 = new Set(field2.value.split(/[,，、]/).map((t) => t.trim()).filter(Boolean));
       const host = $("#record-tag-selected");
       host.replaceChildren();
-      selected2.forEach((t) => host.append(button5(t + " ×", "filter-chip", () => {
+      selected2.forEach((t) => host.append(button6(t + " ×", "filter-chip", () => {
         if (getBusy()) return;
         selected2.delete(t);
-        field3.value = [...selected2].join(", ");
+        field2.value = [...selected2].join(", ");
         renderEditorTags();
-        field3.dispatchEvent(new Event("input", { bubbles: true }));
+        field2.dispatchEvent(new Event("input", { bubbles: true }));
       })));
       $("#record-tag-open").textContent = selected2.size ? `选择标签…（已选 ${selected2.size}）` : "选择标签…";
     }
@@ -3243,12 +3243,12 @@
       $("#difficulty-count").textContent = count ? "已选" : "";
       const chips = $("#active-filters");
       chips.replaceChildren();
-      for (const group of Object.keys(facets)) for (const value of facets[group]) chips.append(button5(`${facetNames[group]} · ${group === "platform" ? platformNames[value] || value : value} ×`, "filter-chip", () => {
+      for (const group of Object.keys(facets)) for (const value of facets[group]) chips.append(button6(`${facetNames[group]} · ${group === "platform" ? platformNames[value] || value : value} ×`, "filter-chip", () => {
         facets[group].delete(value);
         refreshFilters();
         render6();
       }));
-      if (range.some((v) => v !== null)) chips.append(button5("难度区间 ×", "filter-chip", () => {
+      if (range.some((v) => v !== null)) chips.append(button6("难度区间 ×", "filter-chip", () => {
         clearDifficulty();
         render6();
       }));
@@ -3256,9 +3256,9 @@
       $("#range-error").hidden = !(range[0] !== null && range[1] !== null && range[0] > range[1] || range[2] !== null && range[3] !== null && range[2] > range[3]);
     }
     function setDifficultyPlatform(platform) {
-      const select2 = $("#difficulty-platform");
-      if (select2.value !== platform) {
-        select2.value = platform;
+      const select = $("#difficulty-platform");
+      if (select.value !== platform) {
+        select.value = platform;
         ["rating-min", "rating-max", "luogu-min", "luogu-max"].forEach((id) => {
           $("#" + id).value = "";
         });
@@ -3310,14 +3310,14 @@
     }
     const luoguLevels2 = ["入门", "普及-", "普及", "普及+/提高-", "提高", "提高+/省选-", "省选/NOI-", "NOI/NOI+/CTS"];
     const luoguTones = ["red", "orange", "yellow", "green", "cyan", "blue", "purple", "black"];
-    function colorRatingInput(input3) {
-      const valid = input3.value !== "" && !input3.validity.badInput && Number.isInteger(input3.valueAsNumber) && input3.valueAsNumber >= 0 && input3.valueAsNumber <= 1e4;
-      const info = valid ? Search.difficulty({ platform: "CF", rating: input3.valueAsNumber }) : null;
-      input3.className = `rating-range${info ? ` tone-${info.tone}` : ""}`;
-      input3.style.caretColor = info ? "var(--difficulty-color)" : "";
+    function colorRatingInput(input2) {
+      const valid = input2.value !== "" && !input2.validity.badInput && Number.isInteger(input2.valueAsNumber) && input2.valueAsNumber >= 0 && input2.valueAsNumber <= 1e4;
+      const info = valid ? Search.difficulty({ platform: "CF", rating: input2.valueAsNumber }) : null;
+      input2.className = `rating-range${info ? ` tone-${info.tone}` : ""}`;
+      input2.style.caretColor = info ? "var(--difficulty-color)" : "";
     }
-    function colorLuoguSelection(select2) {
-      select2.className = select2.value ? `luogu-range tone-${luoguTones[Number(select2.value) - 1]}` : "luogu-range";
+    function colorLuoguSelection(select) {
+      select.className = select.value ? `luogu-range tone-${luoguTones[Number(select.value) - 1]}` : "luogu-range";
     }
     return { facets, facetNames, platformNames, facetValue, fillFacetOptions, refreshFilters, tagGroups, fillTagOptions, get tagPickerContext() {
       return tagPickerContext;
@@ -3376,12 +3376,12 @@
 
   // src/renderer/library/editor.ts
   function createEditor(options) {
-    const { demo, getEditor, setEditor, getLocal, setLocal, getRecords, setRecords, getIssues, setIssues, getComments, getSelected, setSelected, getBusy, setBusy, getAccount, getPermissions, accountId, repo, key, uuid, isLocal, visibleLocal, canEditRemote, sameRepo, records, platformCode, colorRatingInput, renderEditorTags, cancelDraftSave, persistLocal, call, refreshFilters, navigate, render: render6, openDetail, toast, errorMessage: errorMessage2 } = options;
+    const { demo, getEditor, setEditor, getLocal, setLocal, getRecords, setRecords, getIssues, setIssues, getComments, getSelected, setSelected, getBusy, setBusy, getAccount, getPermissions, accountId, repo, key, uuid, isLocal, visibleLocal, canEditRemote, sameRepo, records, platformCode, colorRatingInput, renderEditorTags, cancelDraftSave, persistLocal, call, refreshFilters, navigate, render: render6, openDetail, toast, errorMessage } = options;
     const $ = (selector) => document.querySelector(selector);
-    function element4(tag, className, text4) {
+    function element4(tag, className, text3) {
       const node2 = document.createElement(tag);
       if (className) node2.className = className;
-      if (text4 !== void 0) node2.textContent = String(text4);
+      if (text3 !== void 0) node2.textContent = String(text3);
       return node2;
     }
     function formDraft() {
@@ -3393,8 +3393,8 @@
       form.reset();
       for (const name of ["tags", "rating", "difficulty", "luoguDifficulty"]) form.elements[name].value = "";
       Object.entries(draft || {}).forEach(([name, value]) => {
-        const input3 = form.elements.namedItem(name);
-        if (input3) input3.value = String(value ?? "");
+        const input2 = form.elements.namedItem(name);
+        if (input2) input2.value = String(value ?? "");
       });
     }
     const editorLuoguLevels = ["入门", "普及-", "普及", "普及+/提高-", "提高", "提高+/省选-", "省选/NOI-", "NOI/NOI+/CTS"];
@@ -3407,88 +3407,88 @@
       if (platform === "CF") {
         const ratingField = element4("label", "range-field");
         ratingField.append(element4("span", "", "Codeforces Rating"));
-        const input3 = element4("input", "rating-range");
-        input3.type = "number";
-        input3.min = "0";
-        input3.max = "10000";
-        input3.step = "100";
-        input3.placeholder = "未指定";
-        input3.setAttribute("aria-label", "Codeforces Rating");
-        input3.value = rating.value;
+        const input2 = element4("input", "rating-range");
+        input2.type = "number";
+        input2.min = "0";
+        input2.max = "10000";
+        input2.step = "100";
+        input2.placeholder = "未指定";
+        input2.setAttribute("aria-label", "Codeforces Rating");
+        input2.value = rating.value;
         native.value = "";
-        const color2 = () => colorRatingInput(input3);
-        input3.addEventListener("input", () => {
-          rating.value = input3.value;
+        const color2 = () => colorRatingInput(input2);
+        input2.addEventListener("input", () => {
+          rating.value = input2.value;
           native.value = "";
           color2();
         });
         color2();
-        ratingField.append(input3);
+        ratingField.append(input2);
         wrapper.append(ratingField);
       } else if (platform === "LG") {
-        const select2 = element4("select", "luogu-range");
-        select2.setAttribute("aria-label", "洛谷原生难度");
+        const select = element4("select", "luogu-range");
+        select.setAttribute("aria-label", "洛谷原生难度");
         [["", "未指定"], ...editorLuoguLevels.map((name) => [name, name])].forEach(([value, label], index) => {
           const option = element4("option", index ? `tone-${editorLuoguTones[index - 1]}` : "", label);
           option.value = value;
-          select2.append(option);
+          select.append(option);
         });
         const current = Search.difficulty({ platform: "LG", difficulty: native.value });
         const known2 = current.level ? editorLuoguLevels[current.level - 1] : editorLuoguLevels.find((level) => level === native.value);
-        if (known2) select2.value = known2;
+        if (known2) select.value = known2;
         else if (native.value) {
           const legacy = element4("option", "", native.value);
           legacy.value = native.value;
-          select2.append(legacy);
-          select2.value = native.value;
+          select.append(legacy);
+          select.value = native.value;
         }
         rating.value = "";
         const color2 = () => {
-          const level = editorLuoguLevels.indexOf(select2.value);
-          select2.className = `luogu-range${level >= 0 ? ` tone-${editorLuoguTones[level]}` : ""}`;
+          const level = editorLuoguLevels.indexOf(select.value);
+          select.className = `luogu-range${level >= 0 ? ` tone-${editorLuoguTones[level]}` : ""}`;
         };
-        select2.addEventListener("change", () => {
-          native.value = select2.value;
+        select.addEventListener("change", () => {
+          native.value = select.value;
           color2();
         });
         color2();
-        const field3 = element4("label", "range-field");
-        field3.append(element4("span", "", "洛谷难度"), select2);
-        wrapper.append(field3);
+        const field2 = element4("label", "range-field");
+        field2.append(element4("span", "", "洛谷难度"), select);
+        wrapper.append(field2);
       } else if (platform === "LC") {
-        const select2 = element4("select", "luogu-range");
-        select2.setAttribute("aria-label", "LeetCode 原生难度");
+        const select = element4("select", "luogu-range");
+        select.setAttribute("aria-label", "LeetCode 原生难度");
         [["", "未指定", ""], ["Easy", "Easy / 简单", "green"], ["Medium", "Medium / 中等", "yellow"], ["Hard", "Hard / 困难", "red"]].forEach(([value, label, tone]) => {
           const option = element4("option", tone ? `tone-${tone}` : "", label);
           option.value = value;
-          select2.append(option);
+          select.append(option);
         });
         const level = Search.difficulty({ platform: "LC", difficulty: native.value }).level;
         const known2 = ["Easy", "Medium", "Hard"][level - 1];
-        if (known2) select2.value = known2;
+        if (known2) select.value = known2;
         else if (native.value) {
           const legacy = element4("option", "", native.value);
           legacy.value = native.value;
-          select2.append(legacy);
-          select2.value = native.value;
+          select.append(legacy);
+          select.value = native.value;
         }
         const color2 = () => {
-          const tone = { Easy: "green", Medium: "yellow", Hard: "red" }[select2.value];
-          select2.className = `luogu-range${tone ? ` tone-${tone}` : ""}`;
+          const tone = { Easy: "green", Medium: "yellow", Hard: "red" }[select.value];
+          select.className = `luogu-range${tone ? ` tone-${tone}` : ""}`;
         };
-        select2.addEventListener("change", () => {
-          native.value = select2.value;
+        select.addEventListener("change", () => {
+          native.value = select.value;
           color2();
         });
         color2();
-        wrapper.append(select2);
+        wrapper.append(select);
       } else {
-        const input3 = element4("input");
-        input3.type = "text";
-        input3.maxLength = 60;
-        input3.placeholder = "原生难度，如 ABC D / 3";
-        input3.setAttribute("aria-label", "平台原生难度");
-        input3.value = native.value;
+        const input2 = element4("input");
+        input2.type = "text";
+        input2.maxLength = 60;
+        input2.placeholder = "原生难度，如 ABC D / 3";
+        input2.setAttribute("aria-label", "平台原生难度");
+        input2.value = native.value;
         const datalist = element4("datalist");
         datalist.id = "editor-native-difficulties";
         const values = platform === "AT" ? ["ABC A", "ABC B", "ABC C", "ABC D", "ABC E", "ABC F", "ARC A", "ARC B", "ARC C", "ARC D", "ARC E", "ARC F"] : platform === "NC" ? ["简单", "中等", "困难"] : [];
@@ -3497,34 +3497,34 @@
           option.value = value;
           datalist.append(option);
         });
-        input3.setAttribute("list", datalist.id);
-        input3.addEventListener("input", () => {
-          native.value = input3.value;
+        input2.setAttribute("list", datalist.id);
+        input2.addEventListener("input", () => {
+          native.value = input2.value;
         });
-        wrapper.append(input3, datalist);
+        wrapper.append(input2, datalist);
       }
       if (platform !== "LG") {
-        const field3 = element4("label", "range-field");
-        field3.append(element4("span", "", "洛谷难度（可选）"));
-        const select2 = element4("select", "luogu-range");
-        select2.setAttribute("aria-label", "补充洛谷难度");
+        const field2 = element4("label", "range-field");
+        field2.append(element4("span", "", "洛谷难度（可选）"));
+        const select = element4("select", "luogu-range");
+        select.setAttribute("aria-label", "补充洛谷难度");
         [["", "未指定"], ...editorLuoguLevels.map((name) => [name, name])].forEach(([value, label], index) => {
           const option = element4("option", index ? `tone-${editorLuoguTones[index - 1]}` : "", label);
           option.value = value;
-          select2.append(option);
+          select.append(option);
         });
-        select2.value = form.elements.luoguDifficulty.value;
+        select.value = form.elements.luoguDifficulty.value;
         const color2 = () => {
-          const level = editorLuoguLevels.indexOf(select2.value);
-          select2.className = `luogu-range${level >= 0 ? ` tone-${editorLuoguTones[level]}` : ""}`;
+          const level = editorLuoguLevels.indexOf(select.value);
+          select.className = `luogu-range${level >= 0 ? ` tone-${editorLuoguTones[level]}` : ""}`;
         };
-        select2.addEventListener("change", () => {
-          form.elements.luoguDifficulty.value = select2.value;
+        select.addEventListener("change", () => {
+          form.elements.luoguDifficulty.value = select.value;
           color2();
         });
         color2();
-        field3.append(select2);
-        wrapper.append(field3);
+        field2.append(select);
+        wrapper.append(field2);
       }
       host.replaceChildren(wrapper);
     }
@@ -3543,7 +3543,7 @@
       return JSON.stringify([source || "new", ownerId]);
     }
     function editorError(error) {
-      $("#submit-error").textContent = errorMessage2(error);
+      $("#submit-error").textContent = errorMessage(error);
       $("#submit-error").hidden = false;
     }
     function openLocalSolution(problem) {
@@ -3600,8 +3600,8 @@
         await persistLocal();
         $("#draft-hint").textContent = "编辑草稿已保存到当前设备";
       } catch (error) {
-        $("#draft-hint").textContent = `编辑草稿保存失败：${errorMessage2(error)}；请勿关闭窗口`;
-        if (required) throw new Error(`无法持久化编辑标识，尚未写入 GitHub：${errorMessage2(error)}`);
+        $("#draft-hint").textContent = `编辑草稿保存失败：${errorMessage(error)}；请勿关闭窗口`;
+        if (required) throw new Error(`无法持久化编辑标识，尚未写入 GitHub：${errorMessage(error)}`);
       }
     }
     async function saveRecord(remote) {
@@ -3741,7 +3741,7 @@ ${data.trick.trim()}` : ""].filter(Boolean).join("\n\n") : data.body;
         render6();
         toast("GitHub 讨论已永久删除");
       } catch (error) {
-        toast(`删除讨论失败：${errorMessage2(error)}`);
+        toast(`删除讨论失败：${errorMessage(error)}`);
       } finally {
         setBusy(false);
       }
@@ -3778,7 +3778,7 @@ ${data.trick.trim()}` : ""].filter(Boolean).join("\n\n") : data.body;
         render6();
         toast(local ? "本地记录已删除" : "GitHub 文档已删除");
       } catch (error) {
-        toast(`删除失败：${errorMessage2(error)}`);
+        toast(`删除失败：${errorMessage(error)}`);
       } finally {
         setBusy(false);
       }
@@ -3789,20 +3789,20 @@ ${data.trick.trim()}` : ""].filter(Boolean).join("\n\n") : data.body;
   // src/renderer/library/reader.ts
   function createLibraryReader(options) {
     const global2 = window;
-    const { demo, stateLabels, getLocal, setLocal, getAccount, getPermissions, getView, getLibraryScope, getSelected, setSelected, getComments, getBusy, setBusy, getLoading, getError, getRecords, key, isLocal, visibleLocal, canEditRemote, sameRepo, platformCode, authorName: authorName2, date, quotaBlocked, renderMarkdown, persistLocal, call, render: render6, clearFilters, openSubmit, openLocalSolution, deleteRecord, deleteDiscussion, openExternal, toast, errorMessage: errorMessage2 } = options;
+    const { demo, stateLabels, getLocal, setLocal, getAccount, getPermissions, getView, getLibraryScope, getSelected, setSelected, getComments, getBusy, setBusy, getLoading, getError, getRecords, key, isLocal, visibleLocal, canEditRemote, sameRepo, platformCode, authorName, date, quotaBlocked, renderMarkdown, persistLocal, call, render: render6, clearFilters, openSubmit, openLocalSolution, deleteRecord, deleteDiscussion, openExternal, toast, errorMessage } = options;
     const $ = (selector, root2 = document) => root2.querySelector(selector);
     const $$ = (selector, root2 = document) => Array.from(root2.querySelectorAll(selector));
-    function element4(tag, className, text4) {
+    function element4(tag, className, text3) {
       const node2 = document.createElement(tag);
       if (className) node2.className = className;
-      if (text4 !== void 0) node2.textContent = String(text4);
+      if (text3 !== void 0) node2.textContent = String(text3);
       return node2;
     }
     function append(parent, ...children) {
       children.filter(Boolean).forEach((child) => parent.append(child));
       return parent;
     }
-    function button5(label, className, action2) {
+    function button6(label, className, action2) {
       const node2 = element4("button", className, label);
       node2.type = "button";
       node2.addEventListener("click", action2);
@@ -3830,10 +3830,10 @@ ${data.trick.trim()}` : ""].filter(Boolean).join("\n\n") : data.body;
       return element4("span", `difficulty-badge tone-${info.tone}`, `洛谷 · ${record.luoguDifficulty}`);
     }
     function difficultyBadge(record) {
-      const { tone, rank, label: text4 } = Search.difficulty(record);
-      if (!text4) return null;
+      const { tone, rank, label: text3 } = Search.difficulty(record);
+      if (!text3) return null;
       const code = Search.normalizePlatform(record.platform);
-      const label = element4("span", `difficulty-badge tone-${tone}${rank ? ` rank-${rank}` : ""}`, text4);
+      const label = element4("span", `difficulty-badge tone-${tone}${rank ? ` rank-${rank}` : ""}`, text3);
       label.title = `${demo ? "演示值 · " : ""}${code === "CF" ? "Codeforces 原生 Rating 色阶" : code === "LG" ? "洛谷原生难度名称 · 颜色仅用于界面展示" : "平台原始数值 / 难度"}，不跨平台换算`;
       return label;
     }
@@ -3849,7 +3849,7 @@ ${data.trick.trim()}` : ""].filter(Boolean).join("\n\n") : data.body;
     function empty(title, description, action2) {
       const box = element4("div", "empty-state");
       append(box, element4("div", "empty-icon", "⌑"), element4("h3", "", title), element4("p", "", description));
-      if (action2) box.append(button5(action2.label, "button secondary", action2.fn));
+      if (action2) box.append(button6(action2.label, "button secondary", action2.fn));
       return box;
     }
     let focusedDetail = false;
@@ -3896,19 +3896,19 @@ ${data.trick.trim()}` : ""].filter(Boolean).join("\n\n") : data.body;
     }
     function renderLibrary(items) {
       if (!items.some((record2) => key(record2) === getSelected())) setSelected(items[0] ? key(items[0]) : null);
-      const list2 = $("#record-list");
-      list2.replaceChildren();
+      const list = $("#record-list");
+      list.replaceChildren();
       const publicList = getView() === "public";
       $("#library-panel").classList.toggle("public-problem-list", publicList);
       if (publicList) {
         const heading = element4("div", "problem-list-columns");
         heading.setAttribute("aria-hidden", "true");
         ["平台", "题号", "算法标签", "题目", "难度", "作者", "更新"].forEach((label) => heading.append(element4("span", "", label)));
-        list2.append(heading);
+        list.append(heading);
       }
       const fragment = document.createDocumentFragment();
       items.forEach((record2) => {
-        const card = button5("", `record-card${!publicList && key(record2) === getSelected() ? " selected" : ""}`, () => {
+        const card = button6("", `record-card${!publicList && key(record2) === getSelected() ? " selected" : ""}`, () => {
           if (publicList) {
             openDetail(record2);
             return;
@@ -3965,8 +3965,8 @@ ${data.trick.trim()}` : ""].filter(Boolean).join("\n\n") : data.body;
         }
         fragment.append(card);
       });
-      list2.append(fragment);
-      if (!items.length) list2.append(empty(getLoading() ? "正在载入题库" : getView() === "public" && getLibraryScope() === "local" ? "还没有本地题解" : "这里还没有题目", getLoading() ? "等待客户端返回你的学习数据。" : "试试调整筛选，或记下第一道值得回顾的错题。", { label: "清空筛选", fn: clearFilters }));
+      list.append(fragment);
+      if (!items.length) list.append(empty(getLoading() ? "正在载入题库" : getView() === "public" && getLibraryScope() === "local" ? "还没有本地题解" : "这里还没有题目", getLoading() ? "等待客户端返回你的学习数据。" : "试试调整筛选，或记下第一道值得回顾的错题。", { label: "清空筛选", fn: clearFilters }));
       if (publicList) {
         $("#detail-panel").replaceChildren();
         return;
@@ -3989,7 +3989,7 @@ ${data.trick.trim()}` : ""].filter(Boolean).join("\n\n") : data.body;
       } catch (error) {
         setLocal(before);
         render6();
-        toast(`未能保存：${errorMessage2(error)}`);
+        toast(`未能保存：${errorMessage(error)}`);
       } finally {
         setBusy(false);
       }
@@ -3999,19 +3999,19 @@ ${data.trick.trim()}` : ""].filter(Boolean).join("\n\n") : data.body;
       const scroll = panel.scrollTop;
       panel.replaceChildren();
       if (focusedDetail) {
-        const back = button5("← 返回题目列表", "button secondary detail-back", closeDetail);
+        const back = button6("← 返回题目列表", "button secondary detail-back", closeDetail);
         back.id = "detail-back-button";
         panel.append(back);
       } else {
-        const open2 = button5("打开详情 ↗", "button primary detail-open", () => openDetail(record));
+        const open2 = button6("打开详情 ↗", "button primary detail-open", () => openDetail(record));
         open2.id = "open-detail-button";
         panel.append(open2);
       }
-      const actions = append(element4("div", "detail-actions"), button5(favorite(record) ? "★ 已收藏" : "☆ 收藏", "button secondary", () => changeLocal(() => {
+      const actions = append(element4("div", "detail-actions"), button6(favorite(record) ? "★ 已收藏" : "☆ 收藏", "button secondary", () => changeLocal(() => {
         getLocal().favorites = favorite(record) ? getLocal().favorites.filter((value) => String(value) !== key(record)) : [...getLocal().favorites, key(record)];
-      })), button5("原题 ↗", "button subtle", () => openExternal(record.problemUrl || record.url)));
+      })), button6("原题 ↗", "button subtle", () => openExternal(record.problemUrl || record.url)));
       if (record.kind === "document") {
-        const localSolution = button5("＋ 本地题解", "button subtle public-local-solution", () => openLocalSolution(record));
+        const localSolution = button6("＋ 本地题解", "button subtle public-local-solution", () => openLocalSolution(record));
         localSolution.id = "local-solution-button";
         localSolution.title = "为这道题写自己的本地题解；已有本地记录时继续编辑";
         actions.append(localSolution);
@@ -4027,24 +4027,24 @@ ${data.trick.trim()}` : ""].filter(Boolean).join("\n\n") : data.body;
       panel.append(body);
       const masteryButtons = element4("div", "mastery-buttons");
       Object.entries(stateLabels).forEach(([value, label]) => {
-        const control2 = button5(label, mastery(record) === value ? "active" : "", () => changeLocal(() => {
+        const control = button6(label, mastery(record) === value ? "active" : "", () => changeLocal(() => {
           getLocal().mastery[key(record)] = value;
         }));
-        control2.setAttribute("aria-pressed", mastery(record) === value ? "true" : "false");
-        masteryButtons.append(control2);
+        control.setAttribute("aria-pressed", mastery(record) === value ? "true" : "false");
+        masteryButtons.append(control);
       });
       append(panel, append(element4("div", "mastery-box"), append(element4("div"), element4("strong", "", "这个思路，掌握了吗？"), element4("small", "", "复习进度仅记录在你的学习空间")), masteryButtons));
       const edits = element4("div", "record-edit-actions");
-      if (record.proposalUrl) edits.append(button5("旧版已投稿副本 · 查看投稿 ↗", "button secondary", () => openExternal(record.proposalUrl)));
+      if (record.proposalUrl) edits.append(button6("旧版已投稿副本 · 查看投稿 ↗", "button secondary", () => openExternal(record.proposalUrl)));
       if (isLocal(record) && visibleLocal(record) || canEditRemote(record)) {
-        const edit = button5(isLocal(record) ? "编辑本地记录" : "编辑正式题解", "button secondary", () => openSubmit(record));
+        const edit = button6(isLocal(record) ? "编辑本地记录" : "编辑正式题解", "button secondary", () => openSubmit(record));
         edit.id = "edit-record-button";
-        const remove = button5(isLocal(record) ? "删除本地记录" : "删除正式题解", "button danger", () => deleteRecord(record));
+        const remove = button6(isLocal(record) ? "删除本地记录" : "删除正式题解", "button danger", () => deleteRecord(record));
         remove.id = "delete-record-button";
         append(edits, edit, remove);
       }
       if (record.kind === "issue" && sameRepo(record) && getAccount() && getPermissions().admin === true) {
-        const remove = button5("永久删除讨论 Issue", "button danger", () => deleteDiscussion(record));
+        const remove = button6("永久删除讨论 Issue", "button danger", () => deleteDiscussion(record));
         remove.id = "delete-issue-button";
         edits.append(remove);
       }
@@ -4057,19 +4057,19 @@ ${data.trick.trim()}` : ""].filter(Boolean).join("\n\n") : data.body;
       comments.append(commentList);
       panel.append(comments);
       const form = element4("form", "comment-form");
-      const input3 = element4("textarea");
-      input3.rows = 2;
-      input3.placeholder = "分享你的观察，或提出一个问题…";
-      input3.setAttribute("aria-label", "评论内容");
-      input3.required = true;
-      input3.maxLength = 1e4;
+      const input2 = element4("textarea");
+      input2.rows = 2;
+      input2.placeholder = "分享你的观察，或提出一个问题…";
+      input2.setAttribute("aria-label", "评论内容");
+      input2.required = true;
+      input2.maxLength = 1e4;
       const submit = element4("button", "button secondary", demo ? "演示评论" : "发表讨论");
       submit.type = "submit";
-      append(form, input3, submit);
+      append(form, input2, submit);
       comments.append(form);
       form.addEventListener("submit", async (event) => {
         event.preventDefault();
-        const body2 = input3.value.trim();
+        const body2 = input2.value.trim();
         if (!body2 || getBusy()) return;
         if (!getAccount() && !demo) {
           toast("请先登录 GitHub 账户再评论");
@@ -4089,11 +4089,11 @@ ${data.trick.trim()}` : ""].filter(Boolean).join("\n\n") : data.body;
             await call("comment", { number: record.number, repo: record.repo, body: body2 });
             getComments().delete(key(record));
           }
-          input3.value = "";
+          input2.value = "";
           await loadComments(record, commentList);
           toast(demo ? "演示评论已添加，未向外部发送" : "评论已发表");
         } catch (error) {
-          toast(errorMessage2(error));
+          toast(errorMessage(error));
         } finally {
           setBusy(false);
           submit.disabled = false;
@@ -4119,10 +4119,10 @@ ${data.trick.trim()}` : ""].filter(Boolean).join("\n\n") : data.body;
         container.replaceChildren();
         if (!comments.length) container.append(element4("div", "comment-empty", demo ? "演示讨论区 · 留下第一条思考，不会发送到外部。" : "还没有讨论，你的观察也许就是别人的突破口。"));
         comments.forEach((comment) => {
-          container.append(append(element4("article", "comment-item"), element4("strong", "", authorName2(comment.author || comment.user)), element4("p", "", comment.body || "")));
+          container.append(append(element4("article", "comment-item"), element4("strong", "", authorName(comment.author || comment.user)), element4("p", "", comment.body || "")));
         });
       } catch (error) {
-        if (container.isConnected) container.replaceChildren(element4("div", "comment-empty", `讨论暂不可用：${errorMessage2(error)}`));
+        if (container.isConnected) container.replaceChildren(element4("div", "comment-empty", `讨论暂不可用：${errorMessage(error)}`));
       }
     }
     return { favorite, mastery, tags, openDetail, closeDetail, resetDetail, isFocusedDetail, renderFocusedDetail, renderLibrary, renderDetail, loadComments, changeLocal };
@@ -4130,12 +4130,12 @@ ${data.trick.trim()}` : ""].filter(Boolean).join("\n\n") : data.body;
 
   // src/renderer/account/settings.ts
   function createSettings(options) {
-    const { demo, bridge: bridge3, themeStorage, paletteStorage, getBusy, setBusy, getSettings, setSettings, getAccount, getAuthStatus, getPermissions, setPermissionsRepo, getError, setError, getLocal, repo, repoSource, quotaBlocked, reauthNeeded, call, applyPayload, resetRepositoryData, resetSourceView, clearComments, refreshFilters, render: render6, renderUpdate, updateStatus, sync, writeDemo, toast, errorMessage: errorMessage2 } = options;
+    const { demo, bridge: bridge3, themeStorage, paletteStorage, getBusy, setBusy, getSettings, setSettings, getAccount, getAuthStatus, getPermissions, setPermissionsRepo, getError, setError, getLocal, repo, repoSource, quotaBlocked, reauthNeeded, call, applyPayload, resetRepositoryData, resetSourceView, clearComments, refreshFilters, render: render6, renderUpdate, updateStatus, sync, writeDemo, toast, errorMessage } = options;
     const $ = (selector, root2 = document) => root2.querySelector(selector);
-    function element4(tag, className, text4) {
+    function element4(tag, className, text3) {
       const node2 = document.createElement(tag);
       if (className) node2.className = className;
-      if (text4 !== void 0) node2.textContent = String(text4);
+      if (text3 !== void 0) node2.textContent = String(text3);
       return node2;
     }
     function append(parent, ...children) {
@@ -4210,20 +4210,20 @@ ${data.trick.trim()}` : ""].filter(Boolean).join("\n\n") : data.body;
       document.body.style.setProperty("--code-font-size", (Number.isFinite(size) && size >= 10 && size <= 18 ? size : 11) + "px");
     }
     function renderRepoSelector() {
-      const select2 = $("#repo-select");
-      if (!select2) return;
+      const select = $("#repo-select");
+      if (!select) return;
       const settings = getSettings();
       const repos = Array.isArray(settings?.repositories) && settings.repositories.length ? settings.repositories : [
         { id: "repo-current", name: "当前题库", repo: settings?.repo || "qmx-acm-data/2026", serverUrl: settings?.serverUrl || "" }
       ];
       const activeId = settings?.activeRepoId || repos[0].id;
-      select2.replaceChildren();
+      select.replaceChildren();
       repos.forEach((r) => {
         const opt = document.createElement("option");
         opt.value = r.id;
         opt.textContent = `${r.name || r.repo} (${r.repo})`;
         if (r.id === activeId) opt.selected = true;
-        select2.append(opt);
+        select.append(opt);
       });
     }
     function renderSettingsRepoList() {
@@ -4306,7 +4306,7 @@ ${data.trick.trim()}` : ""].filter(Boolean).join("\n\n") : data.body;
         toast("已切换到仓库：" + (getSettings().repo || ""));
       } catch (err) {
         renderRepoSelector();
-        toast(errorMessage2(err));
+        toast(errorMessage(err));
         return;
       } finally {
         setBusy(false);
@@ -4339,11 +4339,11 @@ ${data.trick.trim()}` : ""].filter(Boolean).join("\n\n") : data.body;
       renderSettingsRepoList();
       toast("已添加仓库：" + (name || repoPath));
     }
-    async function changeAppearance(field3, event) {
+    async function changeAppearance(field2, event) {
       if (getBusy()) return;
       const previous = { ...getSettings() };
       const settings = getSettings();
-      if (field3 === "theme") {
+      if (field2 === "theme") {
         settings.theme = normalizeTheme(event.target.value);
         applyTheme(settings.theme);
       } else {
@@ -4353,10 +4353,10 @@ ${data.trick.trim()}` : ""].filter(Boolean).join("\n\n") : data.body;
       setBusy(true);
       try {
         if (demo) writeDemo();
-        else await call("saveSettings", { [field3]: settings[field3] });
+        else await call("saveSettings", { [field2]: settings[field2] });
       } catch (error) {
         setSettings(previous);
-        toast(`当前外观已预览，设置未保存：${errorMessage2(error)}`);
+        toast(`当前外观已预览，设置未保存：${errorMessage(error)}`);
       } finally {
         setBusy(false);
       }
@@ -4449,7 +4449,7 @@ ${data.trick.trim()}` : ""].filter(Boolean).join("\n\n") : data.body;
         render6();
         toast("设置已保存");
       } catch (error) {
-        toast(errorMessage2(error));
+        toast(errorMessage(error));
       } finally {
         setBusy(false);
       }
@@ -4545,7 +4545,7 @@ ${data.trick.trim()}` : ""].filter(Boolean).join("\n\n") : data.body;
         return true;
       } catch (error) {
         $("#account-error").hidden = false;
-        $("#account-error").textContent = errorMessage2(error);
+        $("#account-error").textContent = errorMessage(error);
         try {
           applyPayload(await call("bootstrap"));
           refreshFilters();
@@ -4579,7 +4579,7 @@ ${data.trick.trim()}` : ""].filter(Boolean).join("\n\n") : data.body;
       try {
         await call("openAuthUrl", authUrl);
       } catch (error) {
-        toast(`无法打开浏览器：${errorMessage2(error)}。可复制下方链接手动授权`);
+        toast(`无法打开浏览器：${errorMessage(error)}。可复制下方链接手动授权`);
       }
     }
     async function copyAuthUrl() {
@@ -4595,7 +4595,7 @@ ${data.trick.trim()}` : ""].filter(Boolean).join("\n\n") : data.body;
       try {
         if (!demo) await call("cancelLogin");
       } catch (error) {
-        toast(errorMessage2(error));
+        toast(errorMessage(error));
       }
       $("#auth-dialog").close();
     }
@@ -4624,7 +4624,7 @@ ${data.trick.trim()}` : ""].filter(Boolean).join("\n\n") : data.body;
           if (result !== false && !result?.canceled) toast("本地数据已导出");
         }
       } catch (error) {
-        toast(errorMessage2(error));
+        toast(errorMessage(error));
       }
     }
     $("#repo-select")?.addEventListener("change", switchRepository);
@@ -4723,14 +4723,14 @@ ${data.trick.trim()}` : ""].filter(Boolean).join("\n\n") : data.body;
   };
   var active2 = null;
   var instanceId = 0;
-  function element2(tag, className, text4) {
+  function element2(tag, className, text3) {
     const el3 = document.createElement(tag);
     if (className) el3.className = className;
-    if (text4 !== void 0) el3.textContent = String(text4);
+    if (text3 !== void 0) el3.textContent = String(text3);
     return el3;
   }
-  function button3(text4, className, action2) {
-    const el3 = element2("button", className, text4);
+  function button3(text3, className, action2) {
+    const el3 = element2("button", className, text3);
     el3.type = "button";
     el3.addEventListener("click", action2);
     return el3;
@@ -4844,7 +4844,7 @@ ${data.trick.trim()}` : ""].filter(Boolean).join("\n\n") : data.body;
     scopeSwitch.setAttribute("role", "group");
     scopeSwitch.setAttribute("aria-label", "笔记范围");
     ["public", "personal"].forEach((scope2) => {
-      const control2 = button3(scope2 === "public" ? "公开笔记" : "我的笔记", "alg-scope-button", () => {
+      const control = button3(scope2 === "public" ? "公开笔记" : "我的笔记", "alg-scope-button", () => {
         if (scope2 === state3.scope) return;
         if (typeof opts.onScopeChange === "function") opts.onScopeChange(scope2);
         else if (scope2 !== "personal" || opts.account) {
@@ -4853,8 +4853,8 @@ ${data.trick.trim()}` : ""].filter(Boolean).join("\n\n") : data.body;
           render4({ ...opts, scope: scope2 });
         }
       });
-      control2.setAttribute("aria-pressed", String(scope2 === state3.scope));
-      scopeSwitch.append(control2);
+      control.setAttribute("aria-pressed", String(scope2 === state3.scope));
+      scopeSwitch.append(control);
     });
     const uploadWrap = element2("div", "alg-upload-wrap");
     const upload = button3("＋ 上传笔记", "alg-button alg-button-primary", () => {
@@ -4928,15 +4928,15 @@ ${data.trick.trim()}` : ""].filter(Boolean).join("\n\n") : data.body;
     legendButtons.push(allLevel);
     legend.append(allLevel);
     [...LEVELS, ...levelCounts.get("unrated") ? [{ id: "unrated", label: "未分级", tone: "neutral", number: "—" }] : []].forEach((level) => {
-      const control2 = button3("", `alg-legend-button alg-tone-${level.tone}`, () => {
+      const control = button3("", `alg-legend-button alg-tone-${level.tone}`, () => {
         state3.draftLevel = state3.draftLevel === level.id ? "" : level.id;
         updateDraftControls();
       });
-      control2.dataset.level = level.id;
-      control2.append(element2("span", "alg-legend-dot"), element2("span", "", `${level.number} ${level.label}`), element2("span", "alg-legend-count", levelCounts.get(level.id)));
-      control2.title = `${level.label}：${levelCounts.get(level.id)} 个节点；点击筛选，再次点击取消`;
-      legendButtons.push(control2);
-      legend.append(control2);
+      control.dataset.level = level.id;
+      control.append(element2("span", "alg-legend-dot"), element2("span", "", `${level.number} ${level.label}`), element2("span", "alg-legend-count", levelCounts.get(level.id)));
+      control.title = `${level.label}：${levelCounts.get(level.id)} 个节点；点击筛选，再次点击取消`;
+      legendButtons.push(control);
+      legend.append(control);
     });
     const searchHint = element2("p", "alg-tier-hint alg-search-hint");
     searchHint.append(element2("strong", "", "点击搜索按钮才会进行跳转哦，也可以按回车确认。"));
@@ -5217,13 +5217,13 @@ ${data.trick.trim()}` : ""].filter(Boolean).join("\n\n") : data.body;
           row2.dataset.algTooltip = `${entry2.path.join(" / ")}${entry2.node.fullLabel && entry2.node.fullLabel !== entry2.node.label ? `
 ${entry2.node.fullLabel}` : ""}`;
           if (opts.canManage && typeof opts.onAddTopic === "function") {
-            const add2 = button3("＋", "alg-add-topic", (event) => {
+            const add = button3("＋", "alg-add-topic", (event) => {
               event.stopPropagation();
               opts.onAddTopic(entry2.node.id);
             });
-            add2.title = `在“${entry2.node.label}”下添加算法`;
-            add2.setAttribute("aria-label", add2.title);
-            row2.append(add2);
+            add.title = `在“${entry2.node.label}”下添加算法`;
+            add.setAttribute("aria-label", add.title);
+            row2.append(add);
           }
           row2.addEventListener("click", () => {
             selectNode(entry2.node.id);
@@ -5402,7 +5402,7 @@ ${entry2.node.fullLabel}` : ""}`;
         expandedReader?.close();
         opts.onAddTopic(selected2.node.id);
       }));
-      if (typeof opts.onLearningPath === "function") utilities.append(button3("在学习路径中查看 →", "alg-text-button alg-add-topic-detail", () => {
+      if (typeof opts.onLearningPath === "function") utilities.append(button3("在学习路线中查看 →", "alg-text-button alg-add-topic-detail", () => {
         expandedReader?.close();
         opts.onLearningPath(selected2.node.id);
       }));
@@ -5446,9 +5446,9 @@ ${entry2.node.fullLabel}` : ""}`;
         }
         pane.append(heading("匹配的笔记", matchingNotes.length));
         if (matchingNotes.length) {
-          const list2 = element2("div", "alg-note-list");
-          matchingNotes.forEach((note) => list2.append(noteCard(note, true)));
-          pane.append(list2);
+          const list = element2("div", "alg-note-list");
+          matchingNotes.forEach((note) => list.append(noteCard(note, true)));
+          pane.append(list);
         } else pane.append(element2("p", "alg-inline-empty", "当前范围内没有匹配的笔记。可以尝试算法名称、笔记标题、作者或标签。"));
         if (!topicMatches.length && !matchingNotes.length) pane.append(button3("清除全部筛选", "alg-button", () => clear.click()));
         appendInformation();
@@ -5461,16 +5461,16 @@ ${entry2.node.fullLabel}` : ""}`;
       if (featured.length) {
         const section = element2("section", "alg-featured-section");
         section.append(heading("精选笔记", featured.length));
-        const list2 = element2("div", "alg-note-list");
-        featured.forEach((note) => list2.append(noteCard(note, false)));
-        section.append(list2);
+        const list = element2("div", "alg-note-list");
+        featured.forEach((note) => list.append(noteCard(note, false)));
+        section.append(list);
         pane.append(section);
       }
       if (ordinary.length) {
         pane.append(notesHeading());
-        const list2 = element2("div", "alg-note-list");
-        ordinary.forEach((note) => list2.append(noteCard(note, false)));
-        pane.append(list2);
+        const list = element2("div", "alg-note-list");
+        ordinary.forEach((note) => list.append(noteCard(note, false)));
+        pane.append(list);
       }
       if (children.length) {
         pane.append(heading(selected2.node.id === root2.id ? "选择知识主线" : "继续探索", children.length));
@@ -5508,7 +5508,7 @@ ${entry2.node.fullLabel}` : ""}`;
       live.textContent = filtering ? `找到 ${matched.size} 个知识节点、${matchingNotes.length} 篇笔记` : `${all.length} 个知识节点、${notes.length} 篇笔记`;
     }
     function updateDraftControls() {
-      legendButtons.forEach((control2) => control2.setAttribute("aria-pressed", String(control2.dataset.level === state3.draftLevel)));
+      legendButtons.forEach((control) => control.setAttribute("aria-pressed", String(control.dataset.level === state3.draftLevel)));
       const changed = state3.draftSearch !== state3.search || state3.draftLevel !== state3.level || state3.draftAttribute !== state3.attribute;
       submitSearch.title = changed ? "应用当前关键词、难度和属性" : "刷新搜索结果";
       submitSearch.dataset.pending = String(changed);
@@ -5584,1104 +5584,2402 @@ ${entry2.node.fullLabel}` : ""}`;
   }
   var AlgorithmBrowser = Object.freeze({ render: render4 });
 
-  // src/renderer/algorithms/learning-path.ts
-  function present(value) {
-    return value !== null && value !== void 0;
-  }
-  function errorMessage(error, fallback) {
-    return String(error?.message || fallback);
-  }
-  var views = /* @__PURE__ */ new Map();
+  // src/renderer/algorithms/roadmap.ts
+  var WIDTH = 1500;
+  var HEIGHT = 1240;
+  var BAND_STARTS = [16, 324, 646, 986];
+  var BAND_HEIGHTS = [250, 304, 310, 180];
   var serial = 0;
-  var kinds = { learning: "学习关", mixed: "综合练习", challenge: "阶段挑战" };
-  var grades = { basic: ["D1 · 入门", "basic"], beginner: ["D2 · 初级", "beginner"], intermediate: ["D3 · 中级", "intermediate"], advanced: ["D4 · 高级", "advanced"], expert: ["D5 · 挑战", "expert"] };
-  function el2(tag, className, text4) {
+  function element3(tag, className, text3) {
     const node2 = document.createElement(tag);
-    if (className) node2.className = className;
-    if (text4 !== void 0 && text4 !== null) node2.textContent = String(text4);
+    node2.className = className;
+    if (text3 !== void 0) node2.textContent = text3;
     return node2;
   }
-  function add(parent, ...children) {
-    children.forEach((child) => {
-      if (child) parent.append(child);
-    });
-    return parent;
-  }
-  function control(text4, className, action2) {
-    const node2 = el2("button", className, text4);
+  function button4(label, className, run) {
+    const node2 = element3("button", `arm-button ${className}`, label);
     node2.type = "button";
-    node2.addEventListener("click", action2);
+    node2.addEventListener("click", run);
     return node2;
   }
-  function list(value) {
-    return Array.isArray(value) ? value : [];
+  function svgElement2(tag, attributes) {
+    const node2 = document.createElementNS("http://www.w3.org/2000/svg", tag);
+    for (const [name, value] of Object.entries(attributes)) node2.setAttribute(name, value);
+    return node2;
   }
-  function text3(value) {
-    return typeof value === "string" ? value : "";
-  }
-  function cfLabel(value) {
-    if (!value || !Number.isFinite(value.min)) return "按关卡目标选题";
-    return `CF ${value.min}${Number.isFinite(value.max) ? value.max === value.min ? "" : `–${value.max}` : "+"}`;
-  }
-  function authorName(author) {
-    if (typeof author === "string") return author;
-    const value = author;
-    return text3(value?.name) || text3(value?.login) || "未署名";
+  function route(a, b, nodes) {
+    const same = Math.abs(a.y - b.y) < 2, up = b.y < a.y;
+    const start = [a.cx, up ? a.y - 14 : a.y + a.h + 14];
+    const end = [b.cx, same || up ? b.y + b.h + 14 : b.y - 14];
+    const xs = [.../* @__PURE__ */ new Set([18, 1482, start[0], end[0], ...nodes.flatMap((n) => [n.x - 14, n.x + n.w + 14, n.cx])])].sort((x, y) => x - y);
+    const ys = [.../* @__PURE__ */ new Set([10, 1170, start[1], end[1], ...nodes.flatMap((n) => [n.y - 14, n.y + n.h + 14])])].sort((x, y) => x - y);
+    const nx = xs.length, ny = ys.length, tx = xs.indexOf(end[0]), ty = ys.indexOf(end[1]);
+    const initial = (ys.indexOf(start[1]) * nx + xs.indexOf(start[0])) * 3;
+    const heap = [], best = /* @__PURE__ */ new Map([[initial, 0]]), previous = /* @__PURE__ */ new Map();
+    function push(entry2) {
+      heap.push(entry2);
+      let index = heap.length - 1;
+      while (index) {
+        const parent = index - 1 >> 1;
+        if (heap[parent].f <= entry2.f) break;
+        heap[index] = heap[parent];
+        index = parent;
+      }
+      heap[index] = entry2;
+    }
+    function pop() {
+      const first = heap[0], last = heap.pop();
+      if (heap.length && last) {
+        let index = 0;
+        while (index * 2 + 1 < heap.length) {
+          let child = index * 2 + 1;
+          if (child + 1 < heap.length && heap[child + 1].f < heap[child].f) child++;
+          if (heap[child].f >= last.f) break;
+          heap[index] = heap[child];
+          index = child;
+        }
+        heap[index] = last;
+      }
+      return first;
+    }
+    function free(x1, y1, x2, y2) {
+      return !nodes.some((n) => x1 === x2 ? x1 > n.x - 5 && x1 < n.x + n.w + 5 && Math.max(y1, y2) > n.y - 5 && Math.min(y1, y2) < n.y + n.h + 5 : y1 > n.y - 5 && y1 < n.y + n.h + 5 && Math.max(x1, x2) > n.x - 5 && Math.min(x1, x2) < n.x + n.w + 5);
+    }
+    push({ key: initial, g: 0, f: 0 });
+    let finish;
+    while (heap.length) {
+      const entry2 = pop();
+      if (!entry2 || entry2.g !== best.get(entry2.key)) continue;
+      const direction = entry2.key % 3, position = Math.floor(entry2.key / 3), x = position % nx, y = Math.floor(position / nx);
+      if (x === tx && y === ty) {
+        finish = entry2.key;
+        break;
+      }
+      const neighbours = [[x - 1, y, 1], [x + 1, y, 1], [x, y - 1, 2], [x, y + 1, 2]];
+      for (const [xx, yy, nextDirection] of neighbours) {
+        if (xx < 0 || xx >= nx || yy < 0 || yy >= ny || !free(xs[x], ys[y], xs[xx], ys[yy])) continue;
+        const key = (yy * nx + xx) * 3 + nextDirection;
+        const cost = entry2.g + Math.abs(xs[x] - xs[xx]) + Math.abs(ys[y] - ys[yy]) + (direction && direction !== nextDirection ? 25 : 0);
+        if (cost >= (best.get(key) ?? Infinity)) continue;
+        best.set(key, cost);
+        previous.set(key, entry2.key);
+        push({ key, g: cost, f: cost + Math.abs(xs[xx] - end[0]) + Math.abs(ys[yy] - end[1]) });
+      }
+    }
+    if (finish === void 0) throw new Error(`No clear roadmap route: ${a.id} → ${b.id}`);
+    const middle = [];
+    for (let key = finish; key !== void 0; key = previous.get(key)) {
+      const position = Math.floor(key / 3);
+      middle.push([xs[position % nx], ys[Math.floor(position / nx)]]);
+    }
+    middle.reverse();
+    const points = [[a.cx, up ? a.y : a.y + a.h], ...middle, [b.cx, same || up ? b.y + b.h : b.y]];
+    const simplified = [];
+    for (const point of points) {
+      while (simplified.length >= 2) {
+        const before = simplified[simplified.length - 2], last = simplified[simplified.length - 1];
+        if (before[0] === last[0] && last[0] === point[0] || before[1] === last[1] && last[1] === point[1]) simplified.pop();
+        else break;
+      }
+      simplified.push(point);
+    }
+    return simplified;
   }
   function render5(options) {
-    if (!options?.host) throw new TypeError("NotebookLearningPath.render requires a host.");
-    const opts = options, host = opts.host, uid = `alp-${++serial}`;
-    const stages = list(opts.curriculum?.stages).filter((stage) => stage && typeof stage.id === "string");
-    const stageById = /* @__PURE__ */ new Map(), gateById = /* @__PURE__ */ new Map(), topics = /* @__PURE__ */ new Map();
-    stages.forEach((stage, stageIndex) => {
-      stageById.set(stage.id, { stage, index: stageIndex });
-      list(stage.gates).forEach((gate, gateIndex) => {
-        if (gate && typeof gate.id === "string") gateById.set(gate.id, { gate, stage, stageIndex, index: gateIndex });
+    const { host, data } = options, uid = `arm-${++serial}`;
+    const nodes = data.nodes.map((node2) => ({ ...node2, x: node2.px, y: node2.py, w: 164, h: 74, cx: node2.px + 82 }));
+    const graphById = new Map(nodes.map((node2) => [node2.id, node2]));
+    const byId = new Map([...data.nodes, ...data.indexEntries].map((node2) => [node2.id, node2]));
+    const cards2 = /* @__PURE__ */ new Map(), edgeElements = [];
+    const stageButtons = [];
+    let selected2 = null, hovered = null, stage = null, query = "";
+    let position = typeof options.progress?.roadmapFocus === "string" ? options.progress.roadmapFocus : null;
+    let autoFit = true, zoom = 1, listMode = false, highlight = true, destroyed = false, pending2 = false, frame = 0;
+    let detailNode = null, previousFocus = null;
+    const root2 = element3("section", "arm");
+    root2.setAttribute("aria-label", "学习路线");
+    root2.dataset.view = "graph";
+    const header = element3("header", "arm-header");
+    const heading = element3("div", "arm-heading");
+    heading.append(element3("span", "arm-eyebrow", "C++ · ALGORITHM ROADMAP"), element3("h2", "arm-title", "由广入深，看清知识怎样连接。"), element3("p", "arm-subtitle", "初窥、入门、基础、进阶，沿知识联系逐步展开。点击节点查看范围，按问题跳学与回补。"));
+    const readingHint = element3("aside", "arm-reading-hint");
+    readingHint.append(element3("strong", "", "读图方式"), element3("p", "", "纵向看层次，横向看分支。悬停看关联，点击看知识范围。"));
+    header.append(heading, readingHint);
+    root2.append(header);
+    const top = element3("section", "arm-top-stages");
+    top.setAttribute("aria-label", "四个知识阶段");
+    const navigation = element3("nav", "arm-stage-nav");
+    navigation.setAttribute("aria-label", "阶段定位");
+    data.rows.forEach((row2, index) => {
+      const card = button4("", "arm-stage-button", () => {
+        stage = stage === index ? null : index;
+        selected2 = null;
+        hovered = null;
+        paint();
+        if (stage !== null && !listMode) bands[index]?.scrollIntoView({ block: "center", behavior: "smooth" });
       });
+      card.dataset.stage = String(index);
+      card.style.setProperty("--arm-stage", row2.color);
+      card.style.setProperty("--arm-stage-soft", row2.bg);
+      card.append(element3("span", "arm-stage-number", `阶段 ${index + 1}`), element3("strong", "", row2.name), element3("p", "", data.goals[index] || ""));
+      card.setAttribute("aria-pressed", "false");
+      navigation.append(card);
+      stageButtons.push(card);
     });
-    function walk(node2, path) {
-      if (!node2 || typeof node2.id !== "string") return;
-      const entry2 = { node: node2, path: [...path, text3(node2.label) || "未命名知识点"] };
-      topics.set(node2.id, entry2);
-      list(node2.legacyIds).forEach((id) => topics.set(id, entry2));
-      list(node2.children).forEach((child) => walk(child, entry2.path));
+    top.append(navigation, element3("p", "arm-color-note", "绿 · 蓝 · 金 · 红表示内容由浅入深。同一阶段可以有多条并行分支；虚线节点可在遇到时补学。"));
+    root2.append(top);
+    const controls = element3("div", "arm-controls"), controlLeft = element3("div", "arm-control-left"), controlRight = element3("div", "arm-control-right");
+    const search = element3("input", "arm-search");
+    search.type = "search";
+    search.placeholder = "找知识，例如：线性基、STL、BFS";
+    search.setAttribute("aria-label", "搜索知识节点");
+    search.addEventListener("input", () => {
+      query = search.value.trim().normalize("NFKC").toLowerCase();
+      stage = null;
+      selected2 = null;
+      hovered = null;
+      paint();
+    });
+    const reset = button4("显示全图", "arm-reset-button", () => {
+      query = "";
+      search.value = "";
+      stage = null;
+      selected2 = null;
+      hovered = null;
+      paint();
+    });
+    const listButton = button4("列表视图", "arm-list-button", () => {
+      listMode = !listMode;
+      root2.dataset.view = listMode ? "list" : "graph";
+      scroll.hidden = listMode;
+      list.hidden = !listMode;
+      listButton.setAttribute("aria-pressed", String(listMode));
+      listButton.textContent = listMode ? "返回关系图" : "列表视图";
+      if (!listMode) scheduleFit();
+    });
+    listButton.setAttribute("aria-pressed", "false");
+    const highlightButton = button4("关联高亮：开", "arm-highlight-button", () => {
+      highlight = !highlight;
+      highlightButton.textContent = `关联高亮：${highlight ? "开" : "关"}`;
+      highlightButton.setAttribute("aria-pressed", String(highlight));
+      paint();
+    });
+    highlightButton.setAttribute("aria-pressed", "true");
+    const fitButton = button4("适应窗口", "arm-fit-button", () => {
+      autoFit = true;
+      resize();
+      scroll.scrollLeft = 0;
+    });
+    const actualButton = button4("100%", "arm-actual-button", () => {
+      autoFit = false;
+      zoom = 1;
+      resize();
+    });
+    const zoomControls = element3("div", "arm-zoom");
+    const zoomOut = button4("−", "arm-zoom-out", () => {
+      autoFit = false;
+      zoom = Math.max(0.2, Math.round((zoom - 0.1) * 100) / 100);
+      resize();
+    });
+    zoomOut.setAttribute("aria-label", "缩小");
+    const zoomIn = button4("＋", "arm-zoom-in", () => {
+      autoFit = false;
+      zoom = Math.min(2, Math.round((zoom + 0.1) * 100) / 100);
+      resize();
+    });
+    zoomIn.setAttribute("aria-label", "放大");
+    const zoomValue = element3("output", "arm-zoom-value", "100%");
+    zoomValue.setAttribute("aria-label", "路线图缩放比例");
+    zoomControls.append(zoomOut, zoomValue, zoomIn);
+    controlLeft.append(search, reset);
+    controlRight.append(listButton, highlightButton, fitButton, actualButton, zoomControls);
+    controls.append(controlLeft, controlRight);
+    root2.append(controls);
+    const panel = element3("div", "arm-graph-panel"), captionRow = element3("div", "arm-caption-row"), caption = element3("strong", "arm-caption");
+    captionRow.append(caption, element3("span", "arm-legend", "实线：学习联系　虚线：相关基础　双向：对照理解"));
+    const scroll = element3("div", "arm-graph-scroll");
+    scroll.setAttribute("aria-label", "知识关系图");
+    const space = element3("div", "arm-canvas-space"), canvas = element3("div", "arm-canvas");
+    const svg = svgElement2("svg", { class: "arm-edges", width: String(WIDTH), height: String(HEIGHT), viewBox: `0 0 ${WIDTH} ${HEIGHT}`, "aria-hidden": "true" });
+    const defs = svgElement2("defs", {});
+    for (const [name, color2] of [["arrow", "#92a4bf"], ["arrow-lit", "#4778be"], ["arrow-compare", "#ad7755"]]) {
+      const marker = svgElement2("marker", { id: `${uid}-${name}`, viewBox: "0 0 10 10", refX: "9", refY: "5", markerWidth: "6", markerHeight: "6", orient: "auto-start-reverse" });
+      marker.append(svgElement2("path", { d: "M0 0L10 5L0 10z", fill: color2 }));
+      defs.append(marker);
     }
-    walk(opts.tree, []);
-    for (const [id, entry2] of topics) {
-      if (entry2.node.kind !== "directory") continue;
-      const concrete = list(entry2.node.children).find((child) => child.contentOf === entry2.node.id && child.kind === "algorithm");
-      if (concrete && topics.has(concrete.id)) topics.set(id, topics.get(concrete.id));
+    svg.append(defs);
+    const bands = data.rows.map((row2, index) => {
+      const band = element3("div", "arm-band");
+      band.dataset.stage = String(index);
+      band.style.top = `${BAND_STARTS[index]}px`;
+      band.style.height = `${BAND_HEIGHTS[index]}px`;
+      band.style.setProperty("--arm-stage", row2.color);
+      band.style.setProperty("--arm-stage-soft", row2.bg);
+      band.append(element3("span", "arm-band-label", `0${index + 1} / ${row2.name}`));
+      canvas.append(band);
+      return band;
+    });
+    for (const edge of data.edges) {
+      const from = graphById.get(edge.from), to = graphById.get(edge.to);
+      if (!from || !to) continue;
+      const points = route(from, to, nodes);
+      const path = svgElement2("path", { class: `arm-edge${edge.bidir ? " arm-compare" : ""}${edge.relation === "foundation" ? " arm-foundation" : ""}`, d: points.map((point, index) => `${index ? "L" : "M"}${point.join(" ")}`).join(" "), "data-from": edge.from, "data-to": edge.to, "data-points": JSON.stringify(points), "marker-end": `url(#${uid}-${edge.bidir ? "arrow-compare" : "arrow"})` });
+      if (edge.bidir) path.setAttribute("marker-start", `url(#${uid}-arrow-compare)`);
+      svg.append(path);
+      edgeElements.push({ edge, path });
     }
-    const sharedNotes = list(opts.notes).filter((note) => note?.noteScope === "public" && topics.has(note.nodeId));
-    const publicContents = new Map(list(opts.gateContents).filter((content) => gateById.has(content.gateId)).map((content) => [content.gateId, content]));
-    const canManage = opts.canManage === true && typeof opts.onSaveGate === "function";
-    function contentGate(gate) {
-      const content = publicContents.get(gate.id);
-      return content ? { ...gate, description: content.description, learningDescription: content.description, goals: [...content.goals] } : gate;
+    canvas.append(svg);
+    function nodeCard(node2, graph) {
+      const card = button4("", graph ? `arm-node arm-kind-${node2.kind}${node2.contextual ? " arm-contextual" : ""}` : "arm-list-node", () => open2(node2.id));
+      card.dataset.node = node2.id;
+      card.dataset.stage = String(node2.row);
+      const row2 = data.rows[node2.row];
+      card.style.setProperty("--arm-stage", row2?.color || "#4778be");
+      card.style.setProperty("--arm-stage-soft", row2?.bg || "#edf4ff");
+      card.setAttribute("aria-label", `${row2?.name || "专题"}：${node2.label}，打开详情`);
+      card.setAttribute("aria-haspopup", "dialog");
+      card.append(element3("strong", "", node2.label));
+      const sub = node2.sub || (node2.id === "g" ? "表达与实现" : node2.id === "ds" ? "容器与常用接口" : node2.id === "ssr" ? "状态与转移" : "");
+      if (!graph || sub) card.append(element3("small", "", graph ? sub : node2.detail[0]));
+      if (graph && node2.contextual) card.append(element3("span", "arm-context-badge", "遇到再学"));
+      if (graph) card.append(element3("span", "arm-open-icon", "↗"));
+      card.addEventListener("pointerenter", () => {
+        hovered = node2.id;
+        paint();
+      });
+      card.addEventListener("pointerleave", () => {
+        hovered = null;
+        paint();
+      });
+      card.addEventListener("focus", () => {
+        hovered = node2.id;
+        paint();
+      });
+      card.addEventListener("blur", () => {
+        hovered = null;
+        paint();
+      });
+      const existing = cards2.get(node2.id) || [];
+      existing.push(card);
+      cards2.set(node2.id, existing);
+      return card;
     }
-    const viewKey = text3(opts.progressKey) || `${opts.account?.id ?? "local"}:${text3(opts.curriculum?.id) || "main"}`;
-    const remembered = views.get(viewKey);
-    let progress = { ...opts.progress || {}, gates: { ...opts.progress?.gates || {} } };
-    let stageId = stageById.has(remembered?.stageId) ? remembered.stageId : stageById.has(progress.stageId) ? progress.stageId : stages[0]?.id;
-    let gateId = gateById.has(remembered?.gateId) && gateById.get(remembered.gateId).stage.id === stageId ? remembered.gateId : gateById.has(progress.gateId) && gateById.get(progress.gateId).stage.id === stageId ? progress.gateId : null;
-    let destroyed = false, busy2 = false, celebrationTimer, saveError = "";
-    let root2, routeScroll, detail, summary, stageButton;
-    let stageDialog, evidenceDialog, personalDialog, publicDialog;
-    let personalGateId = null, publicGateId = null;
-    let personalInput, personalError;
-    let publicDescription, publicGoals, publicTitle, publicUrl, publicError;
-    let evidenceForm, evidenceError, evidenceGateId = null;
-    let previousFocus, lastCelebrated = null;
-    let detailController = null;
-    const canSave = typeof opts.onProgress === "function";
-    const records = () => [...gateById.values()];
-    const gateProgress = (id) => {
-      const value = progress.gates[id];
-      if (!value || typeof value !== "object" && typeof value !== "function") return null;
-      const record = value;
-      return record.status === "learning" || record.status === "completed" ? record : null;
-    };
-    const isCompleted = (id) => gateProgress(id)?.status === "completed";
-    const completedCount = (gates) => list(gates).filter((gate) => isCompleted(gate.id)).length;
-    const validGates = (stage) => list(stage.gates).filter((gate) => gateById.has(gate.id));
-    const foundationGates = (gates) => gates.filter((gate) => gate.scope === "core" || gate.scope === "route" || !gate.scope && !gate.optional);
-    const stageBasis = (stage) => foundationGates(validGates(stage)).filter((gate) => stage.completionMode === "routes" || gate.scope !== "route");
-    function completionText(stage) {
-      const gates = stageBasis(stage);
-      if (stage.completionMode !== "routes") return `核心 ${completedCount(gates)} / ${gates.length} 关`;
-      const routes = list(stage.sections).filter((section) => section.scope === "route");
-      const finished = routes.filter((section) => {
-        const group = gates.filter((gate) => gate.routeId === section.routeId);
-        return group.length > 0 && completedCount(group) === group.length;
-      }).length;
-      return `${finished} / ${routes.length} 条路线基础完成`;
+    for (const node2 of nodes) {
+      const card = nodeCard(node2, true);
+      card.style.left = `${node2.x}px`;
+      card.style.top = `${node2.y}px`;
+      canvas.append(card);
     }
-    function stageCurrent(stage) {
-      const all = validGates(stage), core = foundationGates(all);
-      return all.find((gate) => gateProgress(gate.id)?.status === "learning") || core.find((gate) => !isCompleted(gate.id)) || all.find((gate) => !isCompleted(gate.id)) || all[0];
+    space.append(canvas);
+    scroll.append(space);
+    const list = element3("div", "arm-list");
+    list.hidden = true;
+    data.rows.forEach((row2, index) => {
+      const section = element3("section", "arm-list-stage");
+      section.dataset.stage = String(index);
+      section.style.setProperty("--arm-stage", row2.color);
+      section.append(element3("h3", "", row2.name), element3("p", "", data.goals[index] || ""));
+      const group = element3("div", "arm-list-nodes");
+      data.nodes.filter((node2) => node2.row === index).forEach((node2) => group.append(nodeCard(node2, false)));
+      section.append(group);
+      list.append(section);
+    });
+    const empty = element3("p", "arm-empty", "没有找到对应知识，试试其他名称或关键词。");
+    empty.hidden = true;
+    empty.setAttribute("role", "status");
+    panel.append(captionRow, scroll, list, empty);
+    root2.append(panel);
+    const insight = element3("div", "arm-insight");
+    const insightCopy = element3("p", "arm-insight-copy", "选一个节点，查看它的知识范围与前后联系。");
+    const insightOpen = button4("查看节点详情", "arm-insight-open", () => {
+      if (selected2) open2(selected2);
+    });
+    insightOpen.hidden = true;
+    insight.append(insightCopy, insightOpen);
+    root2.append(insight);
+    for (const entry2 of data.indexEntries) {
+      const index = element3("section", "arm-topic-index"), text3 = element3("div", "");
+      text3.append(element3("strong", "", entry2.label), element3("p", "", "CDQ 分治、整体二分、莫队与特殊题型，按需要查阅专项索引。"));
+      const action2 = button4("查看专项索引 →", "arm-index-button", () => open2(entry2.id));
+      action2.dataset.node = entry2.id;
+      index.append(text3, action2);
+      root2.append(index);
     }
-    function currentEntry() {
-      return gateById.get(gateId);
-    }
-    function remember() {
-      views.set(viewKey, { stageId, gateId });
-    }
-    if (!gateId) gateId = stages.length ? stageCurrent(stageById.get(stageId).stage)?.id : null;
-    function notify(message2) {
-      if (typeof opts.toast === "function") opts.toast(message2);
-    }
-    function nodeButton(entry2, label, className = "alp-topic-link") {
-      const button5 = control(label || entry2.node.label, className, () => opts.onTopic?.(entry2.node.id));
-      button5.title = `${entry2.path.join(" / ")}${entry2.node.fullLabel && entry2.node.fullLabel !== entry2.node.label ? ` · ${entry2.node.fullLabel}` : ""}`;
-      button5.disabled = typeof opts.onTopic !== "function";
-      return button5;
-    }
-    function isOrientation(stage) {
-      return stage.type === "orientation";
-    }
-    function learningPosition(stage, cf = stage.cf) {
-      return isOrientation(stage) ? "入门导览" : cfLabel(cf);
-    }
-    function rangeTags(parent, cf, luogu, orientation = false) {
-      if (orientation) {
-        parent.append(el2("span", "alp-range", "入门导览"));
-        return;
+    const dialog3 = element3("dialog", "arm-detail-dialog");
+    dialog3.setAttribute("aria-labelledby", `${uid}-detail-title`);
+    const dialogHeader = element3("div", "arm-dialog-header"), breadcrumb = element3("span", "arm-breadcrumb");
+    const close = button4("关闭 ×", "arm-close-button", () => dialog3.close());
+    close.setAttribute("aria-label", "关闭节点详情");
+    dialogHeader.append(breadcrumb, close);
+    const detailBody = element3("div", "arm-detail-body");
+    dialog3.append(dialogHeader, detailBody);
+    root2.append(dialog3);
+    dialog3.addEventListener("close", () => {
+      if (!destroyed && previousFocus?.isConnected) previousFocus.focus({ preventScroll: true });
+    });
+    dialog3.addEventListener("click", (event) => {
+      if (event.target === dialog3) {
+        const box = dialog3.getBoundingClientRect();
+        if (event.clientX < box.left || event.clientX > box.right || event.clientY < box.top || event.clientY > box.bottom) dialog3.close();
       }
-      add(parent, el2("span", cf ? "alp-range alp-range-cf" : "alp-range", cfLabel(cf)));
-      if (list(luogu).length) parent.append(el2("span", "alp-range", `洛谷参考：${list(luogu).join(" / ")}`));
+    });
+    function matches(node2) {
+      return [node2.label, node2.sub || "", ...node2.detail.flat()].join(" ").normalize("NFKC").toLowerCase().includes(query);
     }
-    function statusOf(gate, stage) {
-      if (isCompleted(gate.id)) return "completed";
-      return gateProgress(gate.id)?.status === "learning" || stageCurrent(stage)?.id === gate.id ? "learning" : "todo";
+    function paint() {
+      const active3 = highlight ? hovered || selected2 : null;
+      const related = active3 ? /* @__PURE__ */ new Set([active3, ...data.edges.flatMap((edge) => edge.from === active3 ? [edge.to] : edge.to === active3 ? [edge.from] : [])]) : null;
+      let matchCount = 0;
+      for (const node2 of data.nodes) {
+        const match2 = !query || matches(node2);
+        if (match2) matchCount++;
+        for (const card of cards2.get(node2.id) || []) {
+          card.classList.toggle("arm-dim", !match2 || stage !== null && node2.row !== stage || !query && stage === null && !!related && !related.has(node2.id));
+          card.classList.toggle("arm-match", !!query && match2);
+          card.classList.toggle("arm-selected", node2.id === selected2);
+          card.classList.toggle("arm-related", !!related?.has(node2.id));
+          card.classList.toggle("arm-position", node2.id === position);
+          card.dataset.focused = String(node2.id === position);
+          card.setAttribute("aria-pressed", String(node2.id === selected2));
+        }
+      }
+      for (const { edge, path } of edgeElements) {
+        const from = byId.get(edge.from), to = byId.get(edge.to), lit = !!active3 && (edge.from === active3 || edge.to === active3);
+        path.classList.toggle("arm-lit", lit);
+        path.classList.toggle("arm-dim", !!query && !!from && !!to && !matches(from) && !matches(to) || stage !== null && (from?.row !== stage || to?.row !== stage) || !query && stage === null && !!related && !lit);
+        path.setAttribute("marker-end", `url(#${uid}-${edge.bidir ? "arrow-compare" : lit ? "arrow-lit" : "arrow"})`);
+      }
+      stageButtons.forEach((card, index) => card.setAttribute("aria-pressed", String(stage === index)));
+      const indexMatch = data.indexEntries.some((entry2) => query && matches(entry2));
+      empty.hidden = !query || matchCount > 0 || indexMatch;
+      root2.querySelectorAll(".arm-index-button").forEach((card) => {
+        const node2 = byId.get(card.dataset.node || "");
+        card.classList.toggle("arm-match", !!query && !!node2 && matches(node2));
+      });
+      caption.textContent = query ? `搜索结果 · ${matchCount} 个知识节点${indexMatch ? " · 含专项索引" : ""}` : stage === null ? `完整框架 · ${data.rows.length} 层 / ${data.nodes.length} 个知识节点` : `${data.rows[stage].name} · ${data.goals[stage] || ""}`;
+      const current = selected2 ? byId.get(selected2) : null;
+      const bookmark = position ? byId.get(position) : null;
+      insightCopy.textContent = current ? `${current.label} · ${current.detail[0]}` : bookmark ? `当前关注：${bookmark.label}。可以随时沿相关基础回补，或选择其他分支。` : "选一个节点，查看它的知识范围与前后联系。";
+      insightOpen.hidden = !current;
     }
-    function stageNumber(stage) {
-      return Number.isInteger(stage.index) ? stage.index : stageById.get(stage.id).index + 1;
+    function detailSection(title, entries) {
+      const section = element3("section", "arm-detail-section");
+      section.append(element3("h3", "", title));
+      const list2 = element3("ul", "");
+      entries.forEach((text3) => list2.append(element3("li", "", text3)));
+      section.append(list2);
+      return section;
     }
-    function gateNumber(gate) {
-      return gateById.get(gate.id).index + 1;
+    function relationGroup(title, ids, parent) {
+      if (!ids.length) return;
+      const group = element3("div", "arm-relation-group");
+      group.append(element3("p", "", title));
+      for (const id of ids) {
+        const node2 = byId.get(id);
+        if (!node2) continue;
+        const action2 = button4(node2.label, "arm-relation-button", () => open2(id));
+        action2.dataset.node = id;
+        group.append(action2);
+      }
+      parent.append(group);
     }
-    function selectGate(id, { focus = false, center = true } = {}) {
-      const entry2 = gateById.get(id);
-      if (!entry2 || destroyed || busy2) return false;
-      stageId = entry2.stage.id;
-      gateId = entry2.gate.id;
-      saveError = "";
-      remember();
-      renderMain({ center });
-      if (focus) (detailController ? detail.querySelector(".alp-gate-title") : root2.querySelector('.alp-checkpoint[aria-pressed="true"]'))?.focus({ preventScroll: true });
+    function renderDetail(node2) {
+      detailBody.replaceChildren();
+      const row2 = data.rows[node2.row];
+      breadcrumb.textContent = `四层大纲 / ${row2?.name || "专项索引"} / ${node2.label}`;
+      const pill = element3("span", "arm-stage-pill", row2?.name || "专项索引");
+      pill.style.setProperty("--arm-stage", row2?.color || "#4778be");
+      const title = element3("h2", "arm-detail-title", node2.label);
+      title.id = `${uid}-detail-title`;
+      detailBody.append(pill, title, element3("p", "arm-detail-tagline", node2.detail[0]), element3("p", "arm-dialog-intro", node2.detail[1]));
+      const layout = element3("div", "arm-detail-layout"), left = element3("div", ""), right = element3("aside", "");
+      left.append(detailSection("重点知识范围", node2.detail[2]), detailSection("理解时注意", node2.detail[3]));
+      const relations = element3("section", "arm-detail-section");
+      relations.append(element3("h3", "", "在框架中的联系"));
+      relationGroup("相关基础", data.edges.filter((edge) => edge.to === node2.id && !edge.bidir).map((edge) => edge.from), relations);
+      relationGroup("可以延伸到", data.edges.filter((edge) => edge.from === node2.id && !edge.bidir).map((edge) => edge.to), relations);
+      relationGroup("适合对照理解", data.edges.filter((edge) => edge.bidir && (edge.from === node2.id || edge.to === node2.id)).map((edge) => edge.from === node2.id ? edge.to : edge.from), relations);
+      if (!relations.querySelector(".arm-relation-group")) relations.append(element3("p", "arm-fine-print", "按当前问题需要查阅，相关方法可结合各分支理解。"));
+      const practice = element3("section", "arm-practice-box");
+      practice.append(element3("h3", "", "可选应用 / 混练建议"), element3("p", "", node2.detail[4]));
+      right.append(relations, practice);
+      layout.append(left, right);
+      detailBody.append(layout);
+      const extra = element3("details", "arm-detail-extra");
+      extra.append(element3("summary", "", "怎样使用这个节点定位自己？"), element3("p", "", "阶段表示内容展开的大致层次。可以在不同分支处于不同位置；看到题目有需要或有兴趣时，也可以先进入，再从相关基础回补。"));
+      detailBody.append(extra);
+      const actions = element3("div", "arm-detail-actions");
+      const focusButton = button4(position === node2.id ? "取消当前关注" : "标记当前关注", "arm-focus-button", () => {
+        void saveFocus(node2);
+      });
+      focusButton.setAttribute("aria-pressed", String(position === node2.id));
+      focusButton.disabled = pending2 || !options.onFocus;
+      const resources = button4("查看相关笔记与题单", "arm-resources-button", () => {
+        dialog3.close();
+        options.onOpenResources?.(node2);
+      });
+      resources.disabled = !options.onOpenResources;
+      actions.append(focusButton, resources);
+      detailBody.append(actions);
+      const error = element3("p", "arm-focus-error");
+      error.setAttribute("role", "alert");
+      error.hidden = true;
+      detailBody.append(error);
+    }
+    async function saveFocus(node2) {
+      if (pending2 || destroyed || !options.onFocus) return;
+      const before = position, next = position === node2.id ? null : node2.id;
+      pending2 = true;
+      position = next;
+      paint();
+      if (detailNode) renderDetail(detailNode);
+      try {
+        await options.onFocus(next);
+        if (!destroyed) options.toast?.(next ? `当前关注：${node2.label}` : "已取消当前关注");
+      } catch (error) {
+        if (!destroyed) {
+          position = before;
+          paint();
+          if (detailNode) renderDetail(detailNode);
+          const message2 = error instanceof Error ? error.message : "当前关注保存失败，请重试。";
+          const errorNode = detailBody.querySelector(".arm-focus-error");
+          if (errorNode) {
+            errorNode.textContent = message2;
+            errorNode.hidden = false;
+          }
+          options.toast?.(message2);
+        }
+      } finally {
+        pending2 = false;
+        if (!destroyed) {
+          const action2 = detailBody.querySelector(".arm-focus-button");
+          if (action2) action2.disabled = !options.onFocus;
+        }
+      }
+    }
+    function open2(id) {
+      const node2 = byId.get(id);
+      if (!node2 || destroyed) return false;
+      if (!dialog3.open) previousFocus = document.activeElement instanceof HTMLElement ? document.activeElement : null;
+      selected2 = id;
+      hovered = null;
+      detailNode = node2;
+      paint();
+      renderDetail(node2);
+      if (!dialog3.open) dialog3.showModal();
+      detailBody.scrollTop = 0;
       return true;
     }
-    function renderSummary() {
-      summary.replaceChildren();
-      const done = records().filter(({ gate }) => isCompleted(gate.id)).length;
-      for (const [value, label] of [[`${stages.filter((stage) => !isOrientation(stage)).length} 章 + 导览`, "按主干知识逐章学完整"], [`${gateById.size} 关`, "分段学习 · 混练与验收"], [`${done} / ${gateById.size}`, "已记录完成，含选修与分路线"]]) {
-        const stat = el2("div", "alp-stat");
-        add(stat, el2("strong", "", value), el2("span", "", label));
-        summary.append(stat);
-      }
-      const resumed = records().find(({ gate }) => gateProgress(gate.id)?.status === "learning") || records().find(({ gate }) => foundationGates([gate]).length && !isCompleted(gate.id)) || records().find(({ gate }) => !isCompleted(gate.id));
-      if (resumed) summary.append(control(`继续 第${stageNumber(resumed.stage)}章 · 第${gateNumber(resumed.gate)}关 →`, "alp-button alp-button-primary alp-resume", () => selectGate(resumed.gate.id, { focus: true })));
-      else summary.append(el2("span", "alp-all-complete", "✓ 已完成全部关卡记录，可随时回顾"));
-      const historical = Object.entries(progress.gates).filter(([id]) => !gateById.has(id) && gateProgress(id));
-      if (historical.length) {
-        const archive = el2("details", "alp-history");
-        archive.append(el2("summary", "", `历史学习记录 · ${historical.length} 条已保留`));
-        archive.append(el2("p", "alp-fine-print", "已移除或旧版本关卡的记录保留供回顾，不计入当前课程完成度。"));
-        const names = new Map(list(opts.curriculum?.legacyGates).map((gate) => [gate.id, gate]));
-        for (const [id] of historical) {
-          const record = gateProgress(id);
-          const previous = names.get(id);
-          const item = el2("div", "alp-history-item");
-          add(item, el2("strong", "", previous ? `${previous.stageTitle} · ${previous.title}` : `旧版关卡 ${id}`), el2("span", "", record.status === "completed" ? "已记录完成" : "学习中"));
-          if (record.problemUrl) item.append(el2("p", "", text3(record.problemUrl)));
-          if (record.reflection) item.append(el2("p", "", text3(record.reflection)));
-          if (record.updatedAt && Number.isFinite(Date.parse(text3(record.updatedAt)))) item.append(el2("small", "", new Date(text3(record.updatedAt)).toLocaleString("zh-CN")));
-          archive.append(item);
-        }
-        summary.append(archive);
-      }
+    function resize() {
+      if (destroyed) return;
+      if (autoFit && scroll.clientWidth > 0) zoom = Math.min(1.5, Math.max(0.15, (scroll.clientWidth - 2) / WIDTH));
+      canvas.style.transform = `scale(${zoom})`;
+      space.style.width = `${WIDTH * zoom}px`;
+      space.style.height = `${HEIGHT * zoom}px`;
+      zoomValue.textContent = `${Math.round(zoom * 100)}%`;
+      root2.dataset.zoomMode = autoFit ? "fit" : "manual";
+      fitButton.setAttribute("aria-pressed", String(autoFit));
+      actualButton.setAttribute("aria-pressed", String(!autoFit && zoom === 1));
     }
-    function renderAchievements() {
-      const container = root2.querySelector(".alp-achievements");
-      container.replaceChildren();
-      const completed = records().filter(({ gate }) => isCompleted(gate.id));
-      const finishedStage = stages.some((stage) => !isOrientation(stage) && stage.completionMode !== "routes" && stageBasis(stage).length > 0 && completedCount(stageBasis(stage)) === stageBasis(stage).length);
-      const reflectionCount = records().filter(({ gate }) => text3(gateProgress(gate.id)?.reflection).trim()).length;
-      const items = [
-        ["迈出第一步", completed.length > 0, "完成第一关的学习记录"],
-        ["综合初试", completed.some(({ gate }) => ["mixed", "challenge"].includes(gate.kind || "")), "完成一次综合练习或阶段挑战"],
-        ["章节里程碑", finishedStage, "完成一章核心关卡，推荐与选修分别记录"],
-        ["复盘积累", reflectionCount >= 3, `为至少 3 关留下复盘，当前 ${reflectionCount} 关`]
-      ];
-      container.append(el2("span", "alp-achievement-heading", "我的学习足迹"));
-      items.forEach(([label, earned, description]) => {
-        const badge = el2("span", "alp-achievement", `${earned ? "✓" : "○"} ${label}`);
-        badge.dataset.earned = String(earned);
-        badge.title = description;
-        container.append(badge);
+    function scheduleFit() {
+      if (frame || destroyed) return;
+      frame = requestAnimationFrame(() => {
+        frame = 0;
+        if (!listMode) resize();
       });
     }
-    function renderStagePicker() {
-      const grid = stageDialog.querySelector(".alp-stage-grid");
-      grid.replaceChildren();
-      stages.forEach((stage) => {
-        const gates = stageBasis(stage), done = completedCount(gates), complete = stage.completionMode !== "routes" && gates.length > 0 && done === gates.length;
-        const card = control("", "alp-stage-card", () => {
-          if (busy2) return;
-          stageDialog.close();
-          selectGate(stageCurrent(stage)?.id);
-          stageButton.focus({ preventScroll: true });
-        });
-        card.dataset.stageId = stage.id;
-        card.dataset.completed = String(complete);
-        card.setAttribute("aria-current", String(stageId === stage.id));
-        add(card, el2("span", "alp-stage-index", `${complete ? "✓ 已完成 · " : ""}第${stageNumber(stage)}章`), el2("strong", "alp-stage-name", stage.title), el2("span", "alp-stage-description", stage.description || stage.goal));
-        const ranges = el2("div", "alp-ranges");
-        rangeTags(ranges, stage.cf, stage.luoguDifficulty, isOrientation(stage));
-        card.append(ranges);
-        const bar = el2("progress", "alp-stage-progress");
-        bar.max = gates.length || 1;
-        bar.value = done;
-        bar.setAttribute("aria-label", `第${stageNumber(stage)}章完成 ${done} / ${gates.length} 关`);
-        add(card, el2("span", "alp-stage-count", completionText(stage)), bar);
-        grid.append(card);
-      });
-    }
-    function openStagePicker() {
-      if (busy2) return;
-      renderStagePicker();
-      previousFocus = stageButton;
-      stageDialog.showModal();
-      stageDialog.querySelector('[aria-current="true"]')?.focus();
-    }
-    function renderRoute(stage) {
-      const route = el2("div", "alp-route");
-      let previousSection;
-      validGates(stage).forEach((gate) => {
-        if (gate.sectionId && gate.sectionId !== previousSection) {
-          previousSection = gate.sectionId;
-          const section = list(stage.sections).find((item) => item.id === gate.sectionId);
-          const heading = el2("div", "alp-section-marker");
-          add(heading, el2("strong", "", section?.title || gate.sectionTitle), el2("span", "", section?.scope === "route" ? "独立路线 · 按需进入" : section?.scope === "elective" ? "选修扩展" : section?.scope === "recommended" ? "推荐进阶" : "核心学习段"));
-          route.append(heading);
-        }
-        const status = statusOf(gate, stage), selected2 = gateId === gate.id;
-        const row2 = control("", "alp-checkpoint", () => selectGate(gate.id, { focus: true, center: false }));
-        row2.dataset.gateId = gate.id;
-        row2.dataset.status = status;
-        row2.dataset.kind = gate.kind || "learning";
-        row2.setAttribute("aria-pressed", String(selected2));
-        const statusText = status === "completed" ? "已完成" : gateProgress(gate.id)?.status === "learning" ? "学习中" : status === "learning" ? "下一关" : "未完成";
-        row2.setAttribute("aria-label", `第${stageNumber(stage)}章 第${gateNumber(gate)}关 ${gate.title}，${statusText}${selected2 ? "，已选择" : ""}`);
-        const symbol = status === "completed" ? "✓" : status === "learning" ? "▶" : String(gateNumber(gate));
-        const copy = el2("span", "alp-checkpoint-copy");
-        add(copy, el2("strong", "", `第${gateNumber(gate)}关 ${gate.title}`));
-        if (gate.learningTitle && gate.learningTitle !== gate.title) copy.append(el2("span", "alp-checkpoint-story", gate.learningTitle));
-        const scope2 = gate.scope === "route" ? "路线基础" : gate.scope === "recommended" ? "推荐进阶" : gate.scope === "elective" || gate.optional ? "选修" : "核心";
-        copy.append(el2("span", "alp-checkpoint-subtitle", `${kinds[gate.kind || ""] || "学习关"} · ${scope2}${gate.cf || isOrientation(stage) ? ` · ${learningPosition(stage, gate.cf || stage.cf)}` : ""}`));
-        add(row2, el2("span", "alp-checkpoint-number", symbol), copy, el2("span", "alp-checkpoint-status", `${status === "completed" ? "✓ " : status === "learning" ? "▶ " : "○ "}${statusText}`));
-        route.append(row2);
-        if (gate.kind === "mixed" || gate.kind === "challenge") {
-          const checkpoint = el2("div", "alp-route-milestone");
-          checkpoint.append(el2("span", "", gate.kind === "challenge" ? "成果检验 · 独立应用与复盘" : "混合检验 · 选择已学工具"));
-          route.append(checkpoint);
-        }
-      });
-      routeScroll.replaceChildren(route);
-    }
-    function sectionHeading(title) {
-      return el2("h4", "alp-section-title", title);
-    }
-    function renderDetail() {
-      const entry2 = currentEntry();
-      detail.replaceChildren();
-      if (!entry2) return;
-      const { stage } = entry2, gate = contentGate(entry2.gate), record = gateProgress(gate.id);
-      const readingPath = [
-        { label: "闯关学习", onClick() {
-          detailController?.close();
-        } },
-        { label: `第${stageNumber(stage)}章 ${stage.title}`, onClick() {
-          detailController?.close();
-          openStagePicker();
-        } },
-        { label: `第${gateNumber(gate)}关 ${gate.title}` }
-      ];
-      detailController?.setPath(readingPath);
-      const heading = el2("h3", "alp-gate-title", gate.title);
-      heading.tabIndex = -1;
-      const label = el2("div", "alp-detail-eyebrow", `第${stageNumber(stage)}章 · 第${gateNumber(gate)}关${gate.sectionTitle ? ` · ${gate.sectionTitle}` : ""}`);
-      const header = el2("div", "alp-detail-header"), title = el2("div", "alp-detail-title");
-      const scopeLabel = gate.scope === "route" ? "路线基础" : gate.scope === "recommended" ? "推荐进阶" : gate.scope === "elective" ? "选修" : gate.scope === "core" ? "核心" : gate.optional ? "选修" : "";
-      add(title, label, heading, el2("span", "alp-kind", `${kinds[gate.kind || ""] || "学习关"}${scopeLabel ? ` · ${scopeLabel}` : ""}`));
-      const open2 = control("打开详情", "alp-button alp-button-secondary alp-detail-open-button reading-detail-trigger", () => {
-        if (detailController || typeof ReadingDetail?.open !== "function") return;
-        detailController = ReadingDetail.open({ content: detail, mount: host, title: "关卡详情", path: readingPath, onClose() {
-          detailController = null;
-        } });
-      });
-      const headerActions = el2("div", "alp-detail-header-actions");
-      headerActions.append(open2);
-      if (canManage) {
-        const content = publicContents.get(gate.id);
-        const official = content ? content.practiceList : list(gate.practiceLists).find((item) => practiceUrl(item.url));
-        const edit = control(practiceUrl(official?.url) ? "编辑官方精选题单" : "＋ 添加官方精选题单", "alp-button alp-button-secondary alp-official-add-button", () => openPublic(gate.id, true));
-        edit.disabled = busy2;
-        headerActions.append(edit, control("编辑公共关卡", "alp-text-button alp-public-edit-button", () => openPublic(gate.id)));
-      }
-      add(header, title, headerActions);
-      detail.append(header);
-      const publicVersion = publicContents.get(gate.id);
-      if (publicVersion) detail.append(el2("p", "alp-public-version", `公共版${publicVersion.updatedAt && Number.isFinite(Date.parse(publicVersion.updatedAt)) ? ` · 更新于 ${new Date(publicVersion.updatedAt).toLocaleDateString("zh-CN")}` : ""}`));
-      const introduction = text3(gate.learningDescription).trim() || text3(gate.description).trim();
-      if (introduction || gate.learningTitle) {
-        const story = el2("div", "alp-learning-story");
-        if (gate.learningTitle && gate.learningTitle !== gate.title) story.append(el2("strong", "", gate.learningTitle));
-        if (introduction) {
-          const sentences = introduction.match(/[^。！？]+[。！？]?/gu) || [introduction];
-          const lead = introduction.length > 180 ? sentences[0].length <= 180 ? sentences[0] : introduction.slice(0, 170) : introduction;
-          story.append(el2("p", "alp-description", lead));
-          if (lead !== introduction) {
-            const expanded2 = el2("details", "alp-intro-more");
-            add(expanded2, el2("summary", "", "继续阅读导读"), el2("p", "", introduction.slice(lead.length).trim()));
-            story.append(expanded2);
-          }
-        }
-        detail.append(story);
-      }
-      const related = list(gate.topicIds).map((id) => topics.get(id)).filter(present);
-      if (record) renderTasks(gate, related, record);
-      else {
-        detail.append(renderOfficialPractice(gate));
-        if (gate.kind === "learning") renderNotes(gate, related);
-      }
-      const goals = [...new Set(list(gate.goals).map((goal) => text3(goal).trim()).filter(Boolean))];
-      if (goals.length) {
-        const core = el2("section", "alp-core-goals");
-        core.append(sectionHeading("本关核心目标"));
-        const ul = el2("ul", "alp-goals");
-        goals.forEach((goal) => ul.append(el2("li", "", goal)));
-        add(core, ul);
-        detail.append(core);
-      }
-      const learningPanel = el2("section", "alp-learning-panel"), progressHeading = el2("div", "alp-progress-heading");
-      const status = el2("span", "alp-progress-status", record?.status === "completed" ? "✓ 已记录完成" : record?.status === "learning" ? "▶ 学习中" : "○ 尚未记录");
-      status.dataset.status = record?.status === "completed" ? "completed" : record?.status === "learning" ? "learning" : "todo";
-      add(progressHeading, sectionHeading("我的学习"), status);
-      learningPanel.append(progressHeading);
-      const actions = el2("div", "alp-actions");
-      const complete = control(record?.status === "completed" ? "编辑完成记录" : "✓ 记录本关完成", "alp-button alp-button-primary alp-complete-button", () => openEvidence(gate.id));
-      complete.disabled = busy2 || !canSave;
-      actions.append(complete);
-      const learning = control(record?.status === "completed" ? "撤销完成，设为学习中" : record?.status === "learning" ? "查看学习任务" : "▶ 开始学习", "alp-button alp-button-secondary alp-learning-button", async () => {
-        if (!record || record.status === "completed") await saveStatus(gate.id, "learning");
-        if (!destroyed) detail.querySelector(".alp-task-list")?.scrollIntoView({ block: "nearest", behavior: "smooth" });
-      });
-      learning.disabled = busy2 || !canSave;
-      actions.append(learning);
-      add(learningPanel, actions, el2("p", "alp-fine-print alp-progress-hint", "自己记录学习状态，不代表系统判题通过。"));
-      if (!canSave) learningPanel.append(el2("p", "alp-inline-error", "当前无法保存学习进度，请稍后重试。"));
-      if (saveError) {
-        const error = el2("p", "alp-inline-error", saveError);
-        error.setAttribute("role", "alert");
-        learningPanel.append(error);
-      }
-      if (record && (record.problemUrl || record.reflection || record.updatedAt)) {
-        const saved = el2("div", "alp-saved-record");
-        if (record.problemUrl) saved.append(el2("p", "alp-saved-url", record.problemUrl));
-        if (record.reflection) saved.append(el2("p", "alp-saved-reflection", record.reflection));
-        if (record.updatedAt && Number.isFinite(Date.parse(record.updatedAt))) saved.append(el2("span", "alp-saved-date", `记录于 ${new Date(record.updatedAt).toLocaleString("zh-CN")}`));
-        learningPanel.append(saved);
-      }
-      const utilities = el2("footer", "alp-detail-utilities"), utilityActions = el2("div", "alp-utility-actions");
-      if (related[0] && typeof opts.onUpload === "function") {
-        const upload = control("＋ 补充学习笔记", "alp-text-button alp-upload-button", () => {
-          if (opts.canUpload !== false) opts.onUpload(related[0].node.id);
-        });
-        upload.disabled = opts.canUpload === false;
-        if (upload.disabled) upload.title = "登录并获得仓库写入权限后可补充共享笔记";
-        utilityActions.append(upload);
-      }
-      utilities.append(utilityActions);
-      learningPanel.append(utilities);
-      detail.append(learningPanel);
-      const supplementary = el2("div", "alp-supplementary");
-      const knowledge = el2("details", "alp-detail-fold alp-knowledge-fold");
-      add(knowledge, el2("summary", "", `关联知识与难度${related.length ? ` · ${related.length} 项` : ""}`));
-      const knowledgeBody = el2("div", "alp-fold-body"), ranges = el2("div", "alp-ranges");
-      rangeTags(ranges, gate.cf || stage.cf, gate.luoguDifficulty || stage.luoguDifficulty, isOrientation(stage));
-      knowledgeBody.append(ranges);
-      if (!isOrientation(stage)) knowledgeBody.append(el2("p", "alp-fine-print", "题目难度用于选题；知识点等级独立显示，两者不作换算。"));
-      if (related.length) {
-        const group = el2("div", "alp-topics");
-        related.forEach((topic) => {
-          const card = el2("div", "alp-topic");
-          card.append(nodeButton(topic));
-          const grade = grades[topic.node.color || ""];
-          if (grade && topic.node.kind !== "directory") {
-            const tag = el2("span", "alp-grade", grade[0]);
-            tag.dataset.level = grade[1];
-            card.append(tag);
-          }
-          group.append(card);
-        });
-        knowledgeBody.append(group);
-      } else knowledgeBody.append(el2("p", "alp-fine-print", "知识点正在整理，可先按本关目标学习。"));
-      knowledge.append(knowledgeBody);
-      supplementary.append(knowledge);
-      const thread = list(gate.threadGateIds).map((id) => gateById.get(id)).filter(present);
-      const requiredGates = list(gate.prerequisites?.gateIds).map((id) => gateById.get(id)).filter(present);
-      const requiredTopics = list(gate.prerequisites?.topicIds).map((id) => topics.get(id)).filter(present);
-      if (thread.length || requiredGates.length || requiredTopics.length) {
-        const connections = el2("details", "alp-detail-fold alp-connections-fold"), connectionBody = el2("div", "alp-fold-body");
-        connections.append(el2("summary", "", "先修、回顾与延伸"));
-        if (requiredGates.length || requiredTopics.length) {
-          connectionBody.append(sectionHeading("先修与回补"));
-          const group = el2("div", "alp-prerequisites");
-          requiredGates.forEach((required) => group.append(control(`${isCompleted(required.gate.id) ? "✓" : "↩"} 第${stageNumber(required.stage)}章·第${gateNumber(required.gate)}关 ${required.gate.title}`, "alp-prerequisite", () => selectGate(required.gate.id, { focus: true }))));
-          requiredTopics.forEach((topic) => group.append(nodeButton(topic, `↩ ${topic.node.label}`, "alp-prerequisite")));
-          add(connectionBody, group, el2("p", "alp-fine-print", "先修是学习建议，可按掌握情况回补或跳学。"));
-        }
-        if (thread.length) {
-          connectionBody.append(sectionHeading("把知识连成线"));
-          const links = el2("div", "alp-thread");
-          thread.forEach((item) => {
-            const before = item.stageIndex < entry2.stageIndex || item.stageIndex === entry2.stageIndex && item.index < entry2.index;
-            links.append(control(`${before ? "↩ 回顾" : "↗ 延伸"} · 第${stageNumber(item.stage)}章第${gateNumber(item.gate)}关 ${item.gate.title}`, "alp-prerequisite alp-thread-link", () => selectGate(item.gate.id, { focus: true })));
-          });
-          connectionBody.append(links);
-        }
-        connections.append(connectionBody);
-        supplementary.append(connections);
-      }
-      const criteria = [...new Set(list(stage.completionCriteria).map((criterion) => text3(criterion).trim()).filter(Boolean))];
-      if (criteria.length) {
-        const chapterCheck = el2("details", "alp-detail-fold alp-chapter-fold"), chapterBody = el2("div", "alp-fold-body");
-        chapterCheck.append(el2("summary", "", isOrientation(stage) ? "导览完成检验" : "整章完成检验"));
-        const criteriaList = el2("ul", "alp-goals alp-stage-criteria");
-        criteria.forEach((criterion) => criteriaList.append(el2("li", "", criterion)));
-        add(chapterBody, el2("p", "alp-fine-print", "用于回看整章成果，不是额外的本关目标。"), criteriaList);
-        chapterCheck.append(chapterBody);
-        supplementary.append(chapterCheck);
-      }
-      detail.append(supplementary);
-    }
-    function taskState(record) {
-      const value = record?.tasks;
-      return value && typeof value === "object" && !Array.isArray(value) ? { ...value } : {};
-    }
-    function practiceUrl(value) {
-      try {
-        const parsed = new URL(text3(value));
-        return ["http:", "https:"].includes(parsed.protocol) && !parsed.username && !parsed.password ? parsed.href : null;
-      } catch {
-        return null;
-      }
-    }
-    async function openPractice(url) {
-      try {
-        if (opts.onExternal) await opts.onExternal(url);
-        else window.open(url, "_blank", "noopener,noreferrer");
-      } catch (error) {
-        notify(errorMessage(error, "暂时无法打开题单，请稍后重试。"));
-      }
-    }
-    async function saveTask(gate, name, checked) {
-      if (busy2 || !canSave) return;
-      const previous = gateProgress(gate.id), tasks = { ...taskState(previous), [name]: checked };
-      const finished = tasks.practice === true && (gate.kind !== "learning" || tasks.notes === true);
-      try {
-        await persist(gate.id, { ...previous, tasks, status: previous?.status === "completed" && !finished ? "learning" : previous?.status || "learning", updatedAt: (/* @__PURE__ */ new Date()).toISOString() });
-        if (!destroyed) {
-          renderMain();
-          detail.querySelector(`[data-task="${name}"] input`)?.focus({ preventScroll: true });
-        }
-      } catch (error) {
-        if (!destroyed) {
-          saveError = errorMessage(error, "任务状态未能保存，请重试。");
-          renderDetail();
-        }
-      }
-    }
-    function renderTasks(gate, related, record) {
-      const tasks = taskState(record), ordinary = gate.kind === "learning";
-      const section = el2("section", "alp-task-list");
-      section.setAttribute("aria-label", "本关学习任务");
-      const count = Number(tasks.practice === true) + Number(ordinary && tasks.notes === true);
-      const heading = el2("div", "alp-task-heading");
-      add(heading, sectionHeading("本关学习任务"), el2("span", "alp-note-count", `${count} / ${ordinary ? 2 : 1} 项已完成`));
-      section.append(heading);
-      function task(name, title) {
-        const card = el2("section", "alp-task-card");
-        card.dataset.task = name;
-        const label = el2("label", "alp-task-check"), check = el2("input");
-        check.type = "checkbox";
-        check.checked = tasks[name] === true;
-        check.disabled = busy2 || !canSave;
-        check.addEventListener("change", () => {
-          void saveTask(gate, name, check.checked);
-        });
-        add(label, check, el2("strong", "", title));
-        card.append(label);
-        return card;
-      }
-      if (ordinary) {
-        const notes = task("notes", "算法笔记学习");
-        section.append(notes);
-        const noteSection = renderNotes(gate, related);
-        if (noteSection) notes.append(noteSection);
-        else {
-          const links = el2("div", "alp-task-topic-links");
-          related.forEach((topic) => links.append(nodeButton(topic)));
-          notes.append(links);
-        }
-      }
-      const practice = task("practice", "对应题单练习");
-      section.append(practice);
-      practice.append(renderOfficialPractice(gate));
-      const personal = el2("div", "alp-personal-list");
-      const savedUrl = practiceUrl(record.practiceUrl) || practiceUrl(record.problemUrl);
-      if (savedUrl) personal.append(control("我的练习题单 ↗", "alp-text-button alp-practice-link alp-personal-link", () => openPractice(savedUrl)));
-      const edit = control(savedUrl ? "编辑我的题单" : "＋ 添加我的题单", "alp-text-button alp-personal-list-button", () => openPersonal(gate.id));
-      edit.disabled = busy2 || !canSave;
-      personal.append(edit);
-      practice.append(personal);
-      section.append(el2("p", "alp-fine-print", ordinary ? "先学习笔记，再完成题单；勾选记录后可记录本关完成。" : "本关为混练或验收，只需完成题单练习。"));
-      detail.append(section);
-    }
-    function renderOfficialPractice(gate) {
-      const section = el2("section", "alp-official-section");
-      section.setAttribute("aria-label", "官方精选题单");
-      const content = publicContents.get(gate.id);
-      const official = content ? content.practiceList : list(gate.practiceLists).find((item) => practiceUrl(item.url));
-      const officialUrl = practiceUrl(official?.url);
-      if (official && officialUrl) {
-        const recommendation = control("", "alp-official-list alp-practice-link", () => openPractice(officialUrl));
-        const copy = el2("span", "alp-official-copy");
-        add(copy, el2("span", "alp-official-label", "官方精选题单"), el2("strong", "", official.title || "本关精选练习"), el2("span", "alp-official-host", new URL(officialUrl).hostname));
-        add(recommendation, copy, el2("span", "alp-list-arrow", "↗"));
-        section.append(recommendation);
-      } else {
-        const empty = el2("div", "alp-official-empty");
-        add(empty, el2("strong", "", "官方精选题单"), el2("span", "alp-fine-print", "本关官方题单尚未发布"));
-        section.append(empty);
-      }
-      return section;
-    }
-    function renderNotes(gate, related) {
-      const ids = new Set(related.map((topic) => topic.node.id));
-      related.forEach((topic) => {
-        if (topic.node.contentOf) ids.add(topics.get(topic.node.contentOf)?.node.id || topic.node.contentOf);
-      });
-      const notes = sharedNotes.filter((note) => ids.has(topics.get(note.nodeId)?.node.id)).slice().sort((a, b) => Number(Boolean(b.featured)) - Number(Boolean(a.featured)) || (Date.parse(b.updatedAt) || 0) - (Date.parse(a.updatedAt) || 0));
-      if (!notes.length) return null;
-      const section = el2("section", "alp-note-section"), heading = el2("div", "alp-notes-heading");
-      add(heading, sectionHeading(notes.some((note) => note.featured) ? "精选与学习笔记" : "学习笔记"), el2("span", "alp-note-count", `${notes.length} 篇`));
-      section.append(heading);
-      const noteList = el2("div", "alp-notes");
-      notes.forEach((note, index) => {
-        const topic = topics.get(note.nodeId);
-        const noteButton = control("", `alp-note${note.featured ? " alp-note-featured" : ""}`, () => {
-          if (typeof opts.onNote === "function") opts.onNote(note, { gateId: gate.id });
-          else opts.onTopic?.(topic.node.id);
-        });
-        const copy = el2("span", "alp-note-copy");
-        if (note.featured) copy.append(el2("span", "alp-note-featured-label", "精选"));
-        add(copy, el2("strong", "", note.title || "未命名笔记"), el2("span", "alp-note-meta", `${authorName(note.author)} · ${topic.node.label}`));
-        const arrow = el2("span", "alp-note-arrow", "↗");
-        arrow.setAttribute("aria-hidden", "true");
-        add(noteButton, copy, arrow);
-        noteButton.title = "打开笔记详情";
-        if (index < 3) noteList.append(noteButton);
-        else {
-          let more = section.querySelector(".alp-more-notes");
-          if (!more) {
-            more = el2("details", "alp-more-notes");
-            more.append(el2("summary", "", `更多笔记 · ${notes.length - 3} 篇`));
-            section.append(more);
-          }
-          more.append(noteButton);
-        }
-      });
-      section.insertBefore(noteList, section.querySelector(".alp-more-notes"));
-      detail.append(section);
-      return section;
-    }
-    function renderMain({ center = false } = {}) {
-      if (destroyed || !stages.length) return;
-      const stage = stageById.get(stageId).stage, oldScroll = routeScroll.scrollTop;
-      renderSummary();
-      renderAchievements();
-      stageButton.replaceChildren();
-      add(stageButton, el2("span", "alp-selected-stage-number", String(stageNumber(stage)).padStart(2, "0")));
-      const name = el2("span", "alp-selected-stage-copy");
-      add(name, el2("strong", "", `第${stageNumber(stage)}章 ${stage.title}`), el2("span", "", `${completionText(stage)} · 共 ${validGates(stage).length} 关，含扩展`));
-      add(stageButton, name, el2("span", "alp-switch-label", "切换阶段 ⌄"));
-      const stageIntro2 = root2.querySelector(".alp-stage-intro");
-      stageIntro2.replaceChildren();
-      add(stageIntro2, el2("span", "alp-eyebrow", `阶段 ${stageNumber(stage)} · ${isOrientation(stage) ? "入门导览" : stage.completionMode === "routes" ? "选择具体路线，分别形成成果" : "一章一条主线，学完整再进阶"}`), el2("h2", "alp-stage-title", `第${stageNumber(stage)}章 ${stage.title}`));
-      const ranges = el2("div", "alp-ranges");
-      rangeTags(ranges, stage.cf, stage.luoguDifficulty, isOrientation(stage));
-      add(stageIntro2, ranges, el2("p", "alp-description", stage.description || stage.goal));
-      if (stage.entryText) stageIntro2.append(el2("p", "alp-entry-text", `进入条件：${stage.entryText}`));
-      if (list(stage.sections).length) {
-        const sections = el2("div", "alp-section-overview");
-        for (const section of list(stage.sections)) {
-          const group = foundationGates(validGates(stage).filter((gate) => gate.sectionId === section.id));
-          const done = completedCount(group);
-          const scope2 = section.scope === "route" ? "路线基础" : section.scope === "recommended" ? "推荐进阶" : section.scope === "elective" ? "选修" : "核心";
-          const link = control("", "alp-section-chip", () => {
-            const next = group.find((gate) => !isCompleted(gate.id)) || validGates(stage).find((gate) => gate.sectionId === section.id);
-            if (next) selectGate(next.id, { center: true });
-          });
-          add(link, el2("strong", "", section.title), el2("span", "", `${scope2}${group.length ? ` · ${done} / ${group.length}` : ""}`));
-          if (group.length && done === group.length) link.dataset.completed = "true";
-          sections.append(link);
-        }
-        stageIntro2.append(sections);
-      }
-      const orientation = isOrientation(stage);
-      root2.querySelector(".alp-footer").hidden = orientation;
-      renderRoute(stage);
-      renderDetail();
-      routeScroll.scrollTop = oldScroll;
-      if (center) centerSelected();
-      if (lastCelebrated) showCelebration(lastCelebrated);
-    }
-    function centerSelected() {
-      const selected2 = root2.querySelector('.alp-checkpoint[aria-pressed="true"]');
-      if (!selected2) return;
-      const delta = selected2.getBoundingClientRect().top - routeScroll.getBoundingClientRect().top;
-      routeScroll.scrollTop += delta - routeScroll.clientHeight * 0.38;
-    }
-    function showCelebration(message2) {
-      const band = root2.querySelector(".alp-success");
-      band.textContent = message2;
-      band.hidden = false;
-      clearTimeout(celebrationTimer);
-      celebrationTimer = setTimeout(() => {
-        if (!destroyed) {
-          band.hidden = true;
-          lastCelebrated = null;
-        }
-      }, 2200);
-    }
-    function buildDialog2(title, className) {
-      const dialog3 = el2("dialog", `alp-dialog ${className}`), headingId = `${uid}-${className}-heading`;
-      dialog3.setAttribute("aria-labelledby", headingId);
-      const header = el2("div", "alp-dialog-heading"), heading = el2("h2", "", title);
-      heading.id = headingId;
-      const close = control("×", "alp-dialog-close", () => {
-        if (!busy2) dialog3.close();
-      });
-      close.setAttribute("aria-label", "关闭");
-      add(header, heading, close);
-      dialog3.append(header);
-      dialog3.addEventListener("cancel", (event) => {
-        if (busy2) event.preventDefault();
-      });
-      dialog3.addEventListener("click", (event) => {
-        if (event.target === dialog3 && !busy2) {
-          const box = dialog3.getBoundingClientRect();
-          if (event.clientX < box.left || event.clientX > box.right || event.clientY < box.top || event.clientY > box.bottom) dialog3.close();
-        }
-      });
-      dialog3.addEventListener("close", () => {
-        if (!destroyed && previousFocus?.isConnected && "focus" in previousFocus) previousFocus.focus({ preventScroll: true });
-      });
-      return dialog3;
-    }
-    function field3(labelText, input3) {
-      const label = el2("label", "alp-field");
-      add(label, el2("span", "", labelText), input3);
-      return label;
-    }
-    function buildPersonalDialog() {
-      const dialog3 = buildDialog2("我的练习题单", "alp-personal-dialog"), form = el2("form", "alp-task-practice-form");
-      form.noValidate = true;
-      personalInput = el2("input");
-      personalInput.type = "url";
-      personalInput.maxLength = 2e3;
-      personalInput.placeholder = "https://…";
-      personalInput.setAttribute("aria-label", "对应题单链接");
-      personalError = el2("p", "alp-inline-error");
-      personalError.hidden = true;
-      personalError.setAttribute("role", "alert");
-      const save = el2("button", "alp-button alp-button-primary", "保存题单");
-      save.type = "submit";
-      const actions = el2("div", "alp-dialog-actions");
-      add(actions, control("取消", "alp-button alp-button-secondary", () => {
-        if (!busy2) dialog3.close();
-      }), save);
-      add(form, el2("p", "alp-fine-print", "仅保存到你的学习记录。留空保存可移除个人题单链接。"), field3("题单链接", personalInput), personalError, actions);
-      form.addEventListener("submit", async (event) => {
-        event.preventDefault();
-        if (busy2 || !canSave || !personalGateId) return;
-        const value = personalInput.value.trim(), url = practiceUrl(value);
-        if (value && !url) {
-          personalError.textContent = "请填写有效的 HTTP 或 HTTPS 题单链接。";
-          personalError.hidden = false;
-          personalInput.focus();
-          return;
-        }
-        personalError.hidden = true;
-        const id = personalGateId;
-        try {
-          await persist(id, { ...gateProgress(id), status: gateProgress(id)?.status || "learning", practiceUrl: url || "", updatedAt: (/* @__PURE__ */ new Date()).toISOString() });
-          if (!destroyed) {
-            dialog3.close();
-            renderMain();
-            detail.querySelector(".alp-personal-list-button")?.focus({ preventScroll: true });
-            notify("题单链接已保存");
-          }
-        } catch (cause) {
-          if (!destroyed) {
-            personalError.textContent = errorMessage(cause, "题单链接未能保存，请重试。");
-            personalError.hidden = false;
-          }
-        }
-      });
-      dialog3.append(form);
-      return dialog3;
-    }
-    function openPersonal(id) {
-      if (busy2 || !canSave || !gateById.has(id)) return;
-      personalGateId = id;
-      personalInput.value = text3(gateProgress(id)?.practiceUrl);
-      personalError.hidden = true;
-      previousFocus = document.activeElement;
-      personalDialog.showModal();
-      personalInput.focus();
-    }
-    function buildPublicDialog() {
-      const dialog3 = buildDialog2("编辑公共关卡", "alp-public-dialog"), form = el2("form", "alp-public-form");
-      form.noValidate = true;
-      publicDescription = el2("textarea");
-      publicDescription.name = "description";
-      publicDescription.rows = 4;
-      publicDescription.maxLength = 6e3;
-      publicGoals = el2("textarea");
-      publicGoals.name = "goals";
-      publicGoals.rows = 5;
-      publicGoals.maxLength = 6e3;
-      publicTitle = el2("input");
-      publicTitle.name = "practiceTitle";
-      publicTitle.maxLength = 120;
-      publicUrl = el2("input");
-      publicUrl.name = "practiceUrl";
-      publicUrl.type = "url";
-      publicUrl.maxLength = 2e3;
-      publicUrl.placeholder = "https://…";
-      publicError = el2("p", "alp-inline-error");
-      publicError.hidden = true;
-      publicError.setAttribute("role", "alert");
-      const recommendation = el2("fieldset", "alp-public-practice");
-      recommendation.append(el2("legend", "", "官方精选题单 · 最多一个"));
-      add(recommendation, field3("题单名称", publicTitle), field3("题单链接", publicUrl));
-      const preview = el2("section", "alp-public-preview");
-      preview.setAttribute("aria-label", "公共版预览");
-      function renderPreview() {
-        preview.replaceChildren(sectionHeading("公共版预览"), el2("p", "alp-preview-description", publicDescription.value.trim()));
-        const goals = el2("ul", "alp-goals");
-        publicGoals.value.split(/\r?\n/u).map((value) => value.trim()).filter(Boolean).forEach((value) => goals.append(el2("li", "", value)));
-        preview.append(goals);
-        const url = practiceUrl(publicUrl.value.trim());
-        if (publicTitle.value.trim() && url) {
-          const card = el2("div", "alp-official-list");
-          const copy = el2("span", "alp-official-copy");
-          add(copy, el2("span", "alp-official-label", "官方精选题单"), el2("strong", "", publicTitle.value.trim()), el2("span", "alp-official-host", new URL(url).hostname));
-          card.append(copy);
-          preview.append(card);
-        }
-      }
-      form.addEventListener("input", renderPreview);
-      dialog3.addEventListener("alp:preview", renderPreview);
-      const save = el2("button", "alp-button alp-button-primary", "发布公共版");
-      save.type = "submit";
-      const actions = el2("div", "alp-dialog-actions");
-      add(actions, control("取消", "alp-button alp-button-secondary", () => {
-        if (!busy2) dialog3.close();
-      }), save);
-      add(form, el2("p", "alp-fine-print", "发布后，所有读者都可看到此简介、学习目标和官方题单。"), field3("关卡简介", publicDescription), field3("核心目标（每行一项）", publicGoals), recommendation, preview, publicError, actions);
-      form.addEventListener("submit", async (event) => {
-        event.preventDefault();
-        if (busy2 || !canManage || !opts.onSaveGate || !publicGateId) return;
-        const description = publicDescription.value.trim(), goals = publicGoals.value.split(/\r?\n/u).map((value2) => value2.trim()).filter(Boolean);
-        const title = publicTitle.value.trim(), value = publicUrl.value.trim(), url = practiceUrl(value);
-        if (!description || !goals.length) {
-          publicError.textContent = "请填写关卡简介和至少一项核心目标。";
-          publicError.hidden = false;
-          (!description ? publicDescription : publicGoals).focus();
-          return;
-        }
-        if (goals.length > 20 || goals.some((goal) => goal.length > 500)) {
-          publicError.textContent = "核心目标最多 20 项，每项不超过 500 字。";
-          publicError.hidden = false;
-          publicGoals.focus();
-          return;
-        }
-        if ((title || value) && (!title || !url)) {
-          publicError.textContent = "官方题单需填写名称和有效的 HTTP 或 HTTPS 链接，或同时留空。";
-          publicError.hidden = false;
-          (!title ? publicTitle : publicUrl).focus();
-          return;
-        }
-        const id = publicGateId;
-        publicError.hidden = true;
-        setBusy(true);
-        try {
-          const saved = await opts.onSaveGate({ gateId: id, description, goals, practiceList: title && url ? { title, url } : null, sha: publicContents.get(id)?.sha || null });
-          if (saved.gateId !== id) throw new Error("返回的公共关卡与当前关卡不一致，请刷新后重试。");
-          if (!destroyed) {
-            publicContents.set(id, saved);
-            dialog3.close();
-            renderMain();
-            detail.querySelector(".alp-public-edit-button")?.focus({ preventScroll: true });
-            notify("公共版已发布");
-          }
-        } catch (cause) {
-          if (!destroyed) {
-            publicError.textContent = errorMessage(cause, "公共版未能发布，请保留输入后重试。");
-            publicError.hidden = false;
-          }
-        } finally {
-          if (!destroyed) setBusy(false);
-        }
-      });
-      dialog3.append(form);
-      return dialog3;
-    }
-    function openPublic(id, focusList = false) {
-      if (busy2 || !canManage || !gateById.has(id)) return;
-      const gate = contentGate(gateById.get(id).gate), content = publicContents.get(id), official = content ? content.practiceList : list(gate.practiceLists).find((item) => practiceUrl(item.url));
-      publicGateId = id;
-      publicDescription.value = text3(gate.learningDescription) || text3(gate.description);
-      publicGoals.value = list(gate.goals).join("\n");
-      publicTitle.value = text3(official?.title);
-      publicUrl.value = text3(official?.url);
-      publicError.hidden = true;
-      previousFocus = document.activeElement;
-      publicDialog.dispatchEvent(new Event("alp:preview"));
-      publicDialog.showModal();
-      (focusList ? publicTitle : publicDescription).focus();
-    }
-    function buildEvidenceDialog() {
-      const dialog3 = buildDialog2("记录本关学习", "alp-evidence-dialog");
-      const form = el2("form", "alp-evidence-form");
-      const gateTitle = el2("p", "alp-evidence-title");
-      const status = el2("select");
-      status.name = "status";
-      for (const [value, label] of [["learning", "学习中"], ["completed", "已完成（自己记录）"]]) {
-        const option = el2("option", "", label);
-        option.value = value;
-        status.append(option);
-      }
-      const url = el2("input");
-      url.name = "problemUrl";
-      url.type = "url";
-      url.maxLength = 2e3;
-      url.placeholder = "https://…";
-      url.autocomplete = "off";
-      const reflection = el2("textarea");
-      reflection.name = "reflection";
-      reflection.rows = 5;
-      reflection.maxLength = 4e3;
-      reflection.placeholder = "写下独立解题过程、关键观察，或还没有弄清楚的地方。";
-      evidenceError = el2("p", "alp-inline-error");
-      evidenceError.setAttribute("role", "alert");
-      evidenceError.hidden = true;
-      const actions = el2("div", "alp-dialog-actions"), cancel = control("取消", "alp-button alp-button-secondary", () => {
-        if (!busy2) dialog3.close();
-      });
-      const save = el2("button", "alp-button alp-button-primary", "保存记录");
-      save.type = "submit";
-      add(actions, cancel, save);
-      add(form, gateTitle, el2("p", "alp-fine-print", "如实记录学习情况；题目链接和复盘可选。这里不会自动判断提交结果，也不会向队友或外部平台发送内容。"), field3("学习状态", status), field3("练习题目链接（可选）", url), field3("我的复盘（可选）", reflection), evidenceError, actions);
-      form.addEventListener("submit", async (event) => {
-        event.preventDefault();
-        if (busy2 || !evidenceGateId || !canSave) return;
-        const problemUrl = url.value.trim();
-        if (problemUrl) {
-          try {
-            const parsed = new URL(problemUrl);
-            if (!["http:", "https:"].includes(parsed.protocol) || parsed.username || parsed.password) throw new Error();
-          } catch (_) {
-            evidenceError.textContent = "请填写有效的 HTTP 或 HTTPS 题目链接。";
-            evidenceError.hidden = false;
-            url.focus();
-            return;
-          }
-        }
-        evidenceError.hidden = true;
-        const nextRecord = { ...gateProgress(evidenceGateId), status: status.value, problemUrl, reflection: reflection.value.trim(), updatedAt: (/* @__PURE__ */ new Date()).toISOString() };
-        try {
-          await persist(evidenceGateId, nextRecord);
-          if (destroyed) return;
-          dialog3.close();
-          renderMain();
-          if (nextRecord.status === "completed") {
-            lastCelebrated = isOrientation(gateById.get(evidenceGateId).stage) ? "✓ 导览完成记录已保存。" : "✓ 本关完成记录已保存，继续积累自己的解题方法。";
-            showCelebration(lastCelebrated);
-          }
-          detail.querySelector(".alp-complete-button")?.focus({ preventScroll: true });
-        } catch (error) {
-          if (!destroyed) {
-            evidenceError.textContent = errorMessage(error, "未能保存，请保留记录后重试。");
-            evidenceError.hidden = false;
-          }
-        }
-      });
-      evidenceForm = form;
-      dialog3.append(form);
-      return dialog3;
-    }
-    function openEvidence(id, preferredStatus) {
-      if (busy2 || !gateById.has(id)) return;
-      evidenceGateId = id;
-      const entry2 = gateById.get(id), record = gateProgress(id);
-      evidenceForm.querySelector(".alp-evidence-title").textContent = `第${stageNumber(entry2.stage)}章 · 第${gateNumber(entry2.gate)}关 ${entry2.gate.title}`;
-      evidenceForm.elements.status.value = preferredStatus || "completed";
-      evidenceForm.elements.problemUrl.value = String(record?.problemUrl || "");
-      evidenceForm.elements.reflection.value = String(record?.reflection || "");
-      evidenceForm.elements.reflection.placeholder = isOrientation(entry2.stage) ? "写下导览中的理解，或还没有弄清楚的地方。" : "写下独立解题过程、关键观察，或还没有弄清楚的地方。";
-      evidenceError.hidden = true;
-      previousFocus = document.activeElement;
-      evidenceDialog.showModal();
-      evidenceForm.elements.reflection.focus();
-    }
-    function setBusy(value) {
-      busy2 = value;
-      root2.dataset.saving = String(value);
-      root2.setAttribute("aria-busy", String(value));
-      evidenceForm?.querySelectorAll("button,input,textarea,select").forEach((input3) => {
-        input3.disabled = value;
-      });
-      for (const dialog3 of [personalDialog, publicDialog]) dialog3?.querySelectorAll("button,input,textarea").forEach((input3) => {
-        input3.disabled = value;
-      });
-      evidenceDialog?.querySelector(".alp-dialog-close")?.toggleAttribute("disabled", value);
-      detail.querySelectorAll(".alp-public-edit-button,.alp-official-add-button,.alp-personal-list-button").forEach((button5) => {
-        button5.disabled = value;
-      });
-      detail.querySelectorAll('.alp-complete-button,.alp-learning-button,.alp-task-list input,.alp-task-list button[type="submit"]').forEach((button5) => {
-        button5.disabled = value || !canSave;
-      });
-    }
-    async function persist(id, record) {
-      if (!canSave) throw new Error("当前无法保存学习进度，请稍后重试。");
-      const entry2 = gateById.get(id);
-      if (!entry2) throw new Error("未找到此关卡，请重新打开学习路径。");
-      const next = { ...progress, gates: { ...progress.gates, [id]: record }, stageId: entry2.stage.id, gateId: id };
-      setBusy(true);
-      try {
-        await opts.onProgress(next);
-        progress = next;
-        saveError = "";
-      } finally {
-        if (!destroyed) setBusy(false);
-      }
-    }
-    async function saveStatus(id, status) {
-      if (busy2 || !canSave) return;
-      const previous = gateProgress(id);
-      try {
-        await persist(id, { ...previous, status, problemUrl: text3(previous?.problemUrl), reflection: text3(previous?.reflection), updatedAt: (/* @__PURE__ */ new Date()).toISOString() });
-        if (!destroyed) {
-          renderMain();
-          notify(status === "learning" ? "已保存为学习中" : "本关完成记录已保存");
-        }
-      } catch (error) {
-        if (!destroyed) {
-          saveError = errorMessage(error, "进度未能保存，请重试。");
-          renderDetail();
-        }
-      }
-    }
-    root2 = el2("section", "alp");
-    root2.setAttribute("aria-label", "算法竞赛闯关学习路径");
-    if (!stages.length || !gateById.size) {
-      add(root2, el2("h2", "alp-empty-title", "学习路径正在整理"), el2("p", "alp-description", "关卡准备完成后会显示在这里，可以先从知识树查看学习笔记。"));
-      host.replaceChildren(root2);
-      return { destroy() {
-        destroyed = true;
-        root2.remove();
-      }, selectTopic() {
-        return false;
-      }, selectGate() {
-        return false;
-      } };
-    }
-    summary = el2("div", "alp-summary");
-    summary.setAttribute("aria-label", "学习进度概览");
-    const legend = el2("div", "alp-state-legend");
-    for (const [type, symbol, label] of [["completed", "✓", "已完成"], ["learning", "▶", "学习中 / 下一关"], ["todo", "○", "未完成"]]) {
-      const item = el2("span", "alp-state-item");
-      const mark = el2("i", "alp-state-mark", symbol);
-      mark.dataset.status = type;
-      add(item, mark, el2("span", "", label));
-      legend.append(item);
-    }
-    legend.append(el2("span", "alp-record-hint", "进度由自己记录，先修满足即可跳学"));
-    const achievements = el2("div", "alp-achievements");
-    achievements.setAttribute("aria-label", "学习足迹");
-    const main = el2("div", "alp-main");
-    const pickerRow = el2("div", "alp-stage-picker-row");
-    stageButton = control("", "alp-stage-picker", openStagePicker);
-    stageButton.setAttribute("aria-haspopup", "dialog");
-    pickerRow.append(stageButton);
-    const stageIntro = el2("div", "alp-stage-intro");
-    const columns = el2("div", "alp-columns");
-    routeScroll = el2("div", "alp-route-scroll");
-    routeScroll.setAttribute("aria-label", "本章关卡路线");
-    routeScroll.tabIndex = 0;
-    detail = el2("aside", "alp-detail");
-    detail.setAttribute("aria-label", "所选关卡详情");
-    add(columns, routeScroll, detail);
-    add(main, pickerRow, stageIntro, columns);
-    const success = el2("div", "alp-success");
-    success.hidden = true;
-    success.setAttribute("role", "status");
-    success.setAttribute("aria-live", "polite");
-    stageDialog = buildDialog2("选择学习阶段", "alp-stage-dialog");
-    stageDialog.append(el2("p", "alp-picker-hint", "以综合做题能力为主线，先广后深；阶段可以自由切换，已有基础可直接跳学。"), el2("div", "alp-stage-grid"));
-    evidenceDialog = buildEvidenceDialog();
-    personalDialog = buildPersonalDialog();
-    publicDialog = buildPublicDialog();
-    const footer = el2("p", "alp-footer", "CF 区间和洛谷等级分别用于选题参考，不作等价换算。知识点难度与题目难度独立；阅读和勾选不能代替独立做题。");
-    add(root2, summary, legend, achievements, success, main, footer, stageDialog, evidenceDialog, personalDialog, publicDialog);
     host.replaceChildren(root2);
-    remember();
-    renderMain({ center: true });
-    const controller = {
+    paint();
+    resize();
+    const observer = new ResizeObserver(scheduleFit);
+    observer.observe(scroll);
+    return {
+      selectGate(id) {
+        const node2 = data.nodes.find((entry2) => entry2.gateIds?.includes(id));
+        return node2 ? open2(node2.id) : false;
+      },
+      selectTopic(id) {
+        const node2 = [...data.nodes, ...data.indexEntries].find((entry2) => entry2.topicIds?.includes(id));
+        return node2 ? open2(node2.id) : false;
+      },
       destroy() {
         if (destroyed) return;
         destroyed = true;
-        detailController?.close();
-        detailController = null;
-        clearTimeout(celebrationTimer);
-        [stageDialog, evidenceDialog, personalDialog, publicDialog].forEach((dialog3) => {
-          if (dialog3.open) dialog3.close();
-        });
+        observer.disconnect();
+        if (frame) cancelAnimationFrame(frame);
+        if (dialog3.open) dialog3.close();
         root2.remove();
-      },
-      selectGate(id) {
-        return selectGate(id, { focus: true });
-      },
-      selectTopic(id) {
-        const canonicalId = topics.get(id)?.node.id || id;
-        const matches = /* @__PURE__ */ new Set([canonicalId]);
-        function include(node2) {
-          if (!node2) return;
-          matches.add(node2.id);
-          list(node2.children).forEach(include);
-        }
-        include(topics.get(id)?.node);
-        for (const topic of topics.values()) if (topic.node.contentOf === canonicalId) matches.add(topic.node.id);
-        const entry2 = records().find(({ gate }) => list(gate.topicIds).some((topicId) => matches.has(topics.get(topicId)?.node.id || topicId)));
-        if (entry2) return selectGate(entry2.gate.id, { focus: true });
-        notify("该专题暂未编入主线，可在知识树继续学习");
-        return false;
       }
     };
-    return controller;
   }
-  var LearningPath = Object.freeze({ render: render5 });
+  var LearningRoadmap = Object.freeze({ render: render5 });
+
+  // src/renderer/algorithms/roadmap-data.ts
+  var roadmapData = {
+    "rows": [
+      {
+        "name": "初窥",
+        "color": "#287449",
+        "bg": "#eef8f1"
+      },
+      {
+        "name": "入门",
+        "color": "#2869b5",
+        "bg": "#edf4ff"
+      },
+      {
+        "name": "基础",
+        "color": "#946400",
+        "bg": "#fff7df"
+      },
+      {
+        "name": "进阶",
+        "color": "#b34443",
+        "bg": "#fff0ef"
+      }
+    ],
+    "nodes": [
+      {
+        "id": "g",
+        "row": 0,
+        "label": "C++ 基础语法",
+        "kind": "root",
+        "px": 680,
+        "py": 49,
+        "detail": [
+          "把题意变成程序的起点",
+          "输入输出、类型和表达式；分支、循环、数组与函数共同构成基本程序。",
+          [
+            "变量、类型转换与整数范围",
+            "if / switch、for / while、输入输出与多组数据",
+            "函数、作用域、引用与 struct 的基础概念"
+          ],
+          [
+            "先写可运行的小程序，再用样例与边界检查。",
+            "语法是表达工具，不必背完所有语言特性再接触题目。"
+          ],
+          "尝试独立处理一组输入，说明数据怎样变化、结果怎样输出。"
+        ],
+        "gateIds": [
+          "stage-00-gate-01",
+          "lp2-cpp-toolkit-program-flow-types-io",
+          "lp2-cpp-toolkit-program-flow-branches-loops",
+          "lp2-cpp-toolkit-program-flow-practice-assessment",
+          "lp2-cpp-toolkit-data-organization-functions-records",
+          "lp2-cpp-toolkit-data-organization-addresses",
+          "lp2-cpp-toolkit-data-organization-sequences",
+          "lp2-cpp-toolkit-data-organization-practice-assessment"
+        ],
+        "topicIds": [
+          "directory-contest-experience",
+          "algorithm-万能头文件与标准库使用",
+          "algorithm-int128-与整数溢出",
+          "algorithm-数组初始化与-memset",
+          "algorithm-content-feishu-part-1-1",
+          "xcpc-函数-1",
+          "xcpc-引用-1",
+          "xcpc-结构体-类-1",
+          "xcpc-指针-1",
+          "xcpc-vector-1",
+          "algorithm-string",
+          "xcpc-pair-1"
+        ]
+      },
+      {
+        "id": "xh",
+        "row": 0,
+        "label": "循环",
+        "kind": "leaf",
+        "px": 220,
+        "py": 148,
+        "detail": [
+          "描述重复与状态变化",
+          "循环连接枚举、模拟与复杂度分析。",
+          [
+            "循环变量、终止条件和边界",
+            "嵌套循环与枚举范围",
+            "break / continue 与状态更新顺序"
+          ],
+          [
+            "关注少一次、多一次、死循环和多组数据的清空。"
+          ],
+          "写出一个简单枚举，并估算循环实际执行次数。"
+        ],
+        "gateIds": [
+          "lp2-cpp-toolkit-program-flow-branches-loops"
+        ],
+        "topicIds": [
+          "algorithm-数组初始化与-memset",
+          "algorithm-content-feishu-part-1-1"
+        ]
+      },
+      {
+        "id": "sz",
+        "row": 0,
+        "label": "数组",
+        "kind": "leaf",
+        "px": 400,
+        "py": 148,
+        "detail": [
+          "组织可按位置访问的数据",
+          "数组与序列是后续容器、状态表和图表示的基础。",
+          [
+            "一维与二维数组、下标与遍历",
+            "字符数组、初始化和边界",
+            "连续存储与基本空间估算"
+          ],
+          [
+            "长度、下标和输入规模要区分；注意越界。"
+          ],
+          "实现一次序列统计，并覆盖空边界与极值。"
+        ],
+        "gateIds": [
+          "lp2-cpp-toolkit-program-flow-branches-loops"
+        ],
+        "topicIds": [
+          "algorithm-数组初始化与-memset",
+          "algorithm-content-feishu-part-1-1"
+        ]
+      },
+      {
+        "id": "hs",
+        "row": 0,
+        "label": "函数",
+        "kind": "leaf",
+        "px": 40,
+        "py": 148,
+        "detail": [
+          "拆分计算，组织解法",
+          "函数与递归帮助把复杂过程拆成清楚的接口。",
+          [
+            "参数、返回值与作用域",
+            "值传递、引用与 const",
+            "递归出口、调用栈与分治的直觉"
+          ],
+          [
+            "理解生命周期，不返回悬垂引用。"
+          ],
+          "把一段计算抽成函数，解释输入、输出和副作用。"
+        ],
+        "gateIds": [
+          "lp2-cpp-toolkit-data-organization-functions-records"
+        ],
+        "topicIds": [
+          "xcpc-函数-1",
+          "xcpc-引用-1",
+          "xcpc-结构体-类-1"
+        ]
+      },
+      {
+        "id": "wy",
+        "row": 0,
+        "label": "位运算",
+        "kind": "leaf",
+        "px": 1300,
+        "py": 148,
+        "detail": [
+          "用二进制表达集合与组合",
+          "位运算连接子集枚举、快速幂、状压 DP 与异或问题。",
+          [
+            "二进制与按位与、或、异或",
+            "移位、位掩码与简单集合表示",
+            "整数宽度、符号与运算优先级"
+          ],
+          [
+            "移位范围与有符号溢出需要核对。"
+          ],
+          "用小整数手算异或与位掩码，观察集合对应关系。"
+        ],
+        "gateIds": [
+          "lp2-cpp-toolkit-reliable-code-bits-complexity",
+          "lp2-cpp-toolkit-reliable-code-debugging",
+          "lp2-cpp-toolkit-reliable-code-practice-assessment"
+        ],
+        "topicIds": [
+          "algorithm-content-feishu-part-5-1",
+          "xcpc-时空复杂度分析-1",
+          "algorithm-int128-与整数溢出",
+          "xcpc-对拍-1"
+        ]
+      },
+      {
+        "id": "ds",
+        "row": 1,
+        "label": "基础数据结构（上）",
+        "kind": "aggregate",
+        "sub": "＋ STL",
+        "px": 680,
+        "py": 357,
+        "detail": [
+          "基础数据结构（上）与常用 STL 接口",
+          "这一部分集中认识数据如何组织、标准库如何操作；算法思想与工具接口在浮窗中分别说明。",
+          [
+            "STL 速查：vector、array、string、pair、tuple 与迭代器",
+            "链表、栈、队列、双端队列及对应接口",
+            "二叉堆与 priority_queue；空容器和操作复杂度",
+            "map / set / multiset 的有序维护，unordered_map / unordered_set 的哈希维护",
+            "sort、stable_sort、lower_bound、upper_bound 等接口"
+          ],
+          [
+            "初识贪心与本节点的连接表示工具应用，不表示贪心是 STL 的子类。",
+            "map 是有序映射，不能用它代替哈希表的定义。"
+          ],
+          "选择一种查询与修改需求，比较两种容器的成本与不支持的操作。"
+        ],
+        "gateIds": [
+          "lp2-cpp-toolkit-stl-selection-sorting-interfaces",
+          "lp2-cpp-toolkit-stl-selection-ordered-containers",
+          "lp2-cpp-toolkit-stl-selection-hash-containers",
+          "lp2-cpp-toolkit-stl-selection-adapters",
+          "lp2-cpp-toolkit-stl-selection-binary-search-interface",
+          "lp2-cpp-toolkit-stl-selection-practice-assessment"
+        ],
+        "topicIds": [
+          "algorithm-常用算法函数与迭代器",
+          "xcpc-pair-1",
+          "xcpc-map-1",
+          "xcpc-set-1",
+          "xcpc-multiset-1",
+          "xcpc-unordered-map-1",
+          "xcpc-unordered-set-1",
+          "algorithm-stack-queue",
+          "algorithm-deque",
+          "xcpc-priority-queue-1",
+          "algorithm-二分查找"
+        ]
+      },
+      {
+        "id": "ss",
+        "row": 1,
+        "label": "认识数学",
+        "kind": "leaf",
+        "px": 1300,
+        "py": 357,
+        "detail": [
+          "认识数学在问题里的作用",
+          "从整数、奇偶、余数与简单计数建立直觉。位运算是其中一个入口，不是数学的唯一前置条件。",
+          [
+            "整除、余数、GCD / LCM",
+            "奇偶、配对、不变量与基础构造",
+            "加法乘法原理与小规模计数"
+          ],
+          [
+            "先说明在数什么、条件是什么，再使用公式。"
+          ],
+          "用枚举检查一个简单的整数或计数规律。"
+        ],
+        "gateIds": [
+          "lp2-brute-models-construction-integers-constructive-invariants",
+          "lp2-brute-models-construction-integers-gcd-factorization",
+          "lp2-brute-models-construction-integers-prime-sieve",
+          "lp2-brute-models-construction-integers-linear-sieve",
+          "lp2-brute-models-construction-integers-practice-assessment"
+        ],
+        "topicIds": [
+          "algorithm-content-feishu-part-1-6",
+          "algorithm-content-feishu-part-5-2-2",
+          "algorithm-lcm",
+          "xcpc-埃式筛-1",
+          "algorithm-线性筛-素数"
+        ]
+      },
+      {
+        "id": "px",
+        "row": 1,
+        "label": "排序",
+        "sub": "sort",
+        "kind": "branch",
+        "px": 220,
+        "py": 456,
+        "detail": [
+          "整理顺序，暴露结构",
+          "排序既是工具，也是许多方法的预处理步骤。",
+          [
+            "sort / stable_sort 与比较器",
+            "排序后的去重、排名和离散化",
+            "比较器的严格弱序与复杂度"
+          ],
+          [
+            "排序可能改变原下标，应考虑是否保留身份。"
+          ],
+          "比较排序前后，查找或配对是否更简单。"
+        ],
+        "gateIds": [
+          "lp2-cpp-toolkit-stl-selection-sorting-interfaces"
+        ],
+        "topicIds": [
+          "algorithm-常用算法函数与迭代器",
+          "xcpc-pair-1"
+        ]
+      },
+      {
+        "id": "ef",
+        "row": 1,
+        "label": "二分",
+        "sub": "lower_bound",
+        "kind": "branch",
+        "px": 400,
+        "py": 456,
+        "detail": [
+          "利用有序性或单调性定位边界",
+          "标准库二分接口与二分答案有联系，但需要分别理解条件与不变量。",
+          [
+            "lower_bound / upper_bound 的返回含义",
+            "闭开区间与边界不变量",
+            "单调判定与二分答案"
+          ],
+          [
+            "能调用 lower_bound 不等于理解所有二分问题。"
+          ],
+          "手工验证空区间、重复值与找不到目标的情况。"
+        ],
+        "gateIds": [
+          "lp2-basic-optimization-monotone-methods-binary-boundaries",
+          "lp2-basic-optimization-monotone-methods-binary-answer",
+          "lp2-basic-optimization-monotone-methods-two-pointers",
+          "lp2-basic-optimization-monotone-methods-practice-assessment",
+          "lp2-cpp-toolkit-stl-selection-binary-search-interface"
+        ],
+        "topicIds": [
+          "algorithm-二分查找",
+          "algorithm-二分答案",
+          "algorithm-content-feishu-part-1-9",
+          "algorithm-常用算法函数与迭代器"
+        ]
+      },
+      {
+        "id": "tx",
+        "row": 1,
+        "label": "初识贪心",
+        "sub": "优先队列",
+        "kind": "branch",
+        "px": 580,
+        "py": 456,
+        "detail": [
+          "初识贪心：先感受局部选择",
+          "从排序、区间和配对问题认识贪心。此处先建立直觉，后续贪心分类再比较不同模型及正确性理由。",
+          [
+            "局部选择与全局目标",
+            "排序与区间选择",
+            "配对、安排顺序与优先队列应用"
+          ],
+          [
+            "通过样例只是开始，仍需反例或正确性解释。"
+          ],
+          "尝试一个看似合理的策略，并主动寻找使它失败的小例子。"
+        ],
+        "gateIds": [
+          "lp2-basic-optimization-powers-greedy-binary-power",
+          "lp2-basic-optimization-powers-greedy-greedy-proof",
+          "lp2-basic-optimization-powers-greedy-practice-assessment"
+        ],
+        "topicIds": [
+          "xcpc-快速幂-1",
+          "algorithm-content-feishu-part-5-1",
+          "algorithm-content-feishu-part-1-5"
+        ]
+      },
+      {
+        "id": "dl",
+        "row": 1,
+        "label": "队列",
+        "sub": "queue",
+        "kind": "branch",
+        "px": 760,
+        "py": 456,
+        "detail": [
+          "按先后顺序处理状态",
+          "队列与栈、双端队列等工具帮助组织搜索与维护信息。",
+          [
+            "queue 的先进先出",
+            "deque 与双端操作",
+            "入队标记、空队列和处理顺序"
+          ],
+          [
+            "普通队列、优先队列与单调队列的顺序规则不同。"
+          ],
+          "用队列模拟分层处理，观察同层状态的关系。"
+        ],
+        "gateIds": [
+          "lp2-cpp-toolkit-stl-selection-adapters"
+        ],
+        "topicIds": [
+          "algorithm-stack-queue",
+          "algorithm-deque",
+          "xcpc-priority-queue-1"
+        ]
+      },
+      {
+        "id": "zfc",
+        "row": 1,
+        "label": "字符串",
+        "sub": "string",
+        "kind": "branch",
+        "px": 940,
+        "py": 456,
+        "detail": [
+          "认识字符序列与基本操作",
+          "字符串在此先作为数据对象，匹配和子串结构在后续基础层展开。",
+          [
+            "string 的长度、访问、拼接与截取",
+            "前缀、后缀、子串与子序列",
+            "下标和字符处理"
+          ],
+          [
+            "子串连续，子序列不必连续；频繁复制会产生额外成本。"
+          ],
+          "用最直接的办法完成一次查找或比较。"
+        ],
+        "gateIds": [
+          "lp2-cpp-toolkit-data-organization-sequences"
+        ],
+        "topicIds": [
+          "xcpc-vector-1",
+          "algorithm-string",
+          "xcpc-pair-1"
+        ]
+      },
+      {
+        "id": "hm",
+        "row": 1,
+        "label": "哈希",
+        "sub": "map",
+        "kind": "branch",
+        "px": 1120,
+        "py": 456,
+        "detail": [
+          "从键值查询理解哈希与映射",
+          "保留原框架的“哈希”分支，同时区分有序映射和哈希表。",
+          [
+            "unordered_map / unordered_set 与哈希表",
+            "map / set 的有序访问和复杂度",
+            "冲突、最坏情况与选型意识"
+          ],
+          [
+            "字符串哈希是另一类应用，不能与 unordered_map 混为一谈。"
+          ],
+          "对同一组键值查询比较有序容器与哈希容器。"
+        ],
+        "gateIds": [
+          "lp2-cpp-toolkit-stl-selection-hash-containers"
+        ],
+        "topicIds": [
+          "xcpc-unordered-map-1",
+          "xcpc-unordered-set-1"
+        ]
+      },
+      {
+        "id": "ssr",
+        "row": 2,
+        "label": "搜索",
+        "kind": "aggregate",
+        "px": 40,
+        "py": 665,
+        "detail": [
+          "搜索：系统探索状态与减少无效计算",
+          "在递归/分治基础上认识状态探索，DFS 与 BFS 可分别实现，遇到特殊模型时再展开深入方法。",
+          [
+            "DFS、回溯与 BFS：状态、访问标记、分层和路径恢复",
+            "记忆化搜索：重复状态与基础 DP 的联系",
+            "搜索剪枝：可行性、最优性、对称与顺序",
+            "按题深入：双向搜索、A* 与启发函数条件",
+            "按题深入：IDA* 与迭代加深；精确覆盖问题和 DLX"
+          ],
+          [
+            "DLX 是精确覆盖的实现方法，不是 BFS 的下一必学步骤。",
+            "A* 和 IDA* 必须理解所用启发函数与搜索条件。"
+          ],
+          "用同一小状态问题比较 DFS、BFS 和记忆化，再找出可以安全剪掉的状态。"
+        ],
+        "gateIds": [
+          "lp2-search-search-states-graph-state",
+          "lp2-search-search-states-dfs-backtracking",
+          "lp2-search-search-states-practice-assessment",
+          "lp2-search-shortest-actions-bfs-paths",
+          "lp2-search-shortest-actions-practice-assessment",
+          "lp2-search-pruning-cache-safe-pruning",
+          "lp2-search-pruning-cache-cached-search",
+          "lp2-search-pruning-cache-practice-assessment",
+          "lp2-search-search-extensions-bidirectional",
+          "lp2-search-search-extensions-meet-middle",
+          "lp2-search-search-extensions-iterative-deepening",
+          "lp2-search-search-extensions-practice-assessment"
+        ],
+        "topicIds": [
+          "xcpc-图的概念-1",
+          "algorithm-content-xcpc-图的遍历-1",
+          "algorithm-content-feishu-part-2-1",
+          "algorithm-backtracking",
+          "algorithm-content-feishu-part-2-2",
+          "algorithm-content-feishu-part-2-4",
+          "algorithm-content-feishu-part-2-3",
+          "algorithm-双向-bfs",
+          "xcpc-折半搜索-1",
+          "xcpc-递归-回溯-1"
+        ]
+      },
+      {
+        "id": "jcdp",
+        "row": 2,
+        "label": "基础 dp",
+        "kind": "leaf",
+        "px": 400,
+        "py": 785,
+        "detail": [
+          "基础 DP：完整定义状态、转移与答案",
+          "先理解重复子问题和状态，再将线性、背包、区间与计数模型连起来。",
+          [
+            "记忆化与递推、状态含义、初值与边界",
+            "线性与序列 DP",
+            "背包：01、完全、多重与分组",
+            "区间 DP、计数、方案还原和空间优化"
+          ],
+          [
+            "循环顺序可能改变背包含义；计数先定义对象和去重。"
+          ],
+          "用小规模枚举检查一个 DP，并解释状态保留了哪些历史。"
+        ],
+        "gateIds": [
+          "lp2-basic-dp-state-sequence-dp-contract",
+          "lp2-basic-dp-state-sequence-linear-lis",
+          "lp2-basic-dp-state-sequence-lcs",
+          "lp2-basic-dp-state-sequence-practice-assessment",
+          "lp2-basic-dp-knapsack-zero-one",
+          "lp2-basic-dp-knapsack-unbounded",
+          "lp2-basic-dp-knapsack-bounded",
+          "lp2-basic-dp-knapsack-grouped",
+          "lp2-basic-dp-knapsack-practice-assessment",
+          "lp2-basic-dp-interval-counting-interval",
+          "lp2-basic-dp-interval-counting-count-reconstruct",
+          "lp2-basic-dp-interval-counting-practice-assessment",
+          "lp2-basic-dp-dp-selection-dp-greedy-search",
+          "lp2-basic-dp-dp-selection-practice-assessment"
+        ],
+        "topicIds": [
+          "xcpc-状态-1",
+          "xcpc-转移-1",
+          "xcpc-无后效性-1",
+          "algorithm-content-feishu-part-3-1",
+          "algorithm-最长上升子序列-lis",
+          "algorithm-最长公共子序列-lcs",
+          "xcpc-01背包-1",
+          "xcpc-无限背包-1",
+          "algorithm-content-xcpc-多重背包-1",
+          "xcpc-o-nm-log-l-1",
+          "xcpc-分组背包-1",
+          "xcpc-混合背包-1",
+          "xcpc-基础-2",
+          "xcpc-基础-7",
+          "xcpc-最优子结构-1",
+          "algorithm-content-feishu-part-1-5"
+        ]
+      },
+      {
+        "id": "tl",
+        "row": 2,
+        "label": "基础图论",
+        "kind": "leaf",
+        "px": 580,
+        "py": 785,
+        "detail": [
+          "基础图论：路径、连接、依赖与树",
+          "从图存储和遍历进入，按问题目标区分路径、连通、生成树与依赖。",
+          [
+            "图的存储与遍历",
+            "最短路：等权 BFS、非负权 Dijkstra、Floyd；负边方法按需补",
+            "树上基础：二叉树、树的直径、倍增与最近公共祖先 LCA",
+            "生成树与并查集的应用",
+            "拓扑排序、DAG 与二分图认识和染色"
+          ],
+          [
+            "并查集的主归属在数据结构，本节点通过连通和生成树应用它。",
+            "最短路、生成树与拓扑排序的目标不同。"
+          ],
+          "把一道关系题画成图，解释边的含义和需要求的量。"
+        ],
+        "gateIds": [
+          "lp2-graph-trees-paths-dependency-topological",
+          "lp2-graph-trees-paths-dependency-dijkstra",
+          "lp2-graph-trees-paths-dependency-floyd",
+          "lp2-graph-trees-paths-dependency-negative-edges",
+          "lp2-graph-trees-paths-dependency-practice-assessment",
+          "lp2-graph-trees-connectivity-cost-dsu",
+          "lp2-graph-trees-connectivity-cost-mst",
+          "lp2-graph-trees-connectivity-cost-practice-assessment",
+          "lp2-graph-trees-static-trees-tree-info",
+          "lp2-graph-trees-static-trees-diameter",
+          "lp2-graph-trees-static-trees-practice-assessment",
+          "lp2-graph-trees-tree-queries-lca",
+          "lp2-graph-trees-tree-queries-dfn",
+          "lp2-graph-trees-tree-queries-practice-assessment"
+        ],
+        "topicIds": [
+          "xcpc-拓扑序-1",
+          "xcpc-图上dp-1",
+          "xcpc-dijkstra-1",
+          "xcpc-floyd-1",
+          "xcpc-bellman-ford-1",
+          "xcpc-并查集基础-1",
+          "xcpc-kruskal-1",
+          "xcpc-prim-1",
+          "xcpc-树的基本概念-1",
+          "xcpc-树的遍历-1",
+          "algorithm-content-feishu-part-7-3-2",
+          "xcpc-倍增-1",
+          "algorithm-content-feishu-part-7-3-3",
+          "xcpc-dfn-1",
+          "algorithm-一维前缀和"
+        ]
+      },
+      {
+        "id": "srgt",
+        "row": 2,
+        "label": "贪心分类",
+        "kind": "leaf",
+        "px": 760,
+        "py": 785,
+        "detail": [
+          "贪心分类：按模型比较选择策略",
+          "按区间、排序、配对、反悔与候选维护等场景分类理解，与 DP 对照信息保留方式。",
+          [
+            "区间选择、排序与配对模型",
+            "候选维护、优先队列与反悔思路",
+            "交换论证、不变量和反例",
+            "与搜索、DP 的方法比较"
+          ],
+          [
+            "同一类别也必须核对题目条件，不能只凭标签套策略。"
+          ],
+          "为同一个问题比较贪心和 DP，解释为什么某些历史信息可以省略。"
+        ],
+        "gateIds": [
+          "lp2-basic-optimization-powers-greedy-binary-power",
+          "lp2-basic-optimization-powers-greedy-greedy-proof",
+          "lp2-basic-optimization-powers-greedy-practice-assessment",
+          "lp2-basic-optimization-method-selection-optimize-from-brute",
+          "lp2-basic-optimization-method-selection-practice-assessment"
+        ],
+        "topicIds": [
+          "xcpc-快速幂-1",
+          "algorithm-content-feishu-part-5-1",
+          "algorithm-content-feishu-part-1-5",
+          "algorithm-枚举",
+          "algorithm-二分答案",
+          "algorithm-content-feishu-part-1-9"
+        ]
+      },
+      {
+        "id": "zfsf",
+        "row": 2,
+        "label": "字符串算法",
+        "kind": "leaf",
+        "px": 940,
+        "py": 785,
+        "detail": [
+          "字符串算法：从匹配到前缀与回文结构",
+          "前后缀、匹配、回文与前缀集合有各自的信息复用方式，基础与扩展连续理解。",
+          [
+            "字符串哈希与碰撞风险",
+            "KMP、Z 函数、周期与失配结构",
+            "Manacher 与回文半径",
+            "Trie 树（字典树）：前缀集合、终止标记与计数",
+            "AC 自动机：Trie、BFS、fail 指针与传播"
+          ],
+          [
+            "Trie 与 AC 连贯学习，但使用 Trie 不要求先学习 AC。",
+            "哈希提供概率性保证，与确定性匹配方法分开辨认。"
+          ],
+          "将一种匹配或回文算法与暴力对照，说明它复用了什么信息。"
+        ],
+        "gateIds": [
+          "lp2-strings-single-pattern-prefix-kmp",
+          "lp2-strings-single-pattern-z-function",
+          "lp2-strings-single-pattern-practice-assessment",
+          "lp2-strings-substring-palindrome-hash",
+          "lp2-strings-substring-palindrome-manacher",
+          "lp2-strings-substring-palindrome-practice-assessment",
+          "lp2-strings-prefix-set-trie",
+          "lp2-strings-prefix-set-practice-assessment",
+          "lp2-strings-multi-pattern-ac-build",
+          "lp2-strings-multi-pattern-ac-count",
+          "lp2-strings-multi-pattern-practice-assessment",
+          "lp2-strings-string-selection-string-tool-choice",
+          "lp2-strings-string-selection-practice-assessment"
+        ],
+        "topicIds": [
+          "algorithm-content-feishu-part-4-2",
+          "xcpc-扩展kmp-1",
+          "algorithm-content-feishu-part-4-1",
+          "algorithm-content-feishu-part-4-3",
+          "algorithm-content-feishu-part-4-4",
+          "algorithm-content-feishu-part-4-5"
+        ]
+      },
+      {
+        "id": "jcsz",
+        "row": 2,
+        "label": "基础数学",
+        "kind": "leaf",
+        "px": 1300,
+        "py": 785,
+        "detail": [
+          "基础数学：整数、同余、计数与随机模型",
+          "在认识数学的基础上，按具体对象理解可复用的定义和运算条件。计算几何从此节点单独向下展开。",
+          [
+            "整除相关：素数、GCD、欧拉函数和基础筛法",
+            "同余方程：线性同余、乘法逆元与中国剩余定理",
+            "组合数学：排列组合、容斥；卡特兰数与斯特林数按模型查阅",
+            "博弈论：胜负状态与公平组合游戏，SG 方法按题深入",
+            "概率与期望：样本空间、条件概率、全概率和线性性"
+          ],
+          [
+            "逆元需满足存在条件，模意义概率也需检查分母。",
+            "基础数学不是完成所有数学专题才可进入几何的门槛。"
+          ],
+          "用枚举检查一个计数或博弈状态结论，说明公式的条件。"
+        ],
+        "gateIds": [
+          "lp2-number-counting-congruence-inverses-congruence-theorems",
+          "lp2-number-counting-congruence-inverses-extended-gcd",
+          "lp2-number-counting-congruence-inverses-practice-assessment",
+          "lp2-number-counting-combinations-combination-model",
+          "lp2-number-counting-combinations-factorial-combinations",
+          "lp2-number-counting-combinations-lucas",
+          "lp2-number-counting-combinations-practice-assessment",
+          "lp2-number-counting-inclusion-integers-inclusion-exclusion",
+          "lp2-number-counting-inclusion-integers-multiplicative",
+          "lp2-number-counting-inclusion-integers-classical-counts",
+          "lp2-number-counting-inclusion-integers-practice-assessment",
+          "lp2-number-counting-crt-extension-crt",
+          "lp2-number-counting-crt-extension-extended-crt",
+          "lp2-number-counting-crt-extension-practice-assessment"
+        ],
+        "topicIds": [
+          "algorithm-content-feishu-part-5-2-3",
+          "xcpc-费马定理-欧拉定理-1",
+          "xcpc-扩展欧几里得-1",
+          "xcpc-逆元-1",
+          "algorithm-content-feishu-part-5-6-1",
+          "xcpc-杨辉三角-1",
+          "xcpc-多重集组合数-1",
+          "algorithm-content-xcpc-lucas定理-1",
+          "algorithm-content-feishu-part-5-6-3",
+          "algorithm-content-feishu-part-5-2-2",
+          "xcpc-错排问题-1",
+          "xcpc-卡特兰数-1",
+          "algorithm-content-feishu-part-5-3-2",
+          "xcpc-扩展中国剩余定理-1"
+        ]
+      },
+      {
+        "id": "jjsj",
+        "row": 3,
+        "label": "进阶数据结构",
+        "kind": "adv",
+        "px": 220,
+        "py": 1005,
+        "detail": [
+          "进阶数据结构：按操作和模型选分支",
+          "从基础数据结构（下）向树上、版本、有序集合与多层维护深入。离线算法集中在额外索引中查阅。",
+          [
+            "分块与可并堆",
+            "可持久化数据结构：主席树（可持久化权值线段树）及历史版本",
+            "平衡树、树套树与动态树",
+            "树链剖分与树上区间维护",
+            "K-D Tree：空间查询；珂朵莉树：核对适用数据和复杂度条件"
+          ],
+          [
+            "主席树是可持久化结构的具体实现入口，不与其重复作为两条无关路线。",
+            "不同结构依赖不同操作条件，不以全部学习作为使用某一结构的前提。"
+          ],
+          "列出所需查询和修改，再比较两种结构并用朴素实现验证。"
+        ],
+        "gateIds": [
+          "lp2-advanced-data-tree-route-hld",
+          "lp2-advanced-data-tree-route-small-large",
+          "lp2-advanced-data-tree-route-centroid-virtual",
+          "lp2-advanced-data-tree-route-practice-assessment",
+          "lp2-advanced-data-offline-route-blocks-mo",
+          "lp2-advanced-data-offline-route-cdq",
+          "lp2-advanced-data-offline-route-parallel-binary",
+          "lp2-advanced-data-offline-route-mo-variants",
+          "lp2-advanced-data-offline-route-practice-assessment",
+          "lp2-advanced-data-versions-route-persistent-kth",
+          "lp2-advanced-data-versions-route-rollback-time",
+          "lp2-advanced-data-versions-route-practice-assessment",
+          "lp2-advanced-data-ordered-route-bst-treap",
+          "lp2-advanced-data-ordered-route-implicit-treap",
+          "lp2-advanced-data-ordered-route-practice-assessment",
+          "lp2-specialization-dynamic-tree-route-link-cut",
+          "lp2-specialization-dynamic-tree-route-practice-assessment"
+        ],
+        "topicIds": [
+          "xcpc-重链剖分-1",
+          "xcpc-带标记的线段树-1",
+          "xcpc-树的启发式合并-1",
+          "xcpc-线段树合并-1",
+          "algorithm-content-feishu-part-7-11",
+          "algorithm-content-feishu-part-7-12",
+          "algorithm-content-feishu-part-6-10",
+          "algorithm-content-feishu-part-9-3-3",
+          "algorithm-content-feishu-part-9-3-1",
+          "algorithm-content-feishu-part-9-3-2",
+          "algorithm-带修莫队",
+          "algorithm-回滚莫队",
+          "algorithm-content-feishu-part-6-12",
+          "algorithm-可撤销并查集",
+          "xcpc-treap-1",
+          "xcpc-fhqtreap-1",
+          "algorithm-content-feishu-part-6-16",
+          "xcpc-splay-1"
+        ]
+      },
+      {
+        "id": "jjdp",
+        "row": 3,
+        "label": "进阶 dp",
+        "kind": "adv",
+        "px": 400,
+        "py": 1005,
+        "detail": [
+          "进阶 DP：模型扩展与转移优化分组",
+          "先形成正确状态和转移，再按问题结构扩展模型或优化瓶颈。",
+          [
+            "状态模型：树形与换根、状态压缩、数位统计类、轮廓线",
+            "概率期望 DP：DAG、自环与联立方程分别讨论",
+            "转移优化：数据结构、单调队列与前缀信息",
+            "条件性优化：斜率优化、李超树与决策单调性",
+            "倍增优化：针对可复合的重复转移，区别于 LCA 的倍增应用"
+          ],
+          [
+            "优化不替代状态正确性；斜率和决策单调性必须检查前提。"
+          ],
+          "保留正确但较慢的转移作为对照，验证一种优化。"
+        ],
+        "gateIds": [
+          "lp2-advanced-dp-tree-subset-dp-tree-dp",
+          "lp2-advanced-dp-tree-subset-dp-reroot",
+          "lp2-advanced-dp-tree-subset-dp-subset",
+          "lp2-advanced-dp-tree-subset-dp-practice-assessment",
+          "lp2-advanced-dp-digits-probability-digit",
+          "lp2-advanced-dp-digits-probability-probability-basics",
+          "lp2-advanced-dp-digits-probability-probability-dp",
+          "lp2-advanced-dp-digits-probability-practice-assessment",
+          "lp2-advanced-dp-transition-optimization-queue-optimize",
+          "lp2-advanced-dp-transition-optimization-structure-optimize",
+          "lp2-advanced-dp-transition-optimization-practice-assessment",
+          "lp2-advanced-dp-dp-extensions-convex-hull-dp",
+          "lp2-advanced-dp-dp-extensions-li-chao",
+          "lp2-advanced-dp-dp-extensions-divide-conquer-dp",
+          "lp2-advanced-dp-dp-extensions-profile-dp",
+          "lp2-advanced-dp-dp-extensions-practice-assessment"
+        ],
+        "topicIds": [
+          "xcpc-基础-3",
+          "xcpc-进阶-2",
+          "algorithm-树形-dp-换根",
+          "xcpc-普通型-1",
+          "xcpc-枚举子集-超集-1",
+          "xcpc-基础-4",
+          "xcpc-条件概率-1",
+          "xcpc-期望的线性性-1",
+          "xcpc-基础-5",
+          "algorithm-期望dp",
+          "algorithm-content-feishu-part-3-8",
+          "xcpc-o-nm-1",
+          "algorithm-content-feishu-part-3-7",
+          "algorithm-content-feishu-part-3-9",
+          "xcpc-李超线段树-1",
+          "xcpc-分治dp-1",
+          "algorithm-content-feishu-part-3-10",
+          "algorithm-content-feishu-part-3-12"
+        ]
+      },
+      {
+        "id": "jjgl",
+        "row": 3,
+        "label": "进阶图论",
+        "kind": "adv",
+        "px": 580,
+        "py": 1005,
+        "detail": [
+          "进阶图论：结构分解与约束模型",
+          "图的结构、流量、逻辑与树上专题分别组织，保持基础图论到进阶图论的直接连接。",
+          [
+            "连通性：强连通、割点、桥与双连通",
+            "差分约束、二分图匹配与 2-SAT",
+            "网络流分组：最大流、最小割、费用流、上下界网络流",
+            "树上专题：点分治与虚树",
+            "图计数：矩阵树定理，关联线性代数"
+          ],
+          [
+            "2-SAT 关联强连通，差分约束关联最短路，矩阵树定理关联消元。",
+            "费用流和上下界网络流是不同扩展，不默认组成一条先后链。"
+          ],
+          "用小图手工推导一种模型中点、边、容量或约束的含义。"
+        ],
+        "gateIds": [
+          "lp2-advanced-graphs-graph-decomposition-scc",
+          "lp2-advanced-graphs-graph-decomposition-bridges-cuts",
+          "lp2-advanced-graphs-graph-decomposition-practice-assessment",
+          "lp2-advanced-graphs-relations-matching-weighted-dsu",
+          "lp2-advanced-graphs-relations-matching-bipartite",
+          "lp2-advanced-graphs-relations-matching-practice-assessment",
+          "lp2-advanced-graphs-flow-models-residual-dinic",
+          "lp2-advanced-graphs-flow-models-mincut",
+          "lp2-advanced-graphs-flow-models-practice-assessment",
+          "lp2-advanced-graphs-graph-extensions-two-sat",
+          "lp2-advanced-graphs-graph-extensions-biconnected",
+          "lp2-advanced-graphs-graph-extensions-difference-constraints",
+          "lp2-advanced-graphs-graph-extensions-mincost",
+          "lp2-advanced-graphs-graph-extensions-practice-assessment",
+          "lp2-specialization-special-graph-route-special-matching",
+          "lp2-specialization-special-graph-route-dominators",
+          "lp2-specialization-special-graph-route-practice-assessment"
+        ],
+        "topicIds": [
+          "algorithm-强连通分量-tarjan-",
+          "xcpc-割点-割边-1",
+          "xcpc-带权并查集-1",
+          "xcpc-二分图判定-1",
+          "xcpc-匈牙利算法-1",
+          "xcpc-dinic-1",
+          "algorithm-content-feishu-part-7-9-1",
+          "algorithm-最小割模型",
+          "algorithm-最大权闭合子图",
+          "algorithm-content-feishu-part-7-10",
+          "algorithm-边双连通分量",
+          "algorithm-点双连通分量",
+          "xcpc-圆方树-1",
+          "algorithm-content-feishu-part-7-6",
+          "algorithm-content-feishu-part-7-9-3",
+          "algorithm-一般图最大匹配-带花树",
+          "algorithm-一般图最大权匹配",
+          "xcpc-支配树-1"
+        ]
+      },
+      {
+        "id": "jjsz",
+        "row": 3,
+        "label": "进阶数学",
+        "kind": "adv",
+        "px": 1300,
+        "py": 1005,
+        "detail": [
+          "进阶数学：代数、反演与计算分支",
+          "数学内部保留清晰分组；线性基可从异或问题直接进入，计算几何在主图中另设分支。",
+          [
+            "线性代数：矩阵、高斯消元与线性基",
+            "多项式：卷积、FFT / NTT 与后续代数运算",
+            "莫比乌斯反演、整除分块与筛法深入",
+            "同余深入：高次同余方程",
+            "数值方法：三分法、自适应辛普森法；三分需检查适用条件",
+            "置换群与群作用计数；线性规划按需专题",
+            "格雷码索引关联位运算与构造"
+          ],
+          [
+            "浮点域、模域和 GF(2) 的条件分别理解。",
+            "三分法不等同于对任意函数使用二分。"
+          ],
+          "挑当前问题需要的一支，用小规模直接计算对照数学推导。"
+        ],
+        "gateIds": [
+          "lp2-advanced-math-linear-algebra-route-matrix",
+          "lp2-advanced-math-linear-algebra-route-gaussian",
+          "lp2-advanced-math-linear-algebra-route-xor-basis",
+          "lp2-advanced-math-linear-algebra-route-practice-assessment",
+          "lp2-advanced-math-inversion-route-mobius",
+          "lp2-advanced-math-inversion-route-division-blocks",
+          "lp2-advanced-math-inversion-route-practice-assessment",
+          "lp2-advanced-math-convolution-route-convolution",
+          "lp2-advanced-math-convolution-route-fft-ntt",
+          "lp2-advanced-math-convolution-route-generating-interpolation",
+          "lp2-advanced-math-convolution-route-practice-assessment",
+          "lp2-advanced-math-geometry-route-geometry-primitives",
+          "lp2-advanced-math-geometry-route-convex-hull",
+          "lp2-advanced-math-geometry-route-calipers-halfplanes",
+          "lp2-advanced-math-geometry-route-practice-assessment",
+          "lp2-specialization-algebra-route-newton",
+          "lp2-specialization-algebra-route-formal-exp-log",
+          "lp2-specialization-algebra-route-bit-convolution",
+          "lp2-specialization-algebra-route-burnside",
+          "lp2-specialization-algebra-route-practice-assessment"
+        ],
+        "topicIds": [
+          "xcpc-矩阵快速幂-1",
+          "algorithm-content-feishu-part-5-7-2",
+          "algorithm-content-feishu-part-5-7-3",
+          "algorithm-content-feishu-part-5-9",
+          "xcpc-狄利克雷卷积-1",
+          "xcpc-整除分块-1",
+          "algorithm-content-xcpc-fft-ntt-1",
+          "xcpc-原根-阶-1",
+          "algorithm-content-xcpc-生成函数-1",
+          "algorithm-content-xcpc-拉格朗日插值-1",
+          "algorithm-点与向量",
+          "xcpc-点积-1",
+          "xcpc-叉积-1",
+          "algorithm-content-feishu-part-8-1",
+          "algorithm-content-feishu-part-8-2",
+          "algorithm-content-feishu-part-8-3",
+          "algorithm-多项式求逆",
+          "algorithm-多项式-ln",
+          "algorithm-多项式-exp",
+          "xcpc-fwt-fmt-1",
+          "xcpc-集合幂级数-1",
+          "xcpc-burnside引理-1",
+          "xcpc-polya定理-1"
+        ]
+      },
+      {
+        "id": "recursion",
+        "row": 1,
+        "label": "递归/分治",
+        "kind": "leaf",
+        "px": 40,
+        "py": 456,
+        "detail": [
+          "把递归表达与分治思想连起来理解",
+          "递归是一种过程表达，分治是一种拆分、求解和合并问题的思想。它们放在同一个入口中，先理解调用，再看问题怎样拆。",
+          [
+            "递归出口、参数含义、规模缩小与调用栈",
+            "递归枚举与回溯：选择、递归、撤销",
+            "分治：拆分、独立求解与合并",
+            "用归并排序理解分治的过程和复杂度"
+          ],
+          [
+            "不是所有递归都是分治；BFS 也不要求递归实现。",
+            "先核对递归深度和总调用次数，再讨论效率。"
+          ],
+          "画出一次归并排序或递归枚举的调用过程，比较拆分和合并分别做了什么。"
+        ],
+        "gateIds": [
+          "lp2-brute-models-complete-enumeration-enumeration",
+          "lp2-brute-models-complete-enumeration-recursion",
+          "lp2-brute-models-complete-enumeration-divide-merge",
+          "lp2-brute-models-complete-enumeration-practice-assessment"
+        ],
+        "topicIds": [
+          "algorithm-枚举",
+          "algorithm-content-feishu-part-5-1",
+          "xcpc-递归-回溯-1",
+          "xcpc-归并排序-1"
+        ]
+      },
+      {
+        "id": "struct",
+        "row": 0,
+        "label": "结构体",
+        "sub": "struct",
+        "kind": "leaf",
+        "contextual": true,
+        "px": 760,
+        "py": 148,
+        "detail": [
+          "用一个对象组织相关数据",
+          "结构体属于 C++ 基础语法，把多个相关字段组织为一个整体，可在需要记录多属性数据时补学。",
+          [
+            "struct 的定义、初始化与成员访问",
+            "结构体数组与 vector<struct>",
+            "结构体作为函数参数与排序对象"
+          ],
+          [
+            "结构体不是图论结构；先理解对象中的字段和数据含义。"
+          ],
+          "把带编号、分数和姓名的数据组织成结构体并排序。"
+        ],
+        "gateIds": [
+          "lp2-cpp-toolkit-data-organization-functions-records"
+        ],
+        "topicIds": [
+          "xcpc-函数-1",
+          "xcpc-引用-1",
+          "xcpc-结构体-类-1"
+        ]
+      },
+      {
+        "id": "pointer",
+        "row": 0,
+        "label": "指针",
+        "sub": "地址与解引用",
+        "kind": "leaf",
+        "contextual": true,
+        "px": 940,
+        "py": 148,
+        "detail": [
+          "认识地址与解引用",
+          "指针属于 C++ 基础语法，用来理解地址、间接访问和对象生命周期。",
+          [
+            "取地址 & 与解引用 *",
+            "指针、数组和引用的区别",
+            "空指针、有效范围与生命周期"
+          ],
+          [
+            "不要解引用空指针或失效地址；入门不要求立即学习复杂内存管理。"
+          ],
+          "观察变量地址与指针指向，说明修改指向数据和修改指针的区别。"
+        ],
+        "gateIds": [
+          "lp2-cpp-toolkit-data-organization-addresses"
+        ],
+        "topicIds": [
+          "xcpc-指针-1",
+          "xcpc-引用-1"
+        ]
+      },
+      {
+        "id": "simulation",
+        "row": 1,
+        "label": "模拟与枚举",
+        "kind": "leaf",
+        "px": 220,
+        "py": 554,
+        "detail": [
+          "从忠实表达题意到完整遍历可能性",
+          "模拟与枚举连接基本语法和实际解题。先把状态变化写清，再确定枚举对象、范围以及是否重复。",
+          [
+            "流程模拟、网格与操作顺序",
+            "完整枚举、排列、子集与重复检查",
+            "用暴力作为优化算法的对照",
+            "按题补学：高精度整数的表示、加减乘除与进位；不依赖固定语言的大整数接口"
+          ],
+          [
+            "高精度作为本入口的工具索引，不单独占据主图。",
+            "模拟检查边界，枚举检查遗漏和重复。"
+          ],
+          "先写小数据暴力解，再记录限制它扩展到大数据的计算瓶颈。"
+        ],
+        "gateIds": [
+          "lp2-brute-models-simulation-state-simulation",
+          "lp2-brute-models-simulation-practice-assessment",
+          "lp2-brute-models-complete-enumeration-enumeration",
+          "lp2-brute-models-complete-enumeration-recursion",
+          "lp2-brute-models-complete-enumeration-divide-merge",
+          "lp2-brute-models-complete-enumeration-practice-assessment",
+          "lp2-brute-models-brute-validation-build-oracle",
+          "lp2-brute-models-brute-validation-practice-assessment"
+        ],
+        "topicIds": [
+          "algorithm-content-feishu-part-1-1",
+          "algorithm-枚举",
+          "algorithm-content-feishu-part-5-1",
+          "xcpc-递归-回溯-1",
+          "xcpc-归并排序-1",
+          "xcpc-对拍-1"
+        ]
+      },
+      {
+        "id": "construction",
+        "row": 1,
+        "label": "构造",
+        "sub": "特殊题型",
+        "kind": "leaf",
+        "contextual": true,
+        "px": 1300,
+        "py": 554,
+        "detail": [
+          "按题目约束构造一个合法答案",
+          "构造作为特殊题型独立呈现，可在补题遇到时学习；不强挂到 STL、贪心或某一种数学工具下。",
+          [
+            "奇偶、配对、余数和不变量",
+            "必要条件、充分条件与合法性证明",
+            "小数据验证与反例",
+            "按题延伸：格雷码与相邻状态构造，关联位运算"
+          ],
+          [
+            "相关数学是可能用到的基础，不是构造属于数学的隶属线。"
+          ],
+          "枚举几个小规模实例，寻找能推广的构造规则并解释为何总是合法。"
+        ],
+        "gateIds": [
+          "lp2-brute-models-construction-integers-constructive-invariants",
+          "lp2-brute-models-construction-integers-gcd-factorization",
+          "lp2-brute-models-construction-integers-prime-sieve",
+          "lp2-brute-models-construction-integers-linear-sieve",
+          "lp2-brute-models-construction-integers-practice-assessment"
+        ],
+        "topicIds": [
+          "algorithm-content-feishu-part-1-6",
+          "algorithm-content-feishu-part-5-2-2",
+          "algorithm-lcm",
+          "xcpc-埃式筛-1",
+          "algorithm-线性筛-素数"
+        ]
+      },
+      {
+        "id": "prefix",
+        "row": 1,
+        "label": "前缀和与差分",
+        "sub": "优化方法",
+        "kind": "leaf",
+        "contextual": true,
+        "px": 580,
+        "py": 554,
+        "detail": [
+          "复用区间信息，减少重复计算",
+          "前缀和与差分是独立的优化方法，可在补题遇到区间查询或批量修改时回补。",
+          [
+            "一维与二维前缀和",
+            "差分、累计还原与区间修改",
+            "区间边界、空区间与整数范围"
+          ],
+          [
+            "前缀查询与差分更新解决不同操作；不要混淆下标约定。"
+          ],
+          "将区间求和或批量加法与朴素实现逐项对照。"
+        ],
+        "gateIds": [
+          "lp2-basic-optimization-preprocessing-prefix-sums",
+          "lp2-basic-optimization-preprocessing-difference",
+          "lp2-basic-optimization-preprocessing-compression-counting",
+          "lp2-basic-optimization-preprocessing-practice-assessment"
+        ],
+        "topicIds": [
+          "algorithm-一维前缀和",
+          "algorithm-二维前缀和",
+          "algorithm-一维差分",
+          "algorithm-二维差分",
+          "xcpc-离散-1",
+          "xcpc-桶排序-1"
+        ]
+      },
+      {
+        "id": "two",
+        "row": 1,
+        "label": "双指针",
+        "sub": "优化方法",
+        "kind": "leaf",
+        "contextual": true,
+        "px": 940,
+        "py": 554,
+        "detail": [
+          "利用可证明的指针推进减少枚举",
+          "双指针与滑动窗口独立呈现，属于优化方法。不同问题中的相向、同向推进需要分别验证条件。",
+          [
+            "相向双指针、同向双指针",
+            "滑动窗口的加入、移除与答案维护",
+            "单调推进、反例与失效条件"
+          ],
+          [
+            "指针不回退需要依据，不是只要连续区间就能使用窗口。"
+          ],
+          "对一个窗口题保留二次枚举，比较指针移动与每次答案。"
+        ],
+        "gateIds": [
+          "lp2-basic-optimization-monotone-methods-binary-boundaries",
+          "lp2-basic-optimization-monotone-methods-binary-answer",
+          "lp2-basic-optimization-monotone-methods-two-pointers",
+          "lp2-basic-optimization-monotone-methods-practice-assessment"
+        ],
+        "topicIds": [
+          "algorithm-二分查找",
+          "algorithm-二分答案",
+          "algorithm-content-feishu-part-1-9"
+        ]
+      },
+      {
+        "id": "basicdata",
+        "row": 2,
+        "label": "基础数据结构（下）",
+        "kind": "aggregate",
+        "px": 220,
+        "py": 785,
+        "detail": [
+          "基础数据结构（下）：信息维护与区间查询",
+          "在常用容器之上理解如何维护信息。线段树、树状数组明确放在这一基础层，向下再连接进阶数据结构。",
+          [
+            "单调栈与单调队列：候选淘汰和摊还分析",
+            "并查集：集合合并、路径压缩与按大小合并；图论中通过关联使用",
+            "ST 表：静态区间查询与可重复贡献",
+            "树状数组：前缀维护、动态查询与 lowbit",
+            "线段树：信息合并、单点修改、区间查询与懒标记"
+          ],
+          [
+            "线段树和树状数组不是被遗漏的进阶细节，属于本节点的核心范围。",
+            "区间操作要明确可合并信息、可逆性和标记复合顺序。"
+          ],
+          "对同一查询问题比较前缀和、树状数组和线段树，并用暴力核对。"
+        ],
+        "gateIds": [
+          "lp2-range-data-static-monotone-monotone-stack",
+          "lp2-range-data-static-monotone-monotone-queue",
+          "lp2-range-data-static-monotone-sparse-table",
+          "lp2-range-data-static-monotone-practice-assessment",
+          "lp2-range-data-fenwick-fenwick",
+          "lp2-range-data-fenwick-inversions",
+          "lp2-range-data-fenwick-practice-assessment",
+          "lp2-range-data-segment-lazy-segment-merge",
+          "lp2-range-data-segment-lazy-lazy-add",
+          "lp2-range-data-segment-lazy-lazy-compose",
+          "lp2-range-data-segment-lazy-practice-assessment",
+          "lp2-range-data-offline-selection-offline-events",
+          "lp2-range-data-offline-selection-structure-choice",
+          "lp2-range-data-offline-selection-practice-assessment"
+        ],
+        "topicIds": [
+          "xcpc-单调栈-1",
+          "xcpc-单调队列-1",
+          "algorithm-content-feishu-part-6-7",
+          "xcpc-树状数组基础-1",
+          "xcpc-逆序对-1",
+          "xcpc-离散-1",
+          "xcpc-基础线段树-1",
+          "xcpc-带标记的线段树-1",
+          "xcpc-扫描线-1"
+        ]
+      },
+      {
+        "id": "advancedstrings",
+        "row": 3,
+        "label": "进阶字符串",
+        "kind": "adv",
+        "px": 940,
+        "py": 1005,
+        "detail": [
+          "进阶字符串：统一组织大量子串关系",
+          "后缀与回文的深入结构按具体问题分别进入，不形成统一必学链。",
+          [
+            "后缀数组与 LCP",
+            "后缀自动机与 endpos",
+            "回文自动机与回文后缀链接"
+          ],
+          [
+            "后缀数组与后缀自动机是不同结构，不要求先学一个才学另一个。"
+          ],
+          "用短串列出子串或回文，对照结构中保存的信息。"
+        ],
+        "gateIds": [
+          "lp2-specialization-suffix-route-suffix-array",
+          "lp2-specialization-suffix-route-suffix-automaton",
+          "lp2-specialization-suffix-route-palindrome-lyndon",
+          "lp2-specialization-suffix-route-practice-assessment"
+        ],
+        "topicIds": [
+          "algorithm-content-feishu-part-4-7",
+          "algorithm-content-feishu-part-4-8",
+          "algorithm-content-feishu-part-4-6",
+          "xcpc-lyndon-分解-1"
+        ]
+      },
+      {
+        "id": "geometry",
+        "row": 3,
+        "label": "计算几何",
+        "kind": "adv",
+        "px": 1120,
+        "py": 1005,
+        "detail": [
+          "计算几何：位置关系与凸性",
+          "计算几何由基础数学单独引出，与进阶数学并列；从向量和几何判断开始，按问题深入。",
+          [
+            "先备知识：向量、点积、叉积、距离与相交判断",
+            "凸包",
+            "旋转卡壳",
+            "半平面交"
+          ],
+          [
+            "分别处理整数精确判断、浮点误差以及共线、重合和端点等退化情况。"
+          ],
+          "用小图核对边界和退化情况，再测试凸性算法。"
+        ],
+        "gateIds": [
+          "lp2-advanced-math-geometry-route-geometry-primitives",
+          "lp2-advanced-math-geometry-route-convex-hull",
+          "lp2-advanced-math-geometry-route-calipers-halfplanes",
+          "lp2-advanced-math-geometry-route-practice-assessment"
+        ],
+        "topicIds": [
+          "algorithm-点与向量",
+          "xcpc-点积-1",
+          "xcpc-叉积-1",
+          "algorithm-content-feishu-part-8-1",
+          "algorithm-content-feishu-part-8-2",
+          "algorithm-content-feishu-part-8-3"
+        ]
+      }
+    ],
+    "edges": [
+      {
+        "from": "g",
+        "to": "xh"
+      },
+      {
+        "from": "g",
+        "to": "sz"
+      },
+      {
+        "from": "g",
+        "to": "hs"
+      },
+      {
+        "from": "g",
+        "to": "wy"
+      },
+      {
+        "from": "xh",
+        "to": "ds"
+      },
+      {
+        "from": "sz",
+        "to": "ds"
+      },
+      {
+        "from": "hs",
+        "to": "ds"
+      },
+      {
+        "from": "wy",
+        "to": "ss"
+      },
+      {
+        "from": "ds",
+        "to": "px"
+      },
+      {
+        "from": "ds",
+        "to": "ef"
+      },
+      {
+        "from": "ds",
+        "to": "tx"
+      },
+      {
+        "from": "ds",
+        "to": "dl"
+      },
+      {
+        "from": "ds",
+        "to": "zfc"
+      },
+      {
+        "from": "ds",
+        "to": "hm"
+      },
+      {
+        "from": "ds",
+        "to": "ssr"
+      },
+      {
+        "from": "tx",
+        "to": "srgt"
+      },
+      {
+        "from": "zfc",
+        "to": "zfsf"
+      },
+      {
+        "from": "ss",
+        "to": "jcsz"
+      },
+      {
+        "from": "ssr",
+        "to": "jcdp"
+      },
+      {
+        "from": "ssr",
+        "to": "tl"
+      },
+      {
+        "from": "jcdp",
+        "to": "srgt",
+        "bidir": true
+      },
+      {
+        "from": "jcdp",
+        "to": "jjdp"
+      },
+      {
+        "from": "tl",
+        "to": "jjgl"
+      },
+      {
+        "from": "jcsz",
+        "to": "jjsz"
+      },
+      {
+        "from": "jjsj",
+        "to": "jjdp"
+      },
+      {
+        "from": "hs",
+        "to": "recursion"
+      },
+      {
+        "from": "recursion",
+        "to": "ssr"
+      },
+      {
+        "from": "g",
+        "to": "struct"
+      },
+      {
+        "from": "g",
+        "to": "pointer"
+      },
+      {
+        "from": "xh",
+        "to": "simulation"
+      },
+      {
+        "from": "sz",
+        "to": "simulation"
+      },
+      {
+        "from": "ds",
+        "to": "basicdata"
+      },
+      {
+        "from": "basicdata",
+        "to": "jjsj"
+      },
+      {
+        "from": "zfsf",
+        "to": "advancedstrings"
+      },
+      {
+        "from": "jcsz",
+        "to": "geometry"
+      },
+      {
+        "from": "sz",
+        "to": "prefix",
+        "relation": "foundation"
+      },
+      {
+        "from": "sz",
+        "to": "two",
+        "relation": "foundation"
+      },
+      {
+        "from": "ss",
+        "to": "construction",
+        "relation": "foundation"
+      }
+    ],
+    "goals": [
+      "认识程序怎样表达问题",
+      "常用工具与方法建立广度",
+      "围绕模型形成连贯主干",
+      "按题目与兴趣选择分支深入"
+    ],
+    "indexEntries": [
+      {
+        "id": "offline",
+        "row": 3,
+        "label": "离线与杂项",
+        "sub": "专项索引",
+        "kind": "leaf",
+        "px": 580,
+        "py": 1100,
+        "detail": [
+          "查询可以重排时的专项方法",
+          "离线与杂项先作为专题索引，不新增技巧主图节点。",
+          [
+            "CDQ 分治、整体二分、莫队",
+            "模拟退火、0/1 分数规划",
+            "奇怪题型、非传统题与提交答案题"
+          ],
+          [
+            "先确认题目允许离线或改变处理顺序，再选择具体算法；特殊赛制不是算法阶段。"
+          ],
+          "把查询记录下来，判断哪些操作可以重排并比较维护成本。"
+        ],
+        "gateIds": [
+          "lp2-range-data-offline-selection-offline-events",
+          "lp2-range-data-offline-selection-structure-choice",
+          "lp2-range-data-offline-selection-practice-assessment",
+          "lp2-advanced-data-offline-route-blocks-mo",
+          "lp2-advanced-data-offline-route-cdq",
+          "lp2-advanced-data-offline-route-parallel-binary",
+          "lp2-advanced-data-offline-route-mo-variants",
+          "lp2-advanced-data-offline-route-practice-assessment",
+          "lp2-specialization-capstone-solution-reconstruction",
+          "lp2-specialization-capstone-project-review",
+          "lp2-specialization-capstone-practice-assessment"
+        ],
+        "topicIds": [
+          "xcpc-扫描线-1",
+          "xcpc-树状数组基础-1",
+          "xcpc-基础线段树-1",
+          "algorithm-content-feishu-part-6-10",
+          "algorithm-content-feishu-part-9-3-3",
+          "algorithm-content-feishu-part-9-3-1",
+          "algorithm-content-feishu-part-9-3-2",
+          "algorithm-带修莫队",
+          "algorithm-回滚莫队",
+          "algorithm-content-feishu-part-1-6",
+          "algorithm-content-feishu-part-1-5",
+          "xcpc-状态-1",
+          "xcpc-对拍-1",
+          "xcpc-时空复杂度分析-1"
+        ]
+      }
+    ]
+  };
+
+  // src/renderer/algorithms/roadmap-resources.ts
+  function el2(tag, text3, className = "") {
+    const n = document.createElement(tag);
+    n.className = className;
+    if (text3 !== void 0) n.textContent = text3;
+    return n;
+  }
+  function button5(text3, cls, action2) {
+    const b = el2("button", text3, `arm-button ${cls}`);
+    b.type = "button";
+    b.addEventListener("click", action2);
+    return b;
+  }
+  function fields(value) {
+    return value && typeof value === "object" && !Array.isArray(value) ? value : {};
+  }
+  function safeUrl(value) {
+    if (typeof value !== "string" || value.length > 2e3 || /[\u0000-\u0020\u007f\\]/u.test(value)) return "";
+    try {
+      const url = new URL(value);
+      return ["http:", "https:"].includes(url.protocol) && !url.username && !url.password ? url.href : "";
+    } catch {
+      return "";
+    }
+  }
+  function message(error) {
+    return error instanceof Error ? error.message : "保存失败，请重试";
+  }
+  function openRoadmapResources(options) {
+    const { host, node: node2 } = options, previous = document.activeElement;
+    const all = (options.curriculum.stages || []).flatMap((s) => s.gates || []), ids = new Set(node2.gateIds || []);
+    const gates = all.filter((g) => ids.has(g.id));
+    const contents = new Map(options.contents.map((c) => [c.gateId, c]));
+    const topics = /* @__PURE__ */ new Map();
+    function walk(n) {
+      topics.set(n.id, n);
+      for (const id of n.legacyIds || []) topics.set(id, n);
+      (n.children || []).forEach(walk);
+    }
+    walk(options.tree);
+    const dialog3 = el2("dialog", void 0, "arm-detail-dialog arm-resource-dialog");
+    dialog3.setAttribute("aria-label", `${node2.label}相关资料`);
+    const heading = el2("header", void 0, "arm-dialog-header"), title = el2("h2", `${node2.label} · 相关资料`, "arm-detail-title");
+    const close = button5("×", "arm-resource-close", () => {
+      if (!busy2) destroy();
+    });
+    close.setAttribute("aria-label", "关闭相关资料");
+    heading.append(title, close);
+    const body = el2("div", void 0, "arm-dialog-body");
+    dialog3.append(heading, body);
+    let destroyed = false, busy2 = false;
+    const children = /* @__PURE__ */ new Set();
+    function destroy() {
+      if (destroyed) return;
+      destroyed = true;
+      for (const child of children) {
+        if (child.open) child.close();
+        child.remove();
+      }
+      if (dialog3.open) dialog3.close();
+      dialog3.remove();
+      if (previous instanceof HTMLElement && previous.isConnected) previous.focus({ preventScroll: true });
+    }
+    dialog3.addEventListener("cancel", (event) => {
+      event.preventDefault();
+      if (!busy2) destroy();
+    });
+    function external2(url) {
+      void options.onExternal(url).catch((error) => {
+        if (!destroyed) {
+          const note = el2("p", message(error), "arm-focus-error");
+          note.setAttribute("role", "alert");
+          body.prepend(note);
+        }
+      });
+    }
+    function openForm(gate, personal) {
+      if (busy2 || !personal && !options.canManage) return;
+      const child = el2("dialog", void 0, `arm-detail-dialog ${personal ? "arm-personal-dialog" : "arm-resource-edit-dialog"}`);
+      child.setAttribute("aria-label", personal ? "我的题单" : "编辑公共资料");
+      const form = el2("form", void 0, personal ? "arm-personal-form" : "arm-resource-form");
+      form.noValidate = true;
+      const formHead = el2("header", void 0, "arm-dialog-header");
+      formHead.append(el2("h2", personal ? "我的题单" : "编辑公共资料", "arm-detail-title"));
+      const cancel = button5("取消", "", () => {
+        if (!busy2) {
+          child.close();
+          child.remove();
+          children.delete(child);
+        }
+      });
+      const formBody = el2("div", void 0, "arm-dialog-body"), error = el2("p", void 0, "arm-focus-error");
+      error.setAttribute("role", "alert");
+      error.hidden = true;
+      const inputs = /* @__PURE__ */ new Map();
+      const content = contents.get(gate.id), record = fields(options.progress.gates?.[gate.id]);
+      function field2(name, label, value, area = false) {
+        const wrap = el2("label", void 0, "arm-resource-field"), input2 = area ? el2("textarea") : el2("input");
+        input2.name = name;
+        input2.value = value;
+        if (input2 instanceof HTMLTextAreaElement) {
+          input2.rows = name === "goals" ? 4 : 5;
+          input2.maxLength = 6e3;
+        } else input2.maxLength = name === "practiceTitle" ? 120 : 2e3;
+        wrap.append(el2("span", label), input2);
+        inputs.set(name, input2);
+        formBody.append(wrap);
+      }
+      if (!personal) {
+        field2("description", "相关介绍", content?.description || gate.learningDescription || gate.description || "", true);
+        field2("goals", "核心目标（每行一条）", (content?.goals || gate.goals || []).join("\n"), true);
+        field2("practiceTitle", "官方精选题单名称", content?.practiceList?.title || "");
+      }
+      field2("practiceUrl", personal ? "我的题单链接" : "官方精选题单链接", personal ? String(record.practiceUrl || "") : content?.practiceList?.url || "");
+      const save = el2("button", personal ? "保存我的题单" : "保存公共资料", "arm-button");
+      save.type = "submit";
+      const actions = el2("div", void 0, "arm-resource-actions");
+      actions.append(cancel, save);
+      formBody.append(error, actions);
+      form.append(formHead, formBody);
+      child.append(form);
+      children.add(child);
+      host.append(child);
+      child.addEventListener("cancel", (event) => {
+        event.preventDefault();
+        if (!busy2) {
+          child.close();
+          child.remove();
+          children.delete(child);
+        }
+      });
+      form.addEventListener("submit", async (event) => {
+        event.preventDefault();
+        if (busy2) return;
+        const value = (name) => inputs.get(name).value.trim();
+        const rawUrl = value("practiceUrl"), url = safeUrl(rawUrl);
+        error.hidden = true;
+        if (rawUrl && !url) {
+          error.textContent = "请填写有效的 HTTP 或 HTTPS 链接，不能包含凭据。";
+          error.hidden = false;
+          return;
+        }
+        let description = "", goals = [], practiceTitle = "";
+        if (!personal) {
+          description = value("description");
+          goals = value("goals").split(/\r?\n/u).map((x) => x.trim()).filter(Boolean);
+          practiceTitle = value("practiceTitle");
+          if (!description || description.length > 6e3 || !goals.length || goals.length > 20 || goals.some((x) => x.length > 500) || goals.join("\n").length > 6e3) {
+            error.textContent = "介绍须为1–6000字；目标须为1–20条，每条最多500字，总计最多6000字。";
+            error.hidden = false;
+            return;
+          }
+          if (Boolean(practiceTitle) !== Boolean(url) || practiceTitle.length > 120) {
+            error.textContent = "官方题单名称和链接须同时填写或同时留空，名称最多120字。";
+            error.hidden = false;
+            return;
+          }
+        }
+        busy2 = true;
+        form.querySelectorAll("input,textarea,button").forEach((n) => {
+          n.disabled = true;
+        });
+        try {
+          if (personal) {
+            await options.onPersonal(gate.id, url);
+            options.progress.gates = { ...options.progress.gates || {}, [gate.id]: { ...record, practiceUrl: url } };
+          } else {
+            const saved = await options.onSaveGate({ gateId: gate.id, description, goals, practiceList: url ? { title: practiceTitle, url } : null, sha: content?.sha || null });
+            contents.set(gate.id, saved);
+          }
+          if (!destroyed) {
+            child.close();
+            child.remove();
+            children.delete(child);
+            render6();
+          }
+        } catch (cause) {
+          if (!destroyed) {
+            error.textContent = message(cause);
+            error.hidden = false;
+          }
+        } finally {
+          busy2 = false;
+          if (!destroyed) form.querySelectorAll("input,textarea,button").forEach((n) => {
+            n.disabled = false;
+          });
+        }
+      });
+      child.showModal();
+      inputs.values().next().value?.focus();
+    }
+    function render6() {
+      body.replaceChildren();
+      body.append(el2("p", "围绕这个知识范围查阅笔记和练习；资料来源与个人题单分别保存。", "arm-resource-hint"));
+      if (!gates.length) body.append(el2("p", "当前公共课程中暂无对应资料条目，可先从相关知识点查阅。", "arm-resource-hint"));
+      for (const gate of gates) {
+        const content = contents.get(gate.id), card = el2("section", void 0, "arm-resource-card");
+        card.dataset.gateId = gate.id;
+        card.append(el2("h3", (gate.title || "相关内容").replace(/^混练验收[：:]/u, "练习：")));
+        if (content) {
+          card.append(el2("p", content.description));
+          const goals = el2("ul");
+          content.goals.forEach((goal) => goals.append(el2("li", goal)));
+          card.append(goals);
+        }
+        const links = el2("div", void 0, "arm-resource-links");
+        for (const topicId of gate.topicIds || []) {
+          const topic = topics.get(topicId);
+          if (!topic) continue;
+          const b = button5(topic.label || topic.id, "arm-topic-link", () => {
+            destroy();
+            options.onTopic(topic.id);
+          });
+          b.dataset.topicId = topic.id;
+          links.append(b);
+        }
+        card.append(links);
+        const gateTopics = new Set((gate.topicIds || []).map((id) => topics.get(id)?.id || id));
+        const notes = options.notes.filter((note) => note.noteScope === "public" && gateTopics.has(topics.get(note.nodeId)?.id || note.nodeId)).slice().sort((a, b) => Number(Boolean(b.featured)) - Number(Boolean(a.featured)));
+        for (const note of notes) {
+          const b = button5(note.title || "未命名笔记", `arm-note${note.featured ? " arm-note-featured" : ""}`, () => {
+            destroy();
+            options.onNote(note, gate.id);
+          });
+          b.dataset.noteId = typeof note.id === "string" ? note.id : "";
+          card.append(b);
+        }
+        const official = content?.practiceList || (content ? null : (gate.practiceLists || [])[0]);
+        const officialUrl = safeUrl(official?.url);
+        if (official && officialUrl) card.append(button5(`官方精选题单 · ${official.title} ↗`, "arm-official-list", () => external2(officialUrl)));
+        const record = fields(options.progress.gates?.[gate.id]), personalUrl = safeUrl(record.practiceUrl);
+        if (personalUrl) card.append(button5("我的题单 ↗", "arm-personal-link", () => external2(personalUrl)));
+        const actions = el2("div", void 0, "arm-resource-actions");
+        actions.append(button5(personalUrl ? "编辑我的题单" : "＋ 添加我的题单", "arm-personal-button", () => openForm(gate, true)));
+        if (options.canManage) actions.append(button5("编辑介绍、目标与官方题单", "arm-resource-edit", () => openForm(gate, false)));
+        card.append(actions);
+        body.append(card);
+      }
+      const covered = new Set(gates.flatMap((g) => g.topicIds || []));
+      const extraTopics = (node2.topicIds || []).filter((id) => !covered.has(id));
+      if (extraTopics.length) {
+        const links = el2("div", void 0, "arm-resource-links");
+        extraTopics.forEach((id) => {
+          const topic = topics.get(id);
+          if (topic) {
+            const b = button5(topic.label || topic.id, "arm-topic-link", () => {
+              destroy();
+              options.onTopic(topic.id);
+            });
+            b.dataset.topicId = topic.id;
+            links.append(b);
+          }
+        });
+        body.append(links);
+      }
+    }
+    render6();
+    host.append(dialog3);
+    dialog3.showModal();
+    return { destroy };
+  }
 
   // src/shared/learning-curriculum.ts
-  function createCurriculumLayout(base) {
-    return { stages: (base.stages || []).map((stage) => ({
-      id: stage.id,
-      title: stage.title || "未命名章节",
-      gates: (stage.gates || []).map((gate) => ({
-        id: gate.id,
-        title: gate.title || "未命名关卡",
-        kind: gate.kind === "mixed" || gate.kind === "challenge" ? gate.kind : "learning",
-        sectionId: gate.sectionId || "",
-        scope: gate.scope || (gate.optional ? "elective" : "core"),
-        ...gate.id.startsWith("custom-") ? { description: gate.learningDescription || gate.description || "", goals: [...gate.goals || []], topicIds: [...gate.topicIds || []] } : {}
-      }))
-    })) };
-  }
   function applyCurriculumLayout(base, layout) {
     const originalStages = new Map((base.stages || []).map((stage) => [stage.id, stage]));
     const activeIds = new Set(layout.stages.flatMap((stage) => stage.gates.map((gate) => gate.id)));
@@ -6725,536 +8023,22 @@ ${entry2.node.fullLabel}` : ""}`;
     return { ...base, stages, legacyGates: [...oldNames.values()] };
   }
 
-  // src/renderer/algorithms/curriculum-editor.ts
-  var kindLabels = { learning: "学习", mixed: "混练", challenge: "验收" };
-  var scopeLabels = { core: "核心", recommended: "推荐", elective: "选修", route: "分路线" };
-  var serial2 = 0;
-  function element3(tag, className = "", text4) {
-    const node2 = document.createElement(tag);
-    node2.className = className;
-    if (text4 !== void 0) node2.textContent = text4;
-    return node2;
-  }
-  function button4(text4, action2, className = "") {
-    const node2 = element3("button", `alp-curriculum-button ${className}`, text4);
-    node2.type = "button";
-    node2.addEventListener("click", action2);
-    return node2;
-  }
-  function field2(label, control2) {
-    const node2 = element3("label", "alp-curriculum-field");
-    node2.append(element3("span", "", label), control2);
-    return node2;
-  }
-  function input2(value, name, maxLength) {
-    const node2 = element3("input");
-    node2.type = "text";
-    node2.name = name;
-    node2.value = value;
-    node2.maxLength = maxLength;
-    node2.required = true;
-    return node2;
-  }
-  function select(entries, value, name, update) {
-    const node2 = element3("select");
-    node2.name = name;
-    entries.forEach(([id, title]) => {
-      const option = element3("option", "", title);
-      option.value = id;
-      node2.append(option);
-    });
-    node2.value = value;
-    node2.addEventListener("change", () => {
-      const entry2 = entries.find(([id]) => id === node2.value);
-      if (entry2) update(entry2[0]);
-    });
-    return node2;
-  }
-  function message(error) {
-    return error instanceof Error ? error.message : "发布失败，请稍后重试。";
-  }
-  function openCurriculumEditor(options) {
-    if (options.canManage !== true) throw new Error("只有管理员可以编排课程。");
-    const initial = structuredClone(options.document?.layout ?? createCurriculumLayout(options.curriculum));
-    const draft = structuredClone(initial);
-    if (!draft.stages.length) throw new Error("课程没有可编排的章节。");
-    const base = options.baseCurriculum ?? options.curriculum;
-    const baseStages = new Map((base.stages ?? []).map((stage) => [stage.id, stage]));
-    const builtinIds = new Set((base.stages ?? []).flatMap((stage) => (stage.gates ?? []).filter((gate) => !gate.id.startsWith("custom-")).map((gate) => gate.id)));
-    const originalGates = new Map(initial.stages.flatMap((stage) => stage.gates.map((gate, index) => [gate.id, { gate, index, stageId: stage.id }])));
-    const topics = /* @__PURE__ */ new Map();
-    function walk(node2, parents) {
-      const path = [...parents, node2.label || node2.fullLabel || node2.id];
-      if (node2.kind !== "directory") topics.set(node2.id, path.join(" / "));
-      (node2.children ?? []).forEach((child) => walk(child, path));
-    }
-    if (options.tree) walk(options.tree, []);
-    let stageId = draft.stages[0].id, busy2 = false, destroyed = false, pendingDelete = null, dragging = null;
-    const removed = [];
-    const previousFocus = document.activeElement instanceof HTMLElement ? document.activeElement : null;
-    const uid = `alp-curriculum-${++serial2}`;
-    const dialog3 = element3("dialog", "alp-curriculum-dialog");
-    dialog3.setAttribute("aria-labelledby", `${uid}-title`);
-    dialog3.setAttribute("aria-describedby", `${uid}-hint`);
-    const form = element3("form", "alp-curriculum-form");
-    form.noValidate = true;
-    const heading = element3("header", "alp-curriculum-heading");
-    const headingCopy = element3("div");
-    headingCopy.append(element3("span", "alp-curriculum-eyebrow", "课程管理 · 管理员"), element3("h2", "", "编排学习课程"));
-    headingCopy.querySelector("h2").id = `${uid}-title`;
-    const closeButton2 = button4("×", close, "alp-curriculum-close");
-    closeButton2.setAttribute("aria-label", "关闭课程编排");
-    heading.append(headingCopy, closeButton2);
-    const hint = element3("p", "alp-curriculum-hint", "自由调整章内顺序，已有前置依赖保持不变。取消会放弃本次草稿；发布后所有成员将看到新编排。");
-    hint.id = `${uid}-hint`;
-    const controls = element3("fieldset", "alp-curriculum-controls");
-    const body = element3("div", "alp-curriculum-body");
-    const navigation = element3("nav", "alp-curriculum-navigation");
-    navigation.setAttribute("aria-label", "选择编排章节");
-    const stageSelect = element3("select", "alp-curriculum-stage-select");
-    stageSelect.setAttribute("aria-label", "选择章节");
-    stageSelect.addEventListener("change", () => {
-      stageId = stageSelect.value;
-      pendingDelete = null;
-      renderStage();
-    });
-    const chapterList = element3("div", "alp-curriculum-chapter-list");
-    navigation.append(field2("课程章节", stageSelect), chapterList);
-    const editor2 = element3("section", "alp-curriculum-editor");
-    const stageHeader = element3("div", "alp-curriculum-stage-header");
-    const stageTitle = input2("", "stageTitle", 120);
-    stageTitle.className = "alp-curriculum-stage-title";
-    const count = element3("span", "alp-curriculum-count");
-    stageTitle.addEventListener("input", () => {
-      current().title = stageTitle.value;
-      refresh();
-    });
-    stageHeader.append(field2("章节标题", stageTitle), count);
-    const rows = element3("div", "alp-curriculum-rows");
-    const addButton = button4("＋ 在章末新增关卡", () => insert(current().gates.length - 1), "alp-curriculum-add");
-    addButton.dataset.action = "add";
-    editor2.append(stageHeader, element3("p", "alp-curriculum-help", "拖动手柄调整顺序，也可使用上移 / 下移。关卡数量自动更新，每章保留 1–100 关。"), rows, addButton);
-    const aside = element3("aside", "alp-curriculum-preview");
-    const previewTitle = element3("h3");
-    const previewCount = element3("p", "alp-curriculum-preview-count");
-    const preview = element3("ol", "alp-curriculum-preview-list");
-    const removedTitle = element3("h3", "", "待移除关卡");
-    const removedList = element3("div", "alp-curriculum-removed-list");
-    aside.append(element3("span", "alp-curriculum-eyebrow", "实时预览"), previewTitle, previewCount, preview, removedTitle, removedList);
-    body.append(navigation, editor2, aside);
-    controls.append(body);
-    const footer = element3("footer", "alp-curriculum-footer");
-    const summary = element3("p", "alp-curriculum-change-summary");
-    summary.setAttribute("aria-live", "polite");
-    const error = element3("p", "alp-curriculum-error");
-    error.setAttribute("role", "alert");
-    error.hidden = true;
-    const actions = element3("div", "alp-curriculum-actions");
-    const cancelButton2 = button4("取消", close);
-    const saveButton2 = element3("button", "alp-curriculum-button alp-curriculum-publish", "发布课程编排");
-    saveButton2.type = "submit";
-    actions.append(cancelButton2, saveButton2);
-    footer.append(summary, error, actions);
-    form.append(heading, hint, controls, footer);
-    dialog3.append(form);
-    function current() {
-      return draft.stages.find((stage) => stage.id === stageId);
-    }
-    function sections() {
-      return baseStages.get(stageId)?.sections ?? [];
-    }
-    function total() {
-      return draft.stages.reduce((sum, stage) => sum + stage.gates.length, 0);
-    }
-    function canInsert() {
-      return current().gates.length < 100 && total() < 1e3;
-    }
-    function restore(item) {
-      const stage = draft.stages.find((entry2) => entry2.id === item.stageId);
-      if (busy2 || stage.gates.length >= 100 || total() >= 1e3) return;
-      const afterIndex = stage.gates.findIndex((gate) => gate.id === item.after);
-      const beforeIndex = stage.gates.findIndex((gate) => gate.id === item.before);
-      const index = afterIndex >= 0 ? afterIndex : beforeIndex >= 0 ? beforeIndex + 1 : Math.min(item.index, stage.gates.length);
-      stage.gates.splice(index, 0, item.gate);
-      removed.splice(removed.indexOf(item), 1);
-      stageId = item.stageId;
-      pendingDelete = null;
-      renderStage(item.gate.id);
-    }
-    function insert(index) {
-      if (busy2 || !canInsert()) return;
-      const stage = current(), neighbor = stage.gates[index] ?? stage.gates[0];
-      const section = sections().find((entry2) => entry2.id === neighbor?.sectionId) ?? sections()[0];
-      const gate = { id: `custom-${crypto.randomUUID()}`, title: "新学习关卡", kind: "learning", sectionId: section?.id ?? "", scope: neighbor?.scope ?? section?.scope ?? "core", description: "", goals: [], topicIds: [] };
-      stage.gates.splice(index + 1, 0, gate);
-      pendingDelete = null;
-      renderStage(gate.id);
-    }
-    function move(id, offset) {
-      if (busy2) return;
-      const stage = current(), index = stage.gates.findIndex((gate2) => gate2.id === id), target = index + offset;
-      if (index < 0 || target < 0 || target >= stage.gates.length) return;
-      const [gate] = stage.gates.splice(index, 1);
-      stage.gates.splice(target, 0, gate);
-      pendingDelete = null;
-      renderStage(id);
-    }
-    function remove(id) {
-      if (busy2 || current().gates.length <= 1) return;
-      const stage = current(), index = stage.gates.findIndex((gate2) => gate2.id === id);
-      if (index < 0) return;
-      const gate = stage.gates[index];
-      removed.push({ stageId, gate, index, before: stage.gates[index - 1]?.id, after: stage.gates[index + 1]?.id });
-      stage.gates.splice(index, 1);
-      pendingDelete = null;
-      renderStage(stage.gates[Math.min(index, stage.gates.length - 1)]?.id);
-    }
-    function refresh() {
-      const stage = current();
-      stageSelect.replaceChildren();
-      chapterList.replaceChildren();
-      draft.stages.forEach((entry2, index) => {
-        const label = `${index + 1}. ${entry2.title || "未命名章节"} · ${entry2.gates.length} 关`;
-        const option = element3("option", "", label);
-        option.value = entry2.id;
-        stageSelect.append(option);
-        const item = button4("", () => {
-          stageId = entry2.id;
-          pendingDelete = null;
-          renderStage();
-        }, "alp-curriculum-chapter");
-        item.dataset.stageId = entry2.id;
-        item.setAttribute("aria-current", String(stageId === entry2.id));
-        item.append(element3("strong", "", `${index + 1}. ${entry2.title || "未命名章节"}`), element3("span", "", `${entry2.gates.length} 关`));
-        chapterList.append(item);
-      });
-      stageSelect.value = stageId;
-      count.textContent = `${stage.gates.length} / 100 关 · 全课 ${total()} / 1000 关`;
-      previewTitle.textContent = stage.title || "未命名章节";
-      previewCount.textContent = `${stage.gates.length} 关 · 本章待移除 ${removed.filter((item) => item.stageId === stageId).length} 关`;
-      preview.replaceChildren();
-      stage.gates.forEach((gate) => {
-        const row2 = element3("li");
-        row2.append(element3("strong", "", gate.title || "未命名关卡"), element3("span", "", `${kindLabels[gate.kind]} · ${scopeLabels[gate.scope]}`));
-        preview.append(row2);
-      });
-      removedList.replaceChildren();
-      removedTitle.textContent = `待移除关卡 · ${removed.length}`;
-      if (!removed.length) removedList.append(element3("p", "alp-curriculum-help", "尚未移除关卡"));
-      removed.forEach((item) => {
-        const row2 = element3("div", "alp-curriculum-removed-item");
-        const undo = button4("撤销移除", () => restore(item));
-        undo.dataset.action = "undo";
-        undo.dataset.gateId = item.gate.id;
-        undo.disabled = busy2 || draft.stages.find((stage2) => stage2.id === item.stageId).gates.length >= 100 || total() >= 1e3;
-        row2.append(element3("span", "", item.gate.title), undo);
-        removedList.append(row2);
-      });
-      const present2 = new Set(draft.stages.flatMap((entry2) => entry2.gates.map((gate) => gate.id)));
-      const added = [...present2].filter((id) => !originalGates.has(id)).length;
-      const deleted = [...originalGates.keys()].filter((id) => !present2.has(id)).length;
-      let updated = 0, renamed = 0;
-      draft.stages.forEach((entry2) => {
-        if (initial.stages.find((stage2) => stage2.id === entry2.id)?.title !== entry2.title) renamed++;
-        entry2.gates.forEach((gate, index) => {
-          const old = originalGates.get(gate.id);
-          if (old && (old.index !== index || JSON.stringify(old.gate) !== JSON.stringify(gate))) updated++;
-        });
-      });
-      summary.textContent = `发布变更：新增 ${added} 关 · 移除 ${deleted} 关 · 调整 ${updated} 关 · 章节改名 ${renamed} 处`;
-      addButton.disabled = busy2 || !canInsert();
-      addButton.textContent = canInsert() ? "＋ 在章末新增关卡" : total() >= 1e3 ? "全课已达 1000 关上限" : "本章已达 100 关上限";
-      rows.querySelectorAll('[data-action="insert"]').forEach((node2) => {
-        node2.disabled = busy2 || !canInsert();
-      });
-    }
-    function renderCustom(gate) {
-      const details = element3("details", "alp-curriculum-custom");
-      details.append(element3("summary", "", "新增关卡内容 · 简介、目标与知识点"));
-      const content = element3("div", "alp-curriculum-custom-fields");
-      const description = element3("textarea");
-      description.name = "gateDescription";
-      description.rows = 3;
-      description.maxLength = 6e3;
-      description.value = gate.description ?? "";
-      description.addEventListener("input", () => {
-        gate.description = description.value;
-        refresh();
-      });
-      const goals = element3("textarea");
-      goals.name = "gateGoals";
-      goals.rows = 3;
-      goals.maxLength = 6e3;
-      goals.value = (gate.goals ?? []).join("\n");
-      goals.addEventListener("input", () => {
-        gate.goals = goals.value.split(/\r?\n/).filter((line) => line.trim());
-        refresh();
-      });
-      content.append(field2("学习简介（必填，最多 6000 字）", description), field2("学习目标（必填，每行一条，最多 20 条，每条 500 字，合计 6000 字）", goals));
-      const knowledge = element3("select");
-      knowledge.name = "gateTopics";
-      knowledge.multiple = true;
-      knowledge.size = 5;
-      const choices = new Map(topics);
-      (gate.topicIds ?? []).forEach((id) => {
-        if (!choices.has(id)) choices.set(id, id);
-      });
-      choices.forEach((label, id) => {
-        const option = element3("option", "", label);
-        option.value = id;
-        option.selected = (gate.topicIds ?? []).includes(id);
-        knowledge.append(option);
-      });
-      knowledge.addEventListener("change", () => {
-        gate.topicIds = Array.from(knowledge.selectedOptions, (option) => option.value);
-        refresh();
-      });
-      content.append(field2("关联知识点（可多选，最多 20 个）", knowledge), element3("p", "alp-curriculum-help", topics.size ? "按住 Ctrl / Command 可多选；请选择课程中实际存在的知识点。" : "当前未提供知识树，可先发布并稍后补充知识点。"));
-      knowledge.disabled = !choices.size;
-      details.append(content);
-      return details;
-    }
-    function renderStage(focusId) {
-      stageTitle.value = current().title;
-      rows.replaceChildren();
-      current().gates.forEach((gate, index) => {
-        const row2 = element3("article", "alp-curriculum-row");
-        row2.dataset.gateId = gate.id;
-        const top = element3("div", "alp-curriculum-row-top");
-        const handle = button4("⠿", () => {
-        }, "alp-curriculum-drag");
-        handle.draggable = true;
-        handle.setAttribute("aria-label", `拖动第 ${index + 1} 关`);
-        handle.title = "拖动调整顺序，键盘操作请使用上移 / 下移";
-        handle.addEventListener("dragstart", (event) => {
-          if (busy2) {
-            event.preventDefault();
-            return;
-          }
-          dragging = gate.id;
-          event.dataTransfer?.setData("text/plain", gate.id);
-          if (event.dataTransfer) event.dataTransfer.effectAllowed = "move";
-          row2.classList.add("is-dragging");
-        });
-        handle.addEventListener("dragend", () => {
-          dragging = null;
-          rows.querySelectorAll(".is-dragging, .is-drop-target").forEach((node2) => node2.classList.remove("is-dragging", "is-drop-target"));
-        });
-        row2.addEventListener("dragover", (event) => {
-          if (busy2 || !dragging || dragging === gate.id) return;
-          event.preventDefault();
-          if (event.dataTransfer) event.dataTransfer.dropEffect = "move";
-          row2.classList.add("is-drop-target");
-        });
-        row2.addEventListener("dragleave", (event) => {
-          if (!(event.relatedTarget instanceof Node) || !row2.contains(event.relatedTarget)) row2.classList.remove("is-drop-target");
-        });
-        row2.addEventListener("drop", (event) => {
-          event.preventDefault();
-          const source = dragging;
-          dragging = null;
-          if (!source || busy2) return;
-          const from = current().gates.findIndex((item) => item.id === source), to = current().gates.findIndex((item) => item.id === gate.id);
-          if (from >= 0 && to >= 0) move(source, to - from);
-        });
-        top.append(handle, element3("span", "alp-curriculum-row-number", `${index + 1}`), element3("span", "alp-curriculum-row-origin", builtinIds.has(gate.id) ? "内置关卡" : "新增关卡"));
-        const actions2 = element3("div", "alp-curriculum-row-actions");
-        [["up", "上移", () => move(gate.id, -1), index === 0], ["down", "下移", () => move(gate.id, 1), index === current().gates.length - 1], ["insert", "在后面新增", () => insert(index), !canInsert()], ["delete", "移除", () => {
-          pendingDelete = gate.id;
-          renderStage();
-          rowFor(gate.id)?.querySelector('[data-action="confirm-delete"]')?.focus();
-        }, current().gates.length <= 1]].forEach(([action2, label, run, disabled]) => {
-          const control2 = button4(label, run);
-          control2.dataset.action = action2;
-          control2.disabled = disabled;
-          control2.setAttribute("aria-label", `${label}第 ${index + 1} 关`);
-          actions2.append(control2);
-        });
-        top.append(actions2);
-        const fields = element3("div", "alp-curriculum-row-fields");
-        const title = input2(gate.title, "gateTitle", 160);
-        title.addEventListener("input", () => {
-          gate.title = title.value;
-          refresh();
-        });
-        const kind = select(Object.entries(kindLabels), gate.kind, "gateKind", (value) => {
-          gate.kind = value;
-          refresh();
-        });
-        const section = select(sections().length ? sections().map((entry2) => [entry2.id, entry2.title]) : [["", "本章（无独立学习段）"]], gate.sectionId, "gateSection", (value) => {
-          gate.sectionId = value;
-          const selected2 = sections().find((entry2) => entry2.id === value);
-          if (selected2) gate.scope = selected2.scope;
-          renderStage(gate.id);
-        });
-        const scope2 = select(Object.entries(scopeLabels).filter(([value]) => value !== "route" || sections().some((section2) => section2.id === gate.sectionId && section2.scope === "route" && section2.routeId)), gate.scope, "gateScope", (value) => {
-          gate.scope = value;
-          refresh();
-        });
-        fields.append(field2("关卡标题", title), field2("类型", kind), field2("学习段", section), field2("范围", scope2));
-        row2.append(top, fields);
-        if (!builtinIds.has(gate.id)) row2.append(renderCustom(gate));
-        else row2.append(element3("p", "alp-curriculum-help", "简介与学习目标请在关卡详情的公共内容编辑器中维护。"));
-        if (pendingDelete === gate.id) {
-          const confirm = element3("div", "alp-curriculum-remove-confirm");
-          confirm.setAttribute("role", "group");
-          confirm.setAttribute("aria-label", "确认移除关卡");
-          const yes = button4("确认移除", () => remove(gate.id));
-          yes.dataset.action = "confirm-delete";
-          const no = button4("保留关卡", () => {
-            pendingDelete = null;
-            renderStage(gate.id);
-          });
-          confirm.append(element3("span", "", "从本次编排移除？发布前仍可撤销。"), yes, no);
-          row2.append(confirm);
-        }
-        rows.append(row2);
-      });
-      refresh();
-      if (focusId) rowFor(focusId)?.querySelector('input[name="gateTitle"]')?.focus({ preventScroll: true });
-    }
-    function rowFor(id) {
-      return Array.from(rows.querySelectorAll(".alp-curriculum-row")).find((row2) => row2.dataset.gateId === id);
-    }
-    function showError3(text4) {
-      error.textContent = text4;
-      error.hidden = false;
-    }
-    function validate() {
-      if (total() > 1e3) throw new Error("全课最多 1000 关。");
-      const invalidText = (value) => /[\u0000-\u0008\u000b\u000c\u000e-\u001f\u007f]/.test(value);
-      for (const stage of draft.stages) {
-        if (!stage.title.trim() || stage.title.length > 120 || invalidText(stage.title)) {
-          stageId = stage.id;
-          renderStage();
-          stageTitle.focus();
-          throw new Error("请填写有效的章节标题（1–120 字）。");
-        }
-        if (stage.gates.length < 1 || stage.gates.length > 100) throw new Error("每章必须保留 1–100 关。");
-        const stageSections = baseStages.get(stage.id)?.sections ?? [];
-        for (const gate of stage.gates) {
-          if ((stageSections.length ? !stageSections.some((section2) => section2.id === gate.sectionId) : gate.sectionId !== "") || !Object.hasOwn(kindLabels, gate.kind) || !Object.hasOwn(scopeLabels, gate.scope)) {
-            stageId = stage.id;
-            renderStage(gate.id);
-            throw new Error("请选择本章的学习段、有效的关卡类型和范围。");
-          }
-          if (!gate.title.trim() || gate.title.length > 160 || invalidText(gate.title)) {
-            stageId = stage.id;
-            renderStage(gate.id);
-            throw new Error("请填写有效的关卡标题（1–160 字）。");
-          }
-          const section = stageSections.find((entry2) => entry2.id === gate.sectionId);
-          if (gate.scope === "route" && (section?.scope !== "route" || !section.routeId)) {
-            stageId = stage.id;
-            renderStage(gate.id);
-            throw new Error("分路线范围只能用于具有路线标识的学习段。");
-          }
-          if (!builtinIds.has(gate.id)) {
-            if (!gate.description?.trim() || gate.description.length > 6e3 || invalidText(gate.description)) {
-              stageId = stage.id;
-              renderStage(gate.id);
-              throw new Error("新增关卡需要填写学习简介（1–6000 字）。");
-            }
-            if (!gate.goals?.length || gate.goals.length > 20 || gate.goals.join("\n").length > 6e3 || gate.goals.some((goal) => !goal.trim() || goal.length > 500 || invalidText(goal))) {
-              stageId = stage.id;
-              renderStage(gate.id);
-              throw new Error("新增关卡需要 1–20 条学习目标，每条 1–500 字、合计最多 6000 字。");
-            }
-            if ((gate.topicIds?.length ?? 0) > 20 || gate.topicIds?.some((id) => id.length < 1 || id.length > 200 || invalidText(id))) {
-              stageId = stage.id;
-              renderStage(gate.id);
-              throw new Error("每关最多选择 20 个有效知识点。");
-            }
-          }
-        }
-      }
-      applyCurriculumLayout(base, draft);
-    }
-    function setBusy(value) {
-      busy2 = value;
-      controls.disabled = value;
-      closeButton2.disabled = value;
-      cancelButton2.disabled = value;
-      saveButton2.disabled = value;
-      dialog3.dataset.saving = String(value);
-      dialog3.setAttribute("aria-busy", String(value));
-      saveButton2.textContent = value ? "正在发布…" : "发布课程编排";
-      rows.querySelectorAll(".alp-curriculum-drag").forEach((handle) => {
-        handle.draggable = !value;
-      });
-    }
-    form.addEventListener("submit", async (event) => {
-      event.preventDefault();
-      if (busy2 || destroyed) return;
-      if (options.canManage !== true) {
-        showError3("管理员权限已失效，请重新打开课程编排。");
-        return;
-      }
-      error.hidden = true;
-      try {
-        validate();
-      } catch (cause) {
-        showError3(message(cause));
-        return;
-      }
-      setBusy(true);
-      try {
-        const saved = await options.onSave({ layout: structuredClone(draft), sha: options.document?.sha ?? null });
-        if (destroyed) return;
-        options.onApplied(saved);
-        finish();
-      } catch (cause) {
-        if (!destroyed) {
-          showError3(message(cause));
-          setBusy(false);
-        }
-      }
-    });
-    function finish() {
-      if (destroyed) return;
-      destroyed = true;
-      if (dialog3.open) dialog3.close();
-      dialog3.remove();
-      if (previousFocus?.isConnected) previousFocus.focus({ preventScroll: true });
-      options.onClose?.();
-    }
-    function close() {
-      if (!busy2) finish();
-    }
-    dialog3.addEventListener("cancel", (event) => {
-      event.preventDefault();
-      close();
-    });
-    dialog3.addEventListener("close", () => {
-      if (!destroyed) {
-        if (busy2) dialog3.showModal();
-        else finish();
-      }
-    });
-    (options.host.parentElement ?? options.host).append(dialog3);
-    renderStage();
-    setBusy(false);
-    dialog3.showModal();
-    stageSelect.focus();
-    return { close, destroy: finish };
-  }
-
   // src/renderer/algorithms/workspace.ts
   function createAlgorithmWorkspace(options) {
     const global2 = window;
-    const { getAlgorithmNotes, setAlgorithmNotes, getAlgorithmTopics, setAlgorithmTopics, getAlgorithmTree, setAlgorithmTree, getAccount, getPermissions, getLocal, getBusy, getReadingDetail, accountId, repo, uuid, setBusy, persistLocal, call, render: render6, renderMarkdown, authorName: authorName2, date, tags, toast, errorMessage: errorMessage2 } = options;
+    const { getAlgorithmNotes, setAlgorithmNotes, getAlgorithmTopics, setAlgorithmTopics, getAlgorithmTree, setAlgorithmTree, getAccount, getPermissions, getLocal, getBusy, getReadingDetail, accountId, repo, uuid, setBusy, persistLocal, call, render: render6, renderMarkdown, authorName, date, tags, toast, errorMessage } = options;
     const $ = (selector) => document.querySelector(selector);
-    function element4(tag, className, text4) {
+    function element4(tag, className, text3) {
       const node2 = document.createElement(tag);
       if (className) node2.className = className;
-      if (text4 !== void 0) node2.textContent = String(text4);
+      if (text3 !== void 0) node2.textContent = String(text3);
       return node2;
     }
     function append(parent, ...children) {
       children.filter(Boolean).forEach((child) => parent.append(child));
       return parent;
     }
-    function button5(label, className, action2) {
+    function button6(label, className, action2) {
       const node2 = element4("button", className, label);
       node2.type = "button";
       node2.addEventListener("click", action2);
@@ -7273,14 +8057,38 @@ ${entry2.node.fullLabel}` : ""}`;
     let algorithmPendingTopic = null;
     let algorithmController = null;
     let learningController = null;
-    let curriculumEditor = null;
+    let resources = null;
     function effectiveCurriculum() {
       const base = global2.QMX_ALGORITHM_LEARNING_PATH;
       const document2 = options.getLearningCurriculum();
       return base && document2 ? applyCurriculumLayout(base, document2.layout) : base;
     }
     function learningProgressKey() {
-      return JSON.stringify([repo(), accountId() || "anonymous", global2.QMX_ALGORITHM_LEARNING_PATH?.id || "xcpc-learning"]);
+      return JSON.stringify([options.repoSource(), accountId() || "anonymous", global2.QMX_ALGORITHM_LEARNING_PATH?.id || "xcpc-learning"]);
+    }
+    function learningProgress() {
+      const current = getLocal().learningPaths?.[learningProgressKey()];
+      if (current) return current;
+      if (options.repoSource().startsWith("https://api.github.com|")) {
+        const legacy = JSON.stringify([repo(), accountId() || "anonymous", global2.QMX_ALGORITHM_LEARNING_PATH?.id || "xcpc-learning"]);
+        return getLocal().learningPaths?.[legacy] || { gates: {} };
+      }
+      return { gates: {} };
+    }
+    async function saveRoadmapProgress(next) {
+      if (getBusy()) throw new Error("请等待当前操作完成");
+      const key = learningProgressKey(), previous = getLocal().learningPaths?.[key];
+      setBusy(true);
+      getLocal().learningPaths = { ...getLocal().learningPaths || {}, [key]: structuredClone(next) };
+      try {
+        await persistLocal();
+      } catch (error) {
+        if (previous === void 0) delete getLocal().learningPaths[key];
+        else getLocal().learningPaths[key] = previous;
+        throw error;
+      } finally {
+        setBusy(false);
+      }
     }
     function setAlgorithmMode(mode) {
       if (getBusy()) return;
@@ -7309,8 +8117,8 @@ ${entry2.node.fullLabel}` : ""}`;
     function renderAlgorithmNotes() {
       getReadingDetail()?.closeAll();
       const panel = $("#algorithm-panel");
-      curriculumEditor?.destroy();
-      curriculumEditor = null;
+      resources?.destroy();
+      resources = null;
       algorithmController?.destroy();
       learningController?.destroy();
       learningController = null;
@@ -7318,91 +8126,68 @@ ${entry2.node.fullLabel}` : ""}`;
       const modes = element4("div", "algorithm-view-modes");
       modes.setAttribute("role", "group");
       modes.setAttribute("aria-label", "算法学习方式");
-      for (const [mode, title] of [["tree", "知识树"], ["path", "闯关学习"]]) {
-        const control2 = button5(title, "button secondary", () => setAlgorithmMode(mode));
-        control2.dataset.mode = mode;
-        control2.setAttribute("aria-pressed", String(algorithmMode === mode));
-        modes.append(control2);
+      for (const [mode, title] of [["tree", "知识树"], ["path", "学习路线"]]) {
+        const control = button6(title, "button secondary", () => setAlgorithmMode(mode));
+        control.dataset.mode = mode;
+        control.setAttribute("aria-pressed", String(algorithmMode === mode));
+        modes.append(control);
       }
       panel.append(modes);
       const host = element4("div", "algorithm-view-content");
       panel.append(host);
       if (algorithmMode === "path") {
-        const canManage = Boolean(getAccount() && getPermissions().admin === true);
-        if (canManage) {
-          const edit = button5("编排课程", "button secondary alp-curriculum-edit-button", () => {
-            if (getBusy() || !getAccount() || getPermissions().admin !== true) return;
-            const base = global2.QMX_ALGORITHM_LEARNING_PATH, curriculum = effectiveCurriculum();
-            if (!base || !curriculum) return;
-            curriculumEditor?.destroy();
-            curriculumEditor = openCurriculumEditor({
-              host,
-              canManage: true,
+        const curriculum = effectiveCurriculum();
+        const mapped = { ...roadmapData, nodes: roadmapData.nodes.map((node2) => ({ ...node2 })), indexEntries: roadmapData.indexEntries.map((node2) => ({ ...node2 })) };
+        const allGates = (curriculum?.stages || []).flatMap((stage) => stage.gates || []);
+        for (const node2 of [...mapped.nodes, ...mapped.indexEntries]) {
+          const known2 = new Set(node2.topicIds || []);
+          const added = allGates.filter((gate) => gate.id.startsWith("custom-") && (gate.topicIds || []).some((id) => known2.has(id)));
+          node2.gateIds = [.../* @__PURE__ */ new Set([...node2.gateIds || [], ...added.map((gate) => gate.id)])];
+        }
+        learningController = LearningRoadmap.render({
+          host,
+          data: mapped,
+          progress: learningProgress(),
+          onFocus: async (id) => {
+            await saveRoadmapProgress({ ...learningProgress(), roadmapFocus: id });
+          },
+          toast,
+          onOpenResources: (node2) => {
+            if (!curriculum || getBusy()) return;
+            resources?.destroy();
+            resources = openRoadmapResources({
+              host: host.querySelector(".arm") || host,
+              node: node2,
               curriculum,
-              baseCurriculum: base,
-              document: options.getLearningCurriculum(),
               tree: getAlgorithmTree(),
-              onSave: async (input3) => {
+              notes: getAlgorithmNotes(),
+              progress: structuredClone(learningProgress()),
+              contents: options.getLearningGateContents(),
+              canManage: Boolean(getAccount() && getPermissions().admin === true),
+              onSaveGate: async (input2) => {
                 if (getBusy()) throw new Error("请等待当前操作完成");
-                if (!getAccount() || getPermissions().admin !== true) throw new Error("只有管理员可以编排课程");
-                const source = repo(), owner = accountId();
+                if (!getAccount() || getPermissions().admin !== true) throw new Error("只有管理员可以修改公共资料");
+                const source = options.repoSource(), owner = accountId();
                 setBusy(true);
                 try {
-                  const saved = await options.saveLearningCurriculum({ ...input3, repo: source });
-                  if (source !== repo() || owner !== accountId()) throw new Error("账号或仓库已改变，请重新同步");
-                  options.setLearningCurriculum(saved);
+                  const saved = await options.saveLearningGate({ ...input2, repo: repo() });
+                  if (source !== options.repoSource() || owner !== accountId()) throw new Error("账号或资料库已改变，请重新同步");
+                  options.setLearningGateContents([...options.getLearningGateContents().filter((content) => content.gateId !== saved.gateId), saved]);
                   return saved;
                 } finally {
                   setBusy(false);
                 }
               },
-              onApplied: () => {
-                queueMicrotask(() => {
-                  renderAlgorithmNotes();
-                  toast("课程编排已发布");
-                });
+              onPersonal: async (gateId, url) => {
+                const previous = learningProgress(), record = previous.gates?.[gateId];
+                const fields2 = record && typeof record === "object" && !Array.isArray(record) ? record : {};
+                await saveRoadmapProgress({ ...previous, gates: { ...previous.gates || {}, [gateId]: { ...fields2, practiceUrl: url } } });
               },
-              onClose: () => {
-                curriculumEditor = null;
-              }
+              onTopic: openLearningTopic,
+              onNote: (note, gateId) => openAlgorithmNoteDetail(note, { gateId }),
+              onExternal: options.openExternal
             });
-          });
-          modes.append(edit);
-        }
-        learningController = LearningPath.render({
-          host,
-          tree: getAlgorithmTree(),
-          curriculum: effectiveCurriculum(),
-          progress: getLocal().learningPaths?.[learningProgressKey()] || { gates: {} },
-          progressKey: learningProgressKey(),
-          account: getAccount(),
-          notes: getAlgorithmNotes(),
-          canUpload: Boolean(getAccount() && getPermissions().push),
-          canManage: Boolean(getAccount() && getPermissions().admin === true),
-          gateContents: options.getLearningGateContents(),
-          onSaveGate: async (input3) => {
-            if (getBusy()) throw new Error("请等待当前操作完成");
-            if (!getAccount() || getPermissions().admin !== true) throw new Error("只有管理员可以修改公共关卡");
-            const source = repo(), owner = accountId();
-            setBusy(true);
-            try {
-              const saved = await options.saveLearningGate({ ...input3, repo: source });
-              if (source !== repo() || owner !== accountId()) throw new Error("账号或仓库已改变，请重新同步");
-              options.setLearningGateContents([...options.getLearningGateContents().filter((content) => content.gateId !== saved.gateId), saved]);
-              return saved;
-            } finally {
-              setBusy(false);
-            }
-          },
-          onProgress: saveLearningProgress,
-          onTopic: openLearningTopic,
-          onNote: openAlgorithmNoteDetail,
-          onExternal: options.openExternal,
-          onUpload: (id) => {
-            algorithmSelectedNode = id;
-            openAlgorithmNoteEditor();
-          },
-          toast
+          }
         });
         return;
       }
@@ -7435,7 +8220,7 @@ ${entry2.node.fullLabel}` : ""}`;
           openAlgorithmNoteEditor();
         },
         renderMarkdown,
-        authorName: authorName2,
+        authorName,
         formatDate: date
       });
       if (algorithmPendingTopic) {
@@ -7484,7 +8269,7 @@ ${entry2.node.fullLabel}` : ""}`;
         algorithmController?.selectNode?.(topic.id);
         toast(topic.kind === "directory" ? "目录已添加，可继续添加子项或上传笔记" : "算法已添加，可继续上传笔记");
       } catch (error) {
-        $("#algorithm-topic-error").textContent = errorMessage2(error);
+        $("#algorithm-topic-error").textContent = errorMessage(error);
         $("#algorithm-topic-error").hidden = false;
       } finally {
         setBusy(false);
@@ -7499,7 +8284,7 @@ ${entry2.node.fullLabel}` : ""}`;
       const article = element4("article", "alg-reading"), title = element4("h2", "alg-reading-title", note.title || "未命名笔记");
       const meta = element4("div", "alg-note-meta");
       if (note.featured) meta.append(element4("span", "alg-featured", "精选"));
-      append(meta, element4("span", "alg-note-author", authorName2(note.author)), element4("span", "", date(note.updatedAt)));
+      append(meta, element4("span", "alg-note-author", authorName(note.author)), element4("span", "", date(note.updatedAt)));
       const body = element4("div", "markdown-body alg-markdown");
       renderMarkdown(body, note.body);
       append(article, title, meta, tags(note), body);
@@ -7509,7 +8294,7 @@ ${entry2.node.fullLabel}` : ""}`;
       const path = [];
       const stage = global2.QMX_ALGORITHM_LEARNING_PATH?.stages.find((item) => item.gates.some((gate2) => gateId ? gate2.id === gateId : gate2.topicIds.includes(note.nodeId)));
       const gate = stage?.gates.find((item) => gateId ? item.id === gateId : item.topicIds.includes(note.nodeId));
-      path.push({ label: "闯关学习", onClick() {
+      path.push({ label: "学习路线", onClick() {
         getReadingDetail().closeAll();
       } });
       if (stage) path.push({ label: `第${stage.index}章 ${stage.title}`, onClick() {
@@ -7557,7 +8342,7 @@ ${entry2.node.fullLabel}` : ""}`;
         render6();
         toast("算法笔记已保存");
       } catch (error) {
-        $("#algorithm-note-error").textContent = errorMessage2(error);
+        $("#algorithm-note-error").textContent = errorMessage(error);
         $("#algorithm-note-error").hidden = false;
       } finally {
         setBusy(false);
@@ -7598,7 +8383,7 @@ ${entry2.node.fullLabel}` : ""}`;
     const PALETTE_STORAGE = "acm-notebook.palette";
     const SIDEBAR_STORAGE = "acm-notebook.sidebar";
     const stateLabels = { unreviewed: "待复习", reviewing: "复习中", mastered: "已掌握" };
-    const views2 = {
+    const views = {
       home: ["主页", "从这里开始，继续积累今天的理解。", "WELCOME TO YOUR LEARNING SPACE"],
       tricks: ["tricks", "把灵光一现，留给下一次解题。", "SMALL IDEAS, NEW POSSIBILITIES"],
       algorithms: ["算法笔记", "整理知识，连接思路。", "BUILD YOUR KNOWLEDGE"],
@@ -7625,17 +8410,17 @@ ${entry2.node.fullLabel}` : ""}`;
     } });
     let toastTimer;
     let draftTimer;
-    function element4(tag, className, text4) {
+    function element4(tag, className, text3) {
       const node2 = document.createElement(tag);
       if (className) node2.className = className;
-      if (text4 !== void 0) node2.textContent = String(text4);
+      if (text3 !== void 0) node2.textContent = String(text3);
       return node2;
     }
     function append(parent, ...children) {
       children.filter(Boolean).forEach((child) => parent.append(child));
       return parent;
     }
-    function button5(label, className, action2) {
+    function button6(label, className, action2) {
       const node2 = element4("button", className, label);
       node2.type = "button";
       node2.addEventListener("click", action2);
@@ -7649,7 +8434,7 @@ ${entry2.node.fullLabel}` : ""}`;
         $("#toast").hidden = true;
       }, 3400);
     }
-    function errorMessage2(error) {
+    function errorMessage(error) {
       const message2 = typeof error === "string" ? error : error?.message || "操作未完成，请稍后重试";
       return message2.replace(/^Error invoking remote method '[^']+':\s*(?:Error:\s*)?/, "");
     }
@@ -7710,7 +8495,7 @@ ${entry2.node.fullLabel}` : ""}`;
     function tags(record) {
       return reader.tags(record);
     }
-    function authorName2(author) {
+    function authorName(author) {
       return typeof author === "string" ? author : author?.name || author?.login || "匿名学习者";
     }
     function date(value) {
@@ -7729,7 +8514,7 @@ ${entry2.node.fullLabel}` : ""}`;
       if (typeof bridge3?.[name] !== "function") throw new Error(`客户端尚未提供 ${name} 接口`);
       const target = ["openExternal", "openAuthUrl", "formatCode", "cancelLogin", "exportLocal", "bootstrap", "updateLocal"].includes(name) ? createNotebookIPC(bridge3) : bridge3;
       const response = await target[name](...args);
-      if (response?.error && !["bootstrap", "sync"].includes(name)) throw new Error(errorMessage2(response.error));
+      if (response?.error && !["bootstrap", "sync"].includes(name)) throw new Error(errorMessage(response.error));
       return response;
     }
     let localWrite = Promise.resolve();
@@ -7771,7 +8556,7 @@ ${entry2.node.fullLabel}` : ""}`;
       s.local = normalizeLocal(payload.local);
       s.account = payload.account || null;
       s.lastSync = payload.lastSync || null;
-      s.error = payload.error ? errorMessage2(payload.error) : "";
+      s.error = payload.error ? errorMessage(payload.error) : "";
       applyAppearance(s.settings);
       applyCodeSettings();
       renderRepoSelector();
@@ -7833,7 +8618,7 @@ ${entry2.node.fullLabel}` : ""}`;
         const quota = quotaBlocked();
         if (!demo && !offline && (reauth || quota)) {
           banner.append(document.createTextNode(reauth ? " 请重新登录 GitHub 以恢复同步。" : " 登录 GitHub 后，同步额度可由每小时 60 次提升至 5000 次。"));
-          const login = button5(reauth ? "重新登录 GitHub" : "使用 GitHub 登录", "button secondary", startLoginFromBanner);
+          const login = button6(reauth ? "重新登录 GitHub" : "使用 GitHub 登录", "button secondary", startLoginFromBanner);
           login.id = "banner-login-button";
           login.disabled = s.busy;
           banner.append(login);
@@ -7860,12 +8645,12 @@ ${entry2.node.fullLabel}` : ""}`;
     const filters = createFilters({ getRecords: records, getView: () => s.view, getScope: () => s.libraryScope, getTagCatalog: () => s.tagCatalog, getBusy: () => s.busy, favorite, mastery, isLocal, isOwnSolution, recordAuthorName: (record) => recordAuthorName(record, s.account), render: render6 });
     const { facets, facetNames, platformNames, luoguLevels: luoguLevels2, luoguTones, facetValue, fillFacetOptions, refreshFilters, tagGroups, fillTagOptions, openTagPicker, closeTagPicker, renderEditorTags, ranges, updateFacetCounts, setDifficultyPlatform, clearDifficulty, filteredRecords, clearFilters, colorRatingInput, colorLuoguSelection } = filters;
     async function openTagDialog() {
-      const select2 = $("#request-tag-category");
-      select2.replaceChildren();
+      const select = $("#request-tag-category");
+      select.replaceChildren();
       (s.tagCatalog?.categories || []).forEach((c) => {
         const option = element4("option", "", c.name);
         option.value = c.id;
-        select2.append(option);
+        select.append(option);
       });
       $("#tag-review-section").hidden = true;
       $("#tag-review-dialog").showModal();
@@ -7875,13 +8660,13 @@ ${entry2.node.fullLabel}` : ""}`;
         s.tagReview = result;
         if (!result?.canReview) return;
         $("#tag-review-section").hidden = false;
-        const list2 = $("#tag-review-list");
-        list2.replaceChildren();
+        const list = $("#tag-review-list");
+        list.replaceChildren();
         (result.requests || []).forEach((request) => {
           const row2 = element4("article", "tag-request-row");
-          append(row2, element4("strong", "", `${request.category} / ${request.name}`), element4("p", "facet-help", `#${request.number} · ${authorName2(request.author)} · ${request.state || "open"}`));
-          if (request.url) row2.append(button5("查看申请 ↗", "button subtle", () => openExternal(request.url)));
-          ["approve", "reject"].forEach((decision) => row2.append(button5(decision === "approve" ? "批准" : "拒绝", "button secondary", async () => {
+          append(row2, element4("strong", "", `${request.category} / ${request.name}`), element4("p", "facet-help", `#${request.number} · ${authorName(request.author)} · ${request.state || "open"}`));
+          if (request.url) row2.append(button6("查看申请 ↗", "button subtle", () => openExternal(request.url)));
+          ["approve", "reject"].forEach((decision) => row2.append(button6(decision === "approve" ? "批准" : "拒绝", "button secondary", async () => {
             if (s.busy || !s.tagReview?.canReview || demo) return;
             setBusy(true);
             try {
@@ -7895,16 +8680,16 @@ ${entry2.node.fullLabel}` : ""}`;
               if ($("#submit-dialog").open) renderEditorTags();
               toast("标签申请已处理");
             } catch (error) {
-              toast(errorMessage2(error));
+              toast(errorMessage(error));
             } finally {
               setBusy(false);
             }
           })));
-          list2.append(row2);
+          list.append(row2);
         });
-        if (!list2.children.length) list2.append(element4("p", "facet-help", "暂无待审核申请"));
+        if (!list.children.length) list.append(element4("p", "facet-help", "暂无待审核申请"));
       } catch (error) {
-        toast(errorMessage2(error));
+        toast(errorMessage(error));
       }
     }
     function platformCode(value) {
@@ -7914,10 +8699,10 @@ ${entry2.node.fullLabel}` : ""}`;
       s.local = value;
     }, getAccount: () => s.account, getPermissions: () => s.permissions, getView: () => s.view, getLibraryScope: () => s.libraryScope, getSelected: () => s.selected, setSelected: (value) => {
       s.selected = value;
-    }, getComments: () => s.comments, getBusy: () => s.busy, setBusy, getLoading: () => s.loading, getError: () => s.error, getRecords: records, key, isLocal, visibleLocal, canEditRemote, sameRepo, platformCode, authorName: authorName2, date, quotaBlocked, renderMarkdown, persistLocal, call, render: render6, clearFilters, openSubmit: (record) => editor2.openSubmit(record), openLocalSolution: (record) => editor2.openLocalSolution(record), deleteRecord: (record) => editor2.deleteRecord(record), deleteDiscussion: (record) => editor2.deleteDiscussion(record), openExternal, toast, errorMessage: errorMessage2 });
+    }, getComments: () => s.comments, getBusy: () => s.busy, setBusy, getLoading: () => s.loading, getError: () => s.error, getRecords: records, key, isLocal, visibleLocal, canEditRemote, sameRepo, platformCode, authorName, date, quotaBlocked, renderMarkdown, persistLocal, call, render: render6, clearFilters, openSubmit: (record) => editor2.openSubmit(record), openLocalSolution: (record) => editor2.openLocalSolution(record), deleteRecord: (record) => editor2.deleteRecord(record), deleteDiscussion: (record) => editor2.deleteDiscussion(record), openExternal, toast, errorMessage });
     const { openDetail, closeDetail, renderDetail, loadComments, changeLocal } = reader;
     function navigate(view) {
-      if (!views2[view]) return;
+      if (!views[view]) return;
       reader.resetDetail();
       s.view = view;
       clearFilters();
@@ -7925,7 +8710,7 @@ ${entry2.node.fullLabel}` : ""}`;
     }
     const contests = HomeContests.create({ demo, getSettings: () => s.settings, setSettings: (value) => {
       s.settings = value;
-    }, getView: () => s.view, getLoading: () => s.loading, canRefresh: () => typeof bridge3?.getContests === "function", call, writeDemo, toast, errorMessage: errorMessage2, openExternal });
+    }, getView: () => s.view, getLoading: () => s.loading, canRefresh: () => typeof bridge3?.getContests === "function", call, writeDemo, toast, errorMessage, openExternal });
     const { acceptContests, renderHomeContests, updateContestStatus, renderContestCards, refreshVisibleContests, refreshContests } = contests;
     function renderHome() {
       const panel = $("#home-panel");
@@ -7949,7 +8734,7 @@ ${entry2.node.fullLabel}` : ""}`;
     function render6() {
       updateStateFacet();
       document.body.dataset.view = s.view;
-      const [title, description, eyebrow] = views2[s.view];
+      const [title, description, eyebrow] = views[s.view];
       $("#page-title").replaceChildren(document.createTextNode(title), element4("span", "heading-dot", "."));
       $("#breadcrumb-view").textContent = title;
       $("#page-description").textContent = description;
@@ -7987,24 +8772,24 @@ ${entry2.node.fullLabel}` : ""}`;
       $(".list-heading > span:last-child").textContent = facets.tags.size ? "标签命中数 ↓ · 相关度 / 更新时间" : $("#search-input").value.trim() ? "匹配程度 ↓" : "最近更新 ↓";
       reader.renderLibrary(items);
     }
-    const { highlightCodeBlock, decorateCodeBlocks, codeBlockClick } = CodeBlocks.create({ toast, errorMessage: errorMessage2 });
+    const { highlightCodeBlock, decorateCodeBlocks, codeBlockClick } = CodeBlocks.create({ toast, errorMessage });
     const algorithms = createAlgorithmWorkspace({ getAlgorithmNotes: () => s.algorithmNotes, setAlgorithmNotes: (value) => {
       s.algorithmNotes = value;
     }, getLearningCurriculum: () => s.learningCurriculum || null, setLearningCurriculum: (value) => {
       s.learningCurriculum = value;
-    }, saveLearningCurriculum: (input3) => {
+    }, saveLearningCurriculum: (input2) => {
       if (!bridge3) throw new Error("请在桌面客户端登录管理员账户后编排课程");
-      return bridge3.saveLearningCurriculum(input3);
+      return bridge3.saveLearningCurriculum(input2);
     }, getLearningGateContents: () => s.learningGateContents || [], setLearningGateContents: (value) => {
       s.learningGateContents = value;
-    }, saveLearningGate: (input3) => {
+    }, saveLearningGate: (input2) => {
       if (!bridge3) throw new Error("请在桌面客户端登录管理员账户后修改公共关卡");
-      return bridge3.saveLearningGate(input3);
+      return bridge3.saveLearningGate(input2);
     }, getAlgorithmTopics: () => s.algorithmTopics, setAlgorithmTopics: (value) => {
       s.algorithmTopics = value;
     }, getAlgorithmTree: () => s.algorithmTree, setAlgorithmTree: (value) => {
       s.algorithmTree = value;
-    }, getAccount: () => s.account, getPermissions: () => s.permissions, getLocal: () => s.local, getBusy: () => s.busy, getReadingDetail: () => ReadingDetail, accountId, repo, uuid, setBusy, persistLocal, call, openExternal, render: render6, renderMarkdown, authorName: authorName2, date, tags, toast, errorMessage: errorMessage2 });
+    }, getAccount: () => s.account, getPermissions: () => s.permissions, getLocal: () => s.local, getBusy: () => s.busy, getReadingDetail: () => ReadingDetail, accountId, repo, repoSource, uuid, setBusy, persistLocal, call, openExternal, render: render6, renderMarkdown, authorName, date, tags, toast, errorMessage });
     const { renderAlgorithmNotes } = algorithms;
     function renderMarkdown(container, body) {
       const source = String(body || "还没有题解内容。可以从记录错因开始。");
@@ -8050,7 +8835,7 @@ ${entry2.node.fullLabel}` : ""}`;
         if (demo) window.open(parsed.href, "_blank", "noopener,noreferrer");
         else await call("openExternal", parsed.href);
       } catch (error) {
-        toast(errorMessage2(error));
+        toast(errorMessage(error));
       }
     }
     let updateLockedControls = null;
@@ -8096,7 +8881,7 @@ ${entry2.node.fullLabel}` : ""}`;
       s.issues = value;
     }, getComments: () => s.comments, getSelected: () => s.selected, setSelected: (value) => {
       s.selected = value;
-    }, getBusy: () => s.busy, setBusy, getAccount: () => s.account, getPermissions: () => s.permissions, accountId, repo, key, uuid, isLocal, visibleLocal, canEditRemote, sameRepo, records, platformCode, colorRatingInput, renderEditorTags, cancelDraftSave: () => clearTimeout(draftTimer), persistLocal, call, refreshFilters, navigate, render: render6, openDetail, toast, errorMessage: errorMessage2 });
+    }, getBusy: () => s.busy, setBusy, getAccount: () => s.account, getPermissions: () => s.permissions, accountId, repo, key, uuid, isLocal, visibleLocal, canEditRemote, sameRepo, records, platformCode, colorRatingInput, renderEditorTags, cancelDraftSave: () => clearTimeout(draftTimer), persistLocal, call, refreshFilters, navigate, render: render6, openDetail, toast, errorMessage });
     const { formDraft, fillForm, renderEditorDifficulty, setEditorPlatform, draftKey, editorError, openLocalSolution, openSubmit, saveDraft, saveRecord, deleteDiscussion, deleteRecord } = editor2;
     async function sync() {
       if (s.busy || $("#submit-dialog").open) {
@@ -8140,7 +8925,7 @@ ${entry2.node.fullLabel}` : ""}`;
               return;
             }
           } catch (fetchErr) {
-            toast(`网络请求失败：${errorMessage2(fetchErr)}`);
+            toast(`网络请求失败：${errorMessage(fetchErr)}`);
             return;
           }
           toast("演示模式：本地记录已保留，未连接公共题库");
@@ -8153,7 +8938,7 @@ ${entry2.node.fullLabel}` : ""}`;
         render6();
         toast("学习空间已同步");
       } catch (error) {
-        const message2 = errorMessage2(error);
+        const message2 = errorMessage(error);
         try {
           applyPayload(await call("bootstrap"));
         } catch (_) {
@@ -8193,7 +8978,7 @@ ${entry2.node.fullLabel}` : ""}`;
       closeTagPicker(false);
     });
     $("#request-tag-open").addEventListener("click", openTagDialog);
-    const tagEntry = button5("＋ 添加标签", "button subtle", openTagDialog);
+    const tagEntry = button6("＋ 添加标签", "button subtle", openTagDialog);
     tagEntry.id = "tag-manager-button";
     $(".topbar-actions").insertBefore(tagEntry, $("#sync-button"));
     $("#tag-request-form").addEventListener("submit", async (event) => {
@@ -8212,7 +8997,7 @@ ${entry2.node.fullLabel}` : ""}`;
         $("#tag-review-dialog").close();
         toast("标签申请已提交，审核后加入公共标签");
       } catch (error) {
-        toast(errorMessage2(error));
+        toast(errorMessage(error));
       } finally {
         setBusy(false);
       }
@@ -8234,16 +9019,16 @@ ${entry2.node.fullLabel}` : ""}`;
     stateOptions.setAttribute("aria-label", "状态筛选");
     [...stateSelect.options].forEach((option) => {
       const label = element4("label", "facet-option");
-      const input3 = element4("input");
-      input3.type = "radio";
-      input3.name = "state-choice";
-      input3.value = option.value;
-      input3.addEventListener("change", () => {
-        stateSelect.value = input3.value;
+      const input2 = element4("input");
+      input2.type = "radio";
+      input2.name = "state-choice";
+      input2.value = option.value;
+      input2.addEventListener("change", () => {
+        stateSelect.value = input2.value;
         stateFacet.open = false;
         render6();
       });
-      append(label, input3, element4("span", "", option.textContent));
+      append(label, input2, element4("span", "", option.textContent));
       stateOptions.append(label);
     });
     append(stateFacet, stateSummary, stateOptions);
@@ -8251,8 +9036,8 @@ ${entry2.node.fullLabel}` : ""}`;
     stateSelect.after(stateFacet);
     function updateStateFacet() {
       stateLabel.textContent = stateSelect.selectedOptions[0]?.textContent || "全部状态";
-      $$("input", stateOptions).forEach((input3) => {
-        input3.checked = input3.value === stateSelect.value;
+      $$("input", stateOptions).forEach((input2) => {
+        input2.checked = input2.value === stateSelect.value;
       });
     }
     for (const [id, scope2] of [["library-public-button", "public"], ["library-local-button", "local"]]) $("#" + id).addEventListener("click", () => {
@@ -8266,17 +9051,17 @@ ${entry2.node.fullLabel}` : ""}`;
     $("#state-filter").addEventListener("change", render6);
     $("#clear-filters").addEventListener("click", clearFilters);
     for (const id of ["luogu-min", "luogu-max"]) {
-      const select2 = $("#" + id);
+      const select = $("#" + id);
       const option = element4("option", "", "不限");
       option.value = "";
-      select2.append(option);
+      select.append(option);
       luoguLevels2.forEach((name, i) => {
         const o = element4("option", `tone-${luoguTones[i]}`, name);
         o.value = String(i + 1);
-        select2.append(o);
+        select.append(o);
       });
-      colorLuoguSelection(select2);
-      select2.addEventListener("input", () => colorLuoguSelection(select2));
+      colorLuoguSelection(select);
+      select.addEventListener("input", () => colorLuoguSelection(select));
     }
     $("#difficulty-platform").addEventListener("change", (event) => {
       ["rating-min", "rating-max", "luogu-min", "luogu-max"].forEach((id) => {
@@ -8370,7 +9155,7 @@ ${entry2.node.fullLabel}` : ""}`;
       s.comments.clear();
       s.selected = null;
       reader.resetDetail();
-    }, clearComments: () => s.comments.clear(), refreshFilters, render: render6, renderUpdate: () => updates.renderUpdate(), updateStatus, sync, writeDemo, toast, errorMessage: errorMessage2 });
+    }, clearComments: () => s.comments.clear(), refreshFilters, render: render6, renderUpdate: () => updates.renderUpdate(), updateStatus, sync, writeDemo, toast, errorMessage });
     const { readTheme, readPalette, applyTheme, applyPalette, applyAppearance, applyCodeSettings, renderRepoSelector, renderSettingsRepoList, renderAccount, startLoginFromBanner, accountAction, cancelLogin } = settingsUI;
     $("#sidebar-toggle").addEventListener("click", (event) => {
       const wasPinned = sidebarPinned;
@@ -8458,7 +9243,7 @@ ${entry2.node.fullLabel}` : ""}`;
       s.update = update;
     }, getUpdateCapability: () => s.updateCapability, getBusy: () => s.busy, setBusy, call, cancelDraftSave: () => clearTimeout(draftTimer), getLocalWrite: () => localWrite, resetLocalWrite: () => {
       localWrite = Promise.resolve();
-    }, hasEditor: () => !!s.editor, saveDraft, persistLocal, renderAccount, toast, errorMessage: errorMessage2 });
+    }, hasEditor: () => !!s.editor, saveDraft, persistLocal, renderAccount, toast, errorMessage });
     $("#submit-form").elements.url.addEventListener("blur", (event) => {
       try {
         const url = new URL(event.target.value);
@@ -8520,7 +9305,7 @@ ${entry2.node.fullLabel}` : ""}`;
         try {
           applyPayload(await call("bootstrap"));
         } catch (error) {
-          s.error = errorMessage2(error);
+          s.error = errorMessage(error);
         }
       }
       s.loading = false;

@@ -983,7 +983,7 @@ ${entry.node.fullLabel}` : ""}`;
         expandedReader?.close();
         opts.onAddTopic(selected.node.id);
       }));
-      if (typeof opts.onLearningPath === "function") utilities.append(button("在学习路径中查看 →", "alg-text-button alg-add-topic-detail", () => {
+      if (typeof opts.onLearningPath === "function") utilities.append(button("在学习路线中查看 →", "alg-text-button alg-add-topic-detail", () => {
         expandedReader?.close();
         opts.onLearningPath(selected.node.id);
       }));
