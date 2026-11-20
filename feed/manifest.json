@@ -1,16 +1,16 @@
 {
   "schema": 1,
-  "version": "1.4.0",
+  "version": "1.4.1",
   "runtimeVersion": "40.10.6",
   "base": "../",
   "notes": "",
-  "publishedAt": "2026-11-19T11:04:41.371Z",
+  "publishedAt": "2026-11-20T09:36:14.361Z",
   "files": [
     {
       "path": "resources/app.asar",
-      "size": 27975288,
-      "sha256": "e2bd69cc64741e64c717a77c0993dbc56580f334118e9556ac3c1c77f5cc541c"
+      "size": 28140490,
+      "sha256": "0076e96a083b9387e3c874b1e3a841b72bcd1618d7314f5cf08fc8e06ad6c995"
     }
   ],
-  "signature": "ArQw+gAT70w5mLDhe4VSM1tGGv/jEBL5iF8avSOdmQgqUA/6mV/O9B92vm2LUXE55eUhybN8UjSYM9kZjGncAg=="
+  "signature": "H9lNcA6xNCj/uwLobdRp8Ex///SQH56+YGFVw2c8+LjBTxY2w+mILx/dzo0DS1EMlmYWru2hpc9ZspYv+kD+Bw=="
 }
