@@ -3,6 +3,7 @@ import { AlgorithmDirectory } from '../algorithms/directory.js';
 import { Platforms } from '../platforms/dashboard.js';
 import { Planner } from '../planner/planner.js';
 import { HomeContests } from '../home/contests.js';
+import { DailyProblem } from '../home/daily-problem.js';
 import { Updates } from '../account/updates.js';
 import { CodeBlocks } from '../reading/code-blocks.js';
 import { MarkdownMath } from '../reading/markdown-math.js';
@@ -240,7 +241,14 @@ import { createAlgorithmWorkspace } from '../algorithms/workspace.js';
     append(toolbar, intro);
     const board = element('div', 'home-board');
     const planner = element('section', 'home-planner'); planner.id = 'home-planner'; planner.setAttribute('aria-label', '题单与学习任务');
-    append(board, planner, renderHomeContests(), overview);
+    append(board, planner);
+    board.append(DailyProblem.create({ draw: async drawFilters => {
+      if (!window.notebook?.dailyDraw) throw new Error('每日一题接口尚未接入，请在桌面端启用每日一题。');
+      return window.notebook.dailyDraw(drawFilters);
+    }, openExternal, chooseTags: (selected, onApply) => filters.openTagPicker('daily', { selected, onApply }),
+    updateLibrary: window.notebook?.updateLibrary ? () => window.notebook!.updateLibrary() : undefined,
+    autoDraw: true }));
+    append(board, renderHomeContests(), overview);
     append(panel, toolbar, board);
     Planner?.render(s.planner);
     updateContestStatus(); renderContestCards();

@@ -24,7 +24,7 @@ async function navigate(page, view) {
       let account = { id: 101, login: 'same-name', name: 'Same Name' };
       const documentRecord = { id: 'document:docs/original.md', kind: 'document', path: 'docs/original.md', sha: 'original-sha', repo, authorId: 101, author: 'Same Name', title: 'Owned formal document', body: '## Full raw body\n\nOriginal **Markdown**', platform: 'CF', rating: 1900, luoguDifficulty: '提高', problemUrl: 'https://example.com/problem', updatedAt: '2026-01-01' };
       const fixture = window.fixture = {
-        docs: [documentRecord], calls: [], failSave: false, authUrls: [],
+        docs: [documentRecord], calls: [], failSave: false, authUrls: [], clist: null,
         local: { records: [
           { id: 'legacy-foreign-id', clientId: 'foreign-client', kind: 'local', ownerId: '202', title: 'Foreign private local', body: 'private', problemUrl: 'https://example.com/foreign' },
           { id: 'legacy-unbound-id', kind: 'local', ownerId: null, title: 'Unbound existing local', body: 'unbound', problemUrl: 'https://example.com/free' },
@@ -48,7 +48,10 @@ async function navigate(page, view) {
         deleteDocument: async input => { fixture.calls.push({ method: 'deleteDocument', input }); fixture.docs = fixture.docs.filter(item => item.path !== input.path); return { deleted: true }; },
         logout: async () => { account = null; },
         login: async () => { account = { id: 202, login: 'same-name', name: 'Same Name' }; return account; },
-        refreshAccount: async () => payload(), getComments: async () => [], openExternal: async () => {}, openAuthUrl: async url => { fixture.authUrls.push(url); }
+        refreshAccount: async () => payload(), getComments: async () => [], openExternal: async () => {}, openAuthUrl: async url => { fixture.authUrls.push(url); },
+         getClistStatus: async () => ({ configured: Boolean(fixture.clist), username: fixture.clist?.username }),
+         saveClistCredentials: async input => { fixture.calls.push({ method: 'saveClistCredentials', username: input.username, apiKey: input.apiKey }); fixture.clist = { username: input.username, apiKey: input.apiKey }; },
+         clearClistCredentials: async () => { fixture.calls.push({ method: 'clearClistCredentials' }); fixture.clist = null; }
       };
       window.notebook.onAuthProgress = callback => { fixture.authProgress = callback; return () => {}; };
     });

@@ -34,10 +34,77 @@ var __importStar = (this && this.__importStar) || (function () {
     };
 })();
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.createClistCredentials = createClistCredentials;
 exports.createAuth = createAuth;
 exports.configureUserData = configureUserData;
 const node_buffer_1 = require("node:buffer");
 const nodePath = __importStar(require("node:path"));
+function createClistCredentials({ safeStorage, readAuth, saveAuth }) {
+    function load() {
+        let stored;
+        try {
+            stored = readAuth();
+        }
+        catch (error) {
+            if (error?.code === 'ENOENT')
+                return null;
+            throw new Error('无法读取 CLIST 凭据');
+        }
+        if (stored && typeof stored === 'object' && !Array.isArray(stored) && Object.keys(stored).length === 0)
+            return null;
+        try {
+            if (!safeStorage.isEncryptionAvailable())
+                throw new Error();
+            if (!stored || typeof stored !== 'object' || Array.isArray(stored))
+                throw new Error();
+            const encrypted = stored.encrypted;
+            if (typeof encrypted !== 'string' || !encrypted || !/^(?:[A-Za-z0-9+/]{4})*(?:[A-Za-z0-9+/]{2}==|[A-Za-z0-9+/]{3}=)?$/.test(encrypted))
+                throw new Error();
+            const value = JSON.parse(safeStorage.decryptString(node_buffer_1.Buffer.from(encrypted, 'base64')));
+            if (!value || typeof value !== 'object' || Array.isArray(value))
+                throw new Error();
+            const data = value;
+            if (typeof data.username !== 'string' || !data.username.trim() || typeof data.apiKey !== 'string' || !data.apiKey.trim())
+                throw new Error();
+            return { username: data.username, apiKey: data.apiKey };
+        }
+        catch {
+            throw new Error('无法解密 CLIST 凭据');
+        }
+    }
+    function status() {
+        const data = load();
+        return { configured: data !== null, username: data?.username ?? null };
+    }
+    function save(value) {
+        if (!value || typeof value !== 'object' || Array.isArray(value))
+            throw new Error('CLIST 凭据格式不正确');
+        const data = value;
+        if (typeof data.username !== 'string' || !data.username.trim() || data.username.length > 200 || /[\r\n]/.test(data.username) || typeof data.apiKey !== 'string' || !data.apiKey.trim() || data.apiKey.length > 4096 || /[\r\n]/.test(data.apiKey))
+            throw new Error('CLIST 凭据格式不正确');
+        const username = data.username.trim();
+        try {
+            if (!safeStorage.isEncryptionAvailable())
+                throw new Error();
+            const encrypted = safeStorage.encryptString(JSON.stringify({ username, apiKey: data.apiKey })).toString('base64');
+            saveAuth({ encrypted });
+        }
+        catch {
+            throw new Error('无法安全保存 CLIST 凭据');
+        }
+        return { configured: true, username };
+    }
+    function clear() {
+        try {
+            saveAuth({});
+        }
+        catch {
+            throw new Error('无法清除 CLIST 凭据');
+        }
+        return { configured: false, username: null };
+    }
+    return { load, status, save, clear };
+}
 // Dependency injection keeps tests away from Electron's real keychain and userData.
 function createAuth({ safeStorage, readAuth, saveAuth, now = () => new Date().toISOString() }) {
     let token = '', account = null, revision = 0;

@@ -9,9 +9,10 @@ const { compile } = require('../tools/build-preload.cjs');
 
 // Keep this explicit so adding, removing, or reordering a public IPC method is reviewed.
 const methods = [
-  'plannerAction', 'bindPlatform', 'refreshPlatform', 'unbindPlatform', 'getContests',
+  'plannerAction', 'bindPlatform', 'refreshPlatform', 'unbindPlatform', 'getContests', 'updateLibrary', 'dailyDraw',
   'bootstrap', 'sync', 'submit', 'comment', 'openExternal', 'openAuthUrl', 'formatCode',
-  'saveSettings', 'login', 'logout', 'cancelLogin', 'getComments', 'propose',
+  'saveSettings', 'login', 'logout', 'saveClistCredentials', 'clearClistCredentials', 'getClistStatus',
+  'cancelLogin', 'getComments', 'propose',
   'updateLocal', 'exportLocal', 'saveDocument', 'saveAlgorithmTopic', 'saveLearningGate', 'saveLearningCurriculum', 'saveAlgorithmNote',
   'deleteDocument', 'deleteIssue', 'refreshAccount', 'checkStartupUpdates', 'checkForUpdates',
   'downloadUpdate', 'installUpdate', 'getTagCatalog', 'requestTag', 'getTagReview', 'reviewTag'
@@ -55,11 +56,11 @@ const implementations = [
 ];
 
 for (const [label, readCode] of implementations) {
-  test(`${label}: preload exposes the exact 36 methods in order and forwards every argument`, async () => {
+  test(`${label}: preload exposes the exact 41 methods in order and forwards every argument`, async () => {
     const calls = [], result = { saved: true };
     const pending = Promise.resolve(result);
     const { bridge } = loadPreload(readCode(), (...args) => { calls.push(args); return pending; });
-    assert.equal(methods.length, 36);
+    assert.equal(methods.length, 41);
     assert.deepEqual(Object.keys(bridge), [...methods, 'onAuthProgress', 'onUpdateProgress']);
     for (const name of methods) {
       const payload = { method: name }, sequence = [name, undefined];

@@ -37,6 +37,7 @@ export interface UpdateHandlers {
 /** The transaction owns preparation/spawn cleanup while sharing main's existing update lock. */
 export function registerUpdateHandlers({ handle, app, updater, isWriteBusy, isSyncBusy, isUpdateBusy, isInstalling, isPlatformBusy, setUpdateBusy, setInstalling, directory: dir, version: APP_VERSION, process, spawn, path, setTimeout, processEnvForInstaller, cleanupUpdateStorage, prepareFileUpgrade, cancelPreparedFileUpgrade, getFileUpgradeCapability }: UpdateHandlers): void {
   handle('checkStartupUpdates', async () => {
+    if (process.env.QMX_ISOLATED_SANDBOX === '1') return null;
     // Discovery only: normal reading, editing and sync remain available.
     if (isUpdateBusy() || isInstalling()) return null;
     try {
@@ -45,6 +46,7 @@ export function registerUpdateHandlers({ handle, app, updater, isWriteBusy, isSy
     } catch { return null; }
   });
   handle('checkForUpdates', async () => {
+    if (process.env.QMX_ISOLATED_SANDBOX === '1') throw new Error('测试沙箱已禁用更新');
     if (isWriteBusy() || isSyncBusy() || isUpdateBusy() || isInstalling() || isPlatformBusy()) throw new Error('请等待当前操作完成后检查更新');
     setUpdateBusy(true);
     try {
@@ -53,11 +55,13 @@ export function registerUpdateHandlers({ handle, app, updater, isWriteBusy, isSy
     } finally { setUpdateBusy(false); }
   });
   handle('downloadUpdate', async () => {
+    if (process.env.QMX_ISOLATED_SANDBOX === '1') throw new Error('测试沙箱已禁用更新');
     if (isWriteBusy() || isSyncBusy() || isUpdateBusy() || isInstalling() || isPlatformBusy()) throw new Error('请等待当前操作完成后下载更新');
     setUpdateBusy(true);
     try { await updater.download(); return updater.getState(); } finally { setUpdateBusy(false); }
   });
   handle('installUpdate', async () => {
+    if (process.env.QMX_ISOLATED_SANDBOX === '1') throw new Error('测试沙箱已禁用更新');
     if (isWriteBusy() || isSyncBusy() || isUpdateBusy() || isInstalling() || isPlatformBusy()) throw new Error('请等待当前操作完成后安装更新');
     if (!app.isPackaged) throw new Error('源码运行模式不能覆盖升级，请使用安装版客户端');
     const capability = getFileUpgradeCapability();

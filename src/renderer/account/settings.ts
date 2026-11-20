@@ -21,6 +21,60 @@ export function createSettings(options: Options): Controller {
   let editingRepos: AppRepository[] = [];
   let editingActiveId = '';
   let authUrl = '';
+  type ClistStatus = { configured?: boolean; username?: unknown };
+  type ClistApi = { saveClistCredentials(input: { username: string; apiKey: string }): unknown; clearClistCredentials(): unknown; getClistStatus(): unknown };
+  function clistApi(): ClistApi | null {
+    const candidate = (window.notebook as unknown as Partial<ClistApi> | undefined);
+    return candidate && typeof candidate.saveClistCredentials === 'function' && typeof candidate.clearClistCredentials === 'function' && typeof candidate.getClistStatus === 'function' ? candidate as ClistApi : null;
+  }
+  function clistStatusText(status: unknown): string {
+    const value = status && typeof status === 'object' ? status as ClistStatus : {};
+    return value.configured === true ? `已配置${typeof value.username === 'string' && value.username.trim() ? ` · ${value.username.trim()}` : ''}` : '未配置';
+  }
+  async function renderClistStatus() {
+    const statusNode = $('#clist-status');
+    if (!statusNode) return;
+    const api = clistApi();
+    if (!api) { statusNode.textContent = '桌面端未接入'; return; }
+    try { statusNode.textContent = clistStatusText(await api.getClistStatus()); }
+    catch (_) { statusNode.textContent = '状态不可用'; }
+  }
+  async function saveClistCredentials() {
+    const usernameNode = $('#clist-username') as HTMLInputElement | null;
+    const apiKeyNode = $('#clist-api-key') as HTMLInputElement | null;
+    const errorNode = $('#clist-error');
+    if (!usernameNode || !apiKeyNode) return;
+    const username = usernameNode.value.trim();
+    const apiKey = apiKeyNode.value;
+    apiKeyNode.value = '';
+    if (!username || !apiKey) { if (errorNode) { errorNode.textContent = '请输入 CLIST 用户名和 API key'; errorNode.hidden = false; } return; }
+    const api = clistApi();
+    if (!api) { if (errorNode) { errorNode.textContent = '当前桌面端未接入 CLIST 配置接口'; errorNode.hidden = false; } return; }
+    if (errorNode) errorNode.hidden = true;
+    const saveButton = $('#clist-save-button') as HTMLButtonElement | null;
+    if (saveButton) saveButton.disabled = true;
+    try {
+      await api.saveClistCredentials({ username, apiKey });
+      usernameNode.value = username;
+      await renderClistStatus();
+      toast('CLIST 配置已保存');
+    } catch (error) {
+      if (errorNode) { errorNode.textContent = errorMessage(error); errorNode.hidden = false; }
+    } finally { if (saveButton) saveButton.disabled = false; }
+  }
+  async function clearClistCredentials() {
+    const apiKeyNode = $('#clist-api-key') as HTMLInputElement | null;
+    if (apiKeyNode) apiKeyNode.value = '';
+    const errorNode = $('#clist-error');
+    const api = clistApi();
+    if (!api) { if (errorNode) { errorNode.textContent = '当前桌面端未接入 CLIST 配置接口'; errorNode.hidden = false; } return; }
+    if (errorNode) errorNode.hidden = true;
+    const clearButton = $('#clist-clear-button') as HTMLButtonElement | null;
+    if (clearButton) clearButton.disabled = true;
+    try { await api.clearClistCredentials(); const usernameNode = $('#clist-username') as HTMLInputElement | null; if (usernameNode) usernameNode.value = ''; await renderClistStatus(); toast('CLIST 配置已删除'); }
+    catch (error) { const errorNode = $('#clist-error'); if (errorNode) { errorNode.textContent = errorMessage(error); errorNode.hidden = false; } }
+    finally { if (clearButton) clearButton.disabled = false; }
+  }
 
   function normalizeTheme(theme: unknown): ThemeMode { return theme === 'dark' ? 'dark' : 'light'; }
   function normalizePalette(palette: unknown, fallback: Palette = 'porcelain'): Palette {
@@ -273,6 +327,9 @@ export function createSettings(options: Options): Controller {
     const account = getAccount(), permissions = getPermissions(), authStatus = getAuthStatus();
     const box = $('#account-details')!; box.replaceChildren();
     for (const [label, value] of [['姓名', account?.name || '未设置'], ['GitHub 登录名', account?.login || '未登录'], ['GitHub ID', account?.id ?? '未登录'], ['当前仓库', repo() || '未配置'], ['权限', account ? permissions.admin ? '管理员 · 可直接维护自己的题解' : permissions.push ? '可推送 · 可直接维护自己的题解' : '只读 · 可使用本地记录' : '未登录 · 仅本地编辑']]) append(box, element('dt', '', label), element('dd', '', value));
+    const clistUsername = $('#clist-username') as HTMLInputElement | null;
+    if (clistUsername) clistUsername.value = '';
+    void renderClistStatus();
     const authLabel: Record<string, string> = { anonymous: '未登录', restored: '已恢复，等待验证', verified: '已验证', expired: '授权已过期，请重新登录', unverified: '尚未验证，请联网刷新', 'recovery-required': '凭证恢复失败，请重新授权' };
     if (authLabel[authStatus?.status]) append(box, element('dt', '', '认证状态'), element('dd', '', authLabel[authStatus.status]));
     $('#account-login')!.textContent = ['expired','recovery-required'].includes(authStatus?.status) ? '重新授权 GitHub' : '登录 GitHub';
@@ -359,6 +416,12 @@ export function createSettings(options: Options): Controller {
   $('#settings-dialog')!.addEventListener('close', closeSettings);
   $('#settings-login-button')!.addEventListener('click', loginFromSettings);
   $('#account-button')!.addEventListener('click', openAccount);
+  $('#account-dialog')!.addEventListener('close', () => {
+    const apiKeyNode = $('#clist-api-key') as HTMLInputElement | null;
+    if (apiKeyNode) apiKeyNode.value = '';
+  });
+  $('#clist-save-button')?.addEventListener('click', () => void saveClistCredentials());
+  $('#clist-clear-button')?.addEventListener('click', () => void clearClistCredentials());
   ['login', 'logout', 'switch', 'refresh'].forEach(action => { document.getElementById(`account-${action}`)!.addEventListener('click', () => accountAction(action)); });
   if (typeof bridge?.onAuthProgress === 'function') bridge.onAuthProgress(receiveAuthProgress);
   $('#auth-open-button')!.addEventListener('click', openAuthUrl);

@@ -8,6 +8,8 @@ exports.registerRecordHandlers = registerRecordHandlers;
 /** The transaction owns preparation/spawn cleanup while sharing main's existing update lock. */
 function registerUpdateHandlers({ handle, app, updater, isWriteBusy, isSyncBusy, isUpdateBusy, isInstalling, isPlatformBusy, setUpdateBusy, setInstalling, directory: dir, version: APP_VERSION, process, spawn, path, setTimeout, processEnvForInstaller, cleanupUpdateStorage, prepareFileUpgrade, cancelPreparedFileUpgrade, getFileUpgradeCapability }) {
     handle('checkStartupUpdates', async () => {
+        if (process.env.QMX_ISOLATED_SANDBOX === '1')
+            return null;
         // Discovery only: normal reading, editing and sync remain available.
         if (isUpdateBusy() || isInstalling())
             return null;
@@ -21,6 +23,8 @@ function registerUpdateHandlers({ handle, app, updater, isWriteBusy, isSyncBusy,
         }
     });
     handle('checkForUpdates', async () => {
+        if (process.env.QMX_ISOLATED_SANDBOX === '1')
+            throw new Error('测试沙箱已禁用更新');
         if (isWriteBusy() || isSyncBusy() || isUpdateBusy() || isInstalling() || isPlatformBusy())
             throw new Error('请等待当前操作完成后检查更新');
         setUpdateBusy(true);
@@ -34,6 +38,8 @@ function registerUpdateHandlers({ handle, app, updater, isWriteBusy, isSyncBusy,
         }
     });
     handle('downloadUpdate', async () => {
+        if (process.env.QMX_ISOLATED_SANDBOX === '1')
+            throw new Error('测试沙箱已禁用更新');
         if (isWriteBusy() || isSyncBusy() || isUpdateBusy() || isInstalling() || isPlatformBusy())
             throw new Error('请等待当前操作完成后下载更新');
         setUpdateBusy(true);
@@ -46,6 +52,8 @@ function registerUpdateHandlers({ handle, app, updater, isWriteBusy, isSyncBusy,
         }
     });
     handle('installUpdate', async () => {
+        if (process.env.QMX_ISOLATED_SANDBOX === '1')
+            throw new Error('测试沙箱已禁用更新');
         if (isWriteBusy() || isSyncBusy() || isUpdateBusy() || isInstalling() || isPlatformBusy())
             throw new Error('请等待当前操作完成后安装更新');
         if (!app.isPackaged)

@@ -80,7 +80,8 @@ const fixture = { fetchedAt: iso(0), platforms: [
     await page.waitForFunction(() => window.contestCalls.length === 1);
     assert.deepEqual(await page.evaluate(() => contestCalls), [false]);
     assert.equal(await page.locator('#contests-title').innerText(), '比赛提醒');
-    assert.deepEqual(await page.locator('#home-panel > *').evaluateAll(nodes => nodes.map(node => node.className)), ['home-toolbar', 'home-board'], 'compact Home contains its toolbar followed by the board');
+    assert.deepEqual(await page.locator('#home-panel > *').evaluateAll(nodes => nodes.map(node => node.className)), ['home-toolbar', 'home-board'], 'compact Home contains its toolbar and board');
+    assert.equal(await page.locator('.home-board > .daily-problem').count(), 1, 'daily problem is mounted in the board');
     assert.equal(await page.locator('#home-panel .home-welcome, #home-panel .home-layout-picker, #home-panel .home-shortcuts').count(), 0, 'compact Home has no legacy hero, layout picker, or shortcut section');
     assert.equal(await page.locator('.home-toolbar .home-intro h2').innerText(), '今天，继续向前。');
     assert.equal(await page.locator('.home-board > #home-planner').count(), 1, 'planner is mounted in the board');

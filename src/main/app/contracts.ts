@@ -82,6 +82,8 @@ export interface OAuthView {
 }
 export interface AppArguments {
   getContests: [force?: unknown];
+  updateLibrary: [full?: unknown];
+  dailyDraw: [filters: unknown];
   bindPlatform: [platform: unknown, url: unknown];
   refreshPlatform: [platform: unknown];
   unbindPlatform: [platform: unknown];
@@ -101,6 +103,9 @@ export interface AppArguments {
   saveSettings: [data: SettingsUpdateView];
   login: [];
   logout: [];
+  saveClistCredentials: [data: unknown];
+  clearClistCredentials: [];
+  getClistStatus: [];
   saveDocument: [record: RecordView];
   saveAlgorithmNote: [record: RecordView];
   submit: [record: RecordView];

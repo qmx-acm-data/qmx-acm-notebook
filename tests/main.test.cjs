@@ -121,6 +121,13 @@ function harness({ files = {}, account = { id: 42, login: 'alice' }, backend = {
       if (name === './planner-service.cjs') return require(appPath('electron/planner-service.cjs'));
       if (name === './platform-page.cjs') return require(appPath('electron/platform-page.cjs'));
        if (name === './contests.cjs') return require(appPath('electron/contests.cjs'));
+       if (name === './daily-problems.cjs') return require(appPath('electron/daily-problems.cjs'));
+       if (name === './clist-service.cjs') return require(appPath('electron/clist-service.cjs'));
+       if (name === './library-index.cjs') return require(appPath('electron/library-index.cjs'));
+       if (name === './library-sync.cjs') return require(appPath('electron/library-sync.cjs'));
+       if (name === './problem-statement.cjs') return require(appPath('electron/problem-statement.cjs'));
+       if (name === './nowcoder-statement.cjs') return require(appPath('electron/nowcoder-statement.cjs'));
+      if (name === './libreoj-statement.cjs') return require(appPath('electron/libreoj-statement.cjs'));
       if (name === '@astral-sh/ruff-wasm-nodejs') return require(name);
        if (name === '../ui/tag-presets.js') return require(appPath('ui/tag-presets.js'));
        if (name === './updater.cjs') return { createUpdater(options) { updaterOptions = options; return updater; } };
