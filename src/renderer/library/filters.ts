@@ -107,13 +107,13 @@ export function createFilters({ getRecords, getView, getScope, getTagCatalog, ge
     });
     view.empty.hidden = matches > 0;
   }
-  let tagPickerContext: { mode: string; original: Set<string>; selected: Set<string> } | null = null;
-  function openTagPicker(mode: string) {
+  let tagPickerContext: { mode: string; original: Set<string>; selected: Set<string>; onApply?: (tags: Set<string>) => void } | null = null;
+  function openTagPicker(mode: string, selection?: { selected: Set<string>; onApply(tags: Set<string>): void }) {
     if (getBusy()) return;
-    const source = mode === 'filter' ? facets.tags : new Set($('#submit-form')!.elements.tags.value.split(/[,，、]/).map(t => t.trim()).filter(Boolean));
-    tagPickerContext = { mode, original: new Set(source), selected: new Set(source) };
-    $('#tag-picker-title')!.textContent = mode === 'filter' ? '筛选算法标签' : '选择算法标签';
-    $('#tag-picker-hint')!.textContent = mode === 'filter' ? '命中任一已选标签的题目将显示；确定后应用筛选。' : '选择一个或多个标签，点击确定后加入错题。';
+    const source = selection?.selected ?? (mode === 'filter' ? facets.tags : new Set($('#submit-form')!.elements.tags.value.split(/[,，、]/).map(t => t.trim()).filter(Boolean)));
+    tagPickerContext = { mode, original: new Set(source), selected: new Set(source), onApply: selection?.onApply };
+    $('#tag-picker-title')!.textContent = mode === 'filter' ? '筛选算法标签' : mode === 'daily' ? '选择每日一题算法标签' : '选择算法标签';
+    $('#tag-picker-hint')!.textContent = mode === 'daily' ? '选择每日一题的算法标签。' : mode === 'filter' ? '命中任一已选标签的题目将显示；确定后应用筛选。' : '选择一个或多个标签，点击确定后加入错题。';
     $('#tag-picker-search')!.value = '';
     fillTagOptions($('#tag-picker-dialog-options')!, tagPickerContext.selected, '', () => {});
     document.body.classList.add('tag-picker-open');
@@ -123,6 +123,7 @@ export function createFilters({ getRecords, getView, getScope, getTagCatalog, ge
     if (!tagPickerContext) return;
     const context = tagPickerContext; tagPickerContext = null; $('#tag-picker-dialog')!.close(); document.body.classList.remove('tag-picker-open');
     if (!apply) return;
+    if (context.onApply) { context.onApply(context.selected); return; }
     if (context.mode === 'filter') {
       facets.tags.clear(); context.selected.forEach(tag => facets.tags.add(tag)); refreshFilters(); render();
     } else {

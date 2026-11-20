@@ -34,7 +34,7 @@ export interface FiltersUIController {
   refreshFilters(): void;
   tagGroups(extra?: string[]): FiltersTagGroup[];
   fillTagOptions(container: HTMLElement, selected: Set<string>, query: string, onChange: () => void): void;
-  openTagPicker(mode: string): void;
+  openTagPicker(mode: string, selection?: { selected: Set<string>; onApply(tags: Set<string>): void }): void;
   closeTagPicker(apply: boolean): void;
   renderEditorTags(): void;
   ranges(): (number | null)[];

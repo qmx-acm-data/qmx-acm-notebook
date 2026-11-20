@@ -10,8 +10,12 @@ const { spawn } = require('node:child_process');
 const { createUpdater } = require('./updater.cjs');
 const { prepareFileUpgrade, recoverFileUpgrade, cancelPreparedFileUpgrade, getFileUpgradeCapability } = require('./file-upgrade.cjs');
 const { cleanupUpdateStorage } = require('./update-storage.cjs');
-const { createAuth, configureUserData } = require('./auth.cjs');
+const { createAuth, createClistCredentials, configureUserData } = require('./auth.cjs');
 const { createContestService } = require('./contests.cjs');
+const { dailyDraw } = require('./daily-problems.cjs');
+const { createClistService } = require('./clist-service.cjs');
+const { createLibraryLoader } = require('./library-index.cjs');
+const { createSync } = require('./library-sync.cjs');
 const { createPlatformService } = require('./platform-service.cjs');
 const { createPlannerService } = require('./planner-service.cjs');
 const { createPublicPageReader } = require('./platform-page.cjs');
@@ -40,6 +44,11 @@ if (process.platform === 'linux' && !app.commandLine.hasSwitch('password-store')
 }
 let win, dir;
 let contestService, platforms, planner;
+let clistService;
+let libraryLoader;
+let librarySyncing = false;
+let clistCredentialFingerprint = '';
+let clistCredentials;
 let token = '', account = null, permissions = null;
 let loginGeneration = 0, writeBusy = false, syncBusy = false, updateBusy = false, installing = false;
 let updater;
@@ -150,6 +159,43 @@ function cachedLearningContents(value, scope = sourceScope(), curriculum = null)
         }
     });
 }
+function libraryPlatforms(input) {
+    const filter = input && typeof input === 'object' ? input : {};
+    const supported = /^(CF|AT|LG|NC|LC|LOJ)$/;
+    const platform = typeof filter.platform === 'string' ? filter.platform.toUpperCase() : '';
+    if (supported.test(platform))
+        return [platform];
+    const source = typeof filter.source === 'string' ? filter.source.toUpperCase() : '';
+    if (supported.test(source))
+        return [source];
+    return undefined;
+}
+function librarySnapshot(input) {
+    if (!libraryLoader)
+        return undefined;
+    try {
+        const snapshot = libraryLoader.load(libraryPlatforms(input));
+        return snapshot.records.length ? { records: snapshot.records, builtAt: snapshot.builtAt } : undefined;
+    }
+    catch {
+        return undefined;
+    }
+}
+function refreshClistService() {
+    let credentials = null;
+    try {
+        credentials = clistCredentials?.load() ?? null;
+    }
+    catch {
+        credentials = null;
+    }
+    const fingerprint = credentials ? `${credentials.username}\u0000${credentials.apiKey}` : '';
+    if (fingerprint !== clistCredentialFingerprint) {
+        clistCredentialFingerprint = fingerprint;
+        clistService = credentials ? createClistService({ credentials: { account: credentials.username, key: credentials.apiKey }, fetcher: networkFetch, timeoutMs: 30_000 }) : undefined;
+    }
+    return clistService;
+}
 function state(error) {
     const s = settings(), scope = sourceScope(s), cache = read('cache.json', {});
     const c = repoCache(cache, s.repo, s.serverUrl);
@@ -202,11 +248,42 @@ function requireWritableSource() {
         throw new Error('自定义 Gitea 目前仅支持匿名读取公开仓库；请切换 GitHub 仓库后写入');
 }
 function setup() {
+    clistCredentials = createClistCredentials({ safeStorage,
+        readAuth: () => JSON.parse(fs.readFileSync(path.join(dir, 'clist-auth.json'), 'utf8')),
+        saveAuth: value => save('clist-auth.json', value) });
+    handle('saveClistCredentials', data => { const result = clistCredentials.save(data); clistCredentialFingerprint = ''; clistService = undefined; return result; });
+    handle('clearClistCredentials', () => { const result = clistCredentials.clear(); clistCredentialFingerprint = ''; clistService = undefined; return result; });
+    handle('getClistStatus', () => clistCredentials.status());
+    libraryLoader = createLibraryLoader(path.join(dir, 'library'), fs, path);
     planner = createPlannerService({ read, save });
     platforms = createPlatformService({ read, save, fetcher: networkFetch, readPage: createPublicPageReader({ BrowserWindow }) });
     // Public schedules use stateless Node fetch, separate from Chromium session cookies.
     contestService = createContestService({ fetcher: (url, options) => fetch(url, options), readCache: () => read('contests.json', null), writeCache: value => save('contests.json', value) });
     handle('getContests', force => contestService.get(force));
+    handle('updateLibrary', async (full) => {
+        if (librarySyncing)
+            throw new Error('题库正在更新，请稍候');
+        librarySyncing = true;
+        try {
+            // Index sync is a public-data fetch; Node's transport avoids the Chromium
+            // redirect challenge that blocks the Luogu listing in the app session.
+            const report = await createSync({ directory: path.join(dir, 'library'), fs, path, fetcher: fetch, full: full === true }).run();
+            return report;
+        }
+        finally {
+            librarySyncing = false;
+        }
+    });
+    handle('dailyDraw', async (filters) => {
+        const scope = sourceScope(), generation = loginGeneration;
+        const cache = repoCache(read('cache.json', {}), scope.repo, scope.serverUrl);
+        const publicRecords = cache.repo === scope.repo && Array.isArray(cache.records) ? cache.records.filter(record => record.kind === 'document') : [];
+        const personal = local();
+        const ownRecords = Array.isArray(personal.records) ? personal.records.filter(record => record.kind === 'local' && (record.ownerId == null || account?.id != null && String(record.ownerId) === String(account.id))) : [];
+        const result = await dailyDraw(filters, [...ownRecords, ...publicRecords], networkFetch, Math.random, refreshClistService(), librarySnapshot(filters));
+        ensureSource(scope.sourceKey, generation);
+        return result;
+    });
     handle('bindPlatform', (platform, url) => platforms.bind(platform, url));
     handle('refreshPlatform', platform => platforms.refresh(platform));
     handle('unbindPlatform', platform => platforms.unbind(platform));

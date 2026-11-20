@@ -167,21 +167,21 @@
     }
     return total;
   }
-  function topicScore(node2, path, query) {
+  function topicScore(node3, path, query) {
     return score(query, [
-      { value: node2.label, weight: 12 },
-      { value: node2.fullLabel, weight: 11 },
-      ...(node2.aliases || []).map((value) => ({ value, weight: 10 })),
+      { value: node3.label, weight: 12 },
+      { value: node3.fullLabel, weight: 11 },
+      ...(node3.aliases || []).map((value) => ({ value, weight: 10 })),
       { value: path.join(" / "), weight: 2 }
     ]);
   }
-  function noteScore(note, node2, path, query, author) {
+  function noteScore(note, node3, path, query, author) {
     return score(query, [
       { value: note.title, weight: 12 },
       ...(note.tags || []).map((value) => ({ value, weight: 9 })),
-      { value: node2?.label, weight: 8 },
-      { value: node2?.fullLabel, weight: 8 },
-      ...(node2?.aliases || []).map((value) => ({ value, weight: 7 })),
+      { value: node3?.label, weight: 8 },
+      { value: node3?.fullLabel, weight: 8 },
+      ...(node3?.aliases || []).map((value) => ({ value, weight: 7 })),
       { value: author, weight: 5 },
       { value: path.join(" / "), weight: 2 },
       { value: note.body, weight: 1 }
@@ -189,38 +189,38 @@
   }
   var COLORS = ["basic", "beginner", "intermediate", "advanced", "expert"];
   function splitMixed(tree) {
-    function visit(node2) {
-      node2.children = Array.isArray(node2.children) ? node2.children : [];
-      if (node2.kind === "algorithm" && node2.children.length) {
-        const content = { ...node2, id: `algorithm-content-${node2.id}`, children: [], kind: "algorithm", contentOf: node2.id };
+    function visit(node3) {
+      node3.children = Array.isArray(node3.children) ? node3.children : [];
+      if (node3.kind === "algorithm" && node3.children.length) {
+        const content = { ...node3, id: `algorithm-content-${node3.id}`, children: [], kind: "algorithm", contentOf: node3.id };
         for (const key of ["legacyIds", "sourceHeading", "part", "nestedPart", "metadata"]) delete content[key];
-        node2.children.unshift(content);
-        node2.kind = "directory";
-        node2.color = "parent";
-        node2.algorithmContentId = content.id;
-        node2.rating = { status: "not-applicable", type: "directory" };
-        delete node2.difficultySource;
+        node3.children.unshift(content);
+        node3.kind = "directory";
+        node3.color = "parent";
+        node3.algorithmContentId = content.id;
+        node3.rating = { status: "not-applicable", type: "directory" };
+        delete node3.difficultySource;
       }
-      if (node2.kind === "directory" || node2.kind === "category") {
-        node2.kind = "directory";
-        node2.color = "parent";
-        node2.rating = { status: "not-applicable", type: "directory" };
-        delete node2.difficultySource;
+      if (node3.kind === "directory" || node3.kind === "category") {
+        node3.kind = "directory";
+        node3.color = "parent";
+        node3.rating = { status: "not-applicable", type: "directory" };
+        delete node3.difficultySource;
       }
-      node2.children.forEach(visit);
+      node3.children.forEach(visit);
     }
     visit(tree);
     return tree;
   }
   function hydrate(base, topics = []) {
     const tree = JSON.parse(JSON.stringify(base)), byId = /* @__PURE__ */ new Map();
-    function index(node2, depth) {
-      node2.level = depth;
-      node2.children = Array.isArray(node2.children) ? node2.children : [];
-      node2.fullLabel = node2.fullLabel || node2.label;
-      byId.set(node2.id, node2);
-      for (const id of node2.legacyIds || []) byId.set(id, node2);
-      node2.children.forEach((child) => index(child, depth + 1));
+    function index(node3, depth) {
+      node3.level = depth;
+      node3.children = Array.isArray(node3.children) ? node3.children : [];
+      node3.fullLabel = node3.fullLabel || node3.label;
+      byId.set(node3.id, node3);
+      for (const id of node3.legacyIds || []) byId.set(id, node3);
+      node3.children.forEach((child) => index(child, depth + 1));
     }
     splitMixed(tree);
     index(tree, 0);
@@ -236,7 +236,7 @@
           continue;
         }
         if (!(record.kind === "directory" ? record.color === "parent" : COLORS.includes(record.color)) || typeof record.label !== "string") continue;
-        const node2 = {
+        const node3 = {
           id: record.id,
           label: record.label,
           fullLabel: record.fullLabel || record.label,
@@ -251,7 +251,7 @@
           difficultySource: { kind: "admin" },
           level: parent.level + 1
         };
-        parent.children.push(node2);
+        parent.children.push(node3);
         splitMixed(tree);
         index(tree, 0);
         added++;
@@ -259,14 +259,14 @@
       if (!added) break;
       pending2 = next;
     }
-    function ranges(node2) {
-      const values = [COLORS.indexOf(node2.color) + 1, ...node2.children.flatMap((child) => {
+    function ranges(node3) {
+      const values = [COLORS.indexOf(node3.color) + 1, ...node3.children.flatMap((child) => {
         const r = ranges(child);
         return r ? [r.min, r.max] : [];
       })].filter((n) => n > 0);
       const range = values.length ? { min: Math.min(...values), max: Math.max(...values) } : null;
-      if (node2.kind === "directory") node2.rating = { status: "not-applicable", type: "directory" };
-      else node2.rating = { ...node2.rating || {}, ...range ? { range } : {} };
+      if (node3.kind === "directory") node3.rating = { status: "not-applicable", type: "directory" };
+      else node3.rating = { ...node3.rating || {}, ...range ? { range } : {} };
       return range;
     }
     ranges(tree);
@@ -366,16 +366,16 @@
     });
   }
   function element(tag, className, text3) {
-    const node2 = document.createElement(tag);
-    if (className) node2.className = className;
-    if (text3 !== void 0) node2.textContent = String(text3);
-    return node2;
+    const node3 = document.createElement(tag);
+    if (className) node3.className = className;
+    if (text3 !== void 0) node3.textContent = String(text3);
+    return node3;
   }
   function button(text3, className, action2) {
-    const node2 = element("button", className, text3);
-    node2.type = "button";
-    node2.addEventListener("click", action2);
-    return node2;
+    const node3 = element("button", className, text3);
+    node3.type = "button";
+    node3.addEventListener("click", action2);
+    return node3;
   }
   function metadata(code) {
     return platforms.find((platform) => platform.code === code);
@@ -430,12 +430,12 @@
     return link;
   }
   function metric(label, value, key) {
-    const node2 = element("div", "platform-metric");
+    const node3 = element("div", "platform-metric");
     const strong = element("strong", "", number(value));
     strong.dataset.metric = key;
     if (typeof value !== "number" || !Number.isFinite(value)) strong.className = "platform-unknown";
-    node2.append(strong, element("span", "", label));
-    return node2;
+    node3.append(strong, element("span", "", label));
+    return node3;
   }
   function known(value) {
     return typeof value === "number" && Number.isFinite(value);
@@ -489,9 +489,9 @@
     for (const [field2, label, key] of [["solvedCount", "总解题", "solved"], ["submissionCount", "总提交", "submissions"]]) {
       const values = scope().filter(({ code }) => bound(code) && known(entry(code).data?.[field2]));
       const total = values.length ? values.reduce((sum, { code }) => sum + entry(code).data[field2], 0) : null;
-      const node2 = metric(selected === "ALL" ? `${label} · 已知合计` : label, total, key);
-      node2.append(element("small", "platform-coverage", coverage(values.length, scope().length)));
-      metrics.append(node2);
+      const node3 = metric(selected === "ALL" ? `${label} · 已知合计` : label, total, key);
+      node3.append(element("small", "platform-coverage", coverage(values.length, scope().length)));
+      metrics.append(node3);
     }
     const latest = element("div", "platform-metric platform-latest");
     latest.append(element("span", "", "最近比赛"));
@@ -510,10 +510,10 @@
     panel.append(element("p", "platform-sum-note", "解题数为各平台已解题数相加，同一道题跨平台不去重；未知数据不计为 0。"));
   }
   function svgElement(tag, attributes = {}, text3) {
-    const node2 = document.createElementNS("http://www.w3.org/2000/svg", tag);
-    for (const [name, value] of Object.entries(attributes)) node2.setAttribute(name, String(value));
-    if (text3 !== void 0) node2.textContent = String(text3);
-    return node2;
+    const node3 = document.createElementNS("http://www.w3.org/2000/svg", tag);
+    for (const [name, value] of Object.entries(attributes)) node3.setAttribute(name, String(value));
+    if (text3 !== void 0) node3.textContent = String(text3);
+    return node3;
   }
   function drawRatingChart(code) {
     const data = entry(code).data || {};
@@ -592,9 +592,9 @@
     select.id = "platform-activity-period";
     select.setAttribute("aria-label", "每日解题时间范围");
     for (const [value, title] of [["recent", "最近一年"], [String(range.year - 1), `${range.year - 1} 年`]]) {
-      const option = element("option", "", title);
-      option.value = value;
-      select.append(option);
+      const option2 = element("option", "", title);
+      option2.value = value;
+      select.append(option2);
     }
     select.value = activityPeriod;
     select.addEventListener("change", () => {
@@ -664,8 +664,8 @@
         else if (move === void 0) return;
         event.preventDefault();
         target = Math.max(0, Math.min(cells.length - 1, target));
-        cells.forEach((node2) => {
-          node2.tabIndex = -1;
+        cells.forEach((node3) => {
+          node3.tabIndex = -1;
         });
         cells[target].tabIndex = 0;
         cells[target].focus();
@@ -681,7 +681,7 @@
       day.setUTCDate(day.getUTCDate() + 1);
     }
     const weeks = Math.ceil(index / 7);
-    const monthLabels = new Map([...months.children].map((node2) => [Number(node2.dataset.week), node2.textContent]));
+    const monthLabels = new Map([...months.children].map((node3) => [Number(node3.dataset.week), node3.textContent]));
     months.replaceChildren(...Array.from({ length: weeks }, (_, week) => element("span", "", monthLabels.get(week) || "")));
     scroll.classList.add(`platform-heatmap-weeks-${weeks}`);
     const weekdays = element("div", "platform-heatmap-weekdays");
@@ -743,9 +743,9 @@
     select.id = "platform-select";
     select.setAttribute("aria-label", "选择统计平台");
     for (const platform of [{ code: "ALL", name: "全部平台 · 汇总" }, ...platforms]) {
-      const option = element("option", "", platform.code === "ALL" ? platform.name : `${platform.code} · ${platform.name}`);
-      option.value = platform.code;
-      select.append(option);
+      const option2 = element("option", "", platform.code === "ALL" ? platform.name : `${platform.code} · ${platform.name}`);
+      option2.value = platform.code;
+      select.append(option2);
     }
     select.value = selected;
     select.addEventListener("change", () => {
@@ -1048,7 +1048,7 @@
     if (enhanced.has(input2)) return enhanced.get(input2);
     if (!(input2 instanceof HTMLInputElement) || input2.type !== "datetime-local") throw new TypeError("NotebookDeadline.enhance requires a datetime-local input.");
     const id = `planner-deadline-${++sequence}`;
-    const button6 = action("", "planner-deadline-trigger", () => {
+    const button7 = action("", "planner-deadline-trigger", () => {
       if (input2.disabled || input2.matches(":disabled")) return;
       if (opened) close();
       else open2();
@@ -1061,12 +1061,12 @@
     path.setAttribute("d", "M5.5 2.5v3m9-3v3M3 8h14M4.5 4h11A1.5 1.5 0 0 1 17 5.5v10a1.5 1.5 0 0 1-1.5 1.5h-11A1.5 1.5 0 0 1 3 15.5v-10A1.5 1.5 0 0 1 4.5 4ZM6.5 11h2m3 0h2m-7 3h2");
     icon.append(path);
     const caption = node("span", "planner-deadline-caption");
-    button6.append(icon, caption);
-    button6.setAttribute("aria-haspopup", "dialog");
-    button6.setAttribute("aria-expanded", "false");
-    button6.setAttribute("aria-controls", id);
+    button7.append(icon, caption);
+    button7.setAttribute("aria-haspopup", "dialog");
+    button7.setAttribute("aria-expanded", "false");
+    button7.setAttribute("aria-controls", id);
     input2.hidden = true;
-    input2.insertAdjacentElement("afterend", button6);
+    input2.insertAdjacentElement("afterend", button7);
     const popover = node("div", "planner-deadline-popover");
     popover.id = id;
     popover.setAttribute("popover", "auto");
@@ -1143,12 +1143,12 @@
     function refresh() {
       const value = parts(input2.value);
       caption.textContent = value ? `${Number(value[1].split("-")[1])}/${Number(value[1].split("-")[2])} ${value[2]}` : "截止时间";
-      button6.classList.toggle("has-deadline", Boolean(value));
-      button6.disabled = input2.disabled || input2.matches(":disabled");
+      button7.classList.toggle("has-deadline", Boolean(value));
+      button7.disabled = input2.disabled || input2.matches(":disabled");
       const label = input2.getAttribute("aria-label") || "截止时间（可选，使用本机时区）";
-      button6.setAttribute("aria-label", value ? `${label}：${value[1]} ${value[2]}` : label);
-      button6.title = value ? `${value[1]} ${input2.value.split("T")[1]}（本机时区）` : label;
-      if (button6.disabled && opened) close();
+      button7.setAttribute("aria-label", value ? `${label}：${value[1]} ${value[2]}` : label);
+      button7.title = value ? `${value[1]} ${input2.value.split("T")[1]}（本机时区）` : label;
+      if (button7.disabled && opened) close();
       return api;
     }
     function renderCalendar(focusDate) {
@@ -1212,7 +1212,7 @@
     }
     function position() {
       if (!opened) return;
-      if (!button6.isConnected || button6.disabled) {
+      if (!button7.isConnected || button7.disabled) {
         close();
         return;
       }
@@ -1222,7 +1222,7 @@
       const rightEdge = leftEdge + (viewport?.width || window.innerWidth) - 16;
       const bottomEdge = topEdge + (viewport?.height || window.innerHeight) - 16;
       popover.style.maxHeight = `${Math.max(0, bottomEdge - topEdge)}px`;
-      const anchor = button6.getBoundingClientRect();
+      const anchor = button7.getBoundingClientRect();
       const box = popover.getBoundingClientRect();
       const below = anchor.bottom + 7;
       const above = anchor.top - box.height - 7;
@@ -1239,14 +1239,14 @@
       if (!opened) return;
       opened = false;
       if (active === api) active = null;
-      button6.setAttribute("aria-expanded", "false");
+      button7.setAttribute("aria-expanded", "false");
       cancelAnimationFrame(frame);
       window.removeEventListener("resize", schedulePosition);
       document.removeEventListener("scroll", schedulePosition, true);
       window.visualViewport?.removeEventListener("resize", schedulePosition);
       window.visualViewport?.removeEventListener("scroll", schedulePosition);
       queueMicrotask(() => {
-        if (!active && button6.isConnected && !button6.disabled) button6.focus({ preventScroll: true });
+        if (!active && button7.isConnected && !button7.disabled) button7.focus({ preventScroll: true });
       });
     }
     function close() {
@@ -1255,7 +1255,7 @@
     }
     function open2() {
       refresh();
-      if (opened || button6.disabled || !button6.isConnected) return;
+      if (opened || button7.disabled || !button7.isConnected) return;
       if (active && active !== api) active.close();
       original = input2.value;
       originalParts = parts(original);
@@ -1270,7 +1270,7 @@
       popover.showPopover();
       opened = true;
       active = api;
-      button6.setAttribute("aria-expanded", "true");
+      button7.setAttribute("aria-expanded", "true");
       position();
       const focusDate = draftDate || dateKey(today);
       (calendar.querySelector(`[data-date="${focusDate}"]`) || calendar.querySelector("button:not(:disabled)")).focus({ preventScroll: true });
@@ -1323,7 +1323,7 @@
     }));
     const observer = new MutationObserver(refresh);
     observer.observe(input2, { attributes: true, attributeFilter: ["disabled", "value", "aria-label"] });
-    const api = { input: input2, button: button6, popover, refresh, open: open2, close };
+    const api = { input: input2, button: button7, popover, refresh, open: open2, close };
     enhanced.set(input2, api);
     refresh();
     return api;
@@ -1345,16 +1345,16 @@
   var deleteTarget = "";
   var lastFocus;
   var el = (tag, className, text3) => {
-    const node2 = document.createElement(tag);
-    if (className) node2.className = className;
-    if (text3 !== void 0) node2.textContent = String(text3);
-    return node2;
+    const node3 = document.createElement(tag);
+    if (className) node3.className = className;
+    if (text3 !== void 0) node3.textContent = String(text3);
+    return node3;
   };
   function button2(text3, className, action2) {
-    const node2 = el("button", className, text3);
-    node2.type = "button";
-    node2.addEventListener("click", action2);
-    return node2;
+    const node3 = el("button", className, text3);
+    node3.type = "button";
+    node3.addEventListener("click", action2);
+    return node3;
   }
   function field(label, name, type, placeholder, maxLength) {
     const wrap = el("label", "planner-field");
@@ -1445,8 +1445,8 @@
     for (const area of [root, dialog2]) {
       if (!area) continue;
       area.setAttribute("aria-busy", String(value));
-      area.querySelectorAll("button,input,textarea").forEach((node2) => {
-        node2.disabled = value;
+      area.querySelectorAll("button,input,textarea").forEach((node3) => {
+        node3.disabled = value;
       });
     }
   }
@@ -1586,16 +1586,16 @@
     if (!focus?.action) return;
     const card = cards[focus.kind];
     if (!card) return;
-    const row2 = Array.from(card.card.querySelectorAll("[data-id]")).find((node2) => node2.dataset.id === focus.id);
-    const target = row2 && Array.from(row2.querySelectorAll("[data-action]")).find((node2) => node2.dataset.action === focus.action);
+    const row2 = Array.from(card.card.querySelectorAll("[data-id]")).find((node3) => node3.dataset.id === focus.id);
+    const target = row2 && Array.from(row2.querySelectorAll("[data-action]")).find((node3) => node3.dataset.action === focus.action);
     if (target && !target.closest("details:not([open])")) target.focus();
     else card.form.querySelector("input").focus();
   }
   function row(kind, item) {
     const refs = cards[kind];
-    const node2 = el("div", `planner-row${item.done ? " is-done" : ""}`);
-    node2.dataset.id = String(item.id);
-    node2.dataset.kind = kind;
+    const node3 = el("div", `planner-row${item.done ? " is-done" : ""}`);
+    node3.dataset.id = String(item.id);
+    node3.dataset.kind = kind;
     const checkbox = el("input", "planner-checkbox");
     checkbox.type = "checkbox";
     checkbox.checked = Boolean(item.done);
@@ -1668,8 +1668,8 @@
       cancel.dataset.action = "cancel-delete";
       actions.append(cancel);
     }
-    node2.append(checkbox, copy, actions);
-    return node2;
+    node3.append(checkbox, copy, actions);
+    return node3;
   }
   function drawCard(kind) {
     const refs = cards[kind];
@@ -1695,8 +1695,8 @@
     refs.summary.textContent = `已完成 ${done.length} ${kind === "problems" ? "题" : "项"}`;
     refs.completed.open = completedOpen[kind];
     refs.doneList.replaceChildren(...done.map((item) => row(kind, item)));
-    if (busy) refs.card.querySelectorAll("button,input,textarea").forEach((node2) => {
-      node2.disabled = true;
+    if (busy) refs.card.querySelectorAll("button,input,textarea").forEach((node3) => {
+      node3.disabled = true;
     });
   }
   function buildDialog() {
@@ -1849,10 +1849,10 @@
     const $ = (selector, root2 = document) => root2.querySelector(selector);
     const $$ = (selector, root2 = document) => Array.from(root2.querySelectorAll(selector));
     function element4(tag, className, text3) {
-      const node2 = document.createElement(tag);
-      if (className) node2.className = className;
-      if (text3 !== void 0) node2.textContent = String(text3);
-      return node2;
+      const node3 = document.createElement(tag);
+      if (className) node3.className = className;
+      if (text3 !== void 0) node3.textContent = String(text3);
+      return node3;
     }
     function append(parent, ...children) {
       children.forEach((child) => {
@@ -1860,11 +1860,11 @@
       });
       return parent;
     }
-    function button6(label, className, action2) {
-      const node2 = element4("button", className, label);
-      node2.type = "button";
-      node2.addEventListener("click", action2);
-      return node2;
+    function button7(label, className, action2) {
+      const node3 = element4("button", className, label);
+      node3.type = "button";
+      node3.addEventListener("click", action2);
+      return node3;
     }
     const contestPlatforms = [
       { id: "luogu", name: "洛谷", url: "https://www.luogu.com.cn/contest/list" },
@@ -1985,8 +1985,8 @@
         restore.disabled = contestPreferencePending;
         restore.textContent = `已隐藏 ${count} 场 · 恢复`;
       }
-      $$(".contest-decline").forEach((node2) => {
-        node2.disabled = contestPreferencePending;
+      $$(".contest-decline").forEach((node3) => {
+        node3.disabled = contestPreferencePending;
       });
     }
     function mergedContests(now) {
@@ -1998,7 +1998,7 @@
       const activeFocusNode = grid.contains(document.activeElement) ? document.activeElement : null;
       const focus = activeFocusNode?.dataset.contestFocus || null;
       grid.replaceChildren();
-      const sources = element4("div", "contest-sources");
+      const sources2 = element4("div", "contest-sources");
       for (const platform of contestPlatforms) {
         const source = contestData?.platforms.find((item) => item.id === platform.id);
         const items2 = visibleContests(source, now);
@@ -2007,7 +2007,7 @@
         const status = !source ? "尚未获取" : source.error ? items2.length ? "更新失败 · 保留赛程" : "获取失败" : source.stale ? "缓存待更新" : items2.length ? "已更新" : "暂无赛程";
         chip.title = `${platform.name} · ${status} · ${source?.updatedAt ? `更新于 ${contestTime(source.updatedAt)} · 北京时间` : "尚无成功更新时间"}`;
         append(chip, contestLink(`${platform.name} ↗`, platform.url, "contest-official-link", `${platform.id}:official`), element4("span", `contest-source-status${source?.error ? " is-error" : source?.stale ? " is-stale" : ""}`, status));
-        sources.append(chip);
+        sources2.append(chip);
       }
       const list = element4("div", "contest-list");
       const items = mergedContests(now);
@@ -2029,7 +2029,7 @@
         countdown.dataset.phase = active3 ? "active" : "upcoming";
         countdown.textContent = `${active3 ? "距结束" : "距开始"} ${contestDuration(Number(countdown.dataset.target) - now)}`;
         const duration = element4("span", "contest-duration", `赛时 ${contestDuration(contest.end - contest.start).replace(/ 0秒$/, "").trim()}`);
-        const decline = button6("不参加", "contest-decline", () => {
+        const decline = button7("不参加", "contest-decline", () => {
           void setContestOptOut(platform.id, contest.id, true);
         });
         decline.dataset.contestFocus = `${platform.id}:${contest.id}:decline`;
@@ -2039,11 +2039,11 @@
         list.append(row2);
       }
       if (!items.length) list.append(element4("p", "contest-empty", contestsPending ? "正在载入比赛…" : "暂无可显示的比赛，可通过上方平台链接查看官方赛程。"));
-      grid.append(sources, list);
+      grid.append(sources2, list);
       contestSignature = JSON.stringify(items.map((contest) => [contest.platform.id, contest.id, contest.start <= now ? "active" : "upcoming"]));
       updateContestPreferenceControls();
       if (focus) {
-        const target = $$("[data-contest-focus]", grid).find((node2) => node2.dataset.contestFocus === focus) || $$("[data-contest-focus]", grid).find((node2) => node2.dataset.contestFocus === `${focus.split(":")[0]}:official`);
+        const target = $$("[data-contest-focus]", grid).find((node3) => node3.dataset.contestFocus === focus) || $$("[data-contest-focus]", grid).find((node3) => node3.dataset.contestFocus === `${focus.split(":")[0]}:official`);
         target?.focus({ preventScroll: true });
       }
     }
@@ -2055,8 +2055,8 @@
         renderContestCards(now);
         return;
       }
-      $$(".contest-countdown").forEach((node2) => {
-        node2.textContent = `${node2.dataset.phase === "active" ? "距结束" : "距开始"} ${contestDuration(Number(node2.dataset.target) - now)}`;
+      $$(".contest-countdown").forEach((node3) => {
+        node3.textContent = `${node3.dataset.phase === "active" ? "距结束" : "距开始"} ${contestDuration(Number(node3.dataset.target) - now)}`;
       });
     }
     function refreshVisibleContests() {
@@ -2098,11 +2098,11 @@
       const confirm = $("#contest-restore-confirm");
       if (confirm) confirm.disabled = contestPreferencePending || contestRestoreSelection.size === 0;
       ["contest-restore-all", "contest-restore-none", "contest-restore-close", "contest-restore-cancel"].forEach((id) => {
-        const node2 = $("#" + id);
-        if (node2) node2.disabled = contestPreferencePending;
+        const node3 = $("#" + id);
+        if (node3) node3.disabled = contestPreferencePending;
       });
-      $$("#contest-restore-options input").forEach((node2) => {
-        node2.disabled = contestPreferencePending;
+      $$("#contest-restore-options input").forEach((node3) => {
+        node3.disabled = contestPreferencePending;
       });
     }
     function renderContestRestoreOptions() {
@@ -2171,11 +2171,11 @@
       panel.setAttribute("aria-labelledby", "contests-title");
       const title = element4("h2", "", "比赛提醒");
       title.id = "contests-title";
-      const refresh = button6("刷新赛程", "button secondary", () => {
+      const refresh = button7("刷新赛程", "button secondary", () => {
         void refreshContests(true);
       });
       refresh.id = "contests-refresh";
-      const restore = button6("", "button subtle contest-restore", openContestRestore);
+      const restore = button7("", "button subtle contest-restore", openContestRestore);
       restore.id = "contests-restore";
       const actions = append(element4("div", "contest-actions"), restore, refresh);
       const status = element4("p", "contests-status");
@@ -2227,8 +2227,226 @@
   }
   var HomeContests = Object.freeze({ create });
 
+  // src/renderer/home/daily-problem.ts
+  var cachedResult = null;
+  var autoDrawStarted = false;
+  var sources = [["all", "全部来源"], ["local", "本地题库"], ["public", "公共题库"], ["CF", "Codeforces"], ["LG", "洛谷"], ["AT", "AtCoder"], ["NC", "牛客"], ["LC", "LeetCode"], ["LOJ", "LibreOJ"]];
+  var luoguLevels2 = ["入门", "普及-", "普及", "普及+/提高-", "提高", "提高+/省选-", "省选/NOI-", "NOI/NOI+/CTS"];
+  function node2(tag, className = "", text3) {
+    const element4 = document.createElement(tag);
+    element4.className = className;
+    if (text3 !== void 0) element4.textContent = text3;
+    return element4;
+  }
+  function button3(label, className, onClick) {
+    const element4 = node2("button", className, label);
+    element4.type = "button";
+    element4.addEventListener("click", onClick);
+    return element4;
+  }
+  function option(value, label) {
+    const element4 = node2("option", "", label);
+    element4.value = value;
+    return element4;
+  }
+  function create2({ draw: drawApi, openExternal, chooseTags, updateLibrary, autoDraw = false }) {
+    const section = node2("section", "daily-problem");
+    section.setAttribute("aria-labelledby", "daily-problem-title");
+    const heading = node2("div", "daily-problem-heading"), titleGroup = node2("div", "daily-problem-title-group");
+    const title = node2("h2", "", "每日一题");
+    title.id = "daily-problem-title";
+    titleGroup.append(node2("span", "eyebrow", "DAILY PRACTICE"), title);
+    const aside = node2("div", "daily-problem-heading-aside");
+    const refresh = button3("刷新题库", "button subtle daily-refresh", () => refreshLibrary());
+    refresh.title = "增量更新本地题库索引";
+    aside.append(node2("span", "daily-problem-caption", "按今天的状态，抽一道值得做的题"), refresh);
+    heading.append(titleGroup, aside);
+    const filters = node2("div", "daily-problem-filters");
+    const source = node2("select", "daily-filter-source");
+    source.setAttribute("aria-label", "题目来源");
+    sources.forEach(([value, label]) => source.append(option(value, label)));
+    const ratingMin = node2("input", "daily-filter-rating");
+    ratingMin.type = "number";
+    ratingMin.min = "0";
+    ratingMin.max = "3500";
+    ratingMin.step = "100";
+    ratingMin.placeholder = "Rating ≥";
+    ratingMin.setAttribute("aria-label", "最低 Codeforces Rating");
+    const ratingMax = node2("input", "daily-filter-rating");
+    ratingMax.type = "number";
+    ratingMax.min = "0";
+    ratingMax.max = "3500";
+    ratingMax.step = "100";
+    ratingMax.placeholder = "Rating ≤";
+    ratingMax.setAttribute("aria-label", "最高 Codeforces Rating");
+    const lg = node2("select", "daily-filter-luogu");
+    lg.setAttribute("aria-label", "洛谷难度");
+    lg.append(option("", "洛谷难度不限"));
+    luoguLevels2.forEach((level) => lg.append(option(level, level)));
+    let selectedTags = /* @__PURE__ */ new Set();
+    const tags = button3("算法标签…", "button secondary daily-filter-tags", () => chooseTags(selectedTags, (selected2) => {
+      selectedTags = new Set(selected2);
+      tags.textContent = selectedTags.size ? `算法标签…（已选 ${selectedTags.size}）` : "算法标签…";
+    }));
+    const presetNames = ["动态规划", "图论", "数据结构", "数学", "字符串", "贪心", "二分", "搜索", "树", "构造"];
+    const presets = document.createElement("datalist");
+    presets.id = `daily-tag-suggestions-${Math.random().toString(36).slice(2)}`;
+    presetNames.forEach((tag) => presets.append(option(tag, tag)));
+    tags.setAttribute("aria-label", "算法标签");
+    tags.setAttribute("aria-haspopup", "dialog");
+    filters.append(source, ratingMin, ratingMax, lg, tags, presets);
+    const result = node2("article", "daily-problem-result");
+    const loading = node2("div", "daily-problem-loading");
+    loading.hidden = true;
+    loading.setAttribute("role", "status");
+    const loadingCopy = node2("div", "daily-loading-copy");
+    loadingCopy.append(node2("strong", "", "正在抽题…"), node2("span", "", "正在请求各平台题库，可能需要十几秒"));
+    loading.append(node2("span", "daily-loading-spinner"), loadingCopy);
+    const error = node2("p", "daily-problem-error");
+    error.hidden = true;
+    error.setAttribute("role", "alert");
+    const empty = node2("p", "daily-problem-empty", "调整筛选后，试试手气。");
+    result.append(empty, loading, error);
+    const actions = node2("div", "daily-problem-actions");
+    const draw2 = button3("试试手气", "button primary daily-draw", () => drawProblem());
+    const change = button3("换一道", "button subtle daily-change", () => drawProblem(true));
+    change.hidden = true;
+    const easier = button3("− 难度", "button subtle daily-easier", () => shiftDifficulty(-1));
+    const harder = button3("＋ 难度", "button subtle daily-harder", () => shiftDifficulty(1));
+    const currentDifficulty = node2("span", "daily-current-difficulty", "当前难度：洛谷不限");
+    lg.addEventListener("change", updateDifficulty);
+    const copy = button3("复制链接", "button subtle daily-copy", () => copyLink());
+    copy.hidden = true;
+    actions.append(draw2, copy, change, easier, currentDifficulty, harder);
+    section.append(heading, filters, result, actions);
+    let current = null, busy2 = false;
+    function readFilters() {
+      return {
+        source: source.value || void 0,
+        platform: ["CF", "LG", "AT", "NC", "LC", "LOJ"].includes(source.value) ? source.value : void 0,
+        ratingMin: ratingMin.value ? Number(ratingMin.value) : void 0,
+        ratingMax: ratingMax.value ? Number(ratingMax.value) : void 0,
+        luoguDifficulty: lg.value || void 0,
+        difficulty: lg.value || void 0,
+        tags: [...selectedTags]
+      };
+    }
+    function updateDifficulty() {
+      currentDifficulty.textContent = `当前难度：洛谷${lg.value || "不限"}`;
+    }
+    function shiftDifficulty(delta) {
+      lg.selectedIndex = Math.max(0, Math.min(luoguLevels2.length, lg.selectedIndex + delta));
+      updateDifficulty();
+    }
+    function render6(value) {
+      current = value.problem;
+      cachedResult = value;
+      result.replaceChildren();
+      const meta = node2("div", "daily-problem-meta");
+      meta.append(node2("span", "daily-source", current.source));
+      if (current.rating != null) meta.append(node2("span", "daily-rating", `CF ${current.rating}`));
+      else if (current.estimatedCfRating != null) meta.append(node2("span", "daily-rating daily-estimated", `CF 估算 ${current.estimatedCfRating}`));
+      if (current.luoguDifficulty) meta.append(node2("span", "daily-luogu", `洛谷 ${current.luoguDifficulty}`));
+      if (current.estimatedLuoguDifficulty) meta.append(node2("span", "daily-luogu daily-estimated", `洛谷估算 ${current.estimatedLuoguDifficulty}`));
+      const footer = node2("div", "daily-problem-footer");
+      if (current.id) footer.append(node2("span", "daily-problem-pid", current.id));
+      const url = current.url;
+      if (url) {
+        const link = node2("a", "daily-problem-link", url);
+        link.href = url;
+        link.target = "_blank";
+        link.rel = "noreferrer noopener";
+        link.addEventListener("click", (event) => {
+          event.preventDefault();
+          openExternal(url);
+        });
+        footer.append(link);
+      }
+      result.append(node2("strong", "daily-result-label", "抽取结果："), meta, node2("h3", "daily-problem-title", current.title), footer);
+      if (current.ratingEstimateReason) result.append(node2("p", "daily-problem-note", current.ratingEstimateReason));
+      if (value.note) result.append(node2("p", "daily-problem-note", value.note));
+      result.append(loading, error);
+      error.hidden = true;
+      change.hidden = false;
+      copy.hidden = !url;
+    }
+    function setBusy(value) {
+      busy2 = value;
+      draw2.disabled = value;
+      change.disabled = value;
+      loading.hidden = !value;
+      if (value) result.dataset.loading = "true";
+      else delete result.dataset.loading;
+      result.setAttribute("aria-busy", value ? "true" : "false");
+    }
+    let refreshing = false;
+    async function refreshLibrary() {
+      if (refreshing || !updateLibrary) return;
+      refreshing = true;
+      refresh.disabled = true;
+      const label = refresh.textContent;
+      refresh.textContent = "更新中…";
+      error.hidden = true;
+      try {
+        const report = await updateLibrary();
+        const entries = Object.entries(report?.platforms ?? {});
+        const added = entries.reduce((sum, [, item]) => sum + (typeof item?.added === "number" ? item.added : 0), 0);
+        const failed = entries.filter(([, item]) => item?.status === "failed").map(([name]) => name);
+        refresh.textContent = failed.length ? `已更新 ${added} 题，${failed.join("、")} 失败` : `已更新 ${added} 题`;
+        setTimeout(() => {
+          if (!refreshing) refresh.textContent = label;
+        }, 2600);
+      } catch (cause) {
+        refresh.textContent = label;
+        error.textContent = cause instanceof Error ? cause.message : "题库更新失败";
+        error.hidden = false;
+      } finally {
+        refreshing = false;
+        refresh.disabled = false;
+      }
+    }
+    async function drawProblem(excludeCurrent = false) {
+      if (busy2) return;
+      setBusy(true);
+      empty.hidden = true;
+      error.hidden = true;
+      const filters2 = readFilters();
+      if (excludeCurrent && current) filters2.excludedIds = [...new Set([current.id, current.url].filter(Boolean))];
+      try {
+        render6(await drawApi(filters2));
+      } catch (cause) {
+        error.textContent = cause instanceof Error ? cause.message : "抽题失败，请稍后重试。";
+        error.hidden = false;
+      } finally {
+        setBusy(false);
+      }
+    }
+    async function copyLink() {
+      if (!current?.url) return;
+      try {
+        await navigator.clipboard.writeText(current.url);
+        copy.textContent = "已复制";
+        setTimeout(() => {
+          copy.textContent = "复制链接";
+        }, 1400);
+      } catch (_) {
+        error.textContent = "复制失败，请手动打开题目链接。";
+        error.hidden = false;
+      }
+    }
+    if (cachedResult) render6(cachedResult);
+    else if (autoDraw && !autoDrawStarted) {
+      autoDrawStarted = true;
+      setTimeout(() => {
+        void drawProblem();
+      }, 260);
+    }
+    return section;
+  }
+  var DailyProblem = { create: create2 };
+
   // src/renderer/account/updates.ts
-  function create2(options) {
+  function create3(options) {
     const { demo, bridge: bridge3, getAppVersion, getUpdate, setUpdate, getUpdateCapability, getBusy, setBusy, call, cancelDraftSave, getLocalWrite, resetLocalWrite, hasEditor, saveDraft, persistLocal, renderAccount, toast, errorMessage } = options;
     const $ = (selector) => document.querySelector(selector);
     const $$ = (selector) => Array.from(document.querySelectorAll(selector));
@@ -2374,7 +2592,7 @@
       return updateReady;
     } };
   }
-  var Updates = Object.freeze({ create: create2 });
+  var Updates = Object.freeze({ create: create3 });
 
   // src/renderer/ipc/boundary.ts
   function createNotebookIPC(bridge3) {
@@ -2391,14 +2609,14 @@
   }
 
   // src/renderer/reading/code-blocks.ts
-  var CodeBlocks = { create: create3 };
-  function create3({ toast, errorMessage }) {
+  var CodeBlocks = { create: create4 };
+  function create4({ toast, errorMessage }) {
     const $$ = (selector, root2 = document) => Array.from(root2.querySelectorAll(selector));
     function element4(tag, className, text3) {
-      const node2 = document.createElement(tag);
-      if (className) node2.className = className;
-      if (text3 !== void 0) node2.textContent = String(text3);
-      return node2;
+      const node3 = document.createElement(tag);
+      if (className) node3.className = className;
+      if (text3 !== void 0) node3.textContent = String(text3);
+      return node3;
     }
     function append(parent, ...children) {
       children.filter(Boolean).forEach((child) => parent.append(child));
@@ -2411,15 +2629,15 @@
       return codeLanguageAliases[name] || name;
     }
     function codeLanguage(pre) {
-      const node2 = pre.querySelector("code") || pre;
-      const match2 = /\blanguage-([\w#+.-]+)/i.exec(node2.className || "");
+      const node3 = pre.querySelector("code") || pre;
+      const match2 = /\blanguage-([\w#+.-]+)/i.exec(node3.className || "");
       return normalizeCodeLanguage(match2 ? match2[1] : "");
     }
     function codeBlockText(pre) {
       const code = pre.querySelector("code");
       if (!code) return pre.textContent || "";
       const clone = code.cloneNode(true);
-      $$(".line-numbers-rows, .line-numbers-sizer", clone).forEach((node2) => node2.remove());
+      $$(".line-numbers-rows, .line-numbers-sizer", clone).forEach((node3) => node3.remove());
       return clone.textContent || "";
     }
     function highlightCodeBlock(code) {
@@ -2815,19 +3033,19 @@
   function render3(container, katex) {
     if (!katex?.render) return;
     let macros = {};
-    for (const node2 of container.querySelectorAll(".notebook-math-source")) {
-      if (node2.classList.contains("notebook-math-rendered") || node2.classList.contains("notebook-math-error") || node2.closest("pre,code,kbd,samp,script,style,textarea")) continue;
-      const text3 = node2.textContent;
+    for (const node3 of container.querySelectorAll(".notebook-math-source")) {
+      if (node3.classList.contains("notebook-math-rendered") || node3.classList.contains("notebook-math-error") || node3.closest("pre,code,kbd,samp,script,style,textarea")) continue;
+      const text3 = node3.textContent;
       try {
         const nextMacros = structuredClone(macros);
-        katex.render(text3, node2, { displayMode: node2.dataset.mathDisplay === "true", throwOnError: true, trust: false, strict: "ignore", maxExpand: 1e3, maxSize: 20, macros: nextMacros, globalGroup: true, output: "htmlAndMathml" });
+        katex.render(text3, node3, { displayMode: node3.dataset.mathDisplay === "true", throwOnError: true, trust: false, strict: "ignore", maxExpand: 1e3, maxSize: 20, macros: nextMacros, globalGroup: true, output: "htmlAndMathml" });
         macros = nextMacros;
-        node2.classList.add("notebook-math-rendered");
+        node3.classList.add("notebook-math-rendered");
       } catch (error) {
-        node2.replaceChildren(container.ownerDocument.createTextNode(text3));
-        node2.classList.add("notebook-math-error");
-        node2.setAttribute("role", "note");
-        node2.title = `公式语法或命令不受支持：${String(error.message || error).slice(0, 500)}`;
+        node3.replaceChildren(container.ownerDocument.createTextNode(text3));
+        node3.classList.add("notebook-math-error");
+        node3.setAttribute("role", "note");
+        node3.title = `公式语法或命令不受支持：${String(error.message || error).slice(0, 500)}`;
       }
     }
   }
@@ -2842,20 +3060,20 @@
     style.color = text3;
     return style.color;
   }
-  function foreground(node2, document2) {
+  function foreground(node3, document2) {
     let result = "";
-    for (const declaration of (node2.getAttribute("style") || "").split(";")) {
+    for (const declaration of (node3.getAttribute("style") || "").split(";")) {
       const match2 = /^\s*color\s*:\s*(.*?)\s*$/i.exec(declaration);
       if (match2) result = color(match2[1], document2) || result;
     }
-    return result || (node2.nodeName === "FONT" ? color(node2.getAttribute("color"), document2) : "");
+    return result || (node3.nodeName === "FONT" ? color(node3.getAttribute("color"), document2) : "");
   }
   function sanitize(html, purifier, document2) {
     const colors = /* @__PURE__ */ new WeakMap();
-    const capture = (node2) => {
-      if (node2.nodeName !== "SPAN" && node2.nodeName !== "FONT") return;
-      const value = foreground(node2, document2);
-      if (value) colors.set(node2, value);
+    const capture = (node3) => {
+      if (node3.nodeName !== "SPAN" && node3.nodeName !== "FONT") return;
+      const value = foreground(node3, document2);
+      if (value) colors.set(node3, value);
     };
     purifier.addHook("uponSanitizeElement", capture);
     let fragment;
@@ -2868,11 +3086,11 @@
     } finally {
       purifier.removeHook("uponSanitizeElement", capture);
     }
-    for (const node2 of fragment.querySelectorAll("span,font")) {
-      const value = colors.get(node2);
+    for (const node3 of fragment.querySelectorAll("span,font")) {
+      const value = colors.get(node3);
       if (value) {
-        node2.style.color = value;
-        node2.classList.add("notebook-foreground");
+        node3.style.color = value;
+        node3.classList.add("notebook-foreground");
       }
     }
     return fragment;
@@ -2924,9 +3142,9 @@
       mount.append(dialog3);
       lifted.push({ dialog: dialog3, anchor });
     }
-    const hidden = Array.from(mount.children).filter((node2) => node2 !== view && node2.tagName !== "DIALOG" && !node2.hidden);
-    hidden.forEach((node2) => {
-      node2.hidden = true;
+    const hidden = Array.from(mount.children).filter((node3) => node3 !== view && node3.tagName !== "DIALOG" && !node3.hidden);
+    hidden.forEach((node3) => {
+      node3.hidden = true;
     });
     mount.append(view);
     let closed = false;
@@ -2959,8 +3177,8 @@
         const currentScroll = content.scrollTop;
         if (marker.isConnected) marker.replaceWith(content);
         view.remove();
-        hidden.forEach((node2) => {
-          node2.hidden = false;
+        hidden.forEach((node3) => {
+          node3.hidden = false;
         });
         lifted.forEach(({ dialog: dialog3, anchor }) => {
           if (anchor.isConnected) anchor.replaceWith(dialog3);
@@ -3023,20 +3241,20 @@
     const $ = (selector, root2 = document) => root2.querySelector(selector);
     const $$ = (selector, root2 = document) => Array.from(root2.querySelectorAll(selector));
     function element4(tag, className, text3) {
-      const node2 = document.createElement(tag);
-      if (className) node2.className = className;
-      if (text3 !== void 0) node2.textContent = String(text3);
-      return node2;
+      const node3 = document.createElement(tag);
+      if (className) node3.className = className;
+      if (text3 !== void 0) node3.textContent = String(text3);
+      return node3;
     }
     function append(parent, ...children) {
       children.filter(Boolean).forEach((child) => parent.append(child));
       return parent;
     }
-    function button6(label, className, action2) {
-      const node2 = element4("button", className, label);
-      node2.type = "button";
-      node2.addEventListener("click", action2);
-      return node2;
+    function button7(label, className, action2) {
+      const node3 = element4("button", className, label);
+      node3.type = "button";
+      node3.addEventListener("click", action2);
+      return node3;
     }
     const stateLabels = { unreviewed: "待复习", reviewing: "复习中", mastered: "已掌握" };
     const facets = { platform: /* @__PURE__ */ new Set(), tags: /* @__PURE__ */ new Set(), authors: /* @__PURE__ */ new Set(), native: /* @__PURE__ */ new Set() };
@@ -3076,7 +3294,7 @@
         const host = $(group === "tags" ? "#tag-filter" : group === "authors" ? "#author-filter" : "#platform-filter");
         const values = group === "tags" ? all.flatMap((r) => Array.isArray(r.tags) ? r.tags : []) : all.map((r) => facetValue(r, group));
         if (group === "tags") {
-          const trigger = button6("", "facet-trigger", () => openTagPicker("filter"));
+          const trigger = button7("", "facet-trigger", () => openTagPicker("filter"));
           append(trigger, document.createTextNode(facetNames[group] + " "), element4("span", "facet-chevron", "⌄"));
           trigger.id = "tag-filter-trigger";
           trigger.setAttribute("aria-haspopup", "dialog");
@@ -3096,7 +3314,7 @@
           search.value = query;
           const options = element4("div", "facet-options");
           search.addEventListener("input", () => fillFacetOptions(options, group, values, search.value));
-          append(popover, search, options, button6("清除本组", "facet-clear", () => {
+          append(popover, search, options, button7("清除本组", "facet-clear", () => {
             facets[group].clear();
             fillFacetOptions(options, group, values, search.value);
             updateFacetCounts();
@@ -3156,8 +3374,8 @@
             return;
           }
           input2.checked ? current.selected.add(input2.value) : current.selected.delete(input2.value);
-          current.inputs.get(input2.value)?.forEach((node2) => {
-            node2.checked = input2.checked;
+          current.inputs.get(input2.value)?.forEach((node3) => {
+            node3.checked = input2.checked;
           });
           current.onChange();
         };
@@ -3168,9 +3386,9 @@
       let matches = 0;
       view.groups.forEach((group) => {
         let groupMatches = 0;
-        group.options.forEach((option) => {
-          const visible = option.search.includes(search);
-          if (option.label.hidden !== !visible) option.label.hidden = !visible;
+        group.options.forEach((option2) => {
+          const visible = option2.search.includes(search);
+          if (option2.label.hidden !== !visible) option2.label.hidden = !visible;
           if (visible) groupMatches++;
         });
         if (group.heading.hidden !== !groupMatches) group.heading.hidden = !groupMatches;
@@ -3179,12 +3397,12 @@
       view.empty.hidden = matches > 0;
     }
     let tagPickerContext = null;
-    function openTagPicker(mode) {
+    function openTagPicker(mode, selection) {
       if (getBusy()) return;
-      const source = mode === "filter" ? facets.tags : new Set($("#submit-form").elements.tags.value.split(/[,，、]/).map((t) => t.trim()).filter(Boolean));
-      tagPickerContext = { mode, original: new Set(source), selected: new Set(source) };
-      $("#tag-picker-title").textContent = mode === "filter" ? "筛选算法标签" : "选择算法标签";
-      $("#tag-picker-hint").textContent = mode === "filter" ? "命中任一已选标签的题目将显示；确定后应用筛选。" : "选择一个或多个标签，点击确定后加入错题。";
+      const source = selection?.selected ?? (mode === "filter" ? facets.tags : new Set($("#submit-form").elements.tags.value.split(/[,，、]/).map((t) => t.trim()).filter(Boolean)));
+      tagPickerContext = { mode, original: new Set(source), selected: new Set(source), onApply: selection?.onApply };
+      $("#tag-picker-title").textContent = mode === "filter" ? "筛选算法标签" : mode === "daily" ? "选择每日一题算法标签" : "选择算法标签";
+      $("#tag-picker-hint").textContent = mode === "daily" ? "选择每日一题的算法标签。" : mode === "filter" ? "命中任一已选标签的题目将显示；确定后应用筛选。" : "选择一个或多个标签，点击确定后加入错题。";
       $("#tag-picker-search").value = "";
       fillTagOptions($("#tag-picker-dialog-options"), tagPickerContext.selected, "", () => {
       });
@@ -3199,6 +3417,10 @@
       $("#tag-picker-dialog").close();
       document.body.classList.remove("tag-picker-open");
       if (!apply) return;
+      if (context.onApply) {
+        context.onApply(context.selected);
+        return;
+      }
       if (context.mode === "filter") {
         facets.tags.clear();
         context.selected.forEach((tag) => facets.tags.add(tag));
@@ -3216,7 +3438,7 @@
       const selected2 = new Set(field2.value.split(/[,，、]/).map((t) => t.trim()).filter(Boolean));
       const host = $("#record-tag-selected");
       host.replaceChildren();
-      selected2.forEach((t) => host.append(button6(t + " ×", "filter-chip", () => {
+      selected2.forEach((t) => host.append(button7(t + " ×", "filter-chip", () => {
         if (getBusy()) return;
         selected2.delete(t);
         field2.value = [...selected2].join(", ");
@@ -3235,20 +3457,20 @@
       ["rating-min", "rating-max"].forEach((id) => colorRatingInput($("#" + id)));
       for (const group of ["platform", "tags", "authors"]) {
         const count2 = facets[group].size;
-        const node2 = $(`[data-facet="${group}"] .facet-count`);
-        if (node2) node2.textContent = count2 || "";
+        const node3 = $(`[data-facet="${group}"] .facet-count`);
+        if (node3) node3.textContent = count2 || "";
       }
       const range = ranges();
       const count = range.filter((v) => v !== null).length + facets.native.size;
       $("#difficulty-count").textContent = count ? "已选" : "";
       const chips = $("#active-filters");
       chips.replaceChildren();
-      for (const group of Object.keys(facets)) for (const value of facets[group]) chips.append(button6(`${facetNames[group]} · ${group === "platform" ? platformNames[value] || value : value} ×`, "filter-chip", () => {
+      for (const group of Object.keys(facets)) for (const value of facets[group]) chips.append(button7(`${facetNames[group]} · ${group === "platform" ? platformNames[value] || value : value} ×`, "filter-chip", () => {
         facets[group].delete(value);
         refreshFilters();
         render6();
       }));
-      if (range.some((v) => v !== null)) chips.append(button6("难度区间 ×", "filter-chip", () => {
+      if (range.some((v) => v !== null)) chips.append(button7("难度区间 ×", "filter-chip", () => {
         clearDifficulty();
         render6();
       }));
@@ -3308,7 +3530,7 @@
       clearDifficulty();
       render6();
     }
-    const luoguLevels2 = ["入门", "普及-", "普及", "普及+/提高-", "提高", "提高+/省选-", "省选/NOI-", "NOI/NOI+/CTS"];
+    const luoguLevels3 = ["入门", "普及-", "普及", "普及+/提高-", "提高", "提高+/省选-", "省选/NOI-", "NOI/NOI+/CTS"];
     const luoguTones = ["red", "orange", "yellow", "green", "cyan", "blue", "purple", "black"];
     function colorRatingInput(input2) {
       const valid = input2.value !== "" && !input2.validity.badInput && Number.isInteger(input2.valueAsNumber) && input2.valueAsNumber >= 0 && input2.valueAsNumber <= 1e4;
@@ -3321,7 +3543,7 @@
     }
     return { facets, facetNames, platformNames, facetValue, fillFacetOptions, refreshFilters, tagGroups, fillTagOptions, get tagPickerContext() {
       return tagPickerContext;
-    }, openTagPicker, closeTagPicker, renderEditorTags, ranges, updateFacetCounts, setDifficultyPlatform, clearDifficulty, filteredRecords, clearFilters, luoguLevels: luoguLevels2, luoguTones, colorRatingInput, colorLuoguSelection };
+    }, openTagPicker, closeTagPicker, renderEditorTags, ranges, updateFacetCounts, setDifficultyPlatform, clearDifficulty, filteredRecords, clearFilters, luoguLevels: luoguLevels3, luoguTones, colorRatingInput, colorLuoguSelection };
   }
 
   // src/renderer/library/authors.ts
@@ -3379,10 +3601,10 @@
     const { demo, getEditor, setEditor, getLocal, setLocal, getRecords, setRecords, getIssues, setIssues, getComments, getSelected, setSelected, getBusy, setBusy, getAccount, getPermissions, accountId, repo, key, uuid, isLocal, visibleLocal, canEditRemote, sameRepo, records, platformCode, colorRatingInput, renderEditorTags, cancelDraftSave, persistLocal, call, refreshFilters, navigate, render: render6, openDetail, toast, errorMessage } = options;
     const $ = (selector) => document.querySelector(selector);
     function element4(tag, className, text3) {
-      const node2 = document.createElement(tag);
-      if (className) node2.className = className;
-      if (text3 !== void 0) node2.textContent = String(text3);
-      return node2;
+      const node3 = document.createElement(tag);
+      if (className) node3.className = className;
+      if (text3 !== void 0) node3.textContent = String(text3);
+      return node3;
     }
     function formDraft() {
       const form = $("#submit-form");
@@ -3429,9 +3651,9 @@
         const select = element4("select", "luogu-range");
         select.setAttribute("aria-label", "洛谷原生难度");
         [["", "未指定"], ...editorLuoguLevels.map((name) => [name, name])].forEach(([value, label], index) => {
-          const option = element4("option", index ? `tone-${editorLuoguTones[index - 1]}` : "", label);
-          option.value = value;
-          select.append(option);
+          const option2 = element4("option", index ? `tone-${editorLuoguTones[index - 1]}` : "", label);
+          option2.value = value;
+          select.append(option2);
         });
         const current = Search.difficulty({ platform: "LG", difficulty: native.value });
         const known2 = current.level ? editorLuoguLevels[current.level - 1] : editorLuoguLevels.find((level) => level === native.value);
@@ -3459,9 +3681,9 @@
         const select = element4("select", "luogu-range");
         select.setAttribute("aria-label", "LeetCode 原生难度");
         [["", "未指定", ""], ["Easy", "Easy / 简单", "green"], ["Medium", "Medium / 中等", "yellow"], ["Hard", "Hard / 困难", "red"]].forEach(([value, label, tone]) => {
-          const option = element4("option", tone ? `tone-${tone}` : "", label);
-          option.value = value;
-          select.append(option);
+          const option2 = element4("option", tone ? `tone-${tone}` : "", label);
+          option2.value = value;
+          select.append(option2);
         });
         const level = Search.difficulty({ platform: "LC", difficulty: native.value }).level;
         const known2 = ["Easy", "Medium", "Hard"][level - 1];
@@ -3493,9 +3715,9 @@
         datalist.id = "editor-native-difficulties";
         const values = platform === "AT" ? ["ABC A", "ABC B", "ABC C", "ABC D", "ABC E", "ABC F", "ARC A", "ARC B", "ARC C", "ARC D", "ARC E", "ARC F"] : platform === "NC" ? ["简单", "中等", "困难"] : [];
         values.forEach((value) => {
-          const option = element4("option");
-          option.value = value;
-          datalist.append(option);
+          const option2 = element4("option");
+          option2.value = value;
+          datalist.append(option2);
         });
         input2.setAttribute("list", datalist.id);
         input2.addEventListener("input", () => {
@@ -3509,9 +3731,9 @@
         const select = element4("select", "luogu-range");
         select.setAttribute("aria-label", "补充洛谷难度");
         [["", "未指定"], ...editorLuoguLevels.map((name) => [name, name])].forEach(([value, label], index) => {
-          const option = element4("option", index ? `tone-${editorLuoguTones[index - 1]}` : "", label);
-          option.value = value;
-          select.append(option);
+          const option2 = element4("option", index ? `tone-${editorLuoguTones[index - 1]}` : "", label);
+          option2.value = value;
+          select.append(option2);
         });
         select.value = form.elements.luoguDifficulty.value;
         const color2 = () => {
@@ -3793,20 +4015,20 @@ ${data.trick.trim()}` : ""].filter(Boolean).join("\n\n") : data.body;
     const $ = (selector, root2 = document) => root2.querySelector(selector);
     const $$ = (selector, root2 = document) => Array.from(root2.querySelectorAll(selector));
     function element4(tag, className, text3) {
-      const node2 = document.createElement(tag);
-      if (className) node2.className = className;
-      if (text3 !== void 0) node2.textContent = String(text3);
-      return node2;
+      const node3 = document.createElement(tag);
+      if (className) node3.className = className;
+      if (text3 !== void 0) node3.textContent = String(text3);
+      return node3;
     }
     function append(parent, ...children) {
       children.filter(Boolean).forEach((child) => parent.append(child));
       return parent;
     }
-    function button6(label, className, action2) {
-      const node2 = element4("button", className, label);
-      node2.type = "button";
-      node2.addEventListener("click", action2);
-      return node2;
+    function button7(label, className, action2) {
+      const node3 = element4("button", className, label);
+      node3.type = "button";
+      node3.addEventListener("click", action2);
+      return node3;
     }
     function favorite(record) {
       return getLocal().favorites.some((value) => String(value) === key(record));
@@ -3849,7 +4071,7 @@ ${data.trick.trim()}` : ""].filter(Boolean).join("\n\n") : data.body;
     function empty(title, description, action2) {
       const box = element4("div", "empty-state");
       append(box, element4("div", "empty-icon", "⌑"), element4("h3", "", title), element4("p", "", description));
-      if (action2) box.append(button6(action2.label, "button secondary", action2.fn));
+      if (action2) box.append(button7(action2.label, "button secondary", action2.fn));
       return box;
     }
     let focusedDetail = false;
@@ -3908,7 +4130,7 @@ ${data.trick.trim()}` : ""].filter(Boolean).join("\n\n") : data.body;
       }
       const fragment = document.createDocumentFragment();
       items.forEach((record2) => {
-        const card = button6("", `record-card${!publicList && key(record2) === getSelected() ? " selected" : ""}`, () => {
+        const card = button7("", `record-card${!publicList && key(record2) === getSelected() ? " selected" : ""}`, () => {
           if (publicList) {
             openDetail(record2);
             return;
@@ -3999,19 +4221,19 @@ ${data.trick.trim()}` : ""].filter(Boolean).join("\n\n") : data.body;
       const scroll = panel.scrollTop;
       panel.replaceChildren();
       if (focusedDetail) {
-        const back = button6("← 返回题目列表", "button secondary detail-back", closeDetail);
+        const back = button7("← 返回题目列表", "button secondary detail-back", closeDetail);
         back.id = "detail-back-button";
         panel.append(back);
       } else {
-        const open2 = button6("打开详情 ↗", "button primary detail-open", () => openDetail(record));
+        const open2 = button7("打开详情 ↗", "button primary detail-open", () => openDetail(record));
         open2.id = "open-detail-button";
         panel.append(open2);
       }
-      const actions = append(element4("div", "detail-actions"), button6(favorite(record) ? "★ 已收藏" : "☆ 收藏", "button secondary", () => changeLocal(() => {
+      const actions = append(element4("div", "detail-actions"), button7(favorite(record) ? "★ 已收藏" : "☆ 收藏", "button secondary", () => changeLocal(() => {
         getLocal().favorites = favorite(record) ? getLocal().favorites.filter((value) => String(value) !== key(record)) : [...getLocal().favorites, key(record)];
-      })), button6("原题 ↗", "button subtle", () => openExternal(record.problemUrl || record.url)));
+      })), button7("原题 ↗", "button subtle", () => openExternal(record.problemUrl || record.url)));
       if (record.kind === "document") {
-        const localSolution = button6("＋ 本地题解", "button subtle public-local-solution", () => openLocalSolution(record));
+        const localSolution = button7("＋ 本地题解", "button subtle public-local-solution", () => openLocalSolution(record));
         localSolution.id = "local-solution-button";
         localSolution.title = "为这道题写自己的本地题解；已有本地记录时继续编辑";
         actions.append(localSolution);
@@ -4027,7 +4249,7 @@ ${data.trick.trim()}` : ""].filter(Boolean).join("\n\n") : data.body;
       panel.append(body);
       const masteryButtons = element4("div", "mastery-buttons");
       Object.entries(stateLabels).forEach(([value, label]) => {
-        const control = button6(label, mastery(record) === value ? "active" : "", () => changeLocal(() => {
+        const control = button7(label, mastery(record) === value ? "active" : "", () => changeLocal(() => {
           getLocal().mastery[key(record)] = value;
         }));
         control.setAttribute("aria-pressed", mastery(record) === value ? "true" : "false");
@@ -4035,16 +4257,16 @@ ${data.trick.trim()}` : ""].filter(Boolean).join("\n\n") : data.body;
       });
       append(panel, append(element4("div", "mastery-box"), append(element4("div"), element4("strong", "", "这个思路，掌握了吗？"), element4("small", "", "复习进度仅记录在你的学习空间")), masteryButtons));
       const edits = element4("div", "record-edit-actions");
-      if (record.proposalUrl) edits.append(button6("旧版已投稿副本 · 查看投稿 ↗", "button secondary", () => openExternal(record.proposalUrl)));
+      if (record.proposalUrl) edits.append(button7("旧版已投稿副本 · 查看投稿 ↗", "button secondary", () => openExternal(record.proposalUrl)));
       if (isLocal(record) && visibleLocal(record) || canEditRemote(record)) {
-        const edit = button6(isLocal(record) ? "编辑本地记录" : "编辑正式题解", "button secondary", () => openSubmit(record));
+        const edit = button7(isLocal(record) ? "编辑本地记录" : "编辑正式题解", "button secondary", () => openSubmit(record));
         edit.id = "edit-record-button";
-        const remove = button6(isLocal(record) ? "删除本地记录" : "删除正式题解", "button danger", () => deleteRecord(record));
+        const remove = button7(isLocal(record) ? "删除本地记录" : "删除正式题解", "button danger", () => deleteRecord(record));
         remove.id = "delete-record-button";
         append(edits, edit, remove);
       }
       if (record.kind === "issue" && sameRepo(record) && getAccount() && getPermissions().admin === true) {
-        const remove = button6("永久删除讨论 Issue", "button danger", () => deleteDiscussion(record));
+        const remove = button7("永久删除讨论 Issue", "button danger", () => deleteDiscussion(record));
         remove.id = "delete-issue-button";
         edits.append(remove);
       }
@@ -4133,10 +4355,10 @@ ${data.trick.trim()}` : ""].filter(Boolean).join("\n\n") : data.body;
     const { demo, bridge: bridge3, themeStorage, paletteStorage, getBusy, setBusy, getSettings, setSettings, getAccount, getAuthStatus, getPermissions, setPermissionsRepo, getError, setError, getLocal, repo, repoSource, quotaBlocked, reauthNeeded, call, applyPayload, resetRepositoryData, resetSourceView, clearComments, refreshFilters, render: render6, renderUpdate, updateStatus, sync, writeDemo, toast, errorMessage } = options;
     const $ = (selector, root2 = document) => root2.querySelector(selector);
     function element4(tag, className, text3) {
-      const node2 = document.createElement(tag);
-      if (className) node2.className = className;
-      if (text3 !== void 0) node2.textContent = String(text3);
-      return node2;
+      const node3 = document.createElement(tag);
+      if (className) node3.className = className;
+      if (text3 !== void 0) node3.textContent = String(text3);
+      return node3;
     }
     function append(parent, ...children) {
       children.filter(Boolean).forEach((child) => parent.append(child));
@@ -4148,6 +4370,99 @@ ${data.trick.trim()}` : ""].filter(Boolean).join("\n\n") : data.body;
     let editingRepos = [];
     let editingActiveId = "";
     let authUrl = "";
+    function clistApi() {
+      const candidate = window.notebook;
+      return candidate && typeof candidate.saveClistCredentials === "function" && typeof candidate.clearClistCredentials === "function" && typeof candidate.getClistStatus === "function" ? candidate : null;
+    }
+    function clistStatusText(status) {
+      const value = status && typeof status === "object" ? status : {};
+      return value.configured === true ? `已配置${typeof value.username === "string" && value.username.trim() ? ` · ${value.username.trim()}` : ""}` : "未配置";
+    }
+    async function renderClistStatus() {
+      const statusNode = $("#clist-status");
+      if (!statusNode) return;
+      const api = clistApi();
+      if (!api) {
+        statusNode.textContent = "桌面端未接入";
+        return;
+      }
+      try {
+        statusNode.textContent = clistStatusText(await api.getClistStatus());
+      } catch (_) {
+        statusNode.textContent = "状态不可用";
+      }
+    }
+    async function saveClistCredentials() {
+      const usernameNode = $("#clist-username");
+      const apiKeyNode = $("#clist-api-key");
+      const errorNode = $("#clist-error");
+      if (!usernameNode || !apiKeyNode) return;
+      const username2 = usernameNode.value.trim();
+      const apiKey = apiKeyNode.value;
+      apiKeyNode.value = "";
+      if (!username2 || !apiKey) {
+        if (errorNode) {
+          errorNode.textContent = "请输入 CLIST 用户名和 API key";
+          errorNode.hidden = false;
+        }
+        return;
+      }
+      const api = clistApi();
+      if (!api) {
+        if (errorNode) {
+          errorNode.textContent = "当前桌面端未接入 CLIST 配置接口";
+          errorNode.hidden = false;
+        }
+        return;
+      }
+      if (errorNode) errorNode.hidden = true;
+      const saveButton2 = $("#clist-save-button");
+      if (saveButton2) saveButton2.disabled = true;
+      try {
+        await api.saveClistCredentials({ username: username2, apiKey });
+        usernameNode.value = username2;
+        await renderClistStatus();
+        toast("CLIST 配置已保存");
+      } catch (error) {
+        if (errorNode) {
+          errorNode.textContent = errorMessage(error);
+          errorNode.hidden = false;
+        }
+      } finally {
+        if (saveButton2) saveButton2.disabled = false;
+      }
+    }
+    async function clearClistCredentials() {
+      const apiKeyNode = $("#clist-api-key");
+      if (apiKeyNode) apiKeyNode.value = "";
+      const errorNode = $("#clist-error");
+      const api = clistApi();
+      if (!api) {
+        if (errorNode) {
+          errorNode.textContent = "当前桌面端未接入 CLIST 配置接口";
+          errorNode.hidden = false;
+        }
+        return;
+      }
+      if (errorNode) errorNode.hidden = true;
+      const clearButton = $("#clist-clear-button");
+      if (clearButton) clearButton.disabled = true;
+      try {
+        await api.clearClistCredentials();
+        const usernameNode = $("#clist-username");
+        if (usernameNode) usernameNode.value = "";
+        await renderClistStatus();
+        toast("CLIST 配置已删除");
+      } catch (error) {
+        const errorNode2 = $("#clist-error");
+        if (errorNode2) {
+          errorNode2.textContent = errorMessage(error);
+          errorNode2.hidden = false;
+        }
+      } finally {
+        if (clearButton) clearButton.disabled = false;
+      }
+    }
     function normalizeTheme(theme) {
       return theme === "dark" ? "dark" : "light";
     }
@@ -4484,6 +4799,9 @@ ${data.trick.trim()}` : ""].filter(Boolean).join("\n\n") : data.body;
       const box = $("#account-details");
       box.replaceChildren();
       for (const [label, value] of [["姓名", account?.name || "未设置"], ["GitHub 登录名", account?.login || "未登录"], ["GitHub ID", account?.id ?? "未登录"], ["当前仓库", repo() || "未配置"], ["权限", account ? permissions.admin ? "管理员 · 可直接维护自己的题解" : permissions.push ? "可推送 · 可直接维护自己的题解" : "只读 · 可使用本地记录" : "未登录 · 仅本地编辑"]]) append(box, element4("dt", "", label), element4("dd", "", value));
+      const clistUsername = $("#clist-username");
+      if (clistUsername) clistUsername.value = "";
+      void renderClistStatus();
       const authLabel = { anonymous: "未登录", restored: "已恢复，等待验证", verified: "已验证", expired: "授权已过期，请重新登录", unverified: "尚未验证，请联网刷新", "recovery-required": "凭证恢复失败，请重新授权" };
       if (authLabel[authStatus?.status]) append(box, element4("dt", "", "认证状态"), element4("dd", "", authLabel[authStatus.status]));
       $("#account-login").textContent = ["expired", "recovery-required"].includes(authStatus?.status) ? "重新授权 GitHub" : "登录 GitHub";
@@ -4640,6 +4958,12 @@ ${data.trick.trim()}` : ""].filter(Boolean).join("\n\n") : data.body;
     $("#settings-dialog").addEventListener("close", closeSettings);
     $("#settings-login-button").addEventListener("click", loginFromSettings);
     $("#account-button").addEventListener("click", openAccount);
+    $("#account-dialog").addEventListener("close", () => {
+      const apiKeyNode = $("#clist-api-key");
+      if (apiKeyNode) apiKeyNode.value = "";
+    });
+    $("#clist-save-button")?.addEventListener("click", () => void saveClistCredentials());
+    $("#clist-clear-button")?.addEventListener("click", () => void clearClistCredentials());
     ["login", "logout", "switch", "refresh"].forEach((action2) => {
       document.getElementById(`account-${action2}`).addEventListener("click", () => accountAction(action2));
     });
@@ -4729,20 +5053,20 @@ ${data.trick.trim()}` : ""].filter(Boolean).join("\n\n") : data.body;
     if (text3 !== void 0) el3.textContent = String(text3);
     return el3;
   }
-  function button3(text3, className, action2) {
+  function button4(text3, className, action2) {
     const el3 = element2("button", className, text3);
     el3.type = "button";
     el3.addEventListener("click", action2);
     return el3;
   }
-  function isDirectory(node2) {
-    return node2.kind === "directory" || node2.kind === "category" || node2.color === "parent";
+  function isDirectory(node3) {
+    return node3.kind === "directory" || node3.kind === "category" || node3.color === "parent";
   }
-  function levelOf(node2) {
-    return isDirectory(node2) ? void 0 : LEVELS.find((level) => level.id === node2.color);
+  function levelOf(node3) {
+    return isDirectory(node3) ? void 0 : LEVELS.find((level) => level.id === node3.color);
   }
-  function attributesOf(node2) {
-    return [.../* @__PURE__ */ new Set([...Array.isArray(node2.attributes) ? node2.attributes : [], ...ATTRIBUTES[node2.color] ? [node2.color] : []])].filter((key) => ATTRIBUTES[key]);
+  function attributesOf(node3) {
+    return [.../* @__PURE__ */ new Set([...Array.isArray(node3.attributes) ? node3.attributes : [], ...ATTRIBUTES[node3.color] ? [node3.color] : []])].filter((key) => ATTRIBUTES[key]);
   }
   function tagsOf(note) {
     return Array.isArray(note.tags) ? note.tags.map(String) : [];
@@ -4773,15 +5097,15 @@ ${data.trick.trim()}` : ""].filter(Boolean).join("\n\n") : data.body;
     const root2 = opts.tree;
     const byId = /* @__PURE__ */ new Map();
     const all = [];
-    function index(node2, parent, depth, path) {
-      const entry2 = { node: node2, parent, depth, path: path.concat(String(node2.label || "未命名节点")), descendants: 0 };
-      byId.set(node2.id, entry2);
-      (node2.legacyIds || []).forEach((id) => {
+    function index(node3, parent, depth, path) {
+      const entry2 = { node: node3, parent, depth, path: path.concat(String(node3.label || "未命名节点")), descendants: 0 };
+      byId.set(node3.id, entry2);
+      (node3.legacyIds || []).forEach((id) => {
         if (!byId.has(id)) byId.set(id, entry2);
       });
       all.push(entry2);
-      (node2.children || []).forEach((child) => {
-        index(child, node2.id, depth + 1, entry2.path);
+      (node3.children || []).forEach((child) => {
+        index(child, node3.id, depth + 1, entry2.path);
         entry2.descendants += 1 + byId.get(child.id).descendants;
       });
     }
@@ -4844,7 +5168,7 @@ ${data.trick.trim()}` : ""].filter(Boolean).join("\n\n") : data.body;
     scopeSwitch.setAttribute("role", "group");
     scopeSwitch.setAttribute("aria-label", "笔记范围");
     ["public", "personal"].forEach((scope2) => {
-      const control = button3(scope2 === "public" ? "公开笔记" : "我的笔记", "alg-scope-button", () => {
+      const control = button4(scope2 === "public" ? "公开笔记" : "我的笔记", "alg-scope-button", () => {
         if (scope2 === state3.scope) return;
         if (typeof opts.onScopeChange === "function") opts.onScopeChange(scope2);
         else if (scope2 !== "personal" || opts.account) {
@@ -4857,7 +5181,7 @@ ${data.trick.trim()}` : ""].filter(Boolean).join("\n\n") : data.body;
       scopeSwitch.append(control);
     });
     const uploadWrap = element2("div", "alg-upload-wrap");
-    const upload = button3("＋ 上传笔记", "alg-button alg-button-primary", () => {
+    const upload = button4("＋ 上传笔记", "alg-button alg-button-primary", () => {
       if (!opts.canUpload || !opts.account || typeof opts.onUpload !== "function") return;
       if (typeof opts.onSelect === "function") opts.onSelect(state3.selectedNode);
       opts.onUpload(state3.selectedNode);
@@ -4888,14 +5212,14 @@ ${data.trick.trim()}` : ""].filter(Boolean).join("\n\n") : data.body;
     const attribute = element2("select", "alg-attribute");
     attribute.setAttribute("aria-label", "按类型或使用频率筛选");
     [["", "全部属性"], ...Object.entries(ATTRIBUTES)].forEach(([value, label]) => {
-      const option = element2("option", "", label);
-      option.value = value;
-      attribute.append(option);
+      const option2 = element2("option", "", label);
+      option2.value = value;
+      attribute.append(option2);
     });
     attribute.value = state3.draftAttribute;
     attributeLabel.append(attribute);
-    const submitSearch = button3("搜索", "alg-button alg-button-primary alg-search-submit", applySearch);
-    const clear = button3("清除筛选", "alg-text-button alg-clear", () => {
+    const submitSearch = button4("搜索", "alg-button alg-button-primary alg-search-submit", applySearch);
+    const clear = button4("清除筛选", "alg-text-button alg-clear", () => {
       state3.search = "";
       state3.level = "";
       state3.attribute = "";
@@ -4920,7 +5244,7 @@ ${data.trick.trim()}` : ""].filter(Boolean).join("\n\n") : data.body;
       const key = level ? level.id : "unrated";
       levelCounts.set(key, levelCounts.get(key) + 1);
     });
-    const allLevel = button3(`全部 ${all.length}`, "alg-legend-button alg-tone-neutral", () => {
+    const allLevel = button4(`全部 ${all.length}`, "alg-legend-button alg-tone-neutral", () => {
       state3.draftLevel = "";
       updateDraftControls();
     });
@@ -4928,7 +5252,7 @@ ${data.trick.trim()}` : ""].filter(Boolean).join("\n\n") : data.body;
     legendButtons.push(allLevel);
     legend.append(allLevel);
     [...LEVELS, ...levelCounts.get("unrated") ? [{ id: "unrated", label: "未分级", tone: "neutral", number: "—" }] : []].forEach((level) => {
-      const control = button3("", `alg-legend-button alg-tone-${level.tone}`, () => {
+      const control = button4("", `alg-legend-button alg-tone-${level.tone}`, () => {
         state3.draftLevel = state3.draftLevel === level.id ? "" : level.id;
         updateDraftControls();
       });
@@ -5051,30 +5375,30 @@ ${data.trick.trim()}` : ""].filter(Boolean).join("\n\n") : data.body;
       } });
     }
     let filtering = false;
-    function badge(node2) {
-      if (isDirectory(node2)) {
+    function badge(node3) {
+      if (isDirectory(node3)) {
         const directory = element2("span", "alg-node-kind", "目录");
         directory.dataset.algTooltip = "目录可保存说明和笔记，具体算法在子节点中分级";
         return directory;
       }
-      const level = levelOf(node2);
-      const el3 = element2("span", `alg-badge alg-tone-${level ? level.tone : "neutral"}`, level ? level.label : node2.color === "parent" ? "目录" : "未分级");
-      const origin = node2.difficultySource?.kind === "user-md" ? "用户颜色文档" : node2.rating?.type === "category" ? "分类基础门槛" : node2.rating?.type === "entry" ? "入口或任务形式" : "本项目逐项定稿";
-      const range = node2.rating?.range;
-      const coverage2 = range && node2.children?.length ? `；覆盖 D${range.min}–D${range.max}` : "";
-      el3.dataset.algTooltip = level ? `学习难度：${level.label}；依据：${origin}${coverage2}${node2.scope ? `。学习范围：${node2.scope}` : ""}${node2.rationale ? `。${node2.rationale}` : ""}` : node2.color === "parent" ? "目录" : "未指定难度";
+      const level = levelOf(node3);
+      const el3 = element2("span", `alg-badge alg-tone-${level ? level.tone : "neutral"}`, level ? level.label : node3.color === "parent" ? "目录" : "未分级");
+      const origin = node3.difficultySource?.kind === "user-md" ? "用户颜色文档" : node3.rating?.type === "category" ? "分类基础门槛" : node3.rating?.type === "entry" ? "入口或任务形式" : "本项目逐项定稿";
+      const range = node3.rating?.range;
+      const coverage2 = range && node3.children?.length ? `；覆盖 D${range.min}–D${range.max}` : "";
+      el3.dataset.algTooltip = level ? `学习难度：${level.label}；依据：${origin}${coverage2}${node3.scope ? `。学习范围：${node3.scope}` : ""}${node3.rationale ? `。${node3.rationale}` : ""}` : node3.color === "parent" ? "目录" : "未指定难度";
       return el3;
     }
-    function attributeBadge(node2) {
-      const names = attributesOf(node2).map((key) => ATTRIBUTES[key]);
+    function attributeBadge(node3) {
+      const names = attributesOf(node3).map((key) => ATTRIBUTES[key]);
       return names.length ? element2("span", "alg-attribute-badge", names.join(" · ")) : null;
     }
     function pathOf(id) {
       return byId.get(id)?.path.join(" / ") || "未关联目录";
     }
-    function matchesFacets(node2) {
-      const level = levelOf(node2);
-      return (!state3.level || !isDirectory(node2) && (state3.level === "unrated" ? !level : node2.color === state3.level)) && (!state3.attribute || attributesOf(node2).includes(state3.attribute));
+    function matchesFacets(node3) {
+      const level = levelOf(node3);
+      return (!state3.level || !isDirectory(node3) && (state3.level === "unrated" ? !level : node3.color === state3.level)) && (!state3.attribute || attributesOf(node3).includes(state3.attribute));
     }
     const relevance = AlgorithmDirectory;
     const topicScores = /* @__PURE__ */ new Map();
@@ -5191,7 +5515,7 @@ ${data.trick.trim()}` : ""].filter(Boolean).join("\n\n") : data.body;
           const row2 = element2("div", "alg-tree-row");
           row2.style.setProperty("--alg-depth", String(entry2.depth));
           if (kids.length) {
-            const disclosure = button3(isExpanded(entry2.node.id) ? "▾" : "▸", "alg-disclosure", (event) => {
+            const disclosure = button4(isExpanded(entry2.node.id) ? "▾" : "▸", "alg-disclosure", (event) => {
               event.stopPropagation();
               toggle(entry2.node.id, !isExpanded(entry2.node.id));
             });
@@ -5217,7 +5541,7 @@ ${data.trick.trim()}` : ""].filter(Boolean).join("\n\n") : data.body;
           row2.dataset.algTooltip = `${entry2.path.join(" / ")}${entry2.node.fullLabel && entry2.node.fullLabel !== entry2.node.label ? `
 ${entry2.node.fullLabel}` : ""}`;
           if (opts.canManage && typeof opts.onAddTopic === "function") {
-            const add = button3("＋", "alg-add-topic", (event) => {
+            const add = button4("＋", "alg-add-topic", (event) => {
               event.stopPropagation();
               opts.onAddTopic(entry2.node.id);
             });
@@ -5296,7 +5620,7 @@ ${entry2.node.fullLabel}` : ""}`;
           separator.setAttribute("aria-hidden", "true");
           nav.append(separator);
         }
-        const crumb = button3(ancestor.node.label, "alg-crumb", () => selectNode(ancestor.node.id));
+        const crumb = button4(ancestor.node.label, "alg-crumb", () => selectNode(ancestor.node.id));
         if (i === ancestors.length - 1) crumb.setAttribute("aria-current", "page");
         nav.append(crumb);
       });
@@ -5324,7 +5648,7 @@ ${entry2.node.fullLabel}` : ""}`;
       pane.querySelector(".alg-reading-title")?.focus({ preventScroll: true });
     }
     function noteCard(note, globalResult) {
-      const card = button3("", `alg-note-card${note.featured ? " alg-note-featured" : ""}`, () => openNote(note));
+      const card = button4("", `alg-note-card${note.featured ? " alg-note-featured" : ""}`, () => openNote(note));
       card.append(noteMetadata(note), element2("h4", "alg-note-title", note.title || "未命名笔记"));
       const preview = excerpt(note.body);
       if (preview) card.append(element2("p", "alg-note-excerpt", preview));
@@ -5339,7 +5663,7 @@ ${entry2.node.fullLabel}` : ""}`;
       return row2;
     }
     function topicCard(entry2) {
-      const card = button3("", "alg-topic-card", () => selectNode(entry2.node.id));
+      const card = button4("", "alg-topic-card", () => selectNode(entry2.node.id));
       const name = element2("div", "alg-topic-name");
       name.append(element2("strong", "", entry2.node.label), element2("span", "alg-card-arrow", "↗"));
       const meta = element2("div", "alg-topic-meta");
@@ -5356,14 +5680,14 @@ ${entry2.node.fullLabel}` : ""}`;
       const selected2 = byId.get(state3.selectedNode);
       const reading = state3.reading && notes.find((note) => noteKey(note) === state3.reading);
       if (reading) {
-        const back = button3("← 返回目录与笔记", "alg-text-button alg-reader-back", () => {
+        const back = button4("← 返回目录与笔记", "alg-text-button alg-reader-back", () => {
           state3.reading = null;
           renderPane();
           pane.scrollTop = state3.listScroll;
           pane.querySelector(".alg-detail-title")?.focus({ preventScroll: true });
         });
         const actions = element2("div", "reading-detail-actions");
-        actions.append(back, button3("打开详情 ↗", "alg-button reading-detail-trigger alg-open-detail", openDetail));
+        actions.append(back, button4("打开详情 ↗", "alg-button reading-detail-trigger alg-open-detail", openDetail));
         pane.append(actions, breadcrumbs(reading.nodeId));
         const article = element2("article", "alg-reading");
         const title2 = element2("h2", "alg-reading-title", reading.title || "未命名笔记");
@@ -5373,14 +5697,14 @@ ${entry2.node.fullLabel}` : ""}`;
         if (typeof opts.renderMarkdown === "function") opts.renderMarkdown(body, String(reading.body || ""));
         else body.textContent = String(reading.body || "");
         article.append(body);
-        if (byId.has(reading.nodeId)) article.append(button3(`在目录中查看：${byId.get(reading.nodeId).node.label}`, "alg-text-button alg-note-location", () => selectNode(reading.nodeId)));
+        if (byId.has(reading.nodeId)) article.append(button4(`在目录中查看：${byId.get(reading.nodeId).node.label}`, "alg-text-button alg-note-location", () => selectNode(reading.nodeId)));
         pane.append(article);
         return;
       }
       pane.append(breadcrumbs(selected2.node.id));
       const detail = element2("header", "alg-detail-heading");
       const detailBar = element2("div", "alg-detail-toolbar");
-      detailBar.append(element2("span", "alg-eyebrow", selected2.node.id === root2.id ? "知识目录" : "知识节点"), button3("打开详情 ↗", "alg-button reading-detail-trigger alg-open-detail", openDetail));
+      detailBar.append(element2("span", "alg-eyebrow", selected2.node.id === root2.id ? "知识目录" : "知识节点"), button4("打开详情 ↗", "alg-button reading-detail-trigger alg-open-detail", openDetail));
       detail.append(detailBar);
       const titleRow = element2("div", "alg-detail-title-row");
       const title = element2("h2", "alg-detail-title", selected2.node.fullLabel || selected2.node.label);
@@ -5398,11 +5722,11 @@ ${entry2.node.fullLabel}` : ""}`;
         information.append(element2("p", "alg-intro", `${origin}${range && selected2.node.children?.length ? `；覆盖 D${range.min}–D${range.max}` : ""}${selected2.node.rationale ? `。${selected2.node.rationale}` : ""}${selected2.node.scope ? ` 学习范围：${selected2.node.scope}` : ""}`));
       }
       const utilities = element2("footer", "alg-detail-utilities");
-      if (opts.canManage && typeof opts.onAddTopic === "function") utilities.append(button3("＋ 添加算法", "alg-text-button alg-add-topic-detail", () => {
+      if (opts.canManage && typeof opts.onAddTopic === "function") utilities.append(button4("＋ 添加算法", "alg-text-button alg-add-topic-detail", () => {
         expandedReader?.close();
         opts.onAddTopic(selected2.node.id);
       }));
-      if (typeof opts.onLearningPath === "function") utilities.append(button3("在学习路线中查看 →", "alg-text-button alg-add-topic-detail", () => {
+      if (typeof opts.onLearningPath === "function") utilities.append(button4("在学习路线中查看 →", "alg-text-button alg-add-topic-detail", () => {
         expandedReader?.close();
         opts.onLearningPath(selected2.node.id);
       }));
@@ -5436,7 +5760,7 @@ ${entry2.node.fullLabel}` : ""}`;
           pane.append(heading("匹配的知识节点", topicMatches.length));
           const resultTopics = element2("div", "alg-result-topics");
           topicMatches.forEach((entry2) => {
-            const row2 = button3("", "alg-result-topic", () => selectNode(entry2.node.id));
+            const row2 = button4("", "alg-result-topic", () => selectNode(entry2.node.id));
             row2.append(element2("span", "alg-result-topic-name", entry2.node.label), badge(entry2.node), element2("span", "alg-result-topic-path", entry2.path.join(" / ")));
             const attributeTag = attributeBadge(entry2.node);
             if (attributeTag) row2.append(attributeTag);
@@ -5450,7 +5774,7 @@ ${entry2.node.fullLabel}` : ""}`;
           matchingNotes.forEach((note) => list.append(noteCard(note, true)));
           pane.append(list);
         } else pane.append(element2("p", "alg-inline-empty", "当前范围内没有匹配的笔记。可以尝试算法名称、笔记标题、作者或标签。"));
-        if (!topicMatches.length && !matchingNotes.length) pane.append(button3("清除全部筛选", "alg-button", () => clear.click()));
+        if (!topicMatches.length && !matchingNotes.length) pane.append(button4("清除全部筛选", "alg-button", () => clear.click()));
         appendInformation();
         return;
       }
@@ -5487,7 +5811,7 @@ ${entry2.node.fullLabel}` : ""}`;
           element2("p", "", state3.scope === "personal" ? "此节点还没有你的个人笔记。选择一个主题，记录思路、模板和复盘。" : "此节点还没有公开笔记。继续浏览子目录，或为这个主题补充一篇笔记。")
         );
         if (upload.disabled) empty.append(element2("span", "alg-empty-hint", opts.account ? "上传笔记需要仓库写入权限。" : "登录具有写入权限的账户后，即可上传算法笔记。"));
-        else empty.append(button3("＋ 为此节点上传笔记", "alg-button", () => upload.click()));
+        else empty.append(button4("＋ 为此节点上传笔记", "alg-button", () => upload.click()));
         pane.append(empty);
       }
       appendInformation();
@@ -5591,21 +5915,21 @@ ${entry2.node.fullLabel}` : ""}`;
   var BAND_HEIGHTS = [250, 304, 310, 180];
   var serial = 0;
   function element3(tag, className, text3) {
-    const node2 = document.createElement(tag);
-    node2.className = className;
-    if (text3 !== void 0) node2.textContent = text3;
-    return node2;
+    const node3 = document.createElement(tag);
+    node3.className = className;
+    if (text3 !== void 0) node3.textContent = text3;
+    return node3;
   }
-  function button4(label, className, run) {
-    const node2 = element3("button", `arm-button ${className}`, label);
-    node2.type = "button";
-    node2.addEventListener("click", run);
-    return node2;
+  function button5(label, className, run) {
+    const node3 = element3("button", `arm-button ${className}`, label);
+    node3.type = "button";
+    node3.addEventListener("click", run);
+    return node3;
   }
   function svgElement2(tag, attributes) {
-    const node2 = document.createElementNS("http://www.w3.org/2000/svg", tag);
-    for (const [name, value] of Object.entries(attributes)) node2.setAttribute(name, value);
-    return node2;
+    const node3 = document.createElementNS("http://www.w3.org/2000/svg", tag);
+    for (const [name, value] of Object.entries(attributes)) node3.setAttribute(name, value);
+    return node3;
   }
   function route(a, b, nodes) {
     const same = Math.abs(a.y - b.y) < 2, up = b.y < a.y;
@@ -5687,9 +6011,9 @@ ${entry2.node.fullLabel}` : ""}`;
   }
   function render5(options) {
     const { host, data } = options, uid = `arm-${++serial}`;
-    const nodes = data.nodes.map((node2) => ({ ...node2, x: node2.px, y: node2.py, w: 164, h: 74, cx: node2.px + 82 }));
-    const graphById = new Map(nodes.map((node2) => [node2.id, node2]));
-    const byId = new Map([...data.nodes, ...data.indexEntries].map((node2) => [node2.id, node2]));
+    const nodes = data.nodes.map((node3) => ({ ...node3, x: node3.px, y: node3.py, w: 164, h: 74, cx: node3.px + 82 }));
+    const graphById = new Map(nodes.map((node3) => [node3.id, node3]));
+    const byId = new Map([...data.nodes, ...data.indexEntries].map((node3) => [node3.id, node3]));
     const cards2 = /* @__PURE__ */ new Map(), edgeElements = [];
     const stageButtons = [];
     let selected2 = null, hovered = null, stage = null, query = "";
@@ -5711,7 +6035,7 @@ ${entry2.node.fullLabel}` : ""}`;
     const navigation = element3("nav", "arm-stage-nav");
     navigation.setAttribute("aria-label", "阶段定位");
     data.rows.forEach((row2, index) => {
-      const card = button4("", "arm-stage-button", () => {
+      const card = button5("", "arm-stage-button", () => {
         stage = stage === index ? null : index;
         selected2 = null;
         hovered = null;
@@ -5740,7 +6064,7 @@ ${entry2.node.fullLabel}` : ""}`;
       hovered = null;
       paint();
     });
-    const reset = button4("显示全图", "arm-reset-button", () => {
+    const reset = button5("显示全图", "arm-reset-button", () => {
       query = "";
       search.value = "";
       stage = null;
@@ -5748,7 +6072,7 @@ ${entry2.node.fullLabel}` : ""}`;
       hovered = null;
       paint();
     });
-    const listButton = button4("列表视图", "arm-list-button", () => {
+    const listButton = button5("列表视图", "arm-list-button", () => {
       listMode = !listMode;
       root2.dataset.view = listMode ? "list" : "graph";
       scroll.hidden = listMode;
@@ -5758,31 +6082,31 @@ ${entry2.node.fullLabel}` : ""}`;
       if (!listMode) scheduleFit();
     });
     listButton.setAttribute("aria-pressed", "false");
-    const highlightButton = button4("关联高亮：开", "arm-highlight-button", () => {
+    const highlightButton = button5("关联高亮：开", "arm-highlight-button", () => {
       highlight = !highlight;
       highlightButton.textContent = `关联高亮：${highlight ? "开" : "关"}`;
       highlightButton.setAttribute("aria-pressed", String(highlight));
       paint();
     });
     highlightButton.setAttribute("aria-pressed", "true");
-    const fitButton = button4("适应窗口", "arm-fit-button", () => {
+    const fitButton = button5("适应窗口", "arm-fit-button", () => {
       autoFit = true;
       resize();
       scroll.scrollLeft = 0;
     });
-    const actualButton = button4("100%", "arm-actual-button", () => {
+    const actualButton = button5("100%", "arm-actual-button", () => {
       autoFit = false;
       zoom = 1;
       resize();
     });
     const zoomControls = element3("div", "arm-zoom");
-    const zoomOut = button4("−", "arm-zoom-out", () => {
+    const zoomOut = button5("−", "arm-zoom-out", () => {
       autoFit = false;
       zoom = Math.max(0.2, Math.round((zoom - 0.1) * 100) / 100);
       resize();
     });
     zoomOut.setAttribute("aria-label", "缩小");
-    const zoomIn = button4("＋", "arm-zoom-in", () => {
+    const zoomIn = button5("＋", "arm-zoom-in", () => {
       autoFit = false;
       zoom = Math.min(2, Math.round((zoom + 0.1) * 100) / 100);
       resize();
@@ -5829,22 +6153,22 @@ ${entry2.node.fullLabel}` : ""}`;
       edgeElements.push({ edge, path });
     }
     canvas.append(svg);
-    function nodeCard(node2, graph) {
-      const card = button4("", graph ? `arm-node arm-kind-${node2.kind}${node2.contextual ? " arm-contextual" : ""}` : "arm-list-node", () => open2(node2.id));
-      card.dataset.node = node2.id;
-      card.dataset.stage = String(node2.row);
-      const row2 = data.rows[node2.row];
+    function nodeCard(node3, graph) {
+      const card = button5("", graph ? `arm-node arm-kind-${node3.kind}${node3.contextual ? " arm-contextual" : ""}` : "arm-list-node", () => open2(node3.id));
+      card.dataset.node = node3.id;
+      card.dataset.stage = String(node3.row);
+      const row2 = data.rows[node3.row];
       card.style.setProperty("--arm-stage", row2?.color || "#4778be");
       card.style.setProperty("--arm-stage-soft", row2?.bg || "#edf4ff");
-      card.setAttribute("aria-label", `${row2?.name || "专题"}：${node2.label}，打开详情`);
+      card.setAttribute("aria-label", `${row2?.name || "专题"}：${node3.label}，打开详情`);
       card.setAttribute("aria-haspopup", "dialog");
-      card.append(element3("strong", "", node2.label));
-      const sub = node2.sub || (node2.id === "g" ? "表达与实现" : node2.id === "ds" ? "容器与常用接口" : node2.id === "ssr" ? "状态与转移" : "");
-      if (!graph || sub) card.append(element3("small", "", graph ? sub : node2.detail[0]));
-      if (graph && node2.contextual) card.append(element3("span", "arm-context-badge", "遇到再学"));
+      card.append(element3("strong", "", node3.label));
+      const sub = node3.sub || (node3.id === "g" ? "表达与实现" : node3.id === "ds" ? "容器与常用接口" : node3.id === "ssr" ? "状态与转移" : "");
+      if (!graph || sub) card.append(element3("small", "", graph ? sub : node3.detail[0]));
+      if (graph && node3.contextual) card.append(element3("span", "arm-context-badge", "遇到再学"));
       if (graph) card.append(element3("span", "arm-open-icon", "↗"));
       card.addEventListener("pointerenter", () => {
-        hovered = node2.id;
+        hovered = node3.id;
         paint();
       });
       card.addEventListener("pointerleave", () => {
@@ -5852,22 +6176,22 @@ ${entry2.node.fullLabel}` : ""}`;
         paint();
       });
       card.addEventListener("focus", () => {
-        hovered = node2.id;
+        hovered = node3.id;
         paint();
       });
       card.addEventListener("blur", () => {
         hovered = null;
         paint();
       });
-      const existing = cards2.get(node2.id) || [];
+      const existing = cards2.get(node3.id) || [];
       existing.push(card);
-      cards2.set(node2.id, existing);
+      cards2.set(node3.id, existing);
       return card;
     }
-    for (const node2 of nodes) {
-      const card = nodeCard(node2, true);
-      card.style.left = `${node2.x}px`;
-      card.style.top = `${node2.y}px`;
+    for (const node3 of nodes) {
+      const card = nodeCard(node3, true);
+      card.style.left = `${node3.x}px`;
+      card.style.top = `${node3.y}px`;
       canvas.append(card);
     }
     space.append(canvas);
@@ -5880,7 +6204,7 @@ ${entry2.node.fullLabel}` : ""}`;
       section.style.setProperty("--arm-stage", row2.color);
       section.append(element3("h3", "", row2.name), element3("p", "", data.goals[index] || ""));
       const group = element3("div", "arm-list-nodes");
-      data.nodes.filter((node2) => node2.row === index).forEach((node2) => group.append(nodeCard(node2, false)));
+      data.nodes.filter((node3) => node3.row === index).forEach((node3) => group.append(nodeCard(node3, false)));
       section.append(group);
       list.append(section);
     });
@@ -5891,7 +6215,7 @@ ${entry2.node.fullLabel}` : ""}`;
     root2.append(panel);
     const insight = element3("div", "arm-insight");
     const insightCopy = element3("p", "arm-insight-copy", "选一个节点，查看它的知识范围与前后联系。");
-    const insightOpen = button4("查看节点详情", "arm-insight-open", () => {
+    const insightOpen = button5("查看节点详情", "arm-insight-open", () => {
       if (selected2) open2(selected2);
     });
     insightOpen.hidden = true;
@@ -5900,7 +6224,7 @@ ${entry2.node.fullLabel}` : ""}`;
     for (const entry2 of data.indexEntries) {
       const index = element3("section", "arm-topic-index"), text3 = element3("div", "");
       text3.append(element3("strong", "", entry2.label), element3("p", "", "CDQ 分治、整体二分、莫队与特殊题型，按需要查阅专项索引。"));
-      const action2 = button4("查看专项索引 →", "arm-index-button", () => open2(entry2.id));
+      const action2 = button5("查看专项索引 →", "arm-index-button", () => open2(entry2.id));
       action2.dataset.node = entry2.id;
       index.append(text3, action2);
       root2.append(index);
@@ -5908,7 +6232,7 @@ ${entry2.node.fullLabel}` : ""}`;
     const dialog3 = element3("dialog", "arm-detail-dialog");
     dialog3.setAttribute("aria-labelledby", `${uid}-detail-title`);
     const dialogHeader = element3("div", "arm-dialog-header"), breadcrumb = element3("span", "arm-breadcrumb");
-    const close = button4("关闭 ×", "arm-close-button", () => dialog3.close());
+    const close = button5("关闭 ×", "arm-close-button", () => dialog3.close());
     close.setAttribute("aria-label", "关闭节点详情");
     dialogHeader.append(breadcrumb, close);
     const detailBody = element3("div", "arm-detail-body");
@@ -5923,24 +6247,24 @@ ${entry2.node.fullLabel}` : ""}`;
         if (event.clientX < box.left || event.clientX > box.right || event.clientY < box.top || event.clientY > box.bottom) dialog3.close();
       }
     });
-    function matches(node2) {
-      return [node2.label, node2.sub || "", ...node2.detail.flat()].join(" ").normalize("NFKC").toLowerCase().includes(query);
+    function matches(node3) {
+      return [node3.label, node3.sub || "", ...node3.detail.flat()].join(" ").normalize("NFKC").toLowerCase().includes(query);
     }
     function paint() {
       const active3 = highlight ? hovered || selected2 : null;
       const related = active3 ? /* @__PURE__ */ new Set([active3, ...data.edges.flatMap((edge) => edge.from === active3 ? [edge.to] : edge.to === active3 ? [edge.from] : [])]) : null;
       let matchCount = 0;
-      for (const node2 of data.nodes) {
-        const match2 = !query || matches(node2);
+      for (const node3 of data.nodes) {
+        const match2 = !query || matches(node3);
         if (match2) matchCount++;
-        for (const card of cards2.get(node2.id) || []) {
-          card.classList.toggle("arm-dim", !match2 || stage !== null && node2.row !== stage || !query && stage === null && !!related && !related.has(node2.id));
+        for (const card of cards2.get(node3.id) || []) {
+          card.classList.toggle("arm-dim", !match2 || stage !== null && node3.row !== stage || !query && stage === null && !!related && !related.has(node3.id));
           card.classList.toggle("arm-match", !!query && match2);
-          card.classList.toggle("arm-selected", node2.id === selected2);
-          card.classList.toggle("arm-related", !!related?.has(node2.id));
-          card.classList.toggle("arm-position", node2.id === position);
-          card.dataset.focused = String(node2.id === position);
-          card.setAttribute("aria-pressed", String(node2.id === selected2));
+          card.classList.toggle("arm-selected", node3.id === selected2);
+          card.classList.toggle("arm-related", !!related?.has(node3.id));
+          card.classList.toggle("arm-position", node3.id === position);
+          card.dataset.focused = String(node3.id === position);
+          card.setAttribute("aria-pressed", String(node3.id === selected2));
         }
       }
       for (const { edge, path } of edgeElements) {
@@ -5953,8 +6277,8 @@ ${entry2.node.fullLabel}` : ""}`;
       const indexMatch = data.indexEntries.some((entry2) => query && matches(entry2));
       empty.hidden = !query || matchCount > 0 || indexMatch;
       root2.querySelectorAll(".arm-index-button").forEach((card) => {
-        const node2 = byId.get(card.dataset.node || "");
-        card.classList.toggle("arm-match", !!query && !!node2 && matches(node2));
+        const node3 = byId.get(card.dataset.node || "");
+        card.classList.toggle("arm-match", !!query && !!node3 && matches(node3));
       });
       caption.textContent = query ? `搜索结果 · ${matchCount} 个知识节点${indexMatch ? " · 含专项索引" : ""}` : stage === null ? `完整框架 · ${data.rows.length} 层 / ${data.nodes.length} 个知识节点` : `${data.rows[stage].name} · ${data.goals[stage] || ""}`;
       const current = selected2 ? byId.get(selected2) : null;
@@ -5975,33 +6299,33 @@ ${entry2.node.fullLabel}` : ""}`;
       const group = element3("div", "arm-relation-group");
       group.append(element3("p", "", title));
       for (const id of ids) {
-        const node2 = byId.get(id);
-        if (!node2) continue;
-        const action2 = button4(node2.label, "arm-relation-button", () => open2(id));
+        const node3 = byId.get(id);
+        if (!node3) continue;
+        const action2 = button5(node3.label, "arm-relation-button", () => open2(id));
         action2.dataset.node = id;
         group.append(action2);
       }
       parent.append(group);
     }
-    function renderDetail(node2) {
+    function renderDetail(node3) {
       detailBody.replaceChildren();
-      const row2 = data.rows[node2.row];
-      breadcrumb.textContent = `四层大纲 / ${row2?.name || "专项索引"} / ${node2.label}`;
+      const row2 = data.rows[node3.row];
+      breadcrumb.textContent = `四层大纲 / ${row2?.name || "专项索引"} / ${node3.label}`;
       const pill = element3("span", "arm-stage-pill", row2?.name || "专项索引");
       pill.style.setProperty("--arm-stage", row2?.color || "#4778be");
-      const title = element3("h2", "arm-detail-title", node2.label);
+      const title = element3("h2", "arm-detail-title", node3.label);
       title.id = `${uid}-detail-title`;
-      detailBody.append(pill, title, element3("p", "arm-detail-tagline", node2.detail[0]), element3("p", "arm-dialog-intro", node2.detail[1]));
+      detailBody.append(pill, title, element3("p", "arm-detail-tagline", node3.detail[0]), element3("p", "arm-dialog-intro", node3.detail[1]));
       const layout = element3("div", "arm-detail-layout"), left = element3("div", ""), right = element3("aside", "");
-      left.append(detailSection("重点知识范围", node2.detail[2]), detailSection("理解时注意", node2.detail[3]));
+      left.append(detailSection("重点知识范围", node3.detail[2]), detailSection("理解时注意", node3.detail[3]));
       const relations = element3("section", "arm-detail-section");
       relations.append(element3("h3", "", "在框架中的联系"));
-      relationGroup("相关基础", data.edges.filter((edge) => edge.to === node2.id && !edge.bidir).map((edge) => edge.from), relations);
-      relationGroup("可以延伸到", data.edges.filter((edge) => edge.from === node2.id && !edge.bidir).map((edge) => edge.to), relations);
-      relationGroup("适合对照理解", data.edges.filter((edge) => edge.bidir && (edge.from === node2.id || edge.to === node2.id)).map((edge) => edge.from === node2.id ? edge.to : edge.from), relations);
+      relationGroup("相关基础", data.edges.filter((edge) => edge.to === node3.id && !edge.bidir).map((edge) => edge.from), relations);
+      relationGroup("可以延伸到", data.edges.filter((edge) => edge.from === node3.id && !edge.bidir).map((edge) => edge.to), relations);
+      relationGroup("适合对照理解", data.edges.filter((edge) => edge.bidir && (edge.from === node3.id || edge.to === node3.id)).map((edge) => edge.from === node3.id ? edge.to : edge.from), relations);
       if (!relations.querySelector(".arm-relation-group")) relations.append(element3("p", "arm-fine-print", "按当前问题需要查阅，相关方法可结合各分支理解。"));
       const practice = element3("section", "arm-practice-box");
-      practice.append(element3("h3", "", "可选应用 / 混练建议"), element3("p", "", node2.detail[4]));
+      practice.append(element3("h3", "", "可选应用 / 混练建议"), element3("p", "", node3.detail[4]));
       right.append(relations, practice);
       layout.append(left, right);
       detailBody.append(layout);
@@ -6009,14 +6333,14 @@ ${entry2.node.fullLabel}` : ""}`;
       extra.append(element3("summary", "", "怎样使用这个节点定位自己？"), element3("p", "", "阶段表示内容展开的大致层次。可以在不同分支处于不同位置；看到题目有需要或有兴趣时，也可以先进入，再从相关基础回补。"));
       detailBody.append(extra);
       const actions = element3("div", "arm-detail-actions");
-      const focusButton = button4(position === node2.id ? "取消当前关注" : "标记当前关注", "arm-focus-button", () => {
-        void saveFocus(node2);
+      const focusButton = button5(position === node3.id ? "取消当前关注" : "标记当前关注", "arm-focus-button", () => {
+        void saveFocus(node3);
       });
-      focusButton.setAttribute("aria-pressed", String(position === node2.id));
+      focusButton.setAttribute("aria-pressed", String(position === node3.id));
       focusButton.disabled = pending2 || !options.onFocus;
-      const resources = button4("查看相关笔记与题单", "arm-resources-button", () => {
+      const resources = button5("查看相关笔记与题单", "arm-resources-button", () => {
         dialog3.close();
-        options.onOpenResources?.(node2);
+        options.onOpenResources?.(node3);
       });
       resources.disabled = !options.onOpenResources;
       actions.append(focusButton, resources);
@@ -6026,16 +6350,16 @@ ${entry2.node.fullLabel}` : ""}`;
       error.hidden = true;
       detailBody.append(error);
     }
-    async function saveFocus(node2) {
+    async function saveFocus(node3) {
       if (pending2 || destroyed || !options.onFocus) return;
-      const before = position, next = position === node2.id ? null : node2.id;
+      const before = position, next = position === node3.id ? null : node3.id;
       pending2 = true;
       position = next;
       paint();
       if (detailNode) renderDetail(detailNode);
       try {
         await options.onFocus(next);
-        if (!destroyed) options.toast?.(next ? `当前关注：${node2.label}` : "已取消当前关注");
+        if (!destroyed) options.toast?.(next ? `当前关注：${node3.label}` : "已取消当前关注");
       } catch (error) {
         if (!destroyed) {
           position = before;
@@ -6058,14 +6382,14 @@ ${entry2.node.fullLabel}` : ""}`;
       }
     }
     function open2(id) {
-      const node2 = byId.get(id);
-      if (!node2 || destroyed) return false;
+      const node3 = byId.get(id);
+      if (!node3 || destroyed) return false;
       if (!dialog3.open) previousFocus = document.activeElement instanceof HTMLElement ? document.activeElement : null;
       selected2 = id;
       hovered = null;
-      detailNode = node2;
+      detailNode = node3;
       paint();
-      renderDetail(node2);
+      renderDetail(node3);
       if (!dialog3.open) dialog3.showModal();
       detailBody.scrollTop = 0;
       return true;
@@ -6095,12 +6419,12 @@ ${entry2.node.fullLabel}` : ""}`;
     observer.observe(scroll);
     return {
       selectGate(id) {
-        const node2 = data.nodes.find((entry2) => entry2.gateIds?.includes(id));
-        return node2 ? open2(node2.id) : false;
+        const node3 = data.nodes.find((entry2) => entry2.gateIds?.includes(id));
+        return node3 ? open2(node3.id) : false;
       },
       selectTopic(id) {
-        const node2 = [...data.nodes, ...data.indexEntries].find((entry2) => entry2.topicIds?.includes(id));
-        return node2 ? open2(node2.id) : false;
+        const node3 = [...data.nodes, ...data.indexEntries].find((entry2) => entry2.topicIds?.includes(id));
+        return node3 ? open2(node3.id) : false;
       },
       destroy() {
         if (destroyed) return;
@@ -7724,7 +8048,7 @@ ${entry2.node.fullLabel}` : ""}`;
     if (text3 !== void 0) n.textContent = text3;
     return n;
   }
-  function button5(text3, cls, action2) {
+  function button6(text3, cls, action2) {
     const b = el2("button", text3, `arm-button ${cls}`);
     b.type = "button";
     b.addEventListener("click", action2);
@@ -7746,8 +8070,8 @@ ${entry2.node.fullLabel}` : ""}`;
     return error instanceof Error ? error.message : "保存失败，请重试";
   }
   function openRoadmapResources(options) {
-    const { host, node: node2 } = options, previous = document.activeElement;
-    const all = (options.curriculum.stages || []).flatMap((s) => s.gates || []), ids = new Set(node2.gateIds || []);
+    const { host, node: node3 } = options, previous = document.activeElement;
+    const all = (options.curriculum.stages || []).flatMap((s) => s.gates || []), ids = new Set(node3.gateIds || []);
     const gates = all.filter((g) => ids.has(g.id));
     const contents = new Map(options.contents.map((c) => [c.gateId, c]));
     const topics = /* @__PURE__ */ new Map();
@@ -7758,9 +8082,9 @@ ${entry2.node.fullLabel}` : ""}`;
     }
     walk(options.tree);
     const dialog3 = el2("dialog", void 0, "arm-detail-dialog arm-resource-dialog");
-    dialog3.setAttribute("aria-label", `${node2.label}相关资料`);
-    const heading = el2("header", void 0, "arm-dialog-header"), title = el2("h2", `${node2.label} · 相关资料`, "arm-detail-title");
-    const close = button5("×", "arm-resource-close", () => {
+    dialog3.setAttribute("aria-label", `${node3.label}相关资料`);
+    const heading = el2("header", void 0, "arm-dialog-header"), title = el2("h2", `${node3.label} · 相关资料`, "arm-detail-title");
+    const close = button6("×", "arm-resource-close", () => {
       if (!busy2) destroy();
     });
     close.setAttribute("aria-label", "关闭相关资料");
@@ -7801,7 +8125,7 @@ ${entry2.node.fullLabel}` : ""}`;
       form.noValidate = true;
       const formHead = el2("header", void 0, "arm-dialog-header");
       formHead.append(el2("h2", personal ? "我的题单" : "编辑公共资料", "arm-detail-title"));
-      const cancel = button5("取消", "", () => {
+      const cancel = button6("取消", "", () => {
         if (!busy2) {
           child.close();
           child.remove();
@@ -7926,7 +8250,7 @@ ${entry2.node.fullLabel}` : ""}`;
         for (const topicId of gate.topicIds || []) {
           const topic = topics.get(topicId);
           if (!topic) continue;
-          const b = button5(topic.label || topic.id, "arm-topic-link", () => {
+          const b = button6(topic.label || topic.id, "arm-topic-link", () => {
             destroy();
             options.onTopic(topic.id);
           });
@@ -7937,7 +8261,7 @@ ${entry2.node.fullLabel}` : ""}`;
         const gateTopics = new Set((gate.topicIds || []).map((id) => topics.get(id)?.id || id));
         const notes = options.notes.filter((note) => note.noteScope === "public" && gateTopics.has(topics.get(note.nodeId)?.id || note.nodeId)).slice().sort((a, b) => Number(Boolean(b.featured)) - Number(Boolean(a.featured)));
         for (const note of notes) {
-          const b = button5(note.title || "未命名笔记", `arm-note${note.featured ? " arm-note-featured" : ""}`, () => {
+          const b = button6(note.title || "未命名笔记", `arm-note${note.featured ? " arm-note-featured" : ""}`, () => {
             destroy();
             options.onNote(note, gate.id);
           });
@@ -7946,23 +8270,23 @@ ${entry2.node.fullLabel}` : ""}`;
         }
         const official = content?.practiceList || (content ? null : (gate.practiceLists || [])[0]);
         const officialUrl = safeUrl(official?.url);
-        if (official && officialUrl) card.append(button5(`官方精选题单 · ${official.title} ↗`, "arm-official-list", () => external2(officialUrl)));
+        if (official && officialUrl) card.append(button6(`官方精选题单 · ${official.title} ↗`, "arm-official-list", () => external2(officialUrl)));
         const record = fields(options.progress.gates?.[gate.id]), personalUrl = safeUrl(record.practiceUrl);
-        if (personalUrl) card.append(button5("我的题单 ↗", "arm-personal-link", () => external2(personalUrl)));
+        if (personalUrl) card.append(button6("我的题单 ↗", "arm-personal-link", () => external2(personalUrl)));
         const actions = el2("div", void 0, "arm-resource-actions");
-        actions.append(button5(personalUrl ? "编辑我的题单" : "＋ 添加我的题单", "arm-personal-button", () => openForm(gate, true)));
-        if (options.canManage) actions.append(button5("编辑介绍、目标与官方题单", "arm-resource-edit", () => openForm(gate, false)));
+        actions.append(button6(personalUrl ? "编辑我的题单" : "＋ 添加我的题单", "arm-personal-button", () => openForm(gate, true)));
+        if (options.canManage) actions.append(button6("编辑介绍、目标与官方题单", "arm-resource-edit", () => openForm(gate, false)));
         card.append(actions);
         body.append(card);
       }
       const covered = new Set(gates.flatMap((g) => g.topicIds || []));
-      const extraTopics = (node2.topicIds || []).filter((id) => !covered.has(id));
+      const extraTopics = (node3.topicIds || []).filter((id) => !covered.has(id));
       if (extraTopics.length) {
         const links = el2("div", void 0, "arm-resource-links");
         extraTopics.forEach((id) => {
           const topic = topics.get(id);
           if (topic) {
-            const b = button5(topic.label || topic.id, "arm-topic-link", () => {
+            const b = button6(topic.label || topic.id, "arm-topic-link", () => {
               destroy();
               options.onTopic(topic.id);
             });
@@ -8029,25 +8353,25 @@ ${entry2.node.fullLabel}` : ""}`;
     const { getAlgorithmNotes, setAlgorithmNotes, getAlgorithmTopics, setAlgorithmTopics, getAlgorithmTree, setAlgorithmTree, getAccount, getPermissions, getLocal, getBusy, getReadingDetail, accountId, repo, uuid, setBusy, persistLocal, call, render: render6, renderMarkdown, authorName, date, tags, toast, errorMessage } = options;
     const $ = (selector) => document.querySelector(selector);
     function element4(tag, className, text3) {
-      const node2 = document.createElement(tag);
-      if (className) node2.className = className;
-      if (text3 !== void 0) node2.textContent = String(text3);
-      return node2;
+      const node3 = document.createElement(tag);
+      if (className) node3.className = className;
+      if (text3 !== void 0) node3.textContent = String(text3);
+      return node3;
     }
     function append(parent, ...children) {
       children.filter(Boolean).forEach((child) => parent.append(child));
       return parent;
     }
-    function button6(label, className, action2) {
-      const node2 = element4("button", className, label);
-      node2.type = "button";
-      node2.addEventListener("click", action2);
-      return node2;
+    function button7(label, className, action2) {
+      const node3 = element4("button", className, label);
+      node3.type = "button";
+      node3.addEventListener("click", action2);
+      return node3;
     }
     let algorithmSelectedNode = "root";
-    function flattenTree(node2, depth = 0, parent = null, out = []) {
-      out.push({ ...node2, depth, parent });
-      (node2.children || []).forEach((child) => flattenTree(child, depth + 1, node2.id, out));
+    function flattenTree(node3, depth = 0, parent = null, out = []) {
+      out.push({ ...node3, depth, parent });
+      (node3.children || []).forEach((child) => flattenTree(child, depth + 1, node3.id, out));
       return out;
     }
     function algorithmNodes() {
@@ -8127,7 +8451,7 @@ ${entry2.node.fullLabel}` : ""}`;
       modes.setAttribute("role", "group");
       modes.setAttribute("aria-label", "算法学习方式");
       for (const [mode, title] of [["tree", "知识树"], ["path", "学习路线"]]) {
-        const control = button6(title, "button secondary", () => setAlgorithmMode(mode));
+        const control = button7(title, "button secondary", () => setAlgorithmMode(mode));
         control.dataset.mode = mode;
         control.setAttribute("aria-pressed", String(algorithmMode === mode));
         modes.append(control);
@@ -8137,12 +8461,12 @@ ${entry2.node.fullLabel}` : ""}`;
       panel.append(host);
       if (algorithmMode === "path") {
         const curriculum = effectiveCurriculum();
-        const mapped = { ...roadmapData, nodes: roadmapData.nodes.map((node2) => ({ ...node2 })), indexEntries: roadmapData.indexEntries.map((node2) => ({ ...node2 })) };
+        const mapped = { ...roadmapData, nodes: roadmapData.nodes.map((node3) => ({ ...node3 })), indexEntries: roadmapData.indexEntries.map((node3) => ({ ...node3 })) };
         const allGates = (curriculum?.stages || []).flatMap((stage) => stage.gates || []);
-        for (const node2 of [...mapped.nodes, ...mapped.indexEntries]) {
-          const known2 = new Set(node2.topicIds || []);
+        for (const node3 of [...mapped.nodes, ...mapped.indexEntries]) {
+          const known2 = new Set(node3.topicIds || []);
           const added = allGates.filter((gate) => gate.id.startsWith("custom-") && (gate.topicIds || []).some((id) => known2.has(id)));
-          node2.gateIds = [.../* @__PURE__ */ new Set([...node2.gateIds || [], ...added.map((gate) => gate.id)])];
+          node3.gateIds = [.../* @__PURE__ */ new Set([...node3.gateIds || [], ...added.map((gate) => gate.id)])];
         }
         learningController = LearningRoadmap.render({
           host,
@@ -8152,12 +8476,12 @@ ${entry2.node.fullLabel}` : ""}`;
             await saveRoadmapProgress({ ...learningProgress(), roadmapFocus: id });
           },
           toast,
-          onOpenResources: (node2) => {
+          onOpenResources: (node3) => {
             if (!curriculum || getBusy()) return;
             resources?.destroy();
             resources = openRoadmapResources({
               host: host.querySelector(".arm") || host,
-              node: node2,
+              node: node3,
               curriculum,
               tree: getAlgorithmTree(),
               notes: getAlgorithmNotes(),
@@ -8240,7 +8564,7 @@ ${entry2.node.fullLabel}` : ""}`;
     document.querySelector('#algorithm-topic-form [name="kind"]').addEventListener("change", updateAlgorithmTopicKind);
     function openAlgorithmTopicEditor(parentId) {
       if (!getAccount() || !getPermissions().admin) return;
-      const parent = algorithmNodes().find((node2) => node2.id === parentId);
+      const parent = algorithmNodes().find((node3) => node3.id === parentId);
       if (!parent) return;
       const form = $("#algorithm-topic-form");
       form.reset();
@@ -8316,13 +8640,13 @@ ${entry2.node.fullLabel}` : ""}`;
       }
       const form = $("#algorithm-note-form");
       form.reset();
-      const node2 = form.elements.nodeId;
-      node2.replaceChildren(...algorithmNodes().map((n) => {
+      const node3 = form.elements.nodeId;
+      node3.replaceChildren(...algorithmNodes().map((n) => {
         const o = element4("option", "", n.label);
         o.value = n.id;
         return o;
       }));
-      node2.value = algorithmSelectedNode;
+      node3.value = algorithmSelectedNode;
       form.elements.noteScope.value = getPermissions().admin ? "public" : "personal";
       form.elements.noteScope.disabled = !getPermissions().admin;
       $("#algorithm-note-error").hidden = true;
@@ -8411,20 +8735,20 @@ ${entry2.node.fullLabel}` : ""}`;
     let toastTimer;
     let draftTimer;
     function element4(tag, className, text3) {
-      const node2 = document.createElement(tag);
-      if (className) node2.className = className;
-      if (text3 !== void 0) node2.textContent = String(text3);
-      return node2;
+      const node3 = document.createElement(tag);
+      if (className) node3.className = className;
+      if (text3 !== void 0) node3.textContent = String(text3);
+      return node3;
     }
     function append(parent, ...children) {
       children.filter(Boolean).forEach((child) => parent.append(child));
       return parent;
     }
-    function button6(label, className, action2) {
-      const node2 = element4("button", className, label);
-      node2.type = "button";
-      node2.addEventListener("click", action2);
-      return node2;
+    function button7(label, className, action2) {
+      const node3 = element4("button", className, label);
+      node3.type = "button";
+      node3.addEventListener("click", action2);
+      return node3;
     }
     function toast(message2) {
       $("#toast").textContent = message2;
@@ -8618,7 +8942,7 @@ ${entry2.node.fullLabel}` : ""}`;
         const quota = quotaBlocked();
         if (!demo && !offline && (reauth || quota)) {
           banner.append(document.createTextNode(reauth ? " 请重新登录 GitHub 以恢复同步。" : " 登录 GitHub 后，同步额度可由每小时 60 次提升至 5000 次。"));
-          const login = button6(reauth ? "重新登录 GitHub" : "使用 GitHub 登录", "button secondary", startLoginFromBanner);
+          const login = button7(reauth ? "重新登录 GitHub" : "使用 GitHub 登录", "button secondary", startLoginFromBanner);
           login.id = "banner-login-button";
           login.disabled = s.busy;
           banner.append(login);
@@ -8643,14 +8967,14 @@ ${entry2.node.fullLabel}` : ""}`;
       else accountButton.setAttribute("aria-label", accountButton.title);
     }
     const filters = createFilters({ getRecords: records, getView: () => s.view, getScope: () => s.libraryScope, getTagCatalog: () => s.tagCatalog, getBusy: () => s.busy, favorite, mastery, isLocal, isOwnSolution, recordAuthorName: (record) => recordAuthorName(record, s.account), render: render6 });
-    const { facets, facetNames, platformNames, luoguLevels: luoguLevels2, luoguTones, facetValue, fillFacetOptions, refreshFilters, tagGroups, fillTagOptions, openTagPicker, closeTagPicker, renderEditorTags, ranges, updateFacetCounts, setDifficultyPlatform, clearDifficulty, filteredRecords, clearFilters, colorRatingInput, colorLuoguSelection } = filters;
+    const { facets, facetNames, platformNames, luoguLevels: luoguLevels3, luoguTones, facetValue, fillFacetOptions, refreshFilters, tagGroups, fillTagOptions, openTagPicker, closeTagPicker, renderEditorTags, ranges, updateFacetCounts, setDifficultyPlatform, clearDifficulty, filteredRecords, clearFilters, colorRatingInput, colorLuoguSelection } = filters;
     async function openTagDialog() {
       const select = $("#request-tag-category");
       select.replaceChildren();
       (s.tagCatalog?.categories || []).forEach((c) => {
-        const option = element4("option", "", c.name);
-        option.value = c.id;
-        select.append(option);
+        const option2 = element4("option", "", c.name);
+        option2.value = c.id;
+        select.append(option2);
       });
       $("#tag-review-section").hidden = true;
       $("#tag-review-dialog").showModal();
@@ -8665,8 +8989,8 @@ ${entry2.node.fullLabel}` : ""}`;
         (result.requests || []).forEach((request) => {
           const row2 = element4("article", "tag-request-row");
           append(row2, element4("strong", "", `${request.category} / ${request.name}`), element4("p", "facet-help", `#${request.number} · ${authorName(request.author)} · ${request.state || "open"}`));
-          if (request.url) row2.append(button6("查看申请 ↗", "button subtle", () => openExternal(request.url)));
-          ["approve", "reject"].forEach((decision) => row2.append(button6(decision === "approve" ? "批准" : "拒绝", "button secondary", async () => {
+          if (request.url) row2.append(button7("查看申请 ↗", "button subtle", () => openExternal(request.url)));
+          ["approve", "reject"].forEach((decision) => row2.append(button7(decision === "approve" ? "批准" : "拒绝", "button secondary", async () => {
             if (s.busy || !s.tagReview?.canReview || demo) return;
             setBusy(true);
             try {
@@ -8725,7 +9049,18 @@ ${entry2.node.fullLabel}` : ""}`;
       const planner = element4("section", "home-planner");
       planner.id = "home-planner";
       planner.setAttribute("aria-label", "题单与学习任务");
-      append(board, planner, renderHomeContests(), overview);
+      append(board, planner);
+      board.append(DailyProblem.create({
+        draw: async (drawFilters) => {
+          if (!window.notebook?.dailyDraw) throw new Error("每日一题接口尚未接入，请在桌面端启用每日一题。");
+          return window.notebook.dailyDraw(drawFilters);
+        },
+        openExternal,
+        chooseTags: (selected2, onApply) => filters.openTagPicker("daily", { selected: selected2, onApply }),
+        updateLibrary: window.notebook?.updateLibrary ? () => window.notebook.updateLibrary() : void 0,
+        autoDraw: true
+      }));
+      append(board, renderHomeContests(), overview);
       append(panel, toolbar, board);
       Planner?.render(s.planner);
       updateContestStatus();
@@ -8739,10 +9074,10 @@ ${entry2.node.fullLabel}` : ""}`;
       $("#breadcrumb-view").textContent = title;
       $("#page-description").textContent = description;
       $("#page-eyebrow").textContent = eyebrow;
-      $$(".nav-item,.rail-nav-item").forEach((node2) => {
-        node2.classList.toggle("active", node2.dataset.view === s.view);
-        if (node2.dataset.view === s.view) node2.setAttribute("aria-current", "page");
-        else node2.removeAttribute("aria-current");
+      $$(".nav-item,.rail-nav-item").forEach((node3) => {
+        node3.classList.toggle("active", node3.dataset.view === s.view);
+        if (node3.dataset.view === s.view) node3.setAttribute("aria-current", "page");
+        else node3.removeAttribute("aria-current");
       });
       const all = records();
       $("#count-public").textContent = all.filter((record) => record.kind === "document").length;
@@ -8816,7 +9151,7 @@ ${entry2.node.fullLabel}` : ""}`;
               } catch (_) {
                 return;
               }
-              const target = Array.from(container.querySelectorAll("[id],a[name]")).find((node2) => node2.id === id || node2.getAttribute("name") === id);
+              const target = Array.from(container.querySelectorAll("[id],a[name]")).find((node3) => node3.id === id || node3.getAttribute("name") === id);
               (target || (href === "#" ? container : null))?.scrollIntoView({ block: "start" });
               return;
             }
@@ -8841,31 +9176,31 @@ ${entry2.node.fullLabel}` : ""}`;
     let updateLockedControls = null;
     function setBusy(value) {
       if (!value && updateLockedControls) {
-        updateLockedControls.forEach(([node2, disabled]) => {
-          node2.disabled = disabled;
+        updateLockedControls.forEach(([node3, disabled]) => {
+          node3.disabled = disabled;
         });
         updateLockedControls = null;
       }
       s.busy = value;
       ["sync-button", "account-button", "settings-button", "theme-select", "palette-select", "submit-button", "save-local-button", "publish-button", "account-login", "account-logout", "account-switch", "account-refresh", "banner-login-button"].forEach((id) => {
-        const node2 = document.getElementById(id);
-        if (node2) node2.disabled = value;
+        const node3 = document.getElementById(id);
+        if (node3) node3.disabled = value;
       });
-      $$("[data-close], #settings-form input, #settings-form select, #settings-form button").forEach((node2) => {
-        node2.disabled = value;
+      $$("[data-close], #settings-form input, #settings-form select, #settings-form button").forEach((node3) => {
+        node3.disabled = value;
       });
-      $$("#submit-form input, #submit-form textarea").forEach((node2) => {
-        node2.readOnly = value;
+      $$("#submit-form input, #submit-form textarea").forEach((node3) => {
+        node3.readOnly = value;
       });
-      $$("#submit-form select, #editor-difficulty-picker select, #editor-difficulty-picker button").forEach((node2) => {
-        node2.disabled = value;
+      $$("#submit-form select, #editor-difficulty-picker select, #editor-difficulty-picker button").forEach((node3) => {
+        node3.disabled = value;
       });
       if (!value && s.editor?.record?.kind === "document") $("#save-local-button").disabled = true;
       if (value && updates.updateRunning) {
         const controls = $$("button, input, select, textarea");
-        if (!updateLockedControls) updateLockedControls = controls.map((node2) => [node2, node2.disabled]);
-        controls.forEach((node2) => {
-          node2.disabled = true;
+        if (!updateLockedControls) updateLockedControls = controls.map((node3) => [node3, node3.disabled]);
+        controls.forEach((node3) => {
+          node3.disabled = true;
         });
       }
       $("#check-update-button").disabled = value;
@@ -8951,8 +9286,8 @@ ${entry2.node.fullLabel}` : ""}`;
         setBusy(false);
       }
     }
-    $$(".nav-item").forEach((node2) => node2.addEventListener("click", (event) => {
-      navigate(node2.dataset.view);
+    $$(".nav-item").forEach((node3) => node3.addEventListener("click", (event) => {
+      navigate(node3.dataset.view);
       if (event.pointerType === "touch") {
         sidebarHovered = false;
         sidebarFocused = false;
@@ -8978,7 +9313,7 @@ ${entry2.node.fullLabel}` : ""}`;
       closeTagPicker(false);
     });
     $("#request-tag-open").addEventListener("click", openTagDialog);
-    const tagEntry = button6("＋ 添加标签", "button subtle", openTagDialog);
+    const tagEntry = button7("＋ 添加标签", "button subtle", openTagDialog);
     tagEntry.id = "tag-manager-button";
     $(".topbar-actions").insertBefore(tagEntry, $("#sync-button"));
     $("#tag-request-form").addEventListener("submit", async (event) => {
@@ -9017,18 +9352,18 @@ ${entry2.node.fullLabel}` : ""}`;
     append(stateSummary, stateLabel, element4("span", "facet-chevron", "⌄"));
     const stateOptions = element4("div", "facet-popover");
     stateOptions.setAttribute("aria-label", "状态筛选");
-    [...stateSelect.options].forEach((option) => {
+    [...stateSelect.options].forEach((option2) => {
       const label = element4("label", "facet-option");
       const input2 = element4("input");
       input2.type = "radio";
       input2.name = "state-choice";
-      input2.value = option.value;
+      input2.value = option2.value;
       input2.addEventListener("change", () => {
         stateSelect.value = input2.value;
         stateFacet.open = false;
         render6();
       });
-      append(label, input2, element4("span", "", option.textContent));
+      append(label, input2, element4("span", "", option2.textContent));
       stateOptions.append(label);
     });
     append(stateFacet, stateSummary, stateOptions);
@@ -9052,10 +9387,10 @@ ${entry2.node.fullLabel}` : ""}`;
     $("#clear-filters").addEventListener("click", clearFilters);
     for (const id of ["luogu-min", "luogu-max"]) {
       const select = $("#" + id);
-      const option = element4("option", "", "不限");
-      option.value = "";
-      select.append(option);
-      luoguLevels2.forEach((name, i) => {
+      const option2 = element4("option", "", "不限");
+      option2.value = "";
+      select.append(option2);
+      luoguLevels3.forEach((name, i) => {
         const o = element4("option", `tone-${luoguTones[i]}`, name);
         o.value = String(i + 1);
         select.append(o);
@@ -9076,8 +9411,8 @@ ${entry2.node.fullLabel}` : ""}`;
       updateFacetCounts();
       render6();
     }));
-    $$("[data-rating]").forEach((node2) => node2.addEventListener("click", () => {
-      const [min, max] = node2.dataset.rating.split(",");
+    $$("[data-rating]").forEach((node3) => node3.addEventListener("click", () => {
+      const [min, max] = node3.dataset.rating.split(",");
       $("#rating-min").value = min;
       $("#rating-max").value = max;
       updateFacetCounts();
@@ -9088,13 +9423,13 @@ ${entry2.node.fullLabel}` : ""}`;
       render6();
     });
     document.addEventListener("click", (event) => {
-      $$(".facet details[open],details.facet[open]").forEach((node2) => {
-        if (!node2.contains(event.target)) node2.open = false;
+      $$(".facet details[open],details.facet[open]").forEach((node3) => {
+        if (!node3.contains(event.target)) node3.open = false;
       });
     });
     document.addEventListener("click", codeBlockClick);
     document.addEventListener("keydown", (event) => {
-      if (event.key === "Escape") $$(".facet details[open],details.facet[open]").forEach((node2) => node2.open = false);
+      if (event.key === "Escape") $$(".facet details[open],details.facet[open]").forEach((node3) => node3.open = false);
     });
     $("#submit-button").addEventListener("click", () => openSubmit());
     $("#sync-button").addEventListener("click", sync);
@@ -9102,15 +9437,15 @@ ${entry2.node.fullLabel}` : ""}`;
     $$("dialog").forEach((dialog3) => dialog3.addEventListener("cancel", (event) => {
       if (s.busy) event.preventDefault();
     }));
-    $$("[data-close]").forEach((node2) => node2.addEventListener("click", async () => {
+    $$("[data-close]").forEach((node3) => node3.addEventListener("click", async () => {
       if (s.busy) return;
-      if (node2.dataset.close === "submit-dialog") {
+      if (node3.dataset.close === "submit-dialog") {
         clearTimeout(draftTimer);
         setBusy(true);
         await saveDraft();
         setBusy(false);
       }
-      document.getElementById(node2.dataset.close).close();
+      document.getElementById(node3.dataset.close).close();
     }));
     $("#submit-dialog").addEventListener("cancel", async (event) => {
       event.preventDefault();
@@ -9171,14 +9506,14 @@ ${entry2.node.fullLabel}` : ""}`;
     const rail = $(".sidebar-rail");
     for (const source of $$(".sidebar-drawer > *")) {
       const copy = source.cloneNode(true);
-      for (const node2 of [copy, ...$$("[id]", copy)]) {
-        if (node2.id) node2.removeAttribute("id");
+      for (const node3 of [copy, ...$$("[id]", copy)]) {
+        if (node3.id) node3.removeAttribute("id");
       }
-      for (const node2 of [copy, ...$$("button,a", copy)]) {
-        if (!node2.matches("button,a")) continue;
-        if (node2.classList.contains("sidebar-toggle")) {
-          node2.id = "sidebar-rail-toggle";
-          node2.addEventListener("click", (event) => {
+      for (const node3 of [copy, ...$$("button,a", copy)]) {
+        if (!node3.matches("button,a")) continue;
+        if (node3.classList.contains("sidebar-toggle")) {
+          node3.id = "sidebar-rail-toggle";
+          node3.addEventListener("click", (event) => {
             const wasPinned = sidebarPinned;
             applySidebar(!wasPinned);
             if (wasPinned) {
@@ -9188,16 +9523,16 @@ ${entry2.node.fullLabel}` : ""}`;
               updateSidebar();
             }
           });
-        } else if (node2.classList.contains("nav-item")) {
-          node2.classList.replace("nav-item", "rail-nav-item");
-          node2.addEventListener("click", () => navigate(node2.dataset.view));
-        } else if (node2.classList.contains("brand")) {
-          node2.classList.replace("brand", "rail-brand");
-          node2.addEventListener("click", (event) => {
+        } else if (node3.classList.contains("nav-item")) {
+          node3.classList.replace("nav-item", "rail-nav-item");
+          node3.addEventListener("click", () => navigate(node3.dataset.view));
+        } else if (node3.classList.contains("brand")) {
+          node3.classList.replace("brand", "rail-brand");
+          node3.addEventListener("click", (event) => {
             event.preventDefault();
             navigate("home");
           });
-        } else if (node2.classList.contains("sidebar-bottom")) node2.addEventListener("click", () => $("#account-button").click());
+        } else if (node3.classList.contains("sidebar-bottom")) node3.addEventListener("click", () => $("#account-button").click());
       }
       rail.append(copy);
     }

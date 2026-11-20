@@ -5,6 +5,7 @@ const ts = require('typescript');
 const { sourceMapOptions, stripSourceMapComment, generatedOutput } = require('./source-maps.cjs');
 const root = path.resolve(__dirname, '..');
 const targets = [
+  ['src/renderer/home/daily-problem.ts', 'ui/daily-problem.js', 'DailyProblem', 'DailyProblem', false],
   [
     "src/renderer/lib/search.ts",
     "ui/search.js",
@@ -105,6 +106,16 @@ const nodeTargets = [
   ['src/main/tags/service.cts', 'electron/tags.cjs'],
   ['src/main/contests/sources.cts', 'electron/contest-sources.cjs'],
   ['src/main/contests/service.cts', 'electron/contests.cjs'],
+  ['src/main/contests/daily-problems.cts', 'electron/daily-problems.cjs'],
+  ['src/main/library/index.cts', 'electron/library-index.cjs'],
+  ['src/main/library/normalize.cts', 'electron/library-normalize.cjs'],
+  ['src/main/library/sync.cts', 'electron/library-sync.cjs'],
+  ['src/main/clist/service.cts', 'electron/clist-service.cjs'],
+  ['src/main/contests/libreoj-daily.cts', 'electron/libreoj-daily.cjs'],
+  ['src/main/contests/libreoj-statement.cts', 'electron/libreoj-statement.cjs'],
+  ['src/main/contests/nowcoder-daily.cts', 'electron/nowcoder-daily.cjs'],
+  ['src/main/contests/nowcoder-statement.cts', 'electron/nowcoder-statement.cjs'],
+  ['src/main/contests/problem-statement.cts', 'electron/problem-statement.cjs'],
   ['src/main/algorithms/topics.cts', 'electron/algorithm-topics.cjs'],
   ['src/main/platforms/page.cts', 'electron/platform-page.cjs'],
   ['src/main/platforms/service.cts', 'electron/platform-service.cjs'],

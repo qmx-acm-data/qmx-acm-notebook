@@ -1,0 +1,46 @@
+'use strict';
+const assert = require('node:assert/strict');
+const fs = require('node:fs');
+const path = require('node:path');
+const { _electron: electron } = require('playwright');
+
+(async () => {
+  const root = path.resolve(__dirname, '..');
+  const profile = path.join(root, 'sandbox-profile', 'daily-electron-e2e');
+  fs.mkdirSync(profile, { recursive: true });
+  fs.writeFileSync(path.join(profile, 'settings.json'), JSON.stringify({ autoSync: false }));
+  const env = { ...process.env, QMX_USER_DATA_DIR: profile };
+  delete env.ELECTRON_RUN_AS_NODE;
+  const app = await electron.launch({ executablePath: require('electron'), args: [root, '--disable-gpu', ...(process.env.QMX_TEST_NO_SANDBOX === '1' ? ['--no-sandbox'] : [])], env, timeout: 30000 });
+  try {
+    const page = await app.firstWindow();
+    await page.locator('.daily-problem').waitFor({ state: 'visible', timeout: 30000 });
+    const info = await app.evaluate(({ app, BrowserWindow }) => ({ root: app.getAppPath(), userData: app.getPath('userData'), webPreferences: BrowserWindow.getAllWindows()[0].webContents.getLastWebPreferences() }));
+    assert.equal(path.resolve(info.userData), profile);
+    assert.equal(path.resolve(info.root), root);
+    assert.equal(info.webPreferences.contextIsolation, true);
+    assert.equal(info.webPreferences.nodeIntegration, false);
+    assert.equal(await page.evaluate(() => typeof window.require), 'undefined');
+    await page.evaluate(async () => window.notebook.updateLocal({ records: [{ id: 'local:daily-e2e', kind: 'local', ownerId: null, title: 'Daily E2E fixture', platform: 'CF', pid: '1999A', problemUrl: 'https://codeforces.com/problemset/problem/1999/A', rating: 1200, tags: ['dp'] }], favorites: [], mastery: {} }));
+    await page.getByLabel('题目来源').selectOption('local');
+    await page.getByLabel('最低 Codeforces Rating').fill('1200');
+    await page.getByLabel('最高 Codeforces Rating').fill('1200');
+    await page.getByRole('button', { name: '算法标签…' }).click();
+    await page.locator('#tag-picker-search').fill('dp');
+    await page.locator('#tag-picker-dialog-options input[type="checkbox"]').first().check();
+    await page.locator('#tag-picker-confirm').click();
+    await page.locator('.daily-draw').click();
+    await page.getByRole('heading', { name: 'Daily E2E fixture' }).waitFor({ state: 'visible', timeout: 15000 });
+    assert.equal(await page.locator('.daily-problem-link').getAttribute('href'), 'https://codeforces.com/problemset/problem/1999/A');
+    assert.equal(await page.locator('.daily-rating').innerText(), 'CF 1200');
+    await page.screenshot({ path: path.join(profile, 'daily-success.png'), fullPage: true });
+    await page.getByLabel('最低 Codeforces Rating').fill('1300');
+    await page.getByLabel('最高 Codeforces Rating').fill('1200');
+    await page.locator('.daily-change').click();
+    await page.getByText('最低评分不能大于最高评分').waitFor({ state: 'visible' });
+    assert.equal(await page.getByRole('heading', { name: 'Daily E2E fixture' }).isVisible(), true);
+    await page.screenshot({ path: path.join(profile, 'daily-error.png'), fullPage: true });
+    console.log('PASS real Electron local draw, filters, isolation, validation and retained result');
+    console.log(JSON.stringify({ root: info.root, userData: info.userData, contextIsolation: info.webPreferences.contextIsolation, nodeIntegration: info.webPreferences.nodeIntegration, sandbox: info.webPreferences.sandbox }));
+  } finally { await app.close(); }
+})().catch(error => { console.error(error); process.exitCode = 1; });

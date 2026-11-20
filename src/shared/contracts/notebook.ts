@@ -1,3 +1,4 @@
+import type { DailyDrawFilters, DailyDrawResult, LibrarySyncResult } from '../models/daily-problem';
 import type { LearningCurriculumDocument, SaveLearningCurriculumInput } from '../models/learning-curriculum';
 import type { LearningGateContent, SaveLearningGateInput } from '../models/learning-content';
 import type { BootstrapPayload } from '../models/bootstrap';
@@ -13,6 +14,8 @@ import type {
 
 /** IPC contracts are types only. Main-process validation remains authoritative. */
 export interface FormatCodeResult { code: string; error?: string }
+export interface ClistCredentialInput { username: string; apiKey: string }
+export interface ClistStatus { configured: boolean; username: string | null }
 
 /** Only these eight methods currently use the runtime boundary registration wrapper. */
 export interface BoundaryMethods {
@@ -32,6 +35,8 @@ export interface ServiceMethods {
   refreshPlatform(platform: PlatformCode): Promise<PlatformSnapshot>;
   unbindPlatform(platform: PlatformCode): Promise<PlatformSnapshot>;
   getContests(force?: boolean): Promise<ContestSnapshot>;
+  dailyDraw(filters: DailyDrawFilters): Promise<DailyDrawResult>;
+  updateLibrary(full?: boolean): Promise<LibrarySyncResult>;
   sync(): Promise<BootstrapPayload>;
   submit(record: DocumentWriteInput): Promise<SavedDocument>;
   /** The POST response is returned directly, without validating its JSON shape. */
@@ -39,6 +44,9 @@ export interface ServiceMethods {
   saveSettings(data: SettingsUpdate): Promise<BootstrapPayload>;
   login(): Promise<LoginAccount>;
   logout(): Promise<BootstrapPayload>;
+  saveClistCredentials(data: ClistCredentialInput): Promise<ClistStatus>;
+  clearClistCredentials(): Promise<ClistStatus>;
+  getClistStatus(): Promise<ClistStatus>;
   getComments(number: CommentNumber): Promise<CommentSnapshot[]>;
   propose(record: DocumentWriteInput): Promise<SavedDocument>;
   saveDocument(record: DocumentWriteInput): Promise<SavedDocument>;

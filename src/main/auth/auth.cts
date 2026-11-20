@@ -8,6 +8,52 @@ export interface AuthSafeStorage {
   decryptString(encrypted: Buffer): string;
 }
 
+export interface ClistCredentialInput { username: string; apiKey: string }
+export interface ClistStatus { configured: boolean; username: string | null }
+
+export function createClistCredentials({ safeStorage, readAuth, saveAuth }: AuthDependencies) {
+  function load(): ClistCredentialInput | null {
+    let stored: unknown;
+    try { stored = readAuth(); } catch (error) {
+      if ((error as { code?: unknown })?.code === 'ENOENT') return null;
+      throw new Error('无法读取 CLIST 凭据');
+    }
+    if (stored && typeof stored === 'object' && !Array.isArray(stored) && Object.keys(stored).length === 0) return null;
+    try {
+      if (!safeStorage.isEncryptionAvailable()) throw new Error();
+      if (!stored || typeof stored !== 'object' || Array.isArray(stored)) throw new Error();
+      const encrypted = (stored as { encrypted?: unknown }).encrypted;
+      if (typeof encrypted !== 'string' || !encrypted || !/^(?:[A-Za-z0-9+/]{4})*(?:[A-Za-z0-9+/]{2}==|[A-Za-z0-9+/]{3}=)?$/.test(encrypted)) throw new Error();
+      const value: unknown = JSON.parse(safeStorage.decryptString(Buffer.from(encrypted, 'base64')));
+      if (!value || typeof value !== 'object' || Array.isArray(value)) throw new Error();
+      const data = value as { username?: unknown; apiKey?: unknown };
+      if (typeof data.username !== 'string' || !data.username.trim() || typeof data.apiKey !== 'string' || !data.apiKey.trim()) throw new Error();
+      return { username: data.username, apiKey: data.apiKey };
+    } catch { throw new Error('无法解密 CLIST 凭据'); }
+  }
+  function status(): ClistStatus {
+    const data = load();
+    return { configured: data !== null, username: data?.username ?? null };
+  }
+  function save(value: unknown): ClistStatus {
+    if (!value || typeof value !== 'object' || Array.isArray(value)) throw new Error('CLIST 凭据格式不正确');
+    const data = value as { username?: unknown; apiKey?: unknown };
+    if (typeof data.username !== 'string' || !data.username.trim() || data.username.length > 200 || /[\r\n]/.test(data.username) || typeof data.apiKey !== 'string' || !data.apiKey.trim() || data.apiKey.length > 4096 || /[\r\n]/.test(data.apiKey)) throw new Error('CLIST 凭据格式不正确');
+    const username = data.username.trim();
+    try {
+      if (!safeStorage.isEncryptionAvailable()) throw new Error();
+      const encrypted = safeStorage.encryptString(JSON.stringify({ username, apiKey: data.apiKey })).toString('base64');
+      saveAuth({ encrypted });
+    } catch { throw new Error('无法安全保存 CLIST 凭据'); }
+    return { configured: true, username };
+  }
+  function clear(): ClistStatus {
+    try { saveAuth({}); } catch { throw new Error('无法清除 CLIST 凭据'); }
+    return { configured: false, username: null };
+  }
+  return { load, status, save, clear };
+}
+
 export interface EncryptedAuth {
   encrypted: string;
 }
