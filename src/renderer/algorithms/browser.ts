@@ -1,6 +1,8 @@
 /* Algorithm directory and note reader. No source tree or note is modified. */
 import { AlgorithmDirectory } from './directory.js';
 import { ReadingDetail } from '../reading/reading-detail.js';
+import { isAlgorithmLeaf, resolveAlgorithmLeaf } from '../../shared/algorithm-leaf.js';
+import { renderLeafReading } from './leaf-reading.js';
 
 type DirectoryNode = import('../../shared/models/algorithm-directory').AlgorithmDirectoryNode;
 type SearchNote = import('../../shared/models/algorithm-directory').AlgorithmDirectorySearchNote;
@@ -13,7 +15,7 @@ type Reader = import('../../../types/reading-detail').ReadingDetailController;
 interface Entry { node: DirectoryNode; parent: string | null; depth: number; path: string[]; descendants: number }
 interface State {
   search: string; level: string; attribute: string; draftSearch: string; draftLevel: string; draftAttribute: string;
-  selectedNode: string | null; expanded: Set<string>; scope: Scope; initialized: boolean;
+  selectedNode: string | null; expanded: Set<string>; scope: Scope; hasNotes: boolean;
   reading: string | null; listScroll: number; paneScroll: number; treeScroll: number;
 }
 
@@ -27,7 +29,7 @@ const LEVELS = [
 const ATTRIBUTES: Record<string, string> = { board: '模板', useful: '常用', useless: '低频' };
 const state: State = {
   search: '', level: '', attribute: '', draftSearch: '', draftLevel: '', draftAttribute: '', selectedNode: null,
-  expanded: new Set(), scope: 'public', initialized: false,
+  expanded: new Set(), scope: 'public', hasNotes: false,
   reading: null, listScroll: 0, paneScroll: 0, treeScroll: 0
 };
 let active: Controller | null = null;
@@ -45,7 +47,7 @@ function button(text: unknown, className: string, action: (event: MouseEvent) =>
   el.addEventListener('click', action);
   return el;
 }
-function isDirectory(node: DirectoryNode) { return node.kind === 'directory' || node.kind === 'category' || node.color === 'parent'; }
+function isDirectory(node: DirectoryNode) { return !isAlgorithmLeaf(node); }
 function levelOf(node: DirectoryNode) { return isDirectory(node) ? undefined : LEVELS.find(level => level.id === node.color); }
 function attributesOf(node: DirectoryNode) {
   return [...new Set([...(Array.isArray(node.attributes) ? node.attributes : []), ...(ATTRIBUTES[node.color] ? [node.color] : [])])].filter(key => ATTRIBUTES[key]);
@@ -58,7 +60,7 @@ function excerpt(body: unknown) {
 }
 function snapshot() {
   return { search: state.search, level: state.level, attribute: state.attribute, draftSearch: state.draftSearch, draftLevel: state.draftLevel, selectedNode: state.selectedNode,
-    expanded: Array.from(state.expanded), scope: state.scope };
+    expanded: Array.from(state.expanded), scope: state.scope, hasNotes: state.hasNotes };
 }
 
 function render(options?: Options | null): Controller {
@@ -77,7 +79,10 @@ function render(options?: Options | null): Controller {
     (node.children || []).forEach(child => { index(child, node.id, depth + 1, entry.path); entry.descendants += 1 + byId.get(child.id)!.descendants; });
   }
   index(root, null, 0, []);
-  if (!state.initialized) { state.expanded.add(root.id); state.initialized = true; }
+  if (!(state.search.trim() || state.level || state.attribute || state.hasNotes)) {
+    state.expanded = new Set([root.id]); state.selectedNode = root.id; state.reading = null;
+    state.treeScroll = 0; state.paneScroll = 0;
+  }
   state.selectedNode = byId.get(state.selectedNode)?.node.id || root.id;
   const nextScope = opts.scope === 'personal' ? 'personal' : opts.scope === 'public' ? 'public' : state.scope;
   if (nextScope !== state.scope) { state.reading = null; state.paneScroll = 0; }
@@ -86,9 +91,10 @@ function render(options?: Options | null): Controller {
   const notes = ((Array.isArray(opts.notes) ? opts.notes : []) as Note[]).filter(note => state.scope === 'personal'
     ? note.noteScope === 'personal' && accountId != null && String(note.authorId) === String(accountId)
     : note.noteScope === 'public').map(note => {
-      const canonicalId = byId.get(note.nodeId)?.node.id;
+      const original = byId.get(note.nodeId)?.node;
+      const canonicalId = original ? resolveAlgorithmLeaf(root, original.id)?.id : undefined;
       return canonicalId && canonicalId !== note.nodeId ? { ...note, nodeId: canonicalId } : note;
-    });
+    }).filter(note => { const node = byId.get(note.nodeId)?.node; return Boolean(node && isAlgorithmLeaf(node)); });
   const nameOf = (author: unknown) => {
     try { return String(opts.authorName ? opts.authorName(author) : (author && ((author as { name?: unknown; login?: unknown }).name || (author as { name?: unknown; login?: unknown }).login)) || author || '匿名作者'); }
     catch (_) { return '未知作者'; }
@@ -107,7 +113,6 @@ function render(options?: Options | null): Controller {
     let entry = byId.get(id);
     while (entry && entry.parent != null) { state.expanded.add(entry.parent); entry = byId.get(entry.parent); }
   }
-  expandAncestors(state.selectedNode);
   if (state.reading && !notes.some(note => noteKey(note) === state.reading)) state.reading = null;
 
   const shell = element('section', 'alg-browser');
@@ -128,13 +133,14 @@ function render(options?: Options | null): Controller {
   });
   const uploadWrap = element('div', 'alg-upload-wrap');
   const upload = button('＋ 上传笔记', 'alg-button alg-button-primary', () => {
-    if (!opts.canUpload || !opts.account || typeof opts.onUpload !== 'function') return;
+    if (!opts.canUpload || !opts.account || typeof opts.onUpload !== 'function' || !isAlgorithmLeaf(byId.get(state.selectedNode)!.node)) return;
     if (typeof opts.onSelect === 'function') opts.onSelect(state.selectedNode);
     opts.onUpload(state.selectedNode);
   });
   upload.disabled = !opts.canUpload || !opts.account || typeof opts.onUpload !== 'function';
   upload.id = 'algorithm-upload-button';
   uploadWrap.append(upload);
+  uploadWrap.hidden = !isAlgorithmLeaf(byId.get(state.selectedNode)!.node);
   if (upload.disabled) {
     const explanation = element('span', 'alg-upload-hint', opts.account ? '需要仓库写入权限才能上传' : '登录具有写入权限的账户后可上传');
     explanation.id = `${uid}-upload-hint`; upload.setAttribute('aria-describedby', explanation.id); uploadWrap.append(explanation);
@@ -156,10 +162,14 @@ function render(options?: Options | null): Controller {
   attribute.value = state.draftAttribute; attributeLabel.append(attribute);
   const submitSearch = button('搜索', 'alg-button alg-button-primary alg-search-submit', applySearch);
   const clear = button('清除筛选', 'alg-text-button alg-clear', () => {
-    state.search = ''; state.level = ''; state.attribute = ''; state.draftSearch = ''; state.draftLevel = ''; state.draftAttribute = ''; state.reading = null;
-    search.value = ''; attribute.value = ''; refresh(); search.focus();
+    state.search = ''; state.level = ''; state.attribute = ''; state.draftSearch = ''; state.draftLevel = ''; state.draftAttribute = ''; state.hasNotes = false; state.reading = null;
+    search.value = ''; attribute.value = ''; refresh({ reset: true, newQuery: true }); search.focus();
   });
-  searchRow.append(searchWrap, submitSearch, attributeLabel, clear);
+  const hasNotes = button('仅看已有笔记', 'alg-button alg-has-notes', () => {
+    state.hasNotes = !state.hasNotes; state.reading = null; refresh({ reset: !state.hasNotes && !(state.search.trim() || state.level || state.attribute), newQuery: true });
+  });
+  hasNotes.setAttribute('aria-pressed', String(state.hasNotes));
+  searchRow.append(searchWrap, submitSearch, attributeLabel, hasNotes, clear);
   const legend = element('div', 'alg-legend'); legend.setAttribute('role', 'group'); legend.setAttribute('aria-label', '学习参考难度筛选');
   const legendButtons: HTMLButtonElement[] = [];
   const levelCounts = new Map<string, number>([...LEVELS.map(level => [level.id, 0] as const), ['unrated', 0]]);
@@ -176,7 +186,7 @@ function render(options?: Options | null): Controller {
   const searchHint = element('p', 'alg-tier-hint alg-search-hint');
   searchHint.append(element('strong', '', '点击搜索按钮才会进行跳转哦，也可以按回车确认。'));
   searchHint.id = `${uid}-search-hint`; search.setAttribute('aria-describedby', searchHint.id);
-  filters.append(searchRow, searchHint, legend, element('p', 'alg-tier-hint', '目录用于组织知识和保存说明，不设难度。难度筛选只匹配具体算法与知识点，并保留其上级目录。模板、常用、低频是独立属性。'));
+  filters.append(searchRow, searchHint, legend, element('p', 'alg-tier-hint', '目录用于组织知识，不设难度。难度筛选只匹配具体算法与知识点，并保留其上级目录。模板、常用、低频是独立属性。'));
 
   const workspace = element('div', 'alg-workspace');
   const sidebar = element('aside', 'alg-sidebar');
@@ -258,7 +268,7 @@ function render(options?: Options | null): Controller {
   }
   let filtering = false;
   function badge(node: DirectoryNode) {
-    if (isDirectory(node)) { const directory = element('span', 'alg-node-kind', '目录'); directory.dataset.algTooltip = '目录可保存说明和笔记，具体算法在子节点中分级'; return directory; }
+    if (isDirectory(node)) { const directory = element('span', 'alg-node-kind', '目录'); directory.dataset.algTooltip = '目录用于组织知识，请选择算法叶子阅读笔记'; return directory; }
     const level = levelOf(node);
     const el = element('span', `alg-badge alg-tone-${level ? level.tone : 'neutral'}`, level ? level.label : node.color === 'parent' ? '目录' : '未分级');
     const origin = node.difficultySource?.kind === 'user-md' ? '用户颜色文档' : node.rating?.type === 'category' ? '分类基础门槛' : node.rating?.type === 'entry' ? '入口或任务形式' : '本项目逐项定稿';
@@ -281,7 +291,7 @@ function render(options?: Options | null): Controller {
   function computeResults() {
     const q = state.search.trim();
     topicScores.clear();
-    filtering = Boolean(q || state.level || state.attribute);
+    filtering = Boolean(q || state.level || state.attribute || state.hasNotes);
     matchingNotes = sortedNotes.filter(note => {
       const entry = byId.get(note.nodeId);
       if ((state.level || state.attribute) && (!entry || !matchesFacets(entry.node))) return false;
@@ -296,7 +306,7 @@ function render(options?: Options | null): Controller {
     all.forEach(entry => {
       const score = relevance.topicScore(entry.node, entry.path, q);
       topicScores.set(entry.node.id, score);
-      if (!filtering || (matchesFacets(entry.node) && (score > 0 || noteNodes.has(entry.node.id)))) matched.add(entry.node.id);
+      if (!filtering || (matchesFacets(entry.node) && (!state.hasNotes || (isAlgorithmLeaf(entry.node) && (counts.get(entry.node.id) || 0) > 0)) && (score > 0 || noteNodes.has(entry.node.id)))) matched.add(entry.node.id);
     });
     matched.forEach(id => {
       let entry = byId.get(id);
@@ -304,7 +314,8 @@ function render(options?: Options | null): Controller {
     });
   }
   function selectNode(id: string, focusPane?: boolean) {
-    if (!byId.has(id)) return;
+    const target = byId.get(id); if (!target) return;
+    id = target.node.id;
     expandedReader?.close();
     hideTooltip();
     const previous = state.selectedNode;
@@ -351,11 +362,11 @@ function render(options?: Options | null): Controller {
         item.dataset.nodeId = entry.node.id;
         treeItems.set(entry.node.id, item);
         item.dataset.depth = String(entry.depth);
-        item.dataset.kind = entry.node.color === 'parent' ? 'directory' : 'topic';
+        item.dataset.kind = isDirectory(entry.node) ? 'directory' : 'topic';
         item.setAttribute('aria-level', String(entry.depth + 1));
         item.setAttribute('aria-posinset', String(position)); item.setAttribute('aria-setsize', String(size));
         item.setAttribute('aria-selected', String(state.selectedNode === entry.node.id));
-        item.setAttribute('aria-label', `${entry.node.label}，${levelOf(entry.node)?.label || (entry.node.color === 'parent' ? '目录' : '未分级')}${attributesOf(entry.node).length ? `，${attributesOf(entry.node).map(key => ATTRIBUTES[key]).join('、')}` : ''}，${counts.get(entry.node.id)} 篇笔记`);
+        item.setAttribute('aria-label', `${entry.node.label}，${levelOf(entry.node)?.label || (isDirectory(entry.node) ? '目录' : '未分级')}${attributesOf(entry.node).length ? `，${attributesOf(entry.node).map(key => ATTRIBUTES[key]).join('、')}` : ''}，${counts.get(entry.node.id)} 篇笔记`);
         item.tabIndex = -1;
         if (kids.length) item.setAttribute('aria-expanded', String(isExpanded(entry.node.id)));
         const row = element('div', 'alg-tree-row'); row.style.setProperty('--alg-depth', String(entry.depth));
@@ -476,99 +487,50 @@ function render(options?: Options | null): Controller {
     pane.append(breadcrumbs(selected.node.id));
     const detail = element('header', 'alg-detail-heading');
     const detailBar = element('div', 'alg-detail-toolbar');
-    detailBar.append(element('span', 'alg-eyebrow', selected.node.id === root.id ? '知识目录' : '知识节点'), button('打开详情 ↗', 'alg-button reading-detail-trigger alg-open-detail', openDetail));
+    detailBar.append(element('span', 'alg-eyebrow', isDirectory(selected.node) ? '知识目录' : '算法知识点'), button('打开详情 ↗', 'alg-button reading-detail-trigger alg-open-detail', openDetail));
     detail.append(detailBar);
     const titleRow = element('div', 'alg-detail-title-row');
     const title = element('h2', 'alg-detail-title', selected.node.fullLabel || selected.node.label); title.tabIndex = -1;
     titleRow.append(title, badge(selected.node)); const attr = attributeBadge(selected.node); if (attr) titleRow.append(attr);
-    detail.append(titleRow, element('p', 'alg-detail-stats', `${selected.descendants} 个子节点 · ${counts.get(selected.node.id)} 篇笔记（含子目录）`));
-    const information = element('section', 'alg-node-information');
-    if (selected.node.id === root.id) information.append(element('p', 'alg-intro', '从一条知识主线出发，逐步建立你的算法体系。展开左侧目录，或选择下方分类；每个节点都可以阅读和积累学习笔记。'));
-    if (isDirectory(selected.node)) information.append(element('p', 'alg-intro', selected.node.scope || '此目录用于分类、专题说明和学习笔记，具体算法及难度请查看子节点。'));
-    if (levelOf(selected.node) && selected.node.difficultySource) {
-      const origin = selected.node.difficultySource.kind === 'user-md' ? '难度依据：用户颜色文档' : selected.node.rating?.type === 'category' ? '难度依据：分类基础学习门槛' : selected.node.rating?.type === 'entry' ? '难度依据：入口或任务形式的使用门槛' : '难度依据：本项目逐项定稿';
-      const range = selected.node.rating?.range;
-      information.append(element('p', 'alg-intro', `${origin}${range && selected.node.children?.length ? `；覆盖 D${range.min}–D${range.max}` : ''}${selected.node.rationale ? `。${selected.node.rationale}` : ''}${selected.node.scope ? ` 学习范围：${selected.node.scope}` : ''}`));
-    }
+    detail.append(titleRow); pane.append(detail);
+    uploadWrap.hidden = !isAlgorithmLeaf(selected.node);
     const utilities = element('footer', 'alg-detail-utilities');
     if (opts.canManage && typeof opts.onAddTopic === 'function') utilities.append(button('＋ 添加算法', 'alg-text-button alg-add-topic-detail', () => { expandedReader?.close(); opts.onAddTopic!(selected.node.id); }));
     if (typeof opts.onLearningPath === 'function') utilities.append(button('在学习路线中查看 →', 'alg-text-button alg-add-topic-detail', () => { expandedReader?.close(); opts.onLearningPath!(selected.node.id); }));
-    function appendInformation() { if (information.childNodes.length) pane.append(information); if (utilities.childNodes.length) pane.append(utilities); }
-    pane.append(detail);
-    if (filtering) {
-      // Keep the selected topic useful while the global query stays active.
-      if (selected.node.id !== root.id) {
-        const selectedChildren = (selected.node.children || []).filter(child => matched.has(child.id));
-        const selectedNotes = matchingNotes.filter(note => note.nodeId === selected.node.id);
-        pane.append(heading('当前节点的笔记', selectedNotes.length));
-        if (selectedNotes.length) {
-          const selectedList = element('div', 'alg-note-list alg-selected-note-list');
-          selectedNotes.forEach(note => selectedList.append(noteCard(note, false)));
-          pane.append(selectedList);
-        } else pane.append(element('p', 'alg-inline-empty', '当前节点尚无笔记；下方保留所有全局匹配结果。'));
-        if (selectedChildren.length) {
-          pane.append(heading('当前节点 · 继续探索', selectedChildren.length));
-          const childrenGrid = element('div', 'alg-topic-grid');
-          selectedChildren.forEach(child => childrenGrid.append(topicCard(byId.get(child.id)!)));
-          pane.append(childrenGrid);
-        }
-      }
-      const resultSummary = element('div', 'alg-result-summary');
-      resultSummary.append(element('strong', '', '全局筛选结果'), element('span', '', `${matched.size} 个节点 · ${matchingNotes.length} 篇笔记`));
-      pane.append(resultSummary);
-      const topicMatches = all.filter(entry => matched.has(entry.node.id)).sort((a, b) => (topicScores.get(b.node.id) || 0) - (topicScores.get(a.node.id) || 0));
-      if (topicMatches.length) {
-        pane.append(heading('匹配的知识节点', topicMatches.length));
-        const resultTopics = element('div', 'alg-result-topics');
-        topicMatches.forEach(entry => {
-          const row = button('', 'alg-result-topic', () => selectNode(entry.node.id));
-          row.append(element('span', 'alg-result-topic-name', entry.node.label), badge(entry.node), element('span', 'alg-result-topic-path', entry.path.join(' / ')));
-          const attributeTag = attributeBadge(entry.node); if (attributeTag) row.append(attributeTag);
-          resultTopics.append(row);
-        }); pane.append(resultTopics);
-      }
-      pane.append(heading('匹配的笔记', matchingNotes.length));
-      if (matchingNotes.length) { const list = element('div', 'alg-note-list'); matchingNotes.forEach(note => list.append(noteCard(note, true))); pane.append(list); }
-      else pane.append(element('p', 'alg-inline-empty', '当前范围内没有匹配的笔记。可以尝试算法名称、笔记标题、作者或标签。'));
-      if (!topicMatches.length && !matchingNotes.length) pane.append(button('清除全部筛选', 'alg-button', () => clear.click()));
-      appendInformation(); return;
-    }
-    const children = selected.node.children || [];
-    const direct = sortedNotes.filter(note => note.nodeId === selected.node.id);
-    const featured = direct.filter(note => note.featured), ordinary = direct.filter(note => !note.featured);
-    const notesHeading = () => heading(state.scope === 'personal' ? '我的节点笔记' : '节点笔记', ordinary.length);
-    if (featured.length) {
-      const section = element('section', 'alg-featured-section'); section.append(heading('精选笔记', featured.length));
-      const list = element('div', 'alg-note-list'); featured.forEach(note => list.append(noteCard(note, false))); section.append(list); pane.append(section);
-    }
-    if (ordinary.length) {
-      pane.append(notesHeading());
-      const list = element('div', 'alg-note-list'); ordinary.forEach(note => list.append(noteCard(note, false))); pane.append(list);
-    }
-    if (children.length) {
-      pane.append(heading(selected.node.id === root.id ? '选择知识主线' : '继续探索', children.length));
+    if (isAlgorithmLeaf(selected.node)) {
+      const storedContent = opts.nodeContents?.find(item => resolveAlgorithmLeaf(root, item.nodeId)?.id === selected.node.id);
+      const content = storedContent && storedContent.nodeId !== selected.node.id
+        ? { ...storedContent, nodeId: selected.node.id, storageNodeId: storedContent.storageNodeId || storedContent.nodeId } : storedContent;
+      pane.append(renderLeafReading({
+        node: selected.node, content, notes: sortedNotes.filter(note => note.nodeId === selected.node.id),
+        canManage: Boolean(opts.canManage), onSave: opts.onSaveNodeContent ? async input => {
+          const saved = await opts.onSaveNodeContent!(input);
+          opts.nodeContents = [...(opts.nodeContents || []).filter(item => resolveAlgorithmLeaf(root, item.nodeId)?.id !== selected.node.id), saved];
+          return saved;
+        } : undefined, renderMarkdown: opts.renderMarkdown,
+        onRead: openNote, onUpload: upload.disabled ? undefined : () => upload.click(), authorName: nameOf, formatDate: dateOf
+      }));
+    } else {
+      const children = (selected.node.children || []).filter(child => !filtering || included.has(child.id));
+      pane.append(heading(selected.node.id === root.id ? '选择知识主线' : '目录内容', children.length));
       const grid = element('div', 'alg-topic-grid'); children.forEach(child => grid.append(topicCard(byId.get(child.id)!))); pane.append(grid);
     }
-    if (!direct.length) {
-      pane.append(notesHeading());
-      const empty = element('div', 'alg-empty');
-      empty.append(element('span', 'alg-empty-symbol', '≡'), element('strong', '', '这里的学习笔记，等待积累'),
-        element('p', '', state.scope === 'personal' ? '此节点还没有你的个人笔记。选择一个主题，记录思路、模板和复盘。' : '此节点还没有公开笔记。继续浏览子目录，或为这个主题补充一篇笔记。'));
-      if (upload.disabled) empty.append(element('span', 'alg-empty-hint', opts.account ? '上传笔记需要仓库写入权限。' : '登录具有写入权限的账户后，即可上传算法笔记。'));
-      else empty.append(button('＋ 为此节点上传笔记', 'alg-button', () => upload.click()));
-      pane.append(empty);
-    }
-    appendInformation();
+    if (utilities.childNodes.length) pane.append(utilities);
   }
-  function refresh() {
+
+  function refresh({ reset = false, newQuery = false }: { reset?: boolean; newQuery?: boolean } = {}) {
     if (disposed) return;
     const oldScroll = treeScroller.scrollTop;
     // Each new query starts with its complete matching ancestor chains expanded.
-    state.expanded.forEach(key => { if (String(key).startsWith('collapsed-filter:')) state.expanded.delete(key); });
+    if (reset) {
+      state.expanded = new Set([root.id]); state.selectedNode = root.id; focusedId = root.id;
+      state.reading = null; state.treeScroll = 0;
+    }
+    if (newQuery) state.expanded.forEach(key => { if (String(key).startsWith('collapsed-filter:')) state.expanded.delete(key); });
     computeResults();
     updateDraftControls();
-    clear.hidden = !filtering;
-    renderTree(); treeScroller.scrollTop = oldScroll; renderPane(); pane.scrollTop = 0;
+    clear.hidden = !filtering; hasNotes.setAttribute('aria-pressed', String(state.hasNotes));
+    renderTree(); treeScroller.scrollTop = reset ? 0 : oldScroll; renderPane(); pane.scrollTop = 0;
     live.textContent = filtering ? `找到 ${matched.size} 个知识节点、${matchingNotes.length} 篇笔记` : `${all.length} 个知识节点、${notes.length} 篇笔记`;
   }
   function updateDraftControls() {
@@ -580,7 +542,7 @@ function render(options?: Options | null): Controller {
   }
   function applySearch() {
     state.search = state.draftSearch.trim(); state.level = state.draftLevel; state.attribute = state.draftAttribute;
-    state.reading = null; state.listScroll = 0; refresh();
+    state.reading = null; state.listScroll = 0; refresh({ reset: !(state.search.trim() || state.level || state.attribute || state.hasNotes), newQuery: true });
   }
   search.addEventListener('input', () => { state.draftSearch = search.value; updateDraftControls(); });
   search.addEventListener('keydown', event => { if (event.key === 'Enter' && !event.isComposing) { event.preventDefault(); applySearch(); } });
@@ -589,7 +551,7 @@ function render(options?: Options | null): Controller {
   pane.addEventListener('scroll', () => { state.paneScroll = pane.scrollTop; }, { passive: true });
   refresh(); treeScroller.scrollTop = state.treeScroll; pane.scrollTop = state.paneScroll;
   const controller: Controller = {
-    selectNode(id) { if (!byId.has(id)) return; state.search = ''; state.level = ''; state.attribute = ''; state.draftSearch = ''; state.draftLevel = ''; state.draftAttribute = ''; search.value = ''; attribute.value = ''; selectNode(id); refresh(); },
+    selectNode(id) { if (!byId.has(id)) return; state.search = ''; state.level = ''; state.attribute = ''; state.draftSearch = ''; state.draftLevel = ''; state.draftAttribute = ''; state.hasNotes = false; search.value = ''; attribute.value = ''; selectNode(id); refresh({ newQuery: true }); },
     getState: snapshot,
     openNote(note, { fullscreen = false } = {}) { const found = notes.find(item => noteKey(item) === noteKey(note)); if (!found) return; openNote(found); if (fullscreen) openDetail(); },
     destroy() {

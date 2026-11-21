@@ -1,6 +1,7 @@
 import type { DailyDrawFilters, DailyDrawResult, LibrarySyncResult } from '../models/daily-problem';
 import type { LearningCurriculumDocument, SaveLearningCurriculumInput } from '../models/learning-curriculum';
 import type { LearningGateContent, SaveLearningGateInput } from '../models/learning-content';
+import type { AlgorithmNodeContent, SaveAlgorithmNodeContentInput } from '../models/algorithm-node-content';
 import type { BootstrapPayload } from '../models/bootstrap';
 import type { LocalDataSnapshot, LocalUpdate } from '../models/records';
 import type { PlannerActionArgs, PlannerSnapshot } from '../models/planner';
@@ -53,6 +54,7 @@ export interface ServiceMethods {
   saveAlgorithmTopic(data: AlgorithmTopicInput): Promise<AlgorithmTopic>;
   saveLearningGate(data: SaveLearningGateInput): Promise<LearningGateContent>;
   saveLearningCurriculum(input: SaveLearningCurriculumInput): Promise<LearningCurriculumDocument>;
+  saveAlgorithmNodeContent(input: SaveAlgorithmNodeContentInput): Promise<AlgorithmNodeContent>;
   saveAlgorithmNote(record: AlgorithmNoteInput): Promise<SavedDocument>;
   deleteDocument(record: DeleteDocumentInput): Promise<DeletedDocument>;
   deleteIssue(record: IssueInput): Promise<DeletedIssue>;

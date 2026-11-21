@@ -78,6 +78,11 @@ var __QMXStandalone = (() => {
   function splitMixed(tree) {
     function visit(node) {
       node.children = Array.isArray(node.children) ? node.children : [];
+      if (!node.children.length && ["feishu-part-9-5-1", "directory-contest-experience"].includes(node.id) && node.origin !== "admin") {
+        node.kind = "algorithm";
+        node.color = "unrated";
+        node.rating = { status: "unrated", type: "entry" };
+      }
       if (node.kind === "algorithm" && node.children.length) {
         const content = { ...node, id: `algorithm-content-${node.id}`, children: [], kind: "algorithm", contentOf: node.id };
         for (const key of ["legacyIds", "sourceHeading", "part", "nestedPart", "metadata"]) delete content[key];

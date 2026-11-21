@@ -38,7 +38,7 @@ pnpm dist
 
 renderer 使用显式 ES import/export，由固定版本 esbuild 0.25.12 将 `src/renderer/app/app.ts` 打包为浏览器专用单个 IIFE `ui/app.js`。页面只加载第三方库、QMX 静态数据和应用 bundle；业务模块不再通过页面全局互相调用。受版本控制的独立浏览器兼容适配器仍供夹具和单模块测试使用，并接受生成一致性检查，不是第二套手写实现。主进程入口为 `src/main/app/main.cts`，会话及 IPC 职责分别在 `session.cts`、`ipc-handlers.cts`；服务按真实业务目录组织。
 
-`pnpm modules:build` 更新应用 bundle、模块兼容输出及 Node 产物，目标清单在 `tools/build-modules.cjs`。阅读详情、preload 和 IPC/本地归一化产物另由 `pnpm reader:build`、`pnpm preload:build`、`pnpm ipc:build` 更新；修改阅读或 IPC 模块后也需运行 `pnpm modules:build` 更新包含它们的应用 bundle。不要手改生成脚本，`typecheck` 和构建会检查漂移。共享契约 `src/shared/contracts/notebook.ts` 已为全部 36 项方法和两项订阅定义类型，其中 8 项走 boundary 注册包装、28 项为服务契约；历史字段及未校验的外部响应仍如实保留 unknown，类型与归一化不替代运行时校验。
+`pnpm modules:build` 更新应用 bundle、模块兼容输出及 Node 产物，目标清单在 `tools/build-modules.cjs`。阅读详情、preload 和 IPC/本地归一化产物另由 `pnpm reader:build`、`pnpm preload:build`、`pnpm ipc:build` 更新；修改阅读或 IPC 模块后也需运行 `pnpm modules:build` 更新包含它们的应用 bundle。不要手改生成脚本，`typecheck` 和构建会检查漂移。共享契约 `src/shared/contracts/notebook.ts` 已为全部 42 项方法和两项订阅定义类型，其中 8 项走 boundary 注册包装、34 项为服务契约；历史字段及未校验的外部响应仍如实保留 unknown，类型与归一化不替代运行时校验。
 
 `pnpm build:app` 构建独立 `build/app`，`pnpm preview:app` 构建并启动副本，`pnpm test:build:desktop` 验证真实桌面与离线格式化器；开发启动、单元/界面测试及未签名打包统一使用构建副本，正式签名包装复用已验收归档。直接运行单个测试前先执行 `pnpm build:app`。开发调试可设置 `QMX_SOURCE_MAPS=1`，map 仅写入构建副本，不改受版本控制的无 map 产物；未签名发行构建显式使用 `sourceMaps: false`，签名包装也不重编译已接受的归档。源码迁移状态与最终平台/真实账号/签名候选验收分别记录，不将先前批次通过视为最新改动全部验收。
 

@@ -24,6 +24,7 @@ export interface CacheView extends Record<string, unknown> {
   issues?: RecordView[];
   algorithmNotes?: RecordView[];
   algorithmTopics?: RecordView[];
+  algorithmNodeContents?: import('../../shared/models/algorithm-node-content.js').AlgorithmNodeContent[];
   learningGateContents?: import('../../shared/models/learning-content.js').LearningGateContent[];
   tagCatalog?: unknown;
   tagCatalogError?: unknown;
@@ -96,6 +97,7 @@ export interface AppArguments {
   getTagReview: [];
   reviewTag: [data: unknown];
   saveAlgorithmTopic: [data: unknown];
+  saveAlgorithmNodeContent: [data: unknown];
   saveLearningGate: [data: unknown];
   saveLearningCurriculum: [data: unknown];
   refreshAccount: [];

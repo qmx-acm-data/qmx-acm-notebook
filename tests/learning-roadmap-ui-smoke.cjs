@@ -77,19 +77,26 @@ async function focus(page, id) {
     const page = await browser.newPage({ viewport: { width: 1500, height: 900 }, reducedMotion: 'reduce' });
     page.setDefaultTimeout(12000);
     page.on('pageerror', error => errors.push(error.message));
-    await page.addInitScript(({ initial, storage }) => {
+    await page.addInitScript(({ initial, storage, base }) => {
       let local = JSON.parse(localStorage.getItem(storage) || JSON.stringify(initial));
+      const layout = { stages: base.stages.map(stage => ({ id: stage.id, title: stage.title, gates: stage.gates.map(gate => ({ id: gate.id, title: gate.title, kind: ['mixed', 'challenge'].includes(gate.kind) ? gate.kind : 'learning', sectionId: gate.sectionId || '', scope: gate.scope || (gate.optional ? 'elective' : 'core') })) })) };
+      layout.stages[0].gates.push({ id: 'custom-12345678-1234-4234-8234-123456789abc', title: '已知语法与自定义知识点', kind: 'learning', sectionId: layout.stages[0].gates[0].sectionId, scope: 'core', description: '自定义关卡同时连接已有和新建叶子。', goals: [], topicIds: ['algorithm-万能头文件与标准库使用', 'roadmap-custom-leaf'] });
+      const learningCurriculum = { layout, sha: 'f'.repeat(40), updatedAt: '2026-11-19T00:00:00Z', author: { id: 7, login: 'fixture-admin' } };
       const account = Number(sessionStorage.getItem('roadmap-account') || 42);
       const serverUrl = sessionStorage.getItem('roadmap-source') || '';
       const admin = sessionStorage.getItem('roadmap-admin') === 'true';
-      window.__roadmapSaveFail = false; window.__roadmapPublicFail = false; window.__roadmapPublicSaves = []; window.__roadmapWrites = 0; window.__roadmapExternal = [];
+      window.__roadmapSaveFail = false; window.__roadmapPublicFail = false; window.__roadmapPublicSaves = []; window.__roadmapWrites = 0; window.__roadmapExternal = []; window.__roadmapNodeSaves = []; window.__roadmapHoldSave = false; window.__roadmapReleaseSave = null; window.__roadmapSaveSettled = 0;
       window.notebook = {
         bootstrap: async () => ({ records: [], issues: [], algorithmNotes: [
-          { id: 'public-resource', nodeId: 'algorithm-万能头文件与标准库使用', noteScope: 'public', kind: 'algorithm-note', title: '公开语法笔记', authorId: 7, body: '公开资源' },
-          { id: 'own-private-resource', nodeId: 'algorithm-万能头文件与标准库使用', noteScope: 'personal', kind: 'algorithm-note', title: '我的私密语法笔记', authorId: account, body: '仅知识树个人范围' },
-          { id: 'foreign-private-resource', nodeId: 'algorithm-万能头文件与标准库使用', noteScope: 'personal', kind: 'algorithm-note', title: '他人的私密语法笔记', authorId: 9001, body: '绝不能出现在公开资源' },
-        ], learningGateContents: [{
-          gateId: 'lp2-cpp-toolkit-program-flow-types-io', description: '管理员已保存的输入输出资料', goals: ['核验整数范围'],
+          { path: 'algorithm-notes/public-resource.md', featured: true, id: 'public-resource', nodeId: 'algorithm-万能头文件与标准库使用', noteScope: 'public', kind: 'algorithm-note', title: '公开语法笔记', authorId: 7, body: '公开资源' },
+          { path: 'algorithm-notes/own-private-resource.md', id: 'own-private-resource', nodeId: 'algorithm-万能头文件与标准库使用', noteScope: 'personal', kind: 'algorithm-note', title: '我的私密语法笔记', authorId: account, body: '仅知识树个人范围' },
+          { path: 'algorithm-notes/foreign-private-resource.md', id: 'foreign-private-resource', nodeId: 'algorithm-万能头文件与标准库使用', noteScope: 'personal', kind: 'algorithm-note', title: '他人的私密语法笔记', authorId: 9001, body: '绝不能出现在公开资源' },
+          { path: 'algorithm-notes/public-second.md', id: 'public-second', nodeId: 'algorithm-万能头文件与标准库使用', noteScope: 'public', kind: 'algorithm-note', title: '第二篇精选笔记', authorId: 8 },
+          { path: 'algorithm-notes/public-ordinary.md', id: 'public-ordinary', nodeId: 'algorithm-万能头文件与标准库使用', noteScope: 'public', kind: 'algorithm-note', title: '普通语法笔记', authorId: 8 },
+          { path: 'algorithm-notes/directory-note.md', id: 'directory-note', nodeId: 'root', noteScope: 'public', kind: 'algorithm-note', title: '目录不得聚合的笔记', authorId: 8 },
+          { path: 'algorithm-notes/custom-leaf-resource.md', id: 'custom-leaf-resource', nodeId: 'roadmap-custom-leaf', noteScope: 'public', kind: 'algorithm-note', title: '自定义关卡叶子笔记', authorId: 8, body: '自定义知识点通过共享阅读器打开。' },
+        ], learningCurriculum, algorithmTopics: [{ id: 'roadmap-custom-leaf', parentId: 'root', label: '自定义关卡知识点', kind: 'algorithm', color: 'beginner' }], algorithmNodeContents: [{ nodeId: 'roadmap:g', introduction: '## 语法目录简介' + '\n\n介绍中的更多说明。'.repeat(45), featuredNotePaths: [], sha: 'e'.repeat(40), updatedAt: '2026-11-19T00:00:00Z', author: { id: 7, login: 'fixture-admin' } }, { nodeId: 'algorithm-万能头文件与标准库使用', introduction: '## 叶子简介\n\n**管理员内容**', featuredNotePaths: ['algorithm-notes/public-resource.md', 'algorithm-notes/public-second.md'], sha: 'c'.repeat(40), updatedAt: '2026-11-19T00:00:00Z', author: { id: 7, login: 'fixture-admin' } }], learningGateContents: [{
+          gateId: 'stage-00-gate-01', description: '管理员已保存的输入输出资料' + '\n\n介绍中的更多说明。'.repeat(45), goals: ['核验整数范围'],
           practiceList: { title: '已保存的官方题单', url: 'https://example.invalid/official-saved-list' }, sha: 'a'.repeat(40),
           updatedAt: '2026-11-19T00:00:00Z', author: { id: 7, login: 'fixture-admin' }, repo: 'test/notebook',
         }],
@@ -98,10 +105,11 @@ async function focus(page, id) {
         updateLocal: async value => { if (window.__roadmapSaveFail) throw Error('模拟本地保存失败'); local = structuredClone(value); localStorage.setItem(storage, JSON.stringify(local)); },
         saveSettings: async settings => settings,
         openExternal: async url => window.__roadmapExternal.push(url),
+        saveAlgorithmNodeContent: async input => { if (!admin) throw Error('Non-admin write'); if (window.__roadmapHoldSave) { window.__roadmapHoldSave = false; await new Promise(resolve => { window.__roadmapReleaseSave = resolve; }); } try { if (window.__roadmapPublicFail) throw Error('模拟公共保存失败'); window.__roadmapNodeSaves.push(structuredClone(input)); return { ...input, sha: 'd'.repeat(40), updatedAt: '2026-11-19T00:00:00Z', author: { id: account, login: 'fixture-admin' } }; } finally { window.__roadmapSaveSettled++; } },
         saveAlgorithmNote: async () => { window.__roadmapWrites++; throw Error('No remote writes in roadmap smoke'); },
         saveLearningGate: async input => { if (!admin) { window.__roadmapWrites++; throw Error('Non-admin write'); } if (window.__roadmapPublicFail) throw Error('模拟公共保存失败'); window.__roadmapPublicSaves.push(structuredClone(input)); return { ...input, sha: 'b'.repeat(40), updatedAt: '2026-11-19T00:00:00Z', author: { id: account, login: 'fixture-admin' } }; },
       };
-    }, { storage: STORAGE, initial: { records: [], favorites: ['retained-favorite'], mastery: { keep: 0 }, draft: {}, learningPaths: { [legacyKey]: progress, 'unrelated-source-account': { gates: { other: { status: 'completed' } }, custom: false } } } });
+    }, { storage: STORAGE, base: curriculum, initial: { records: [], favorites: ['retained-favorite'], mastery: { keep: 0 }, draft: {}, learningPaths: { [legacyKey]: progress, 'unrelated-source-account': { gates: { other: { status: 'completed' } }, custom: false } } } });
     await page.goto(pathToFileURL(appPath('ui/index.html')).href);
     await openRoute(page);
     assert.equal(await page.locator('.arm').getAttribute('data-view'), 'graph');
@@ -166,10 +174,19 @@ async function focus(page, id) {
     await node(page, 'g').click();
     assert.equal(await page.locator('.arm-detail-title').innerText(), 'C++ 基础语法');
     assert.equal(await page.locator('.arm-detail-dialog').isVisible(), true);
-    assert.ok(await page.locator('.arm-relation-button[data-node="hs"]').count());
-    await page.locator('.arm-relation-button[data-node="hs"]').click();
-    assert.equal(await page.locator('.arm-detail-title').innerText(), '函数');
-    assert.equal(await page.locator('.arm-detail-dialog:visible').count(), 1, 'relation navigation reuses one popup');
+    assert.equal(await page.locator('.arm-directory-introduction').count(), 1);
+    assert.equal(await page.locator('.arm-detail-dialog .alg-note-card, .arm-detail-section, .arm-practice-box, .arm-relation-button').count(), 0, 'directory contains one intro and leaf links without aggregate note/task/goal panels');
+    assert.ok(await page.locator('.arm-leaf-link').count() > 0);
+    assert.equal(await page.locator('.arm-detail-dialog .arm-leaf-link[data-topic-id="roadmap-custom-leaf"]').innerText(), '自定义关卡知识点', 'custom gate sharing a known topic adds all its topic identities to the mapped route directory');
+    await page.locator('.arm-detail-dialog .arm-leaf-link[data-topic-id="roadmap-custom-leaf"]').click();
+    const customReading = page.locator('.arm-resource-dialog .alg-leaf-reading');
+    assert.equal(await customReading.getAttribute('data-node-id'), 'roadmap-custom-leaf', 'new custom leaf opens the shared reader directly from the route selector');
+    assert.deepEqual(await customReading.locator('h3').allTextContents(), ['简介', '精选笔记', '全部笔记']);
+    assert.equal(await customReading.locator('.alg-note-title').innerText(), '自定义关卡叶子笔记');
+    await customReading.locator('.alg-note-card[data-note-key="algorithm-notes/custom-leaf-resource.md"]').click();
+    assert.equal(await page.locator('.arm-resource-dialog:visible').count(), 0);
+    assert.equal(await page.locator('.reading-detail-view:visible .alg-reading-title').innerText(), '自定义关卡叶子笔记');
+    assert.match(await page.locator('.reading-detail-path').innerText(), /学习路线/);
     await page.keyboard.press('Escape');
     await page.locator('.arm-index-button[data-node="offline"]').click();
     assert.equal(await page.locator('.arm-detail-title').innerText(), '离线与杂项');
@@ -178,47 +195,31 @@ async function focus(page, id) {
     await node(page, 'g').click();
     await page.locator('.arm-resources-button').click();
     const resourceDialog = page.locator('.arm-resource-dialog');
-    const resourceCards = resourceDialog.locator('.arm-resource-card');
-    assert.ok(await resourceCards.count() >= 8, 'C++ resources exercise a real multi-card dialog');
-    const beforeWheel = await resourceDialog.evaluate(dialog => {
-      const last = dialog.querySelector('.arm-resource-card:last-of-type').getBoundingClientRect();
-      const bounds = dialog.getBoundingClientRect();
-      return { scrollTop: dialog.scrollTop, overflows: dialog.scrollHeight > dialog.clientHeight, lastBelow: last.bottom > Math.min(bounds.bottom, innerHeight) };
-    });
-    assert.equal(beforeWheel.scrollTop, 0, 'resource dialog starts at its first card');
-    assert.ok(beforeWheel.overflows && beforeWheel.lastBelow, 'last resource card initially requires scrolling at 900px viewport height');
+    assert.match(await resourceDialog.locator('.arm-detail-title').innerText(), /目录/);
+    assert.equal(await resourceDialog.locator('.arm-directory-introduction').count(), 1);
+    assert.equal(await resourceDialog.locator('.arm-resource-card, .alg-note-card, .arm-official-list, .arm-personal-button').count(), 0, 'directory selector never aggregates notes or practice lists');
+    assert.equal(await resourceDialog.evaluate(dialog => dialog.scrollTop), 0);
     const dialogBounds = await resourceDialog.boundingBox();
     await page.mouse.move(dialogBounds.x + dialogBounds.width / 2, dialogBounds.y + Math.min(dialogBounds.height / 2, 300));
     await page.mouse.wheel(0, 10000);
-    await page.waitForFunction(() => {
-      const dialog = document.querySelector('.arm-resource-dialog');
-      const card = dialog?.querySelector('.arm-resource-card:last-of-type');
-      if (!dialog || !card || dialog.scrollTop <= 0) return false;
-      const bounds = dialog.getBoundingClientRect(), last = card.getBoundingClientRect();
-      return last.top >= Math.max(bounds.top, 0) && last.bottom <= Math.min(bounds.bottom, innerHeight) + 1;
-    });
-    assert.ok(await resourceDialog.evaluate(dialog => dialog.scrollTop > 0), 'trusted mouse wheel scrolls resource dialog');
-    assert.ok(await resourceCards.last().evaluate(card => {
-      const bounds = card.closest('dialog').getBoundingClientRect(), last = card.getBoundingClientRect();
-      return last.top >= Math.max(bounds.top, 0) && last.bottom <= Math.min(bounds.bottom, innerHeight) + 1;
-    }), 'trusted wheel brings the complete last resource card into view');
-    await page.mouse.wheel(0, -10000);
-    await page.waitForFunction(() => document.querySelector('.arm-resource-dialog')?.scrollTop === 0);
-    const resource = page.locator('.arm-resource-card[data-gate-id="lp2-cpp-toolkit-program-flow-types-io"]');
-    assert.match(await resource.innerText(), /管理员已保存的输入输出资料/);
-    assert.match(await resource.innerText(), /核验整数范围/);
-    assert.equal(await resource.locator('.arm-note[data-note-id="public-resource"]').count(), 1);
-    assert.equal(await page.locator('.arm-note[data-note-id="own-private-resource"], .arm-note[data-note-id="foreign-private-resource"]').count(), 0, 'route resources include public notes only, excluding own and foreign personal notes');
-    const official = resource.locator('.arm-official-list');
-    assert.equal(await official.innerText(), '官方精选题单 · 已保存的官方题单 ↗');
-    await official.click();
-    assert.deepEqual(await page.evaluate(() => window.__roadmapExternal), ['https://example.invalid/official-saved-list'], 'official title/URL come from saved public content');
-    assert.equal(await page.locator('.arm-resource-edit').count(), 0, 'non-admin has no public editing control');
-    const topic = resource.locator('.arm-topic-link[data-topic-id="algorithm-万能头文件与标准库使用"]');
-    await topic.click();
-    assert.equal(await page.locator('.alg-tree-item[aria-selected="true"]').getAttribute('data-node-id'), 'algorithm-万能头文件与标准库使用', 'resource opens the exact mapped knowledge topic');
-    await page.getByRole('button', { name: /在学习路线中查看/ }).click();
-    assert.equal(await page.locator('.arm-detail-title').innerText(), 'C++ 基础语法', 'mapped topic returns to the real graph node');
+    await page.waitForFunction(() => { const dialog = document.querySelector('.arm-resource-dialog'); return dialog && dialog.scrollTop > 0; });
+    assert.ok(await resourceDialog.locator('.arm-leaf-link').last().evaluate(link => { const bounds = link.closest('dialog').getBoundingClientRect(), box = link.getBoundingClientRect(); return box.top >= bounds.top && box.bottom <= bounds.bottom + 1; }), 'trusted wheel reaches final leaf choice below the long Markdown introduction');
+    await resourceDialog.locator('.arm-leaf-link[data-topic-id="algorithm-万能头文件与标准库使用"]').click();
+    const reading = resourceDialog.locator('.alg-leaf-reading');
+    assert.deepEqual(await reading.locator('h3').allTextContents(), ['简介', '精选笔记', '全部笔记'], 'route leaf uses the same three shared reading sections');
+    assert.equal(await reading.locator('.alg-introduction-markdown h2').innerText(), '叶子简介');
+    assert.equal(await reading.locator('.alg-introduction-markdown strong').innerText(), '管理员内容', 'leaf introduction renders Markdown');
+    assert.deepEqual(await reading.locator('.alg-featured-section .alg-note-title').allTextContents(), ['公开语法笔记', '第二篇精选笔记']);
+    assert.deepEqual(await reading.locator('.alg-all-notes-section .alg-note-title').allTextContents(), ['普通语法笔记'], 'all notes excludes every curated note');
+    assert.equal(await reading.locator('.alg-edit-leaf-content').count(), 0, 'non-admin cannot curate');
+    await resourceDialog.locator('.arm-scope-button[data-scope="personal"]').click();
+    assert.deepEqual(await reading.locator('.alg-note-title').allTextContents(), ['我的私密语法笔记'], 'personal range excludes other accounts and all public notes');
+    await resourceDialog.locator('.arm-scope-button[data-scope="public"]').click();
+    assert.equal(await reading.getByText('他人的私密语法笔记').count(), 0);
+    await page.keyboard.press('Escape');
+    await node(page, 'g').click();
+    await page.locator('.arm-detail-dialog .arm-leaf-link[data-topic-id="algorithm-万能头文件与标准库使用"]').click();
+    assert.equal(await page.locator('.arm-resource-dialog .alg-leaf-reading').getAttribute('data-node-id'), 'algorithm-万能头文件与标准库使用', 'directory leaf link opens shared reader directly');
     await page.keyboard.press('Escape');
     await node(page, 'g').click();
     await page.evaluate(() => { window.__roadmapSaveFail = true; });
@@ -273,51 +274,66 @@ async function focus(page, id) {
     await page.setViewportSize({ width: 1500, height: 1100 });
     await page.evaluate(() => sessionStorage.setItem('roadmap-admin', 'true'));
     await page.reload(); await openRoute(page);
+    for (const fail of [false, true]) {
+      await node(page, 'g').click();
+      await page.locator('.arm-detail-dialog:not(.arm-resource-dialog) .arm-edit-introduction').click();
+      const pendingForm = page.locator('.arm-detail-dialog:not(.arm-resource-dialog) .arm-introduction-form');
+      await pendingForm.locator('[name="introduction"]').fill(`## 延迟保存 ${fail}`);
+      const settled = await page.evaluate(() => window.__roadmapSaveSettled);
+      await page.evaluate(fail => { window.__roadmapPublicFail = fail; window.__roadmapHoldSave = true; window.__roadmapReleaseSave = null; }, fail);
+      await pendingForm.locator('button[type="submit"]').click();
+      await page.waitForFunction(() => typeof window.__roadmapReleaseSave === 'function');
+      await page.keyboard.press('Escape');
+      await node(page, 'hs').click();
+      assert.equal(await page.locator('.arm-detail-dialog:not(.arm-resource-dialog) .arm-detail-title').innerText(), '函数');
+      await page.evaluate(() => { window.__roadmapReleaseSave(); });
+      await page.waitForFunction(before => window.__roadmapSaveSettled > before, settled);
+      await tick(page);
+      assert.equal(await page.locator('.arm-detail-dialog:not(.arm-resource-dialog) .arm-detail-title').innerText(), '函数', 'settled introduction save cannot overwrite a different open directory');
+      assert.equal(await page.locator('.arm-detail-dialog:not(.arm-resource-dialog) .arm-focus-error:visible').count(), 0, 'stale failure cannot appear in the newly opened directory');
+      await page.keyboard.press('Escape');
+    }
+    await page.evaluate(() => { window.__roadmapPublicFail = false; window.__roadmapNodeSaves = []; });
     await node(page, 'g').click(); await page.locator('.arm-resources-button').click();
-    const adminResource = page.locator('.arm-resource-card[data-gate-id="lp2-cpp-toolkit-program-flow-types-io"]');
-    await adminResource.locator('.arm-resource-edit').click();
-    const form = page.locator('.arm-resource-form');
-    assert.equal(await form.locator('[name="practiceTitle"]').inputValue(), '已保存的官方题单');
-    await form.locator('[name="description"]').fill('修改后的公共介绍');
-    await form.locator('[name="goals"]').fill('目标甲\n目标乙');
-    await form.locator('[name="practiceTitle"]').fill('新版官方题单');
-    await form.locator('[name="practiceUrl"]').fill('javascript:alert(1)');
-    await form.locator('button[type="submit"]').click();
-    await form.locator('.arm-focus-error').waitFor({ state: 'visible' });
-    assert.equal(await page.evaluate(() => window.__roadmapPublicSaves.length), 0, 'unsafe URL is rejected before public bridge call');
-    await form.locator('[name="practiceUrl"]').fill('https://example.invalid/new-official');
+    const adminDirectory = page.locator('.arm-resource-dialog');
+    await adminDirectory.locator('.arm-edit-introduction').click();
+    const introForm = adminDirectory.locator('.arm-introduction-form');
+    await introForm.locator('[name="introduction"]').fill('## 修改后的目录介绍\n\n[资料](https://example.invalid/reference)');
     await page.evaluate(() => { window.__roadmapPublicFail = true; });
-    await form.locator('button[type="submit"]').click();
-    await form.locator('.arm-focus-error').filter({ hasText: '模拟公共保存失败' }).waitFor({ state: 'visible' });
-    assert.equal(await form.locator('[name="description"]').inputValue(), '修改后的公共介绍', 'failed save retains draft');
+    await introForm.locator('button[type="submit"]').click();
+    await introForm.locator('.arm-focus-error').filter({ hasText: '模拟公共保存失败' }).waitFor({ state: 'visible' });
+    assert.match(await introForm.locator('[name="introduction"]').inputValue(), /修改后的目录介绍/, 'failed directory save retains draft');
     await page.evaluate(() => { window.__roadmapPublicFail = false; });
-    await form.locator('button[type="submit"]').click();
-    await form.waitFor({ state: 'hidden' });
-    assert.deepEqual(await page.evaluate(() => window.__roadmapPublicSaves), [{ repo: 'test/notebook', gateId: 'lp2-cpp-toolkit-program-flow-types-io', description: '修改后的公共介绍', goals: ['目标甲', '目标乙'], practiceList: { title: '新版官方题单', url: 'https://example.invalid/new-official' }, sha: 'a'.repeat(40) }], 'admin form passes existing public-content contract to mocked bridge');
-    assert.equal(await adminResource.locator('.arm-official-list').innerText(), '官方精选题单 · 新版官方题单 ↗');
-    await adminResource.locator('.arm-personal-button').click();
-    const personal = page.locator('.arm-personal-form');
-    await personal.locator('[name="practiceUrl"]').fill('https://example.invalid/personal-practice');
-    await page.evaluate(() => { window.__roadmapSaveFail = true; });
-    await personal.locator('button[type="submit"]').click();
-    await personal.locator('.arm-focus-error').waitFor({ state: 'visible' });
-    await page.evaluate(() => { window.__roadmapSaveFail = false; });
-    await personal.locator('button[type="submit"]').click();
-    await personal.waitFor({ state: 'hidden' });
-    assert.equal(await adminResource.locator('.arm-personal-link').count(), 1);
-    const withPersonal = await page.evaluate(key => JSON.parse(localStorage.getItem(key)), STORAGE);
-    const scopedKey = JSON.stringify(['https://api.github.com|test/notebook', '42', curriculum.id]);
-    assert.deepEqual(withPersonal.learningPaths[scopedKey].gates['lp2-cpp-toolkit-program-flow-types-io'], { ...originalGates['lp2-cpp-toolkit-program-flow-types-io'], practiceUrl: 'https://example.invalid/personal-practice' }, 'personal practice URL keeps completion/tasks/opaque fields');
-    assert.deepEqual(withPersonal.learningPaths[legacyKey].gates, originalGates, 'personal editor does not modify legacy data');
-    assert.equal(await page.evaluate(() => window.__roadmapPublicSaves.length), 1, 'personal editor never invokes public saving');
+    await introForm.locator('button[type="submit"]').click();
+    await introForm.waitFor({ state: 'hidden' });
+    const directorySave = await page.evaluate(() => window.__roadmapNodeSaves.find(input => input.nodeId === 'roadmap:g'));
+    assert.equal(directorySave.nodeId, 'roadmap:g', 'each route directory saves its own metadata identity');
+    assert.deepEqual(directorySave.featuredNotePaths, [], 'directories never store curated note choices');
+    assert.equal(await page.evaluate(() => window.__roadmapPublicSaves.length), 0, 'directory editing leaves every legacy gate description/goals/practice entry intact');
+    assert.equal(await adminDirectory.locator('.arm-directory-markdown h2').innerText(), '修改后的目录介绍');
+    assert.equal(await adminDirectory.locator('.alg-edit-leaf-content').count(), 0, 'directories never have curated-note UI');
+    await adminDirectory.locator('.arm-leaf-link[data-topic-id="algorithm-万能头文件与标准库使用"]').click();
+    await adminDirectory.locator('.alg-edit-leaf-content').click();
+    const leafForm = page.locator('.alg-leaf-content-form');
+    assert.equal(await leafForm.locator('[name="featuredNotePaths"]:checked').count(), 2);
+    await leafForm.locator('[name="introduction"]').fill('## 新版叶子简介');
+    await leafForm.locator('[name="featuredNotePaths"][value="algorithm-notes/public-ordinary.md"]').check();
+    await page.evaluate(() => { window.__roadmapPublicFail = true; });
+    await leafForm.locator('button[type="submit"]').click();
+    await leafForm.locator('.alg-inline-error').filter({ hasText: '模拟公共保存失败' }).waitFor({ state: 'visible' });
+    assert.equal(await leafForm.locator('[name="introduction"]').inputValue(), '## 新版叶子简介');
+    await page.evaluate(() => { window.__roadmapPublicFail = false; });
+    await leafForm.locator('button[type="submit"]').click();
+    await leafForm.waitFor({ state: 'hidden' });
+    const leafSave = await page.evaluate(() => window.__roadmapNodeSaves.find(input => input.nodeId === 'algorithm-万能头文件与标准库使用'));
+    assert.equal(leafSave.nodeId, 'algorithm-万能头文件与标准库使用');
+    assert.deepEqual(leafSave.featuredNotePaths, ['algorithm-notes/public-resource.md', 'algorithm-notes/public-second.md', 'algorithm-notes/public-ordinary.md']);
+    assert.equal(await adminDirectory.locator('.alg-featured-section .alg-note-card').count(), 3);
+    assert.equal(await adminDirectory.locator('.alg-all-notes-section .alg-note-card').count(), 0);
     await page.keyboard.press('Escape');
-    await page.reload(); await openRoute(page);
-    await node(page, 'g').click(); await page.locator('.arm-resources-button').click();
-    await page.locator('.arm-resource-card[data-gate-id="lp2-cpp-toolkit-program-flow-types-io"] .arm-personal-button').click();
-    assert.equal(await page.locator('.arm-personal-form [name="practiceUrl"]').inputValue(), 'https://example.invalid/personal-practice', 'personal list restores after reload');
-    await page.keyboard.press('Escape'); await page.keyboard.press('Escape');
+    await assertPreserved(page);
     assert.equal(await page.evaluate(() => window.__roadmapWrites), 0);
     assert.deepEqual(errors, [], 'no renderer errors');
-    console.log('PASS learning roadmap UI: approved 33 nodes/38 edges, stages above graph, fit/100%/zoom/resize, graph/list/search, popup relationships/offline index, trusted resource wheel/last-card access, save failure/retry, preserved legacy data, account/source isolation, reload, light/dark 390px, no remote writes');
+    console.log('PASS learning roadmap UI: approved 33 nodes/38 edges, stages above graph, fit/100%/zoom/resize, graph/list/search, directory Markdown/leaf links, custom gate known/custom topic mapping and shared reader, curated multi-note partition, personal-account scope, admin Markdown save failure/retry, preserved legacy data, account/source isolation, reload, light/dark 390px, no remote writes');
   } finally { await browser.close(); }
 })().catch(error => { console.error(error); process.exitCode = 1; });

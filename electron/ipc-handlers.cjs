@@ -249,7 +249,7 @@ function createLocalUpdate({ isWriteBusy, isSyncBusy, getAccount, local, read, s
     };
     return updateLocal;
 }
-function registerRecordHandlers({ handle, writeOperation, requireWritableSource, getAccount, getToken, local, settings, read, save, client, annotate, sourceScope, repositoryKey, repoCache, saveRepoCache }) {
+function registerRecordHandlers({ handle, writeOperation, requireWritableSource, getAccount, getToken, local, settings, read, save, client, annotate, sourceScope, getLoginGeneration, ensureSource, repositoryKey, repoCache, saveRepoCache }) {
     function checkRecordRepo(record) {
         const scope = sourceScope();
         if (record.repo && record.repo !== scope.repo)
@@ -308,7 +308,9 @@ function registerRecordHandlers({ handle, writeOperation, requireWritableSource,
         requireWritableSource();
         if (!getAccount()?.id || !getToken())
             throw new Error('请先登录 GitHub');
-        const result = annotate(await client().saveAlgorithmNote(record));
+        const scope = sourceScope(), generation = getLoginGeneration();
+        const result = annotate(await client().saveAlgorithmNote(record), scope);
+        ensureSource(scope.sourceKey, generation);
         const old = read('cache.json', {}), cache = repoCache(old);
         const notes = (cache.algorithmNotes || []).filter(item => item.path !== result.path);
         saveRepoCache(old, { ...cache, algorithmNotes: [...notes, result] });

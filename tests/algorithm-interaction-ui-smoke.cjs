@@ -250,7 +250,8 @@ async function nativeWheelChaining(page, selector, label) {
     await page.locator('[data-mode="tree"]').click();
     await page.locator('.alg-browser').waitFor();
     assert.equal(await page.locator('.alg-tooltip').count(), 1, 'returning to the tree creates exactly one tooltip');
-    assert.equal(await page.locator(itemSelector(topic.node.id)).getAttribute('aria-selected'), 'true', 'mode switch retains selected algorithm');
+    assert.equal(await page.locator(itemSelector(tree.id)).getAttribute('aria-selected'), 'true', 'fresh unfiltered tree render resets selection to root');
+    assert.equal(await page.locator('.alg-tree-item[data-depth="2"]').count(), 0, 'fresh unfiltered tree collapses nested paths');
     assert.deepEqual(errors, [], 'no renderer exceptions');
     console.log('PASS algorithm interactions: synchronous row/nested badge tooltips, switching, hover/selection, retained tree DOM, focus/Escape/leave/pointerdown/scroll, disposal, light/dark, 390px clamp, native tree wheel chaining, roadmap horizontal pan and page scrolling');
   } finally {

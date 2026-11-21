@@ -13,7 +13,7 @@ const methods = [
   'bootstrap', 'sync', 'submit', 'comment', 'openExternal', 'openAuthUrl', 'formatCode',
   'saveSettings', 'login', 'logout', 'saveClistCredentials', 'clearClistCredentials', 'getClistStatus',
   'cancelLogin', 'getComments', 'propose',
-  'updateLocal', 'exportLocal', 'saveDocument', 'saveAlgorithmTopic', 'saveLearningGate', 'saveLearningCurriculum', 'saveAlgorithmNote',
+  'updateLocal', 'exportLocal', 'saveDocument', 'saveAlgorithmTopic', 'saveLearningGate', 'saveLearningCurriculum', 'saveAlgorithmNodeContent', 'saveAlgorithmNote',
   'deleteDocument', 'deleteIssue', 'refreshAccount', 'checkStartupUpdates', 'checkForUpdates',
   'downloadUpdate', 'installUpdate', 'getTagCatalog', 'requestTag', 'getTagReview', 'reviewTag'
 ];
@@ -56,11 +56,11 @@ const implementations = [
 ];
 
 for (const [label, readCode] of implementations) {
-  test(`${label}: preload exposes the exact 41 methods in order and forwards every argument`, async () => {
+  test(`${label}: preload exposes the exact 42 methods in order and forwards every argument`, async () => {
     const calls = [], result = { saved: true };
     const pending = Promise.resolve(result);
     const { bridge } = loadPreload(readCode(), (...args) => { calls.push(args); return pending; });
-    assert.equal(methods.length, 41);
+    assert.equal(methods.length, 42);
     assert.deepEqual(Object.keys(bridge), [...methods, 'onAuthProgress', 'onUpdateProgress']);
     for (const name of methods) {
       const payload = { method: name }, sequence = [name, undefined];

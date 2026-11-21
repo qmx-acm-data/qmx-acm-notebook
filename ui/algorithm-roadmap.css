@@ -8,16 +8,19 @@
 .arm .arm-detail-dialog.arm-resource-dialog, .arm .arm-detail-dialog.arm-personal-dialog, .arm .arm-detail-dialog.arm-resource-edit-dialog { overflow: auto; overscroll-behavior-y: auto; }
 .arm-dialog-body { padding: 20px 24px 24px; }
 .arm-resource-hint { font-size: 12px; color: var(--arm-muted); margin-bottom: 15px; }
-.arm-resource-card { border: 1px solid var(--arm-line); border-radius: 10px; padding: 16px; margin: 13px 0; }
-.arm-resource-card h3 { font-size: 14px; margin-bottom: 10px; }
-.arm-resource-card p, .arm-resource-card ul { font-size: 12px; line-height: 1.9; }
 .arm-resource-links, .arm-resource-actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 11px; }
-.arm .arm-note { display: block; width: 100%; text-align: left; margin: 9px 0; padding: 12px; }
-.arm .arm-note-featured { border-color: var(--arm-accent); background: var(--arm-soft); }
-.arm .arm-official-list { display: block; width: 100%; text-align: left; padding: 13px; margin: 11px 0; background: var(--arm-soft); border-color: var(--arm-accent); }
-.arm-resource-field { display: grid; gap: 7px; margin-bottom: 14px; font-size: 12px; }
-.arm-resource-field input, .arm-resource-field textarea { width: 100%; min-width: 0; background: var(--arm-paper); color: var(--arm-ink); border: 1px solid var(--arm-line); border-radius: 7px; padding: 10px; }
-@media(max-width:700px) { .arm-dialog-body { padding: 16px; } .arm-resource-card { padding: 12px; } }
+.arm-directory-introduction { margin: 20px 0 25px; }
+.arm-directory-heading { display: flex; justify-content: space-between; align-items: center; gap: 12px; margin-bottom: 12px; }
+.arm-directory-heading h3, .arm-leaf-choices > h3 { font-size: 14px; }
+.arm-directory-markdown { overflow-wrap: anywhere; line-height: 1.9; }
+.arm .arm-directory-markdown p { margin: 0 0 12px; }
+.arm .arm-directory-markdown ul { padding-left: 22px; }
+.arm-directory-markdown:not(:has(*)) { white-space: pre-wrap; }
+.arm .arm-leaf-link { padding: 10px 13px; text-align: left; color: var(--arm-accent); background: var(--arm-soft); }
+.arm-note-scope { display: flex; flex-wrap: wrap; gap: 7px; margin-bottom: 16px; }
+.arm-introduction-input { display: block; width: 100%; resize: vertical; padding: 12px; border: 1px solid var(--arm-line); border-radius: 8px; background: var(--arm-paper); color: var(--arm-ink); font: inherit; }
+.arm .alg-leaf-reading { margin-top: 20px; }
+@media(max-width:700px) { .arm-dialog-body { padding: 16px; } .arm-directory-heading { align-items: flex-start; } }
 .arm {
   --arm-paper: var(--surface, #fff);
   --arm-ink: var(--text, #20324e);

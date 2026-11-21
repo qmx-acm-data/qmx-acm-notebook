@@ -7,7 +7,7 @@ import type { AppArguments, BoundaryModule, CacheView, FailureView, LocalView, M
 const { app, BrowserWindow, ipcMain, shell, safeStorage, net } = (require('electron') as typeof import('electron'));
 import fs = require('node:fs');
 import path = require('node:path');
-const { GitHub, repoParts, normalizeServerUrl, repositoryKey, parseLearningGateContent, parseLearningCurriculumContent, learningCurriculumGateIds } = (require('./github.cjs') as typeof import('../github/client.cjs'));
+const { GitHub, repoParts, normalizeServerUrl, repositoryKey, parseAlgorithmNodeContent, algorithmContentTargetId, parseLearningGateContent, parseLearningCurriculumContent, learningCurriculumGateIds } = (require('./github.cjs') as typeof import('../github/client.cjs'));
 const { randomUUID } = (require('node:crypto') as typeof import('node:crypto'));
 const { spawn } = (require('node:child_process') as typeof import('node:child_process'));
 const { createUpdater } = (require('./updater.cjs') as typeof import('../update/updater.cjs'));
@@ -126,6 +126,25 @@ function cachedLearningContents(value: unknown, scope = sourceScope(), curriculu
     try { return [annotate(parseLearningGateContent({ ...record, schema: 1 }, String(record.gateId), record.sha), scope)]; } catch { return []; }
   });
 }
+function cachedAlgorithmNodeContents(value: unknown, topics: unknown, scope = sourceScope()) {
+  if (!Array.isArray(value)) return [];
+  try {
+    const additions = Array.isArray(topics) ? (require('./algorithm-topics.cjs') as typeof import('../algorithms/topics.cjs')).validateTopics(topics) : [];
+    const seen = new Set<string>();
+    return value.flatMap((raw: unknown) => {
+      if (!raw || typeof raw !== 'object' || Array.isArray(raw)) return [];
+      const record = raw as Record<string, unknown>;
+      if (record.repo !== scope.repo || record.sourceKey !== scope.sourceKey || record.serverUrl !== scope.serverUrl) return [];
+      try {
+        const content = parseAlgorithmNodeContent({ ...record, schema: 1 }, record.sha);
+        const storageNodeId = content.storageNodeId ?? content.nodeId;
+        const nodeId = algorithmContentTargetId(storageNodeId, additions);
+        if (!nodeId || algorithmContentTargetId(content.nodeId, additions) !== nodeId || seen.has(nodeId)) return [];
+        seen.add(nodeId); return [annotate({ ...content, nodeId, ...(storageNodeId === nodeId ? {} : { storageNodeId }) }, scope)];
+      } catch { return []; }
+    });
+  } catch { return []; }
+}
 function libraryPlatforms(input: unknown): string[] | undefined {
   const filter = input && typeof input === 'object' ? input as Record<string, unknown> : {};
   const supported = /^(CF|AT|LG|NC|LC|LOJ)$/;
@@ -160,6 +179,7 @@ function state(error?: string) {
     records: matching ? (c.records || []).filter(r => r.kind === 'document').map(r => annotate(r, scope)) : [],
     algorithmNotes: matching ? (c.algorithmNotes || []).map(r => annotate(r, scope)) : [],
     algorithmTopics: matching && Array.isArray(c.algorithmTopics) ? c.algorithmTopics.map(topic => annotate(topic, scope)) : [],
+    algorithmNodeContents: matching ? cachedAlgorithmNodeContents(c.algorithmNodeContents, c.algorithmTopics, scope) : [],
     learningGateContents: matching ? cachedLearningContents(c.learningGateContents, scope, curriculum) : [],
     learningCurriculum: curriculum,
     issues: matching ? (c.issues || (c.records || []).filter(r => r.kind === 'issue')).map(r => annotate(r, scope)) : [],
@@ -274,6 +294,17 @@ function setup() {
     saveRepoCache(old, updated);
     return result.topic;
   }));
+  handle('saveAlgorithmNodeContent', data => writeOperation(async () => {
+    requireWritableSource();
+    const scope = sourceScope(), gen = loginGeneration;
+    const result = await client().saveAlgorithmNodeContent(data);
+    ensureSource(scope.sourceKey, gen);
+    const old = read('cache.json', {}) as CacheView, c = repoCache(old, scope.repo, scope.serverUrl);
+    const contents = cachedAlgorithmNodeContents(c.algorithmNodeContents, c.algorithmTopics, scope).filter(content => content.nodeId !== result.nodeId);
+    const saved = annotate(result, scope); contents.push(saved);
+    saveRepoCache(old, { ...(c.repo === scope.repo ? c : {}), repo: scope.repo, algorithmNodeContents: contents }, scope);
+    return saved;
+  }));
   handle('saveLearningCurriculum', data => writeOperation(async () => {
     requireWritableSource();
     const scope = sourceScope(), gen = loginGeneration;
@@ -312,7 +343,7 @@ function setup() {
       catch (error) { tagCatalogError = (error as FailureView).status === 401 ? '标签目录授权已失效，请重新登录' : '标签目录暂未更新，继续使用已缓存的标签'; }
       ensureSource(scope.sourceKey, gen);
       const curriculum = cachedLearningCurriculum(result.learningCurriculum, result.algorithmTopics, scope);
-      const updated = { ...result, repo, tagCatalog, tagCatalogError, algorithmNotes: Array.isArray(result.algorithmNotes) ? result.algorithmNotes : [], algorithmTopics: Array.isArray(result.algorithmTopics) ? result.algorithmTopics : [], learningCurriculum: curriculum, learningGateContents: cachedLearningContents(result.learningGateContents, scope, curriculum) };
+      const updated = { ...result, repo, tagCatalog, tagCatalogError, algorithmNotes: Array.isArray(result.algorithmNotes) ? result.algorithmNotes : [], algorithmTopics: Array.isArray(result.algorithmTopics) ? result.algorithmTopics : [], algorithmNodeContents: cachedAlgorithmNodeContents(result.algorithmNodeContents, result.algorithmTopics, scope), learningCurriculum: curriculum, learningGateContents: cachedLearningContents(result.learningGateContents, scope, curriculum) };
       saveRepoCache(old, updated);
       if (token) { try { await refreshIdentity(); } catch (error) { permissions = null; return state(`资料已同步，账号权限刷新失败：${(error as FailureView).message}`); } }
       return state();
@@ -330,7 +361,7 @@ function setup() {
   });
   registerRecordHandlers({ handle, writeOperation, requireWritableSource,
     getAccount: () => account, getToken: () => token, local, settings, read, save, client, annotate,
-    sourceScope, repositoryKey, repoCache, saveRepoCache });
+    sourceScope, getLoginGeneration: () => loginGeneration, ensureSource, repositoryKey, repoCache, saveRepoCache });
   (require('./ipc-boundary.cjs') as BoundaryModule).registerBoundary(handle, {
     plannerAction: (action, payload) => planner.action(action, payload),
     bootstrap: () => state(),
