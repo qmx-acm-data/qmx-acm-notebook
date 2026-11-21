@@ -41,6 +41,7 @@ declare function require(name: 'electron'): import('../../types/electron-preload
     saveAlgorithmTopic: (...args) => ipcRenderer.invoke('saveAlgorithmTopic', ...args),
     saveLearningGate: (...args) => ipcRenderer.invoke('saveLearningGate', ...args),
     saveLearningCurriculum: (...args) => ipcRenderer.invoke('saveLearningCurriculum', ...args),
+    saveAlgorithmNodeContent: (...args) => ipcRenderer.invoke('saveAlgorithmNodeContent', ...args),
     saveAlgorithmNote: (...args) => ipcRenderer.invoke('saveAlgorithmNote', ...args),
     deleteDocument: (...args) => ipcRenderer.invoke('deleteDocument', ...args),
     deleteIssue: (...args) => ipcRenderer.invoke('deleteIssue', ...args),

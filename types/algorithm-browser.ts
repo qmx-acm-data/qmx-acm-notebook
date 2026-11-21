@@ -1,3 +1,4 @@
+import type { AlgorithmNodeContent, SaveAlgorithmNodeContentInput } from '../src/shared/models/algorithm-node-content';
 import type { AlgorithmDirectoryNode } from '../src/shared/models/algorithm-directory';
 
 /** Legacy note values are displayed/coerced by the browser, without extra validation. */
@@ -23,6 +24,7 @@ export interface AlgorithmBrowserSnapshot {
   search: string;
   level: string;
   attribute: string;
+  hasNotes: boolean;
   draftSearch: string;
   draftLevel: string;
   selectedNode: string | null;
@@ -34,6 +36,8 @@ export interface AlgorithmBrowserOptions {
   host: HTMLElement;
   tree: AlgorithmDirectoryNode;
   notes?: unknown;
+  nodeContents?: AlgorithmNodeContent[];
+  onSaveNodeContent?: (input: Omit<SaveAlgorithmNodeContentInput, 'repo'>) => Promise<AlgorithmNodeContent>;
   scope?: string;
   account?: { id?: unknown } | null;
   canUpload?: unknown;

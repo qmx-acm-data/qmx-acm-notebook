@@ -4,7 +4,7 @@ import { LearningRoadmap } from './roadmap.js';
 import { roadmapData } from './roadmap-data.js';
 import { openRoadmapResources } from './roadmap-resources.js';
 import { applyCurriculumLayout } from '../../shared/learning-curriculum.js';
-import { openCurriculumEditor } from './curriculum-editor.js';
+import { isAlgorithmLeaf, resolveAlgorithmLeaf } from '../../shared/algorithm-leaf.js';
 /** Algorithm app integration with the browser and learning-route renderers. */
 type Options = import('../../../types/algorithm-workspace').AlgorithmWorkspaceOptions;
 type Controller = import('../../../types/algorithm-workspace').AlgorithmWorkspaceController;
@@ -28,6 +28,23 @@ export function createAlgorithmWorkspace(options: Options): Controller {
   let algorithmSelectedNode: string | null = 'root';
   function flattenTree(node: AlgorithmDirectoryNode, depth = 0, parent: string | null = null, out: AppFlatNode[] = []) { out.push({ ...node, depth, parent }); (node.children || []).forEach(child => flattenTree(child, depth + 1, node.id, out)); return out; }
   function algorithmNodes() { return flattenTree(getAlgorithmTree()); }
+  async function saveNodeContent(input: Omit<import('../../shared/models/algorithm-node-content').SaveAlgorithmNodeContentInput, 'repo'>) {
+    if (getBusy()) throw new Error('请等待当前操作完成');
+    if (!getAccount() || getPermissions().admin !== true) throw new Error('只有管理员可以修改简介与精选');
+    const source = options.repoSource(), owner = accountId(); setBusy(true);
+    try {
+      const saved = await options.saveAlgorithmNodeContent({ ...input, repo: repo() });
+      if (source !== options.repoSource() || owner !== accountId()) throw new Error('账号或资料来源已改变，请重新同步');
+      options.setAlgorithmNodeContents([...options.getAlgorithmNodeContents().filter(content => content.nodeId !== saved.nodeId), saved]); return saved;
+    } finally { setBusy(false); }
+  }
+  async function saveRouteIntroduction(nodeId: string, introduction: string): Promise<void> {
+    if (getBusy()) throw new Error('请等待当前操作完成');
+    if (!getAccount() || getPermissions().admin !== true) throw new Error('只有管理员可以修改简介');
+    const target = `roadmap:${nodeId}`;
+    const current = options.getAlgorithmNodeContents().find(item => item.nodeId === target);
+    await saveNodeContent({ nodeId: target, introduction, featuredNotePaths: [], sha: current?.sha || null });
+  }
   let algorithmMode = 'tree';
   let algorithmPendingTopic: string | null = null;
   let algorithmController: AlgorithmBrowserController | null = null;
@@ -89,14 +106,32 @@ export function createAlgorithmWorkspace(options: Options): Controller {
         const known = new Set(node.topicIds || []);
         const added = allGates.filter(gate => gate.id.startsWith('custom-') && (gate.topicIds || []).some(id => known.has(id)));
         node.gateIds = [...new Set([...(node.gateIds || []), ...added.map(gate => gate.id)])];
+        node.topicIds = [...new Set([...(node.topicIds || []), ...added.flatMap(gate => gate.topicIds || [])])];
       }
-      learningController = LearningRoadmap.render({ host, data: mapped, progress: learningProgress(),
+      function openLeaf(topicId: string): void {
+        const node = [...mapped.nodes, ...mapped.indexEntries].find(item => (item.topicIds || []).some(id => resolveAlgorithmLeaf(getAlgorithmTree(), id)?.id === topicId));
+        if (!node || !curriculum) return;
+        resources?.destroy();
+        resources = openRoadmapResources({ host: host.querySelector<HTMLElement>('.arm') || host, node, topicId, curriculum, tree: getAlgorithmTree(), notes: getAlgorithmNotes() as LearningPathNote[],
+          contents: options.getLearningGateContents(), progress: structuredClone(learningProgress()), canManage: Boolean(getAccount() && getPermissions().admin === true),
+          nodeContents: options.getAlgorithmNodeContents(), onSaveNodeContent: saveNodeContent, renderMarkdown, scope: panel.dataset.scope === 'personal' ? 'personal' : 'public', account: getAccount(),
+          onSaveGate: async () => { throw new Error('请通过简介编辑入口保存'); }, onPersonal: async () => {}, onTopic: openLearningTopic,
+          onNote: (note, gateId) => openAlgorithmNoteDetail(note, { gateId }), onExternal: options.openExternal,
+          onUploadLeaf: getAccount() && getPermissions().push ? id => { algorithmSelectedNode = id; openAlgorithmNoteEditor(); } : undefined, onSaveIntroduction: saveRouteIntroduction
+        });
+      }
+      learningController = LearningRoadmap.render({ host, data: mapped, progress: learningProgress(), tree: getAlgorithmTree(), nodeContents: options.getAlgorithmNodeContents(), renderMarkdown,
+        canManage: Boolean(getAccount() && getPermissions().admin === true), onSaveIntroduction: saveRouteIntroduction,
+        getIntroduction: node => options.getAlgorithmNodeContents().find(item => item.nodeId === `roadmap:${node.id}`)?.introduction,
+        onOpenLeaf: openLeaf,
         onFocus: async id => { await saveRoadmapProgress({ ...learningProgress(), roadmapFocus: id }); }, toast,
         onOpenResources: node => {
           if (!curriculum || getBusy()) return;
           resources?.destroy();
           resources = openRoadmapResources({ host: host.querySelector<HTMLElement>('.arm') || host, node, curriculum, tree: getAlgorithmTree(), notes: getAlgorithmNotes() as LearningPathNote[],
             progress: structuredClone(learningProgress()), contents: options.getLearningGateContents(), canManage: Boolean(getAccount() && getPermissions().admin === true),
+            nodeContents: options.getAlgorithmNodeContents(), onSaveNodeContent: saveNodeContent, renderMarkdown, scope: panel.dataset.scope === 'personal' ? 'personal' : 'public', account: getAccount(),
+            onUploadLeaf: getAccount() && getPermissions().push ? id => { algorithmSelectedNode = id; openAlgorithmNoteEditor(); } : undefined, onSaveIntroduction: saveRouteIntroduction,
             onSaveGate: async input => {
               if (getBusy()) throw new Error('请等待当前操作完成');
               if (!getAccount() || getPermissions().admin !== true) throw new Error('只有管理员可以修改公共资料');
@@ -119,7 +154,7 @@ export function createAlgorithmWorkspace(options: Options): Controller {
       return;
     }
     algorithmController = AlgorithmBrowser.render({
-      host, tree: getAlgorithmTree(), notes: getAlgorithmNotes(),
+      host, tree: getAlgorithmTree(), notes: getAlgorithmNotes(), nodeContents: options.getAlgorithmNodeContents(), onSaveNodeContent: saveNodeContent,
       onLearningPath(id) { setAlgorithmMode('path'); learningController?.selectTopic?.(id); },
       scope: panel.dataset.scope || 'public', account: getAccount(),
       canUpload: Boolean(getAccount() && getPermissions().push),
@@ -150,8 +185,8 @@ export function createAlgorithmWorkspace(options: Options): Controller {
     $('#algorithm-topic-parent')!.textContent = parent.fullLabel || parent.label;
     updateAlgorithmTopicKind();
     $('#algorithm-topic-kind-hint')!.textContent = parent.kind === 'algorithm'
-      ? '添加子项后，此节点将保留为目录，原算法及难度移入同名子项。目录也可以上传笔记。'
-      : '算法需要选择难度；目录不设置难度，也可以上传笔记。';
+      ? '添加子项后，此节点将保留为目录，原算法及难度移入同名叶子，笔记保存在具体知识点。'
+      : '算法需要选择难度；目录只组织子节点，不保存笔记。';
     $('#algorithm-topic-error')!.hidden = true; algorithmTopicRequest = uuid();
     $('#algorithm-topic-dialog')!.showModal(); form.elements.label.focus();
   }
@@ -187,9 +222,9 @@ export function createAlgorithmWorkspace(options: Options): Controller {
     path.push({ label: note.title || '未命名笔记' });
     const noteDetail = getReadingDetail().open({ content: pane, title: '算法笔记详情', path, onClose() { holder.remove(); } });
   }
-  function openAlgorithmNoteEditor() { if (!getAccount() || !getPermissions().push) { toast('请先登录具有仓库写入权限的 GitHub 账户'); return; } const form=$('#algorithm-note-form')!; form.reset(); const node=form.elements.nodeId as unknown as HTMLSelectElement; node.replaceChildren(...algorithmNodes().map(n=>{const o=element('option','',n.label);o.value=n.id;return o;})); node.value=algorithmSelectedNode!; form.elements.noteScope.value=getPermissions().admin ? 'public' : 'personal'; form.elements.noteScope.disabled=!getPermissions().admin; $('#algorithm-note-error')!.hidden=true; $('#algorithm-note-dialog')!.showModal(); }
+  function openAlgorithmNoteEditor() { if (!getAccount() || !getPermissions().push) { toast('请先登录具有仓库写入权限的 GitHub 账户'); return; } const form=$('#algorithm-note-form')!; form.reset(); const node=form.elements.nodeId as unknown as HTMLSelectElement; node.replaceChildren(...algorithmNodes().filter(isAlgorithmLeaf).map(n=>{const o=element('option','',n.label);o.value=n.id;return o;})); const selectedLeaf=resolveAlgorithmLeaf(getAlgorithmTree(),algorithmSelectedNode); if(selectedLeaf)node.value=selectedLeaf.id; form.elements.noteScope.value=getPermissions().admin ? 'public' : 'personal'; form.elements.noteScope.disabled=!getPermissions().admin; $('#algorithm-note-error')!.hidden=true; $('#algorithm-note-dialog')!.showModal(); }
   $('#algorithm-note-form')!.addEventListener('submit', async event => { event.preventDefault(); const form=event.currentTarget as AppSelectorMap['#algorithm-note-form'];if(getBusy())return;const data=Object.fromEntries(new FormData(form)) as Record<string, string>;const note={title:data.noteTitle,noteScope:getPermissions().admin ? form.elements.noteScope.value : 'personal',nodeId:data.nodeId,tags:String(data.noteTags||'').split(/[,，、]/).map(x=>x.trim()).filter(Boolean),body:data.body,featured:data.featured === 'on',clientId:uuid(),repo:repo()};setBusy(true);try{const result=await call('saveAlgorithmNote',note);setAlgorithmNotes([...getAlgorithmNotes().filter(x=>x.path!==result.path),result]);$('#algorithm-note-dialog')!.close();render();toast('算法笔记已保存')}catch(error){$('#algorithm-note-error')!.textContent=errorMessage(error);$('#algorithm-note-error')!.hidden=false}finally{setBusy(false)}});
   function setSelectedNode(id: string | null) { algorithmSelectedNode = id; }
-  function resetRepository() { setAlgorithmNotes([]); options.setLearningGateContents([]); options.setLearningCurriculum(null); setAlgorithmTopics([]); setAlgorithmTree(AlgorithmDirectory.hydrate(global.QMX_ALGORITHM_TREE, [])); }
+  function resetRepository() { setAlgorithmNotes([]); options.setLearningGateContents([]); options.setLearningCurriculum(null); options.setAlgorithmNodeContents([]); setAlgorithmTopics([]); setAlgorithmTree(AlgorithmDirectory.hydrate(global.QMX_ALGORITHM_TREE, [])); }
   return { get algorithmSelectedNode() { return algorithmSelectedNode; }, get algorithmMode() { return algorithmMode; }, get algorithmPendingTopic() { return algorithmPendingTopic; }, get learningController() { return learningController; }, get algorithmTopicRequest() { return algorithmTopicRequest; }, setSelectedNode, algorithmNodes, learningProgressKey, setAlgorithmMode, openLearningTopic, saveLearningProgress, renderAlgorithmNotes, updateAlgorithmTopicKind, openAlgorithmTopicEditor, isMineNote, openAlgorithmNoteDetail, openAlgorithmNoteEditor, resetRepository };
 }

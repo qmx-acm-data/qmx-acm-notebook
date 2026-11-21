@@ -63,6 +63,18 @@ async function assertLocal(page, focusId) {
     assert.equal(await running.page.locator('.arm-node').count(), 33);
     assert.equal(await running.page.locator('.arm-edge').count(), 38);
     assert.equal(await running.page.locator('.alp-complete-button, .alp-checkpoint, .alp-task-card').count(), 0);
+    await running.page.locator('.arm-node[data-node="g"]').click();
+    assert.equal(await running.page.locator('.arm-directory-introduction').count(), 1, 'real route directory shows one Markdown intro');
+    assert.equal(await running.page.locator('.arm-detail-dialog .alg-note-card, .arm-detail-section, .arm-practice-box, .arm-relation-button').count(), 0, 'directory has no aggregated notes or old task panels');
+    const leaf = running.page.locator('.arm-detail-dialog .arm-leaf-link').first();
+    const leafId = await leaf.getAttribute('data-topic-id');
+    assert.ok(leafId, 'directory offers canonical knowledge leaves');
+    await leaf.click();
+    assert.equal(await running.page.locator('.arm-resource-dialog .alg-leaf-reading').getAttribute('data-node-id'), leafId);
+    assert.deepEqual(await running.page.locator('.alg-leaf-reading h3').allTextContents(), ['简介', '精选笔记', '全部笔记']);
+    await running.page.locator('.arm-scope-button[data-scope="personal"]').click();
+    assert.equal(await running.page.locator('.alg-leaf-reading .alg-note-card').count(), 0, 'anonymous personal scope is empty');
+    await running.page.keyboard.press('Escape');
     await focus(running.page, 'g');
     await assertLocal(running.page, 'g');
     const disk = JSON.parse(fs.readFileSync(path.join(profile, 'local.json'), 'utf8'));

@@ -4,7 +4,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const { app, BrowserWindow, ipcMain, shell, safeStorage, net } = require('electron');
 const fs = require("node:fs");
 const path = require("node:path");
-const { GitHub, repoParts, normalizeServerUrl, repositoryKey, parseLearningGateContent, parseLearningCurriculumContent, learningCurriculumGateIds } = require('./github.cjs');
+const { GitHub, repoParts, normalizeServerUrl, repositoryKey, parseAlgorithmNodeContent, algorithmContentTargetId, parseLearningGateContent, parseLearningCurriculumContent, learningCurriculumGateIds } = require('./github.cjs');
 const { randomUUID } = require('node:crypto');
 const { spawn } = require('node:child_process');
 const { createUpdater } = require('./updater.cjs');
@@ -159,6 +159,36 @@ function cachedLearningContents(value, scope = sourceScope(), curriculum = null)
         }
     });
 }
+function cachedAlgorithmNodeContents(value, topics, scope = sourceScope()) {
+    if (!Array.isArray(value))
+        return [];
+    try {
+        const additions = Array.isArray(topics) ? require('./algorithm-topics.cjs').validateTopics(topics) : [];
+        const seen = new Set();
+        return value.flatMap((raw) => {
+            if (!raw || typeof raw !== 'object' || Array.isArray(raw))
+                return [];
+            const record = raw;
+            if (record.repo !== scope.repo || record.sourceKey !== scope.sourceKey || record.serverUrl !== scope.serverUrl)
+                return [];
+            try {
+                const content = parseAlgorithmNodeContent({ ...record, schema: 1 }, record.sha);
+                const storageNodeId = content.storageNodeId ?? content.nodeId;
+                const nodeId = algorithmContentTargetId(storageNodeId, additions);
+                if (!nodeId || algorithmContentTargetId(content.nodeId, additions) !== nodeId || seen.has(nodeId))
+                    return [];
+                seen.add(nodeId);
+                return [annotate({ ...content, nodeId, ...(storageNodeId === nodeId ? {} : { storageNodeId }) }, scope)];
+            }
+            catch {
+                return [];
+            }
+        });
+    }
+    catch {
+        return [];
+    }
+}
 function libraryPlatforms(input) {
     const filter = input && typeof input === 'object' ? input : {};
     const supported = /^(CF|AT|LG|NC|LC|LOJ)$/;
@@ -205,6 +235,7 @@ function state(error) {
         records: matching ? (c.records || []).filter(r => r.kind === 'document').map(r => annotate(r, scope)) : [],
         algorithmNotes: matching ? (c.algorithmNotes || []).map(r => annotate(r, scope)) : [],
         algorithmTopics: matching && Array.isArray(c.algorithmTopics) ? c.algorithmTopics.map(topic => annotate(topic, scope)) : [],
+        algorithmNodeContents: matching ? cachedAlgorithmNodeContents(c.algorithmNodeContents, c.algorithmTopics, scope) : [],
         learningGateContents: matching ? cachedLearningContents(c.learningGateContents, scope, curriculum) : [],
         learningCurriculum: curriculum,
         issues: matching ? (c.issues || (c.records || []).filter(r => r.kind === 'issue')).map(r => annotate(r, scope)) : [],
@@ -332,6 +363,18 @@ function setup() {
         saveRepoCache(old, updated);
         return result.topic;
     }));
+    handle('saveAlgorithmNodeContent', data => writeOperation(async () => {
+        requireWritableSource();
+        const scope = sourceScope(), gen = loginGeneration;
+        const result = await client().saveAlgorithmNodeContent(data);
+        ensureSource(scope.sourceKey, gen);
+        const old = read('cache.json', {}), c = repoCache(old, scope.repo, scope.serverUrl);
+        const contents = cachedAlgorithmNodeContents(c.algorithmNodeContents, c.algorithmTopics, scope).filter(content => content.nodeId !== result.nodeId);
+        const saved = annotate(result, scope);
+        contents.push(saved);
+        saveRepoCache(old, { ...(c.repo === scope.repo ? c : {}), repo: scope.repo, algorithmNodeContents: contents }, scope);
+        return saved;
+    }));
     handle('saveLearningCurriculum', data => writeOperation(async () => {
         requireWritableSource();
         const scope = sourceScope(), gen = loginGeneration;
@@ -377,7 +420,7 @@ function setup() {
             }
             ensureSource(scope.sourceKey, gen);
             const curriculum = cachedLearningCurriculum(result.learningCurriculum, result.algorithmTopics, scope);
-            const updated = { ...result, repo, tagCatalog, tagCatalogError, algorithmNotes: Array.isArray(result.algorithmNotes) ? result.algorithmNotes : [], algorithmTopics: Array.isArray(result.algorithmTopics) ? result.algorithmTopics : [], learningCurriculum: curriculum, learningGateContents: cachedLearningContents(result.learningGateContents, scope, curriculum) };
+            const updated = { ...result, repo, tagCatalog, tagCatalogError, algorithmNotes: Array.isArray(result.algorithmNotes) ? result.algorithmNotes : [], algorithmTopics: Array.isArray(result.algorithmTopics) ? result.algorithmTopics : [], algorithmNodeContents: cachedAlgorithmNodeContents(result.algorithmNodeContents, result.algorithmTopics, scope), learningCurriculum: curriculum, learningGateContents: cachedLearningContents(result.learningGateContents, scope, curriculum) };
             saveRepoCache(old, updated);
             if (token) {
                 try {
@@ -412,7 +455,7 @@ function setup() {
     });
     registerRecordHandlers({ handle, writeOperation, requireWritableSource,
         getAccount: () => account, getToken: () => token, local, settings, read, save, client, annotate,
-        sourceScope, repositoryKey, repoCache, saveRepoCache });
+        sourceScope, getLoginGeneration: () => loginGeneration, ensureSource, repositoryKey, repoCache, saveRepoCache });
     require('./ipc-boundary.cjs').registerBoundary(handle, {
         plannerAction: (action, payload) => planner.action(action, payload),
         bootstrap: () => state(),

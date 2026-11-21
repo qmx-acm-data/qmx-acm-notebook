@@ -1,4 +1,5 @@
 import type { LearningCurriculumDocument } from './learning-curriculum';
+import type { AlgorithmNodeContent } from './algorithm-node-content';
 import type { LearningGateContent } from './learning-content';
 import type { LocalDataSnapshot } from './records';
 import type { AuthStatus } from './auth';
@@ -14,6 +15,7 @@ export interface BootstrapPayload {
   records: CachedDocument[];
   algorithmNotes: CachedEntry[];
   algorithmTopics: CachedEntry[];
+  algorithmNodeContents: AlgorithmNodeContent[];
   learningGateContents: LearningGateContent[];
   learningCurriculum: LearningCurriculumDocument | null;
   issues: CachedEntry[];
