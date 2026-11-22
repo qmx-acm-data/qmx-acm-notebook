@@ -1,22 +1,22 @@
 {
   "schema": 1,
-  "version": "1.5.0",
+  "version": "1.6.0",
   "runtimeVersion": "40.10.6",
   "target": {
-    "size": 28174722,
-    "sha256": "db3c69944dea0e54d103c3e43dbe015e994241bc243a9265455a4759615608f2"
+    "size": 35182358,
+    "sha256": "90cafb7f9aa800b3b7504cf09b11ed0eca7c597e56017bc19842b86f898103b9"
   },
   "patches": [
     {
-      "fromVersion": "1.4.1",
-      "fromSize": 28140490,
-      "fromSha256": "0076e96a083b9387e3c874b1e3a841b72bcd1618d7314f5cf08fc8e06ad6c995",
-      "path": "resources/deltas/0076e96a083b9387e3c874b1e3a841b72bcd1618d7314f5cf08fc8e06ad6c995.qmxdelta",
-      "size": 261417,
-      "sha256": "eaef5cd08388027ce78b0fe90ded0af2a795ea23b5ef1831a8c2d36cb15b1a02",
+      "fromVersion": "1.5.0",
+      "fromSize": 28174722,
+      "fromSha256": "db3c69944dea0e54d103c3e43dbe015e994241bc243a9265455a4759615608f2",
+      "path": "resources/deltas/db3c69944dea0e54d103c3e43dbe015e994241bc243a9265455a4759615608f2.qmxdelta",
+      "size": 721812,
+      "sha256": "9189c792a081551b1aa4df45754ef175cd1621bb59aa9b3d61ea4df0a112d976",
       "algorithm": "qmx-cdc-brotli-v1"
     }
   ],
-  "publishedAt": "2026-11-21T02:32:43.042Z",
-  "signature": "sKhBcXB9gX481M8O3Owa5B9G8aANPY/3EO7tMnwqRfjjK4OmGaux8c56EvWiXw5mfb40rNwQBztdf38iBY2oCQ=="
+  "publishedAt": "2026-11-22T05:40:05.836Z",
+  "signature": "z4B9hzlZBfLdmLCadk+d1kd7UM0PGfCAKjtsnnC12VsSajUf9BFHNZ+9ubnLVongetyvNi3FLQYWYyFWtUhoBw=="
 }
