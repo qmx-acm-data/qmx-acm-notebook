@@ -172,6 +172,8 @@ const path = require('node:path');
     const cells = panel.locator('.platform-heatmap-day');
     assert.ok([365, 366].includes(await cells.count()));
     const todayCell = () => panel.locator(`.platform-heatmap-day[data-date="${today}"]`);
+    await todayCell().scrollIntoViewIfNeeded();
+    await page.evaluate(() => new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve))));
     await todayCell().hover();
     assert.deepEqual(await tipLines(), [today, '总通过：2道（已知）']);
     assert.equal(await tip.locator('strong').count(), 0);

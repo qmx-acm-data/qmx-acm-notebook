@@ -3,6 +3,15 @@
 #tag-picker-dialog::backdrop,
 body.tag-picker-open #submit-dialog::backdrop { backdrop-filter: none; }
 #tag-picker-dialog { box-shadow: 0 8px 28px #0003; }
+#tag-picker-dialog .tag-picker-selected { margin: 0 0 10px; padding: 8px 10px; border: 1px solid var(--line); border-radius: 7px; background: var(--surface-soft); }
+.tag-picker-selected-heading { display: flex; align-items: center; justify-content: space-between; gap: 8px; font-size: 11px; color: var(--muted); }
+#tag-picker-dialog .tag-picker-clear { font-size: 11px; padding: 3px 7px; min-height: 25px; }
+.tag-picker-selected-chips { display: flex; flex-wrap: wrap; gap: 5px; max-height: 88px; overflow-y: auto; margin-top: 5px; }
+#tag-picker-dialog .tag-picker-selected-chip { cursor: pointer; padding: 4px 7px; border: 1px solid; border-radius: 5px; font-size: 11px; line-height: 1.4; max-width: 100%; overflow-wrap: anywhere; text-align: left; }
+.tag-picker-selection-empty { color: var(--muted); font-size: 11px; }
+#tag-picker-dialog .tag-picker-selected-chip:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; }
+#tag-picker-dialog:has(.tag-picker-selected) #tag-picker-dialog-options { max-height: min(42vh, 380px); }
+@media(max-width:460px) { #tag-picker-dialog:has(.tag-picker-selected) #tag-picker-dialog-options { max-height: min(32vh, 270px); } }
 #tag-picker-dialog-options {
   contain: layout paint;
   isolation: isolate;
@@ -24,3 +33,11 @@ body.tag-picker-open #submit-dialog::backdrop { backdrop-filter: none; }
   box-shadow: inset 3px 0 var(--accent);
 }
 #tag-picker-dialog-options .facet-option input { cursor: pointer; }
+#tag-picker-dialog-options .tag-option-name { padding: 3px 7px; border: 1px solid; border-radius: 5px; font-size: 12px; line-height: 1.4; }
+#tag-picker-dialog-options .tag-option-sources { margin-left: auto; flex: none; font-size: 10px; white-space: nowrap; }
+#tag-picker-dialog-options .tag-option-count { margin-left: 0; min-width: 2em; text-align: right; }
+.daily-tag-coverage { display: grid; gap: 4px; margin-bottom: 8px; padding: 7px 9px; background: var(--surface-soft); border: 1px solid var(--line); border-radius: 6px; color: var(--muted); font-size: 10px; line-height: 1.45; }
+.daily-tag-coverage-platforms { display: flex; flex-wrap: wrap; gap: 3px 12px; }
+.daily-tag-coverage small { font-size: inherit; overflow-wrap: anywhere; }
+#tag-picker-dialog:has(.daily-tag-coverage:not([hidden])) #tag-picker-dialog-options { height: min(46vh,440px); }
+@media (max-width:460px) { #tag-picker-dialog:has(.daily-tag-coverage:not([hidden])) #tag-picker-dialog-options { height: min(40vh,340px); } }

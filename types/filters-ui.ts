@@ -13,6 +13,7 @@ export interface FiltersUIOptions {
   getView(): import('./app').AppState['view'];
   getScope(): import('./app').AppState['libraryScope'];
   getTagCatalog(): import('./app').AppState['tagCatalog'];
+  getDailyTagCatalog?(): Promise<import('../src/shared/models/daily-problem').DailyTagCatalog>;
   getBusy(): boolean;
   favorite(record: FiltersRecord): boolean;
   mastery(record: FiltersRecord): string;

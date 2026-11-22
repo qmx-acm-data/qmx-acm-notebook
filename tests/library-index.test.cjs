@@ -67,6 +67,26 @@ test('library loader limits reads to the requested platform shards', () => {
   assert.deepEqual(all.counts, { CF: 1, LG: 1 });
 });
 
+test('legacy non-Luogu rows restore real raw topics and canonicalize source aliases', () => {
+  const legacy = {
+    id: 'LC:two-sum', platform: 'LC', title: 'Two Sum', url: 'https://leetcode.cn/problems/two-sum/',
+    tags: ['dp', '滑动窗口'], rawTags: ['Array', 'Hash Table', 'Dynamic Programming', 'Sliding Window', 'Custom Algorithm', '2016', '二零二四年', '*special', 'interactive', 'NOIP 普及组', null, 82]
+  };
+  const before = structuredClone(legacy);
+  assert.deepEqual(toLibraryProblem(legacy).tags, ['动态规划 DP', '滑动窗口', '数组', '哈希表', 'Custom Algorithm']);
+  assert.deepEqual(legacy, before);
+  assert.deepEqual(toLibraryProblem({ ...legacy, rawTags: 'invalid', tags: [null, {}, 5, '  数组  ', 'Array'] }).tags, ['数组']);
+});
+
+test('Luogu rows keep official algorithm tags without restoring unknown raw metadata', () => {
+  const legacy = {
+    id: 'LG:P1', platform: 'LG', title: 't', url: 'https://www.luogu.com.cn/problem/P1',
+    tags: ['dp', '快速排序', '数据结构', 'Hash Table', '2016', '洛谷标签#999'],
+    rawTags: ['Array', 'Treap', 'Custom Algorithm']
+  };
+  assert.deepEqual(toLibraryProblem(legacy).tags, ['动态规划 DP', '哈希表']);
+});
+
 test('library loader returns an empty snapshot when no index exists', () => {
   const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'qmx-library-empty-'));
   const snapshot = createLibraryLoader(dir, fs, path).load();

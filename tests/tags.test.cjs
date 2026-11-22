@@ -4,7 +4,8 @@ const test = require('node:test');
 const assert = require('node:assert/strict');
 const { GitHub } = require(appPath('electron/github.cjs'));
 const presets = require(appPath('ui/tag-presets.js'));
-const { normalizeName } = require(appPath('electron/tags.cjs'));
+const { normalizeName, mergeCatalog } = require(appPath('electron/tags.cjs'));
+const officialTags = require(appPath('ui/luogu-tags.json'));
 const category = String(presets.categories[0].id);
 const marker = (name = '自定义测试标签', cat = category) => `<!-- qmx-tag-request ${JSON.stringify({ type: 'qmx-tag-request', category: cat, name })} -->`;
 function fixture(options = {}) {
@@ -62,6 +63,49 @@ test('catalog keeps all presets and merges approved tags', async () => {
   assert.ok(result.categories[0].tags.some(x => x.name === '已批准'));
   assert.equal(result.categories[0].tags.length, presets.categories[0].tags.length + 1);
 });
+test('offline presets cover official Algorithm IDs only, keeping names and IDs unique', () => {
+  const algorithm = officialTags.types.find(type => type.type === 'Algorithm');
+  assert.equal(algorithm.id, 2);
+  const tags = presets.categories.flatMap(c => c.tags);
+  const official = officialTags.tags.filter(tag => tag.type === algorithm.id);
+  assert.deepEqual(tags.map(tag => String(tag.id)).sort(), official.map(tag => String(tag.id)).sort());
+  assert.ok(tags.every(tag => tag.type === 2));
+  assert.equal(new Set(tags.map(tag => tag.id)).size, tags.length);
+  assert.equal(new Set(tags.map(tag => tag.name.toLocaleLowerCase())).size, tags.length);
+  assert.ok(officialTags.tags.some(tag => tag.type === 6), 'the shared snapshot retains other types for strict source filtering');
+  assert.equal(tags.some(tag => officialTags.tags.find(raw => String(raw.id) === tag.id)?.type !== 2), false);
+});
+test('non-algorithm name metadata matches the official type table without algorithm collisions', () => {
+  const algorithm = officialTags.types.find(type => type.type === 'Algorithm').id;
+  const algorithmNames = new Set(officialTags.tags.filter(tag => tag.type === algorithm).map(tag => tag.name.trim()));
+  const expected = [...new Set(officialTags.tags.filter(tag => tag.type !== algorithm).map(tag => tag.name.trim()).filter(name => name && !algorithmNames.has(name)))];
+  assert.deepEqual(presets.nonAlgorithmNames, expected);
+  assert.ok(presets.nonAlgorithmNames.includes('1997'));
+  assert.ok(presets.nonAlgorithmNames.every(name => !algorithmNames.has(name)));
+  assert.ok(presets.categories.flatMap(category => category.tags).every(tag => !presets.nonAlgorithmNames.includes(tag.name.trim())));
+});
+test('catalog merge preserves unknown fields without duplicating renamed IDs or mutating inputs', () => {
+  const source = { version: 'current', source: 'offline', customPreset: { keep: true }, categories: [{ id: 'a', name: '分类', presetMeta: 1, tags: [{ id: '1', name: '算法', presetField: true }] }] };
+  const saved = { version: 'old', repositoryExtension: { keep: ['all'] }, approvals: { 1: { extension: true } }, categories: [{ id: 'a', name: '旧分类', customCategory: { key: 1 }, tags: [{ id: '1', name: '算法旧名', extraTag: { aliases: ['old'] } }, { id: 'custom-1', name: '自定义', extra: true }, '文本历史'] }] };
+  const baseline = structuredClone({ source, saved });
+  const merged = mergeCatalog(source, saved);
+  assert.deepEqual(merged.repositoryExtension, saved.repositoryExtension);
+  assert.deepEqual(merged.approvals, saved.approvals);
+  assert.deepEqual(merged.categories[0].customCategory, { key: 1 });
+  assert.deepEqual(merged.categories[0].tags[0], { id: '1', name: '算法', presetField: true, extraTag: { aliases: ['old'] } });
+  assert.deepEqual(merged.categories[0].tags[1], { id: 'custom-1', name: '自定义', extra: true });
+  assert.equal(merged.categories[0].tags.length, 3);
+  assert.equal(merged.categories[0].name, '分类');
+  assert.equal(merged.version, 'current');
+  assert.deepEqual({ source, saved }, baseline);
+  merged.repositoryExtension.keep.push('local');
+  assert.deepEqual(saved.repositoryExtension.keep, ['all']);
+});
+test('catalog retains historical non-algorithm IDs with their official types on approval writes', () => {
+  const merged = mergeCatalog(presets, { categories: [{ id: category, tags: [{ id: '14', name: '1997', type: 2, history: true }] }] });
+  const historical = merged.categories[0].tags.find(tag => tag.id === '14');
+  assert.deepEqual(historical, { id: '14', name: '1997', type: 4, history: true });
+});
 test('catalog rejects malformed structures rather than silently replacing them', async () => {
   for (const catalog of [{}, { categories: null }, { categories: [{ id: 'unknown', name: 'unknown', tags: [] }] }, { categories: [{ id: category, name: 'known', tags: 'wrong' }] }]) {
     await assert.rejects(fixture({ catalog }).gh.getTagCatalog(), /格式错误|未知分类/);
@@ -108,12 +152,15 @@ test('approval requires reviewed snapshot and rejects edited marker, unknown cat
   assert.equal(f.writes().length, 0);
 });
 test('approval writes default branch with SHA before closing and preserves custom/preset tags', async () => {
-  const f = fixture({ catalog: { categories: [{ id: category, name: 'old', tags: [{ id: 'custom-old', name: '已有标签' }] }] } });
+  const f = fixture({ catalog: { extension: { keep: true }, categories: [{ id: category, name: 'old', categoryExtension: ['keep'], tags: [{ id: 'custom-old', name: '已有标签', tagExtension: { keep: true } }] }] } });
   const result = await f.gh.reviewTag({ number: 7, decision: 'approve', expected: await expected(f) });
   assert.equal(result.approved, true); assert.deepEqual(f.writes().map(x => x.method), ['PUT', 'PATCH']);
   assert.equal(f.writes()[0].body.sha, 'initial-sha');
   const catalog = f.file(); assert.equal(catalog.categories.length, 22);
   assert.ok(catalog.categories[0].tags.some(x => x.name === '已有标签'));
+  assert.deepEqual(catalog.extension, { keep: true });
+  assert.deepEqual(catalog.categories[0].categoryExtension, ['keep']);
+  assert.deepEqual(catalog.categories[0].tags.find(x => x.name === '已有标签').tagExtension, { keep: true });
   assert.ok(catalog.categories[0].tags.some(x => x.name === '自定义测试标签' && x.id.startsWith('custom-')));
   assert.deepEqual(catalog.approvals[7], { category, name: '自定义测试标签' });
 });

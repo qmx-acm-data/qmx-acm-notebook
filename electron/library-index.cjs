@@ -2,7 +2,9 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.toLibraryProblem = toLibraryProblem;
+exports.buildDailyTagCatalog = buildDailyTagCatalog;
 exports.createLibraryLoader = createLibraryLoader;
+const { normalizeSourceAlgorithmTags, normalizeOfficialMetadata } = require('./library-normalize.cjs');
 const supported = new Set(['CF', 'AT', 'LG', 'NC', 'LC', 'LOJ']);
 function object(value) {
     return value !== null && typeof value === 'object' && !Array.isArray(value) ? value : null;
@@ -30,19 +32,64 @@ function toLibraryProblem(value) {
     }
     if (parsed.protocol !== 'https:' || parsed.username || parsed.password)
         return null;
-    const tags = Array.isArray(row.tags) ? row.tags.filter((tag) => typeof tag === 'string' && tag.trim().length > 0) : [];
+    const storedTags = Array.isArray(row.tags) ? row.tags : [];
+    // Older non-Luogu shards retained source topics in rawTags even when the old
+    // common vocabulary discarded them. Restore those real labels on read.
+    // Luogu stays limited to official Algorithm names, including for legacy rows.
+    const rawTags = source !== 'LG' && Array.isArray(row.rawTags) ? row.rawTags : [];
+    const tags = normalizeSourceAlgorithmTags([...storedTags, ...rawTags], source);
     // Keep the validated original string: rebuilding it via URL.href allocates a
     // second copy of every URL and is the largest avoidable string cost.
     return {
         id, title, url, source, origin: 'library',
         rating: positive(row.rating),
+        clistRating: typeof row.clistRating === 'number' && Number.isFinite(row.clistRating) && row.clistRating >= 0 ? row.clistRating : null,
         estimatedCfRating: positive(row.estimatedCfRating),
         estimatedLuoguDifficulty: text(row.estimatedLuoguDifficulty),
         luoguDifficulty: text(row.luoguDifficulty) ?? '',
         communityDifficulty: typeof row.communityDifficulty === 'number' && Number.isFinite(row.communityDifficulty) ? row.communityDifficulty : null,
         ratingEstimateReason: text(row.estimateReason) ?? undefined,
-        tags
+        tags,
+        ...normalizeOfficialMetadata(row, source, tags)
     };
+}
+/** Compact catalog from real indexed topics; never sends problem rows over IPC. */
+function buildDailyTagCatalog(snapshot) {
+    const topics = new Map();
+    const coverage = new Map();
+    for (const record of snapshot.records) {
+        if (!supported.has(record.source))
+            continue;
+        let platform = coverage.get(record.source);
+        if (!platform) {
+            platform = { count: 0, tagged: 0, tags: new Set() };
+            coverage.set(record.source, platform);
+        }
+        platform.count += 1;
+        const tags = normalizeSourceAlgorithmTags(record.tags, record.supplementInfo?.tags ? 'CF' : record.source);
+        if (tags.length)
+            platform.tagged += 1;
+        for (const name of tags) {
+            const key = name.toLowerCase();
+            platform.tags.add(key);
+            const topic = topics.get(key);
+            if (topic)
+                topic.sources.add(record.source);
+            else
+                topics.set(key, { name, sources: new Set([record.source]) });
+        }
+    }
+    const platforms = {};
+    for (const source of [...coverage.keys()].sort()) {
+        const platform = coverage.get(source);
+        if (platform)
+            platforms[source] = { count: platform.count, tagged: platform.tagged, tagCount: platform.tags.size };
+    }
+    const tags = [...topics.values()]
+        .sort((left, right) => left.name.localeCompare(right.name, 'zh-CN'))
+        .slice(0, 1000)
+        .map(topic => ({ name: topic.name, sources: [...topic.sources].sort() }));
+    return { tags, platforms, builtAt: snapshot.builtAt, total: snapshot.records.length };
 }
 function createLibraryLoader(directory, fs, path) {
     const cache = new Map();

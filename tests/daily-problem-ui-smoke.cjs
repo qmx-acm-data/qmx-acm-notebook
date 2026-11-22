@@ -40,6 +40,17 @@ const { chromium } = require('playwright');
     assert.equal(calls[3].platform, 'CF');
     for (const call of calls) assert.equal(call.excludedIds, undefined, 'ordinary draws do not exclude the current problem');
     assert.equal(await page.locator('.daily-problem-title').innerText(), 'Fixture problem');
+    assert.deepEqual(await page.locator('.daily-rating').allTextContents(), ['CF 原生 1200'], 'native CF rating keeps its source label');
+    assert.equal(await page.locator('.daily-source').innerText(), 'Codeforces');
+    assert.equal(await page.locator('.daily-luogu').innerText(), '洛谷难度：待评级');
+    assert.equal(await page.locator('.daily-tags-toggle').getAttribute('aria-expanded'), 'false');
+    assert.equal(await page.locator('.daily-problem-tags').textContent(), '', 'collapsed tags do not create tag text nodes');
+    await page.locator('.daily-tags-toggle').click();
+    assert.equal(await page.locator('.daily-tags-toggle').getAttribute('aria-expanded'), 'true');
+    assert.equal(await page.locator('.daily-problem-tags').innerText(), 'dp');
+    await page.locator('.daily-tags-toggle').click();
+    assert.equal(await page.locator('.daily-problem-tags').textContent(), '');
+    assert.equal(await page.locator('.daily-duration').isVisible(), true);
     assert.equal(await page.locator('.daily-problem-result > .daily-problem-tags').count(), 0);
     assert.equal(await page.locator('.daily-problem-result > .daily-problem-statement').count(), 0);
     assert.equal(await page.getByText('must not render').count(), 0);
@@ -72,12 +83,16 @@ const { chromium } = require('playwright');
     await page.getByRole('button', { name: '＋ 难度' }).click();
     assert.equal(await min.inputValue(), '3400');
     assert.equal(await max.inputValue(), '3400');
-    assert.equal(await page.getByLabel('洛谷难度', { exact: true }).inputValue(), '入门');
+    assert.equal(await page.getByLabel('最低洛谷难度', { exact: true }).inputValue(), '入门');
+    assert.equal(await page.getByLabel('最高洛谷难度', { exact: true }).inputValue(), '入门');
     await page.getByRole('button', { name: '− 难度' }).click();
-    assert.equal(await page.getByLabel('洛谷难度', { exact: true }).inputValue(), '');
-    await page.getByLabel('洛谷难度', { exact: true }).selectOption('普及');
+    assert.equal(await page.getByLabel('最低洛谷难度', { exact: true }).inputValue(), '入门', 'bounded adjustments clamp at the first level');
+    assert.equal(await page.getByLabel('最高洛谷难度', { exact: true }).inputValue(), '入门');
+    await page.getByLabel('最低洛谷难度', { exact: true }).selectOption('普及');
+    await page.getByLabel('最高洛谷难度', { exact: true }).selectOption('普及');
     await page.getByRole('button', { name: '＋ 难度' }).click();
-    assert.equal(await page.getByLabel('洛谷难度', { exact: true }).inputValue(), '普及+/提高-');
+    assert.equal(await page.getByLabel('最低洛谷难度', { exact: true }).inputValue(), '普及+/提高-');
+    assert.equal(await page.getByLabel('最高洛谷难度', { exact: true }).inputValue(), '普及+/提高-');
     assert.equal(await min.inputValue(), '3400');
     const fonts = await page.locator('.daily-problem-actions').evaluate(el => [...el.children].filter(child => !child.hidden).map(child => getComputedStyle(child).fontSize));
     assert.equal(new Set(fonts).size, 1, 'difficulty and action font sizes match');
@@ -87,7 +102,10 @@ const { chromium } = require('playwright');
     const last = await page.evaluate(() => window.calls.at(-1));
     assert.equal(last.ratingMin, 3400);
     assert.equal(last.ratingMax, 3400);
-    assert.equal(last.luoguDifficulty, '普及+/提高-');
+    assert.equal(last.luoguDifficultyMin, '普及+/提高-');
+    assert.equal(last.luoguDifficultyMax, '普及+/提高-');
+    assert.equal(last.luoguDifficulty, undefined);
+    assert.equal(last.difficulty, undefined);
     assert.equal(await page.locator('.daily-problem-error').isVisible(), false);
     await page.evaluate(() => {
       window.notebook.dailyDraw = async filters => {
@@ -142,6 +160,48 @@ const { chromium } = require('playwright');
     await page.locator('.daily-refresh').click();
     await page.waitForFunction(() => document.querySelector('.daily-problem-error')?.textContent === '题库更新失败样例');
     assert.equal(await page.locator('.daily-problem-error').isVisible(), true);
+
+    await page.evaluate(() => {
+      window.notebook.dailyDraw = async filters => {
+        window.calls.push(filters);
+        if (window.failNext) { window.failNext = false; throw new Error('CLIST fixture draw failure'); }
+        return { problem: { id: 'LG:P1800', title: 'CLIST rated problem', url: 'https://www.luogu.com.cn/problem/P1800', source: 'LG', origin: 'clist-luogu', rating: null, clistRating: 1800 } };
+      };
+    });
+    await source.selectOption('LG');
+    await draw.click();
+    await page.waitForFunction(() => document.querySelector('.daily-problem-title')?.textContent === 'CLIST rated problem');
+    assert.deepEqual(await page.locator('.daily-rating').allTextContents(), ['CLIST 1800'], 'CLIST rating has its own label');
+    assert.doesNotMatch(await page.locator('.daily-problem-result').innerText(), /CF\s*1800|估算/, 'CLIST rating is never presented as native or estimated CF');
+    assert.equal(await page.locator('.daily-estimated').count(), 0);
+    await page.evaluate(() => { window.failNext = true; });
+    await page.locator('.daily-change').click();
+    await page.waitForFunction(() => document.querySelector('.daily-problem-error')?.textContent === 'CLIST fixture draw failure');
+    const clistRetry = await page.evaluate(() => window.calls.at(-1));
+    assert.equal(clistRetry.source, 'LG');
+    assert.equal(clistRetry.platform, 'LG');
+    assert.deepEqual(clistRetry.excludedIds, ['LG:P1800', 'https://www.luogu.com.cn/problem/P1800']);
+    assert.deepEqual(clistRetry.tags, ['动态规划'], 'selected tag callbacks survive later draws');
+    assert.equal(await page.locator('.daily-problem-title').innerText(), 'CLIST rated problem', 'failed change retains the CLIST result');
+    assert.equal(await page.locator('.daily-problem-title').isVisible(), true);
+    assert.deepEqual(await page.locator('.daily-rating').allTextContents(), ['CLIST 1800']);
+    assert.equal(await draw.isEnabled(), true);
+    assert.equal(await page.locator('.daily-change').isEnabled(), true);
+    await page.locator('.daily-copy').click();
+    assert.equal(await page.evaluate(() => window.copied.at(-1)), 'https://www.luogu.com.cn/problem/P1800');
+
+    await page.evaluate(() => {
+      window.notebook.dailyDraw = async filters => {
+        window.calls.push(filters);
+        return { problem: { id: 'AT:abc001_a', title: 'Native source rated problem', url: 'https://atcoder.jp/contests/abc001/tasks/abc001_1', source: 'AT', rating: 900, clistRating: 1800 } };
+      };
+    });
+    await source.selectOption('AT');
+    await draw.click();
+    await page.waitForFunction(() => document.querySelector('.daily-problem-title')?.textContent === 'Native source rated problem');
+    assert.deepEqual(await page.locator('.daily-rating').allTextContents(), ['CLIST 1800', '来源评分 900'], 'non-CF native rating stays distinct from CLIST');
+    assert.doesNotMatch(await page.locator('.daily-problem-meta').innerText(), /CF\s*1800|CF\s*900|估算/);
+
     const autoPage = await browser.newPage();
     await autoPage.setContent('<!doctype html><html><body></body></html>');
     await autoPage.addScriptTag({ path: appPath('ui/daily-problem.js') });

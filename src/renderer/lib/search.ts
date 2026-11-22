@@ -1,4 +1,5 @@
 /* Shared browser/Node helpers. Scores are relative relevance, not percentages. */
+import { luoguDifficultyLabel } from '../../shared/luogu-difficulty.js';
 
 type SearchRecord = import('../../../types/search').SearchRecord;
 type Difficulty = import('../../../types/search').Difficulty;
@@ -29,7 +30,8 @@ const luoguLevels: Level[] = [
 function difficulty(input: unknown): Difficulty {
   const record = (input || {}) as SearchRecord;
   const code = normalizePlatform(record.platform);
-  const native = String(record.difficulty == null ? '' : record.difficulty).trim();
+  const rawNative = String(record.difficulty == null ? '' : record.difficulty).trim();
+  const native = code === 'LG' ? luoguDifficultyLabel(rawNative) : rawNative;
   const hasRating = record.rating !== undefined && record.rating !== null && String(record.rating).trim() !== '' && Number.isFinite(Number(record.rating));
   let tone: Difficulty['tone'] = 'neutral', rank: Difficulty['rank'] = '', level: number | null = null;
   if (code === 'CF' && hasRating) {

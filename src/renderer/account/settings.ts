@@ -1,4 +1,8 @@
 /** Repository/settings editing and GitHub account device-flow UI. */
+import { mountLibrarySyncPanel, resolveLibrarySyncBridge } from './library-sync-panel.js';
+import { mountDifficultyBackfillPanel, resolveDifficultyBackfillBridge } from './difficulty-backfill-panel.js';
+import { mountClistSharedCachePanel, resolveClistSharedCacheBridge } from './clist-shared-cache-panel.js';
+import { mountClistBulkPanel, resolveClistBulkBridge } from './clist-bulk-panel.js';
 type Options = import('../../../types/settings-ui').SettingsUIOptions;
 type Controller = import('../../../types/settings-ui').SettingsUIController;
 type AppSettings = import('../../../types/app').AppSettings;
@@ -9,6 +13,10 @@ type AppQuery = import('../../../types/app').AppQuery;
 type AppSelectorMap = import('../../../types/app').AppSelectorMap;
 type ThemeMode = import('../../shared/models/settings').ThemeMode;
 type Palette = import('../../shared/models/settings').Palette;
+type LibrarySyncPanelHandle = import('./library-sync-panel').LibrarySyncPanelHandle;
+type DifficultyBackfillPanelHandle = import('./difficulty-backfill-panel').DifficultyBackfillPanelHandle;
+type ClistSharedCachePanelHandle = import('./clist-shared-cache-panel').ClistSharedCachePanelHandle;
+type ClistBulkPanelHandle = import('./clist-bulk-panel').ClistBulkPanelHandle;
 
 export function createSettings(options: Options): Controller {
   const { demo, bridge, themeStorage, paletteStorage, getBusy, setBusy, getSettings, setSettings, getAccount, getAuthStatus, getPermissions, setPermissionsRepo, getError, setError, getLocal, repo, repoSource, quotaBlocked, reauthNeeded, call, applyPayload, resetRepositoryData, resetSourceView, clearComments, refreshFilters, render, renderUpdate, updateStatus, sync, writeDemo, toast, errorMessage } = options;
@@ -74,6 +82,93 @@ export function createSettings(options: Options): Controller {
     try { await api.clearClistCredentials(); const usernameNode = $('#clist-username') as HTMLInputElement | null; if (usernameNode) usernameNode.value = ''; await renderClistStatus(); toast('CLIST 配置已删除'); }
     catch (error) { const errorNode = $('#clist-error'); if (errorNode) { errorNode.textContent = errorMessage(error); errorNode.hidden = false; } }
     finally { if (clearButton) clearButton.disabled = false; }
+  }
+  let librarySyncPanel: LibrarySyncPanelHandle | null = null;
+  // Host the panel inside the settings dialog, after the platform bindings.
+  function ensureLibrarySyncPanel() {
+    const syncBridge = resolveLibrarySyncBridge(bridge) ?? resolveLibrarySyncBridge(window.notebook);
+    const existing = document.getElementById('library-sync-panel');
+    if (existing) {
+      if (!librarySyncPanel) librarySyncPanel = mountLibrarySyncPanel(existing, { bridge: syncBridge, onToast: toast, onError: error => toast(errorMessage(error)) });
+      return;
+    }
+    const dialog = document.getElementById('settings-dialog');
+    if (!dialog) return;
+    const section = document.createElement('section');
+    section.id = 'library-sync-panel';
+    section.className = 'library-sync';
+    const form = dialog.querySelector('#settings-form');
+    const anchor = form && form.parentElement === dialog ? form : null;
+    if (anchor) dialog.insertBefore(section, anchor); else dialog.append(section);
+    librarySyncPanel = mountLibrarySyncPanel(section, { bridge: syncBridge, onToast: toast, onError: error => toast(errorMessage(error)) });
+  }
+  let difficultyBackfillPanel: DifficultyBackfillPanelHandle | null = null;
+  let clistBulkPanel: ClistBulkPanelHandle | null = null;
+  // New desktop bridges use rated pages; older preload fixtures keep per-item backfill.
+  function ensureDifficultyBackfillPanel() {
+    const bulkBridge = resolveClistBulkBridge(bridge) ?? resolveClistBulkBridge(window.notebook);
+    if (bulkBridge) {
+      difficultyBackfillPanel?.destroy();
+      difficultyBackfillPanel = null;
+      document.getElementById('difficulty-backfill-panel')?.remove();
+      const existing = document.getElementById('clist-bulk-panel');
+      if (existing) {
+        if (!clistBulkPanel) clistBulkPanel = mountClistBulkPanel(existing, { bridge: bulkBridge, onToast: toast, onError: error => toast(errorMessage(error)) });
+        return;
+      }
+      const dialog = document.getElementById('settings-dialog');
+      if (!dialog) return;
+      const section = document.createElement('section');
+      section.id = 'clist-bulk-panel';
+      section.className = 'clist-bulk';
+      const form = dialog.querySelector('#settings-form');
+      const previous = document.getElementById('clist-shared-cache-panel') ?? document.getElementById('library-sync-panel');
+      if (previous?.parentElement === dialog) previous.after(section);
+      else if (form?.parentElement === dialog) dialog.insertBefore(section, form);
+      else dialog.append(section);
+      clistBulkPanel = mountClistBulkPanel(section, { bridge: bulkBridge, onToast: toast, onError: error => toast(errorMessage(error)) });
+      return;
+    }
+    const backfillBridge = resolveDifficultyBackfillBridge(bridge) ?? resolveDifficultyBackfillBridge(window.notebook);
+    const existing = document.getElementById('difficulty-backfill-panel');
+    if (existing) {
+      if (!difficultyBackfillPanel) difficultyBackfillPanel = mountDifficultyBackfillPanel(existing, { bridge: backfillBridge, onToast: toast, onError: error => toast(errorMessage(error)) });
+      return;
+    }
+    const dialog = document.getElementById('settings-dialog');
+    if (!dialog) return;
+    const section = document.createElement('section');
+    section.id = 'difficulty-backfill-panel';
+    section.className = 'difficulty-backfill';
+    const form = dialog.querySelector('#settings-form');
+    const librarySync = document.getElementById('library-sync-panel');
+    if (librarySync && librarySync.parentElement === dialog) librarySync.after(section);
+    else if (form && form.parentElement === dialog) dialog.insertBefore(section, form);
+    else dialog.append(section);
+    difficultyBackfillPanel = mountDifficultyBackfillPanel(section, { bridge: backfillBridge, onToast: toast, onError: error => toast(errorMessage(error)) });
+  }
+
+  let clistSharedCachePanel: ClistSharedCachePanelHandle | null = null;
+  function ensureClistSharedCachePanel() {
+    const sharedBridge = resolveClistSharedCacheBridge(bridge) ?? resolveClistSharedCacheBridge(window.notebook);
+    const existing = document.getElementById('clist-shared-cache-panel');
+    if (existing) {
+      if (!clistSharedCachePanel) clistSharedCachePanel = mountClistSharedCachePanel(existing, { bridge: sharedBridge, onToast: toast, onError: error => toast(errorMessage(error)) });
+      return;
+    }
+    const dialog = document.getElementById('settings-dialog');
+    if (!dialog) return;
+    const section = document.createElement('section');
+    section.id = 'clist-shared-cache-panel';
+    section.className = 'clist-shared-cache';
+    const librarySync = document.getElementById('library-sync-panel');
+    const backfill = document.getElementById('clist-bulk-panel') ?? document.getElementById('difficulty-backfill-panel');
+    const form = dialog.querySelector('#settings-form');
+    if (librarySync?.parentElement === dialog) librarySync.after(section);
+    else if (backfill?.parentElement === dialog) dialog.insertBefore(section, backfill);
+    else if (form?.parentElement === dialog) dialog.insertBefore(section, form);
+    else dialog.append(section);
+    clistSharedCachePanel = mountClistSharedCachePanel(section, { bridge: sharedBridge, onToast: toast, onError: error => toast(errorMessage(error)) });
   }
 
   function normalizeTheme(theme: unknown): ThemeMode { return theme === 'dark' ? 'dark' : 'light'; }
@@ -261,6 +356,10 @@ export function createSettings(options: Options): Controller {
       console.error('Settings init error:', e);
     }
     $('#settings-dialog')!.showModal();
+    void librarySyncPanel?.refresh();
+    void clistSharedCachePanel?.refresh();
+    void difficultyBackfillPanel?.refresh();
+    void clistBulkPanel?.refresh();
   }
 
   async function saveSettings(event: Event) {
@@ -410,6 +509,15 @@ export function createSettings(options: Options): Controller {
   $('#settings-form')!.elements.theme.addEventListener('change', previewAppearance);
   $('#settings-form')!.elements.palette.addEventListener('change', previewAppearance);
   $('#settings-button')!.addEventListener('click', openSettings);
+  $('#open-clist-config')?.addEventListener('click', () => {
+    $('#settings-dialog')!.close();
+    openAccount();
+    window.requestAnimationFrame(() => {
+      document.querySelector('.clist-credentials')?.scrollIntoView({ block: 'center' });
+      const username = document.querySelector('#clist-username') as HTMLInputElement | null;
+      if (username) username.focus({ preventScroll: true });
+    });
+  });
   $('#settings-form')!.addEventListener('submit', saveSettings);
   $('#settings-form')!.elements.codeFontSize.addEventListener('input', previewCodeFontSize);
   $('#settings-form')!.elements.codeLineNumbers.addEventListener('change', previewCodeLineNumbers);
@@ -429,6 +537,9 @@ export function createSettings(options: Options): Controller {
   $('#cancel-login-button')!.addEventListener('click', cancelLogin);
   $('#auth-dialog')!.addEventListener('cancel', event => { event.preventDefault(); void cancelLogin(); });
   $('#export-local-button')!.addEventListener('click', exportLocal);
+  ensureLibrarySyncPanel();
+  ensureDifficultyBackfillPanel();
+  ensureClistSharedCachePanel();
 
   return { readTheme, readPalette, applyTheme, applyPalette, applyAppearance, applyCodeSettings, renderRepoSelector, renderSettingsRepoList, switchRepository, addRepository, changeTheme, changePalette, previewAppearance, openSettings, saveSettings, previewCodeFontSize, previewCodeLineNumbers, closeSettings, renderAccount, openAccount, startLoginFromBanner, accountAction, receiveAuthProgress, openAuthUrl, copyAuthUrl, cancelLogin, loginFromSettings, exportLocal,
     get settingsPreview() { return settingsPreview; }, get editingRepos() { return editingRepos; }, get editingActiveId() { return editingActiveId; }, get authUrl() { return authUrl; } };

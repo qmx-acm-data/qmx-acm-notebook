@@ -124,7 +124,12 @@ function harness({ files = {}, account = { id: 42, login: 'alice' }, backend = {
        if (name === './daily-problems.cjs') return require(appPath('electron/daily-problems.cjs'));
        if (name === './clist-service.cjs') return require(appPath('electron/clist-service.cjs'));
        if (name === './library-index.cjs') return require(appPath('electron/library-index.cjs'));
+       if (name === './problem-enrichment.cjs') return require(appPath('electron/problem-enrichment.cjs'));
+       if (name === './problem-enrichment-ai.cjs') return require(appPath('electron/problem-enrichment-ai.cjs'));
        if (name === './library-sync.cjs') return require(appPath('electron/library-sync.cjs'));
+       if (name === './difficulty-backfill.cjs') return require(appPath('electron/difficulty-backfill.cjs'));
+       if (name === './clist-shared-cache.cjs') return require(appPath('electron/clist-shared-cache.cjs'));
+       if (name === './clist-bulk.cjs') return require(appPath('electron/clist-bulk.cjs'));
        if (name === './problem-statement.cjs') return require(appPath('electron/problem-statement.cjs'));
        if (name === './nowcoder-statement.cjs') return require(appPath('electron/nowcoder-statement.cjs'));
       if (name === './libreoj-statement.cjs') return require(appPath('electron/libreoj-statement.cjs'));

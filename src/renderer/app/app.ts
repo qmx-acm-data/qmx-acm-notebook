@@ -207,7 +207,7 @@ import { createAlgorithmWorkspace } from '../algorithms/workspace.js';
     accountButton.title = account ? 'GitHub 账户' : '登录 GitHub 账户';
     if (account) accountButton.removeAttribute('aria-label'); else accountButton.setAttribute('aria-label', accountButton.title);
   }
-  const filters = createFilters({ getRecords: records, getView: () => s.view, getScope: () => s.libraryScope, getTagCatalog: () => s.tagCatalog, getBusy: () => s.busy, favorite, mastery, isLocal, isOwnSolution, recordAuthorName: record => recordAuthorName(record, s.account), render });
+  const filters = createFilters({ getRecords: records, getView: () => s.view, getScope: () => s.libraryScope, getTagCatalog: () => s.tagCatalog, getDailyTagCatalog: window.notebook?.getDailyTagCatalog ? () => window.notebook!.getDailyTagCatalog() : undefined, getBusy: () => s.busy, favorite, mastery, isLocal, isOwnSolution, recordAuthorName: record => recordAuthorName(record, s.account), render });
   const { facets, facetNames, platformNames, luoguLevels, luoguTones, facetValue, fillFacetOptions, refreshFilters, tagGroups, fillTagOptions, openTagPicker, closeTagPicker, renderEditorTags, ranges, updateFacetCounts, setDifficultyPlatform, clearDifficulty, filteredRecords, clearFilters, colorRatingInput, colorLuoguSelection } = filters;
   async function openTagDialog() {
     const select = $('#request-tag-category')!; select.replaceChildren();
@@ -242,7 +242,7 @@ import { createAlgorithmWorkspace } from '../algorithms/workspace.js';
     const board = element('div', 'home-board');
     const planner = element('section', 'home-planner'); planner.id = 'home-planner'; planner.setAttribute('aria-label', '题单与学习任务');
     append(board, planner);
-    board.append(DailyProblem.create({ draw: async drawFilters => {
+    board.append(DailyProblem.create({ contextKey: `${repoSource()}|${accountId() ?? 'anonymous'}`, draw: async drawFilters => {
       if (!window.notebook?.dailyDraw) throw new Error('每日一题接口尚未接入，请在桌面端启用每日一题。');
       return window.notebook.dailyDraw(drawFilters);
     }, openExternal, chooseTags: (selected, onApply) => filters.openTagPicker('daily', { selected, onApply }),

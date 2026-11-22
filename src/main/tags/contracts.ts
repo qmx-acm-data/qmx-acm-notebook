@@ -47,9 +47,9 @@ export interface UserFields { id?: unknown; login?: unknown }
 export interface RepositoryFields { default_branch?: unknown; permissions?: unknown; role_name?: unknown }
 export interface PermissionFields { admin?: unknown; maintain?: unknown }
 export interface ContentFields { type?: unknown; encoding?: unknown; content?: unknown; sha?: unknown }
-export interface SavedCatalogFields { categories?: unknown; approvals?: unknown }
-export interface SavedCategoryFields { id?: unknown; name?: unknown; tags?: unknown }
-export interface SavedTagFields { id?: unknown; name?: unknown }
+export interface SavedCatalogFields { [key: string]: unknown; categories?: unknown; approvals?: unknown }
+export interface SavedCategoryFields { [key: string]: unknown; id?: unknown; name?: unknown; tags?: unknown }
+export interface SavedTagFields { [key: string]: unknown; id?: unknown; name?: unknown }
 export interface ExpectedFields { category?: unknown; name?: unknown; updatedAt?: unknown }
 export interface ApprovalFields { category?: unknown; name?: unknown }
 export interface ErrorFields { status?: unknown; message?: unknown }
