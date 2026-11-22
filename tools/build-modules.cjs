@@ -127,6 +127,7 @@ const nodeTargets = [
   ['src/main/contests/service.cts', 'electron/contests.cjs'],
   ['src/main/contests/daily-problems.cts', 'electron/daily-problems.cjs'],
   ['src/main/library/index.cts', 'electron/library-index.cjs'],
+  ['src/main/library/luogu-native.cts', 'electron/luogu-native.cjs'],
   ['src/main/library/enrichment.cts', 'electron/problem-enrichment.cjs'],
   ['src/main/library/enrichment-ai.cts', 'electron/problem-enrichment-ai.cjs'],
   ['src/main/library/normalize.cts', 'electron/library-normalize.cjs'],

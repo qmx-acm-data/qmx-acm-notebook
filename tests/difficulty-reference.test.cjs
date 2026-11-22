@@ -7,6 +7,7 @@ const ts = require('typescript');
 
 // Exercise TypeScript sources without rebuilding or reading generated daily code.
 const sourceFiles = new Map([
+  ['./luogu-native.cjs', path.resolve(__dirname, '../src/main/library/luogu-native.cts')],
   ['./luogu-difficulty.js', path.resolve(__dirname, '../src/shared/luogu-difficulty.ts')],
   ['./library-normalize.cjs', path.resolve(__dirname, '../src/main/library/normalize.cts')],
   ['./nowcoder-daily.cjs', path.resolve(__dirname, '../src/main/contests/nowcoder-daily.cts')],
@@ -32,7 +33,7 @@ function loadSource(sourcePath) {
   loaded._compile(compiled.outputText, sourcePath);
   return loaded.exports;
 }
-const { applyClistDifficultyReference, dailyDraw } = loadSource(filename);
+const { applyClistDifficultyReference, dailyDraw, mergeNativeProblemDifficulty, parseLuoguProblemList } = loadSource(filename);
 
 const problem = (changes = {}) => ({
   id: 'LOJ:100', title: 'Synthetic reference fixture', source: 'LOJ', origin: 'library',
@@ -47,6 +48,114 @@ const clistForLookup = lookupRating => ({
   fetchProblems: async () => { assert.fail('indexed source must not list CLIST candidates'); }, lookupRating
 });
 const libraryFor = (...records) => ({ builtAt: null, records });
+
+test('native merge fills CF rating through official route aliases and preserves record identity', () => {
+  const original = problem({ source: 'CF', id: 'repository-id', title: 'Repository title', origin: 'local', url: 'https://contest.codeforces.com/contest/921/problem/01/?locale=en#statement', tags: ['dp'], officialTags: [] });
+  const indexed = problem({ source: 'CF', id: 'CF:92101', url: 'https://codeforces.com/problemset/problem/921/01', rating: 1800, title: 'Indexed title', tags: ['graphs'], officialTags: ['graphs'] });
+  const snapshot = structuredClone({ original, indexed });
+  const result = mergeNativeProblemDifficulty(original, indexed);
+  assert.equal(result.rating, 1800);
+  assert.equal(result.officialDifficulty, '1800');
+  assert.equal(result.estimatedCfRating, null);
+  assert.equal(result.estimatedLuoguDifficulty, '提高');
+  for (const field of ['id', 'title', 'origin', 'url']) assert.equal(result[field], original[field]);
+  assert.deepEqual(result.tags, ['dp']);
+  assert.deepEqual(result.officialTags, []);
+  assert.deepEqual({ original, indexed }, snapshot);
+  const ownNative = { ...original, rating: 1200, officialDifficulty: '1200' };
+  assert.equal(mergeNativeProblemDifficulty(ownNative, indexed), ownNative);
+  for (const rating of [null, 0, -1, NaN, Infinity]) assert.equal(mergeNativeProblemDifficulty(original, { ...indexed, rating }), original);
+});
+
+test('native merge restores assessed Luogu levels and leaves CLIST and supplement references intact', () => {
+  const original = problem({ source: 'LG', id: 'repository-id', origin: 'public', url: 'https://luogu.com/problem/p9234/?locale=en#statement' });
+  const indexed = problem({ source: 'LG', id: 'LG:P9234', url: 'https://www.luogu.com.cn/problem/P9234', luoguDifficulty: '普及+/提高', officialDifficulty: '普及+/提高', estimatedCfRating: 1600 });
+  const result = mergeNativeProblemDifficulty(original, indexed);
+  assert.equal(result.luoguDifficulty, '普及+/提高');
+  assert.equal(result.officialDifficulty, '普及+/提高');
+  assert.equal(result.estimatedCfRating, 1600);
+  assert.equal(result.estimatedLuoguDifficulty, null);
+  assert.equal(result.rating, null);
+  assert.equal(result.clistRating, null);
+  assert.equal(result.difficultyReference, undefined);
+  for (const changes of [{ luoguDifficulty: '入门' }, { luoguDifficulty: '提高+/省选−' }]) {
+    const ownNative = { ...original, ...changes };
+    assert.equal(mergeNativeProblemDifficulty(ownNative, indexed), ownNative);
+  }
+  const ownOfficial = mergeNativeProblemDifficulty({ ...original, officialDifficulty: '入门' }, indexed);
+  assert.equal(ownOfficial.luoguDifficulty, '入门');
+  assert.equal(ownOfficial.estimatedCfRating, 900);
+  const officialOnly = mergeNativeProblemDifficulty(original, { ...indexed, luoguDifficulty: '', officialDifficulty: '普及加/提高' });
+  assert.equal(officialOnly.luoguDifficulty, '普及加/提高');
+  assert.equal(officialOnly.estimatedCfRating, 1600);
+  for (const source of ['LG', 'CF']) {
+    const own = source === 'LG' ? original : { ...original, source, url: 'https://codeforces.com/contest/1/problem/A' };
+    const native = source === 'LG' ? indexed : { ...indexed, source, url: 'https://codeforces.com/problemset/problem/1/A', rating: 1800 };
+    for (const reference of [
+      { clistRating: 1255, estimatedCfRating: 1300, difficultyReference: metadata(source, 1255), ratingEstimateReason: 'CLIST reference' },
+      { estimatedCfRating: 2100, supplementInfo: { source: 'manual', revision: 1, tags: false, difficulty: true }, ratingEstimateReason: 'Manual reference' }
+    ]) {
+      const input = { ...own, ...reference };
+      const merged = mergeNativeProblemDifficulty(input, native);
+      for (const field of Object.keys(reference)) assert.deepEqual(merged[field], input[field], `${source} ${field} must survive native merge`);
+      assert.equal(merged.officialDifficulty, source === 'LG' ? '普及+/提高' : '1800');
+    }
+  }
+  for (const level of ['', '暂无评定', 'unknown', '1600', '普及+/提高;process.exit()']) assert.equal(mergeNativeProblemDifficulty(original, { ...indexed, luoguDifficulty: level, officialDifficulty: level }), original);
+});
+
+test('code 8 survives native merge and scoped normalization without CLIST or an unrated placeholder', async () => {
+  const parsed = parseLuoguProblemList(JSON.stringify({ data: { problems: { count: 2, result: ['P11834', 'P3756'].map(pid => ({ pid, name: `Official code 8 ${pid}`, difficulty: 8, tags: [] })) } } })).problems;
+  for (const indexed of parsed) {
+    const original = problem({ source: 'LG', id: indexed.id, url: indexed.url, origin: 'public', title: 'Repository title' });
+    const merged = mergeNativeProblemDifficulty(original, indexed);
+    assert.equal(merged.luoguDifficultyCode, 8);
+    assert.equal(merged.officialDifficulty, 'NOI/NOI+/CTS');
+    assert.equal(merged.luoguDifficulty, 'NOI/NOI+/CTS');
+    assert.equal(merged.estimatedCfRating, 2800);
+    assert.equal(merged.estimatedLuoguDifficulty, null);
+    assert.equal(merged.clistRating, null);
+    assert.equal(merged.difficultyReference, undefined);
+    const record = { kind: 'document', platform: 'LG', pid: indexed.id.slice(3), title: 'Repository title', problemUrl: indexed.url, luoguDifficultyCode: 8, luoguDifficulty: '', officialDifficulty: null };
+    const drawn = await dailyDraw({ source: 'public', platform: 'LG', ratingMin: 2800, ratingMax: 2800 }, [record], offline, () => 0);
+    assert.equal(drawn.problem.luoguDifficultyCode, 8);
+    assert.equal(drawn.problem.officialDifficulty, 'NOI/NOI+/CTS');
+    assert.equal(drawn.problem.luoguDifficulty, 'NOI/NOI+/CTS');
+    assert.equal(drawn.problem.estimatedCfRating, 2800);
+    assert.equal(drawn.problem.estimatedLuoguDifficulty, null);
+    assert.equal(drawn.problem.clistRating, undefined);
+    assert.equal(drawn.problem.difficultyReference, undefined);
+  }
+});
+
+test('scoped original code zero stays explicitly unassessed while invalid codes remain unknown', async () => {
+  const record = { kind: 'local', platform: 'LG', pid: 'P12000', title: 'Code boundary', problemUrl: 'https://www.luogu.com.cn/problem/P12000' };
+  for (const luoguDifficultyCode of [0, 9, 5.5]) {
+    const drawn = await dailyDraw({ source: 'local', platform: 'LG' }, [{ ...record, luoguDifficultyCode }], offline, () => 0);
+    assert.equal(drawn.problem.luoguDifficulty, luoguDifficultyCode === 0 ? '暂无评定' : '');
+    assert.equal(drawn.problem.luoguDifficultyCode, luoguDifficultyCode === 0 ? 0 : undefined);
+    assert.equal(drawn.problem.officialDifficulty, null);
+    assert.equal(drawn.problem.estimatedCfRating, null);
+    assert.equal(drawn.problem.estimatedLuoguDifficulty, null);
+  }
+});
+
+test('native merge refuses cross-source, untrusted URLs and different official problem routes', () => {
+  const indexed = problem({ source: 'CF', url: 'https://codeforces.com/problemset/problem/921/01', rating: 1600 });
+  for (const changes of [
+    { source: 'LG' }, { source: 'AT' }, { url: 'https://codeforces.com/problemset/problem/921/1' },
+    { url: 'https://codeforces.com/gym/921/problem/01' }, { url: 'https://codeforces.com/problemset/problem/922/01' },
+    { url: 'https://example.com/problemset/problem/921/01' }, { url: 'https://codeforces.com.example.com/problemset/problem/921/01' },
+    { url: 'http://codeforces.com/problemset/problem/921/01' }, { url: 'https://user@codeforces.com/problemset/problem/921/01' },
+    { url: 'https://codeforces.com:8443/problemset/problem/921/01' }, { url: 'https://codeforces.com/problemset/problem/921/01/solutions' }
+  ]) {
+    const input = problem({ source: 'CF', url: indexed.url, ...changes });
+    assert.equal(mergeNativeProblemDifficulty(input, indexed), input);
+  }
+  const lg = problem({ source: 'LG', url: 'https://www.luogu.com.cn/problem/P9234', luoguDifficulty: '普及+/提高' });
+  const different = { ...lg, luoguDifficulty: '', url: 'https://www.luogu.com.cn/problem/P9235' };
+  assert.equal(mergeNativeProblemDifficulty(different, lg), different);
+});
 
 // Synthetic inputs verify the declared heuristic only, never empirical calibration.
 test('rounds raw CLIST to hundreds, clamps references and retains every raw value', () => {

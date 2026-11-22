@@ -306,7 +306,17 @@ function create({ draw: drawApi, openExternal, chooseTags, updateLibrary, autoDr
     refresh.textContent = '更新中…';
     error.hidden = true;
     try {
+      const revision = resultRevision, url = cachedResult?.problem.url;
       const report = await updateLibrary();
+      if (generation !== contextGeneration) return;
+      if (url && typeof window.notebook?.getProblemEnrichment === 'function') {
+        try {
+          const view = await window.notebook.getProblemEnrichment(url);
+          if (generation === contextGeneration && resultRevision === revision && cachedResult?.problem.url === url && view.problem) {
+            cachedResult = { ...cachedResult, problem: view.problem }; resultRevision += 1; notifyMount();
+          }
+        } catch { /* Library sync succeeded; a failed result refresh must retain the displayed problem. */ }
+      }
       const entries = Object.entries(report?.platforms ?? {});
       const added = entries.reduce((sum, [, item]) => sum + (typeof item?.added === 'number' ? item.added : 0), 0);
       const failed = entries.filter(([, item]) => item?.status === 'failed').map(([name]) => name);

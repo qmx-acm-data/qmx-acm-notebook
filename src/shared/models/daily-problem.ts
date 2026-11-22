@@ -38,6 +38,8 @@ export interface DailyDrawProblem {
   url: string;
   rating: number | null;
   luoguDifficulty: string;
+  /** Official Luogu native code (0 unassessed, 1–8 rated). */
+  luoguDifficultyCode?: number;
   tags: string[];
   /** Explicit source metadata; an empty list/null means the official field is missing. */
   officialTags?: string[];

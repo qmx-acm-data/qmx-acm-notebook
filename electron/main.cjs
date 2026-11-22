@@ -12,7 +12,7 @@ const { prepareFileUpgrade, recoverFileUpgrade, cancelPreparedFileUpgrade, getFi
 const { cleanupUpdateStorage } = require('./update-storage.cjs');
 const { createAuth, createClistCredentials, configureUserData } = require('./auth.cjs');
 const { createContestService } = require('./contests.cjs');
-const { dailyDraw, applyClistDifficultyReference } = require('./daily-problems.cjs');
+const { dailyDraw, applyClistDifficultyReference, mergeNativeProblemDifficulty } = require('./daily-problems.cjs');
 const { createClistService, createClistRatingCacheReader } = require('./clist-service.cjs');
 const { createDifficultyBackfill, readDifficultyBackfillState, createBackfillOutcomeReader } = require('./difficulty-backfill.cjs');
 const { createLibraryLoader, buildDailyTagCatalog } = require('./library-index.cjs');
@@ -245,14 +245,24 @@ function librarySnapshot(input) {
         return undefined;
     }
 }
+let officialIndexCache;
+function indexedProblems() {
+    const records = libraryLoader?.load().records ?? [];
+    if (officialIndexCache?.records === records)
+        return officialIndexCache.byUrl;
+    const byUrl = new Map();
+    for (const problem of records) {
+        try {
+            byUrl.set(canonicalProblemUrl(problem.url), problem);
+        }
+        catch { /* Historical unsupported URL. */ }
+    }
+    officialIndexCache = { records, byUrl };
+    return byUrl;
+}
 function enrichmentProblem(url) {
     const target = canonicalProblemUrl(url);
-    const indexed = libraryLoader?.load().records.find(problem => { try {
-        return canonicalProblemUrl(problem.url) === target;
-    }
-    catch {
-        return false;
-    } });
+    const indexed = indexedProblems().get(target);
     const problem = indexed ?? recentDrawProblems.get(`${sourceScope().sourceKey}|${loginGeneration}|${target}`) ?? null;
     return problem;
 }
@@ -286,7 +296,13 @@ function currentRatingReader() {
         ratingReaderCache = { stamp, reader };
     return reader;
 }
-function cachedClistProblem(problem, reader, outcomeReader) {
+function cachedClistProblem(problem, reader, outcomeReader, nativeIndex = indexedProblems()) {
+    try {
+        const indexed = nativeIndex.get(canonicalProblemUrl(problem.url));
+        if (indexed)
+            problem = mergeNativeProblemDifficulty(problem, indexed);
+    }
+    catch { /* Unsupported historical URL cannot inherit official metadata. */ }
     const cached = reader(problem.url);
     if (cached?.noData)
         return applyClistDifficultyReference({ ...problem, clistRating: 0, clistRatingCached: true, clistRatingQueriedAt: cached.queriedAt, clistRatingStale: false });
@@ -423,7 +439,13 @@ function setup() {
     handle('saveClistCredentials', data => { const result = clistCredentials.save(data); clistCredentialFingerprint = ''; clistService = undefined; return result; });
     handle('clearClistCredentials', () => { const result = clistCredentials.clear(); clistCredentialFingerprint = ''; clistService = undefined; return result; });
     handle('getClistStatus', () => clistCredentials.status());
-    libraryLoader = createLibraryLoader(path.join(dir, 'library'), fs, path);
+    try {
+        libraryLoader = createLibraryLoader(path.join(dir, 'library'), fs, path, process.env.QMX_ISOLATED_SANDBOX === '1' ? undefined : { luoguNativeFile: path.join(__dirname, 'data', 'luogu-native-difficulties.json') });
+    }
+    catch {
+        // Keep the ordinary library usable if the optional public recovery snapshot is damaged.
+        libraryLoader = createLibraryLoader(path.join(dir, 'library'), fs, path);
+    }
     clistSharedCache = createClistSharedCache({ directory: dir, fs, path, fetcher: networkFetch,
         initialCacheFile: process.env.QMX_ISOLATED_SANDBOX === '1' ? undefined : path.join(__dirname, 'data', 'clist-initial-cache.json') });
     if (process.env.QMX_ISOLATED_SANDBOX !== '1' && fs.existsSync(path.join(__dirname, 'data', 'clist-initial-cache.json'))) {
@@ -677,13 +699,14 @@ function setup() {
         problemEnrichment.refresh();
         const ratingCache = currentRatingReader();
         const outcomes = createBackfillOutcomeReader(read('difficulty-backfill-ledger.json', undefined));
+        const nativeIndex = indexedProblems();
         const rawProblems = new Map();
         const result = await dailyDraw(filters, [...ownRecords, ...publicRecords], networkFetch, Math.random, refreshClistService(), librarySnapshot(filters), problem => {
             try {
                 rawProblems.set(canonicalProblemUrl(problem.url), problem);
             }
             catch { /* Historical unsupported URL. */ }
-            return problemEnrichment.apply(cachedClistProblem(problem, ratingCache, outcomes));
+            return problemEnrichment.apply(cachedClistProblem(problem, ratingCache, outcomes, nativeIndex));
         });
         ensureSource(scope.sourceKey, generation);
         try {

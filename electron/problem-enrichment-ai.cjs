@@ -3,9 +3,12 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.createProblemAI = createProblemAI;
 const node_buffer_1 = require("node:buffer");
+const { luoguNativeDifficultyLabels } = require('./luogu-difficulty.js');
 const MAX_RESPONSE_BYTES = 256 * 1024;
 const TIMEOUT_MS = 45_000;
-const levels = ['暂无评定', '入门', '普及−', '普及/提高−', '普及+/提高', '提高+/省选−', '省选/NOI−', 'NOI/NOI+/CTSC'];
+const levels = Object.values(luoguNativeDifficultyLabels);
+// Existing providers may still return these previously requested labels.
+const acceptedLevels = new Set([...levels, '普及/提高−', '普及+/提高', 'NOI/NOI+/CTSC']);
 const emptyStatus = () => ({ configured: false, endpoint: null, model: null });
 function object(value) { return value !== null && typeof value === 'object' && !Array.isArray(value); }
 function text(value, max) {
@@ -79,7 +82,7 @@ function fields(content, allowTags, allowDifficulty) {
     }
     if (Object.hasOwn(value, 'luoguDifficulty')) {
         const level = text(value.luoguDifficulty, 40);
-        if (!levels.includes(level))
+        if (!acceptedLevels.has(level))
             throw new Error('AI 洛谷参考难度无效');
         result.luoguDifficulty = level;
     }

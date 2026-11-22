@@ -1,7 +1,11 @@
 import type { ProblemAIStatus, ProblemEnrichmentView, ProblemSupplementFields, SaveProblemSupplementInput } from '../../shared/models/problem-enrichment';
 
-import { luoguDifficultyLabel } from '../../shared/luogu-difficulty.js';
-const luoguLevels = ['暂无评定', '入门', '普及−', '普及/提高−', '普及+/提高', '提高+/省选−', '省选/NOI−', 'NOI/NOI+/CTSC'];
+import { luoguDifficultyLabel, luoguDifficultyRank, luoguNativeDifficultyLabels } from '../../shared/luogu-difficulty.js';
+const luoguLevels = Object.values(luoguNativeDifficultyLabels);
+function luoguOptionValue(value: string): string {
+  const rank = luoguDifficultyRank(value);
+  return rank === null ? '' : luoguNativeDifficultyLabels[rank];
+}
 let activeDialog: HTMLDialogElement | null = null;
 function node<K extends keyof HTMLElementTagNameMap>(tag: K, className = '', text?: string): HTMLElementTagNameMap[K] {
   const element = document.createElement(tag); element.className = className;
@@ -147,7 +151,7 @@ export function openProblemEnrichment(url: string, onApplied: () => void): void 
     else current.append(node('p', 'enrichment-hint', '当前没有补充信息。只允许补充官方缺失的字段。'));
     tags.value = view.canSupplementTags ? (view.supplement?.tags ?? []).join(', ') : view.officialTags.join(', ');
     cf.value = view.canSupplementDifficulty && view.supplement?.cfRating != null ? String(view.supplement.cfRating) : '';
-    lg.value = view.canSupplementDifficulty ? view.supplement?.luoguDifficulty ?? '' : '';
+    lg.value = view.canSupplementDifficulty ? luoguOptionValue(view.supplement?.luoguDifficulty ?? '') : '';
     reason.value = view.supplement?.reason ?? '';
     tagHint.textContent = view.canSupplementTags ? '官方未提供算法标签，可以补充。' : '官方已有算法标签，不能补充或覆盖。';
     difficultyHint.textContent = view.canSupplementDifficulty ? '官方未提供难度，可以补充 CF 和洛谷参考难度。参考值不是官方评分。' : `官方已有难度（${view.officialDifficulty}），不能补充或覆盖参考难度。`;
