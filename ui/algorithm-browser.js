@@ -481,6 +481,45 @@ var __QMXStandalone = (() => {
     return root;
   }
 
+  // src/renderer/algorithms/note-favorite.ts
+  function noteFavoriteControl(options) {
+    if (!options.isFavorite || !options.onToggleFavorite) return null;
+    const control = document.createElement("span");
+    control.className = "alg-note-favorite-control";
+    const button3 = document.createElement("button");
+    button3.type = "button";
+    button3.className = "alg-button alg-note-favorite";
+    const error = document.createElement("span");
+    error.className = "alg-inline-error";
+    error.hidden = true;
+    error.setAttribute("role", "alert");
+    function update() {
+      const selected = options.isFavorite(options.note);
+      button3.textContent = selected ? "★ 已收藏" : "☆ 收藏";
+      button3.setAttribute("aria-pressed", String(selected));
+    }
+    button3.addEventListener("click", () => {
+      void (async () => {
+        if (button3.disabled) return;
+        button3.disabled = true;
+        error.hidden = true;
+        try {
+          await options.onToggleFavorite(options.note);
+          update();
+        } catch (cause) {
+          error.textContent = cause instanceof Error ? cause.message : "收藏保存失败，请重试";
+          error.hidden = false;
+          options.onError?.(cause);
+        } finally {
+          button3.disabled = false;
+        }
+      })();
+    });
+    update();
+    control.append(button3, error);
+    return control;
+  }
+
   // src/renderer/algorithms/browser.ts
   var LEVELS = [
     { id: "basic", label: "入门", tone: "cyan", number: "01" },
@@ -1166,6 +1205,8 @@ ${entry.node.fullLabel}` : ""}`;
         });
         const actions = element2("div", "reading-detail-actions");
         actions.append(back, button2("打开详情 ↗", "alg-button reading-detail-trigger alg-open-detail", openDetail));
+        const favorite = noteFavoriteControl({ note: reading, isFavorite: opts.isFavorite, onToggleFavorite: opts.onToggleFavorite });
+        if (favorite) actions.append(favorite);
         pane.append(actions, breadcrumbs(reading.nodeId));
         const article = element2("article", "alg-reading");
         const title2 = element2("h2", "alg-reading-title", reading.title || "未命名笔记");

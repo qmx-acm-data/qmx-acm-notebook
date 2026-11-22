@@ -49,6 +49,9 @@ exports.parseLearningGateText = parseLearningGateText;
 exports.normalizeServerUrl = normalizeServerUrl;
 exports.repositoryKey = repositoryKey;
 exports.repoParts = repoParts;
+exports.validateTrickPath = validateTrickPath;
+exports.parseTrick = parseTrick;
+exports.cachedTrick = cachedTrick;
 const YAML = __importStar(require("yaml"));
 const node_crypto_1 = require("node:crypto");
 const { ROADMAP_DIRECTORY_IDS } = require('./algorithm-node-content-model.cjs');
@@ -332,6 +335,54 @@ exports.issueRecord = issueRecord;
 exports.issueBody = issueBody;
 exports.documentContent = documentContent;
 exports.parseAlgorithmNote = parseAlgorithmNote;
+const TRICK_PATH = /^tricks\/([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})\.md$/;
+function trickText(value, label, maxBytes, required = false) {
+    if (typeof value !== 'string' || node_buffer_1.Buffer.byteLength(value, 'utf8') > maxBytes || /[\u0000-\u0008\u000b\u000c\u000e-\u001f\u007f]/.test(value) || required && !value.trim())
+        throw new Error(`${label}格式不正确或超过${maxBytes}字节`);
+    return value;
+}
+function validateTrickPath(value) {
+    if (typeof value !== 'string' || !TRICK_PATH.test(value))
+        throw new Error('Trick路径必须为 tricks/<UUID>.md');
+    return value;
+}
+/** Strictly parses repository bytes and cached records; never falls back to a solution document. */
+function parseTrick(path, text, sha, scope) {
+    const safePath = validateTrickPath(path);
+    if (typeof sha !== 'string' || !/^[A-Za-z0-9_-]{1,200}$/.test(sha))
+        throw new Error('Trick缺少有效SHA');
+    const { meta, body } = frontmatter(text, true);
+    if (meta.schema !== 1 || meta.kind !== 'trick')
+        throw new Error('Trick元数据schema/kind无效');
+    const owner = authorId(meta.authorId);
+    if (!owner || typeof meta.author !== 'string' || !/^[A-Za-z0-9](?:[A-Za-z0-9-]{0,38})$/.test(meta.author))
+        throw new Error('Trick作者无效');
+    if (typeof meta.updatedAt !== 'string' || !/^\d{4}-\d{2}-\d{2}T/.test(meta.updatedAt) || !Number.isFinite(Date.parse(meta.updatedAt)))
+        throw new Error('Trick更新时间无效');
+    const title = trickText(meta.title, 'Trick标题', 600, true).trim();
+    const introduction = trickText(meta.introduction, 'Trick简介', 6000, true);
+    trickText(body, 'Trick正文', 1000000, true);
+    const clientId = TRICK_PATH.exec(safePath)[1];
+    return { id: `trick:${safePath}`, kind: 'trick', clientId, path: safePath, sha, title, introduction, body, authorId: owner, author: { id: owner, login: meta.author }, updatedAt: meta.updatedAt, ...scope };
+}
+function cachedTrick(value, scope) {
+    if (!value || typeof value !== 'object' || Array.isArray(value))
+        return null;
+    const item = value;
+    if (item.repo !== scope.repo || item.sourceKey !== scope.sourceKey || item.serverUrl !== scope.serverUrl || item.kind !== 'trick')
+        return null;
+    const author = item.author && typeof item.author === 'object' && !Array.isArray(item.author) ? item.author : null;
+    if (!author || author.id !== item.authorId)
+        return null;
+    try {
+        const text = `---\n${YAML.stringify({ schema: 1, kind: 'trick', title: item.title, introduction: item.introduction, authorId: item.authorId, author: author.login, updatedAt: item.updatedAt })}---\n${typeof item.body === 'string' ? item.body : ''}`;
+        const parsed = parseTrick(item.path, text, item.sha, scope);
+        return item.id === parsed.id && item.clientId === parsed.clientId ? parsed : null;
+    }
+    catch {
+        return null;
+    }
+}
 class GitHub {
     constructor({ token = '', repo = 'qmx-acm-data/2026', fetcher = fetch, serverUrl = '' } = {}) {
         repoParts(repo);
@@ -448,7 +499,7 @@ class GitHub {
             throw new Error('当前账号没有该仓库的写入权限（push），请联系仓库管理员授权');
         if (!info.default_branch)
             throw new Error('仓库尚无默认分支，请先初始化仓库');
-        return { user, branch: info.default_branch };
+        return { user, branch: info.default_branch, admin: info.permissions?.admin === true, writable: info.permissions?.push === true || info.permissions?.admin === true };
     }
     contentEndpoint(path) {
         return `/repos/${this.repo}/contents/${path.split('/').map(encodeURIComponent).join('/')}`;
@@ -686,6 +737,74 @@ class GitHub {
             throw new Error('算法笔记写入结果未知，请先同步核实');
         return this.recordResult(path, text, data.content.sha, branch);
     }
+    async saveTrick(input) {
+        if (!input || typeof input !== 'object' || Array.isArray(input))
+            throw new Error('Trick输入格式无效');
+        const record = input;
+        this.checkScope(record);
+        if (record.sourceKey !== undefined && record.sourceKey !== repositoryKey(this.repo, this.serverUrl))
+            throw new Error('Trick所属来源与当前仓库不一致，请重新同步');
+        const title = trickText(record.title, 'Trick标题', 600, true).trim();
+        const introduction = trickText(record.introduction, 'Trick简介', 6000, true);
+        const body = trickText(record.body, 'Trick正文', 1000000, true);
+        if (record.path !== undefined)
+            validateTrickPath(record.path);
+        if (record.path !== undefined && (typeof record.sha !== 'string' || !record.sha.trim()))
+            throw new Error('更新Trick必须提供当前SHA，请先同步');
+        const clientId = record.clientId === undefined ? require('node:crypto').randomUUID() : record.clientId;
+        if (typeof clientId !== 'string' || !UUID.test(clientId))
+            throw new Error('Trick clientId必须为UUID');
+        const path = record.path === undefined ? `tricks/${clientId.toLowerCase()}.md` : validateTrickPath(record.path);
+        const { user, branch, admin, writable } = await this.writeContext();
+        if (!writable)
+            throw new Error('当前账号没有有效仓库写入权限');
+        const current = await this.currentDocument(path, branch);
+        if (record.path !== undefined && !current)
+            throw new Error('Trick已被删除，请先同步');
+        const scope = { repo: this.repo, serverUrl: this.serverUrl, sourceKey: repositoryKey(this.repo, this.serverUrl) };
+        const existing = current ? parseTrick(path, current.text, current.sha, scope) : null;
+        if (existing && existing.authorId !== user.id && !admin)
+            throw new Error('只能维护本人Trick，或由仓库管理员管理');
+        if (record.path !== undefined && current.sha !== record.sha)
+            throw new Error('Trick SHA冲突，请先同步后再编辑');
+        const meta = { schema: 1, kind: 'trick', title, introduction, authorId: existing?.authorId ?? user.id, author: existing?.author.login ?? user.login, updatedAt: new Date().toISOString() };
+        const text = `---\n${YAML.stringify(meta)}---\n${body}`;
+        const provisional = parseTrick(path, text, current?.sha ?? 'pending', scope);
+        if (existing && existing.title === title && existing.introduction === introduction && existing.body === body)
+            return existing;
+        if (record.path === undefined && current)
+            throw new Error('同一clientId的Trick已存在但内容不同，请同步后使用路径和SHA编辑');
+        const { data } = await this.request(this.contentEndpoint(path), { method: 'PUT', body: JSON.stringify({ message: `${current ? '更新' : '新增'}Trick：${title}`, content: node_buffer_1.Buffer.from(text).toString('base64'), branch, ...(current ? { sha: current.sha } : {}) }) });
+        const savedSha = data.content?.sha;
+        if (typeof savedSha !== 'string' || !/^[A-Za-z0-9_-]{1,200}$/.test(savedSha))
+            throw new Error('Trick写入结果未知，请先同步确认，不要重复创建');
+        return { ...provisional, sha: savedSha };
+    }
+    async deleteTrick(input) {
+        if (!input || typeof input !== 'object' || Array.isArray(input))
+            throw new Error('Trick输入格式无效');
+        const record = input;
+        this.checkScope(record);
+        if (record.sourceKey !== undefined && record.sourceKey !== repositoryKey(this.repo, this.serverUrl))
+            throw new Error('Trick所属来源与当前仓库不一致，请重新同步');
+        const path = validateTrickPath(record.path);
+        if (typeof record.sha !== 'string' || !record.sha.trim())
+            throw new Error('删除Trick必须提供当前SHA，请先同步');
+        const { user, branch, admin, writable } = await this.writeContext();
+        if (!writable)
+            throw new Error('当前账号没有有效仓库写入权限');
+        const current = await this.currentDocument(path, branch);
+        if (!current)
+            throw new Error('Trick已不存在，请先同步');
+        const scope = { repo: this.repo, serverUrl: this.serverUrl, sourceKey: repositoryKey(this.repo, this.serverUrl) };
+        const existing = parseTrick(path, current.text, current.sha, scope);
+        if (existing.authorId !== user.id && !admin)
+            throw new Error('只能删除本人Trick，或由仓库管理员管理');
+        if (current.sha !== record.sha)
+            throw new Error('Trick SHA冲突，请先同步后再删除');
+        await this.request(this.contentEndpoint(path), { method: 'DELETE', body: JSON.stringify({ message: `删除Trick：${existing.title}`, sha: current.sha, branch }) });
+        return { id: existing.id, path, deleted: true, ...scope };
+    }
     async saveDocument(input) {
         const record = input;
         this.checkScope(record);
@@ -888,6 +1007,20 @@ class GitHub {
             }
             return text;
         };
+        const trickFiles = tree.tree.filter(item => item.type === 'blob' && typeof item.path === 'string' && TRICK_PATH.test(item.path));
+        if (trickFiles.length > 10000)
+            throw new Error('公共Trick文件数量超过同步上限');
+        const tricks = [], seenTricks = new Set();
+        for (let start = 0; start < trickFiles.length; start += 4) {
+            const batch = await Promise.all(trickFiles.slice(start, start + 4).map(async (item) => parseTrick(item.path, await readPublicBlob(item), item.sha, scope)));
+            for (const trick of batch) {
+                if (seenTricks.has(trick.id))
+                    throw new Error('公共Trick标识重复');
+                seenTricks.add(trick.id);
+                tricks.push(trick);
+            }
+        }
+        tricks.sort((a, b) => b.updatedAt.localeCompare(a.updatedAt) || a.path.localeCompare(b.path));
         const additions = tree.tree.find(item => item.type === 'blob' && item.path === TOPICS_PATH);
         const algorithmTopics = additions ? parseTopics(await readPublicBlob(additions)).map(topic => ({ ...topic, ...scope })) : [];
         const curriculumFile = tree.tree.find(item => item.type === 'blob' && item.path === exports.LEARNING_CURRICULUM_PATH);
@@ -935,11 +1068,11 @@ class GitHub {
             algorithmNodeContents.push({ ...content, nodeId, ...(storageNodeId === nodeId ? {} : { storageNodeId }), ...scope });
         }
         return {
-            algorithmTopics, algorithmNodeContents, learningGateContents, learningCurriculum: curriculum,
+            tricks, algorithmTopics, algorithmNodeContents, learningGateContents, learningCurriculum: curriculum,
             records: records.filter(r => r.kind === 'document'),
             algorithmNotes: records.filter(r => r.kind === 'algorithm-note').map(note => 'nodeId' in note ? { ...note, nodeId: leafIdFromIndex(note.nodeId, leafIndex) || note.nodeId } : note),
             issues: issues.filter(x => !x.pull_request && !/<!--\s*qmx-tag-request\s+[\s\S]*?-->/i.test(String(x.body || ''))).map(x => ({ ...issueRecord(x), ...scope })),
-            blobs: Object.fromEntries([...docs, ...gateFiles, ...nodeContentFiles, ...(curriculumFile ? [curriculumFile] : []), ...(additions ? [additions] : [])].map(d => [d.sha, blobs[d.sha]])), branch, lastSync: new Date().toISOString(),
+            blobs: Object.fromEntries([...docs, ...trickFiles, ...gateFiles, ...nodeContentFiles, ...(curriculumFile ? [curriculumFile] : []), ...(additions ? [additions] : [])].map(d => [d.sha, blobs[d.sha]])), branch, lastSync: new Date().toISOString(),
         };
     }
     // Legacy entry points now publish Markdown directly instead of opening Issues or PRs.

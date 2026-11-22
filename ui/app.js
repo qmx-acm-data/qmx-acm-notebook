@@ -376,10 +376,10 @@
     if (text3 !== void 0) node3.textContent = String(text3);
     return node3;
   }
-  function button(text3, className, action2) {
+  function button(text3, className, action3) {
     const node3 = element("button", className, text3);
     node3.type = "button";
-    node3.addEventListener("click", action2);
+    node3.addEventListener("click", action3);
     return node3;
   }
   function metadata(code) {
@@ -843,9 +843,9 @@
       const row2 = element("div", "platform-binding-row");
       row2.dataset.platform = platform.code;
       const label = element("span", "platform-binding-name", platform.name);
-      const action2 = button(bound(platform.code) ? username(platform.code) : "绑定账号", "platform-button platform-bind-account", () => openDialog(platform.code));
-      action2.disabled = pending.has(platform.code);
-      row2.append(label, action2);
+      const action3 = button(bound(platform.code) ? username(platform.code) : "绑定账号", "platform-button platform-bind-account", () => openDialog(platform.code));
+      action3.disabled = pending.has(platform.code);
+      row2.append(label, action3);
       rows.append(row2);
     }
     root2.classList.add("notebook-platforms", "platform-settings");
@@ -1053,7 +1053,7 @@
     if (enhanced.has(input2)) return enhanced.get(input2);
     if (!(input2 instanceof HTMLInputElement) || input2.type !== "datetime-local") throw new TypeError("NotebookDeadline.enhance requires a datetime-local input.");
     const id = `planner-deadline-${++sequence}`;
-    const button8 = action("", "planner-deadline-trigger", () => {
+    const button9 = action("", "planner-deadline-trigger", () => {
       if (input2.disabled || input2.matches(":disabled")) return;
       if (opened) close();
       else open2();
@@ -1066,12 +1066,12 @@
     path.setAttribute("d", "M5.5 2.5v3m9-3v3M3 8h14M4.5 4h11A1.5 1.5 0 0 1 17 5.5v10a1.5 1.5 0 0 1-1.5 1.5h-11A1.5 1.5 0 0 1 3 15.5v-10A1.5 1.5 0 0 1 4.5 4ZM6.5 11h2m3 0h2m-7 3h2");
     icon.append(path);
     const caption = node("span", "planner-deadline-caption");
-    button8.append(icon, caption);
-    button8.setAttribute("aria-haspopup", "dialog");
-    button8.setAttribute("aria-expanded", "false");
-    button8.setAttribute("aria-controls", id);
+    button9.append(icon, caption);
+    button9.setAttribute("aria-haspopup", "dialog");
+    button9.setAttribute("aria-expanded", "false");
+    button9.setAttribute("aria-controls", id);
     input2.hidden = true;
-    input2.insertAdjacentElement("afterend", button8);
+    input2.insertAdjacentElement("afterend", button9);
     const popover = node("div", "planner-deadline-popover");
     popover.id = id;
     popover.setAttribute("popover", "auto");
@@ -1148,12 +1148,12 @@
     function refresh() {
       const value = parts(input2.value);
       caption.textContent = value ? `${Number(value[1].split("-")[1])}/${Number(value[1].split("-")[2])} ${value[2]}` : "截止时间";
-      button8.classList.toggle("has-deadline", Boolean(value));
-      button8.disabled = input2.disabled || input2.matches(":disabled");
+      button9.classList.toggle("has-deadline", Boolean(value));
+      button9.disabled = input2.disabled || input2.matches(":disabled");
       const label = input2.getAttribute("aria-label") || "截止时间（可选，使用本机时区）";
-      button8.setAttribute("aria-label", value ? `${label}：${value[1]} ${value[2]}` : label);
-      button8.title = value ? `${value[1]} ${input2.value.split("T")[1]}（本机时区）` : label;
-      if (button8.disabled && opened) close();
+      button9.setAttribute("aria-label", value ? `${label}：${value[1]} ${value[2]}` : label);
+      button9.title = value ? `${value[1]} ${input2.value.split("T")[1]}（本机时区）` : label;
+      if (button9.disabled && opened) close();
       return api;
     }
     function renderCalendar(focusDate) {
@@ -1217,7 +1217,7 @@
     }
     function position() {
       if (!opened) return;
-      if (!button8.isConnected || button8.disabled) {
+      if (!button9.isConnected || button9.disabled) {
         close();
         return;
       }
@@ -1227,7 +1227,7 @@
       const rightEdge = leftEdge + (viewport?.width || window.innerWidth) - 16;
       const bottomEdge = topEdge + (viewport?.height || window.innerHeight) - 16;
       popover.style.maxHeight = `${Math.max(0, bottomEdge - topEdge)}px`;
-      const anchor = button8.getBoundingClientRect();
+      const anchor = button9.getBoundingClientRect();
       const box = popover.getBoundingClientRect();
       const below = anchor.bottom + 7;
       const above = anchor.top - box.height - 7;
@@ -1244,14 +1244,14 @@
       if (!opened) return;
       opened = false;
       if (active === api) active = null;
-      button8.setAttribute("aria-expanded", "false");
+      button9.setAttribute("aria-expanded", "false");
       cancelAnimationFrame(frame);
       window.removeEventListener("resize", schedulePosition);
       document.removeEventListener("scroll", schedulePosition, true);
       window.visualViewport?.removeEventListener("resize", schedulePosition);
       window.visualViewport?.removeEventListener("scroll", schedulePosition);
       queueMicrotask(() => {
-        if (!active && button8.isConnected && !button8.disabled) button8.focus({ preventScroll: true });
+        if (!active && button9.isConnected && !button9.disabled) button9.focus({ preventScroll: true });
       });
     }
     function close() {
@@ -1260,7 +1260,7 @@
     }
     function open2() {
       refresh();
-      if (opened || button8.disabled || !button8.isConnected) return;
+      if (opened || button9.disabled || !button9.isConnected) return;
       if (active && active !== api) active.close();
       original = input2.value;
       originalParts = parts(original);
@@ -1275,7 +1275,7 @@
       popover.showPopover();
       opened = true;
       active = api;
-      button8.setAttribute("aria-expanded", "true");
+      button9.setAttribute("aria-expanded", "true");
       position();
       const focusDate = draftDate || dateKey(today);
       (calendar.querySelector(`[data-date="${focusDate}"]`) || calendar.querySelector("button:not(:disabled)")).focus({ preventScroll: true });
@@ -1328,7 +1328,7 @@
     }));
     const observer = new MutationObserver(refresh);
     observer.observe(input2, { attributes: true, attributeFilter: ["disabled", "value", "aria-label"] });
-    const api = { input: input2, button: button8, popover, refresh, open: open2, close };
+    const api = { input: input2, button: button9, popover, refresh, open: open2, close };
     enhanced.set(input2, api);
     refresh();
     return api;
@@ -1355,10 +1355,10 @@
     if (text3 !== void 0) node3.textContent = String(text3);
     return node3;
   };
-  function button2(text3, className, action2) {
+  function button2(text3, className, action3) {
     const node3 = el("button", className, text3);
     node3.type = "button";
-    node3.addEventListener("click", action2);
+    node3.addEventListener("click", action3);
     return node3;
   }
   function field(label, name, type, placeholder, maxLength) {
@@ -1455,14 +1455,14 @@
       });
     }
   }
-  async function mutate2(action2, payload, errorNode, success) {
+  async function mutate2(action3, payload, errorNode, success) {
     if (busy) return false;
     showError2(errorNode, "");
     updateBusy(true);
     let next;
     try {
       if (typeof bridge2?.plannerAction !== "function") throw new Error("计划暂不可用，请稍后重试。");
-      next = await bridge2.plannerAction(...[action2, payload]);
+      next = await bridge2.plannerAction(...[action3, payload]);
       if (!next || !Array.isArray(next.problems) || !Array.isArray(next.tasks)) throw new Error("保存结果无效，请重试。");
     } catch (error) {
       showError2(errorNode, errorText2(error));
@@ -1865,10 +1865,10 @@
       });
       return parent;
     }
-    function button8(label, className, action2) {
+    function button9(label, className, action3) {
       const node3 = element5("button", className, label);
       node3.type = "button";
-      node3.addEventListener("click", action2);
+      node3.addEventListener("click", action3);
       return node3;
     }
     const contestPlatforms = [
@@ -2034,7 +2034,7 @@
         countdown.dataset.phase = active3 ? "active" : "upcoming";
         countdown.textContent = `${active3 ? "距结束" : "距开始"} ${contestDuration(Number(countdown.dataset.target) - now)}`;
         const duration = element5("span", "contest-duration", `赛时 ${contestDuration(contest.end - contest.start).replace(/ 0秒$/, "").trim()}`);
-        const decline = button8("不参加", "contest-decline", () => {
+        const decline = button9("不参加", "contest-decline", () => {
           void setContestOptOut(platform.id, contest.id, true);
         });
         decline.dataset.contestFocus = `${platform.id}:${contest.id}:decline`;
@@ -2176,11 +2176,11 @@
       panel.setAttribute("aria-labelledby", "contests-title");
       const title = element5("h2", "", "比赛提醒");
       title.id = "contests-title";
-      const refresh = button8("刷新赛程", "button secondary", () => {
+      const refresh = button9("刷新赛程", "button secondary", () => {
         void refreshContests(true);
       });
       refresh.id = "contests-refresh";
-      const restore = button8("", "button subtle contest-restore", openContestRestore);
+      const restore = button9("", "button subtle contest-restore", openContestRestore);
       restore.id = "contests-restore";
       const actions = append(element5("div", "contest-actions"), restore, refresh);
       const status = element5("p", "contests-status");
@@ -2462,8 +2462,8 @@
       const update = getUpdate() || {};
       if (getUpdateCapability()?.supported === false) $("#update-notice").textContent = getUpdateCapability().reason;
       const latest = update.latestVersion ? ` ${update.latestVersion}` : "";
-      const labels = { checking: "正在检查更新…", available: `发现新版本${latest}，可点击检查更新进行升级。`, downloading: `正在下载新版本${latest}…`, ready: `新版本${latest}的签名和文件已校验，正在准备更新。`, installing: "本地记录已备份，退出后将备份并替换程序文件，完成后自动重启。", error: "更新失败，请点击检查更新重试。" };
-      let text3 = labels[update.phase] || (update.available === false && !!update.message ? `当前版本 ${getAppVersion() || update.currentVersion || "未知"}，暂无可用更新。` : "可随时检查更新，无需登录 GitHub。");
+      const labels2 = { checking: "正在检查更新…", available: `发现新版本${latest}，可点击检查更新进行升级。`, downloading: `正在下载新版本${latest}…`, ready: `新版本${latest}的签名和文件已校验，正在准备更新。`, installing: "本地记录已备份，退出后将备份并替换程序文件，完成后自动重启。", error: "更新失败，请点击检查更新重试。" };
+      let text3 = labels2[update.phase] || (update.available === false && !!update.message ? `当前版本 ${getAppVersion() || update.currentVersion || "未知"}，暂无可用更新。` : "可随时检查更新，无需登录 GitHub。");
       if (update.phase === "checking" || update.phase === "available" || update.phase === "downloading" || update.phase === "ready" || update.phase === "installing" || update.phase === "error" || update.available === false) {
         if (update.message) text3 += ` ${update.message}`;
       }
@@ -3255,10 +3255,10 @@
       children.filter(Boolean).forEach((child) => parent.append(child));
       return parent;
     }
-    function button8(label, className, action2) {
+    function button9(label, className, action3) {
       const node3 = element5("button", className, label);
       node3.type = "button";
-      node3.addEventListener("click", action2);
+      node3.addEventListener("click", action3);
       return node3;
     }
     const stateLabels = { unreviewed: "待复习", reviewing: "复习中", mastered: "已掌握" };
@@ -3299,7 +3299,7 @@
         const host = $(group === "tags" ? "#tag-filter" : group === "authors" ? "#author-filter" : "#platform-filter");
         const values = group === "tags" ? all.flatMap((r) => Array.isArray(r.tags) ? r.tags : []) : all.map((r) => facetValue(r, group));
         if (group === "tags") {
-          const trigger = button8("", "facet-trigger", () => openTagPicker("filter"));
+          const trigger = button9("", "facet-trigger", () => openTagPicker("filter"));
           append(trigger, document.createTextNode(facetNames[group] + " "), element5("span", "facet-chevron", "⌄"));
           trigger.id = "tag-filter-trigger";
           trigger.setAttribute("aria-haspopup", "dialog");
@@ -3319,7 +3319,7 @@
           search.value = query;
           const options = element5("div", "facet-options");
           search.addEventListener("input", () => fillFacetOptions(options, group, values, search.value));
-          append(popover, search, options, button8("清除本组", "facet-clear", () => {
+          append(popover, search, options, button9("清除本组", "facet-clear", () => {
             facets[group].clear();
             fillFacetOptions(options, group, values, search.value);
             updateFacetCounts();
@@ -3443,7 +3443,7 @@
       const selected2 = new Set(field2.value.split(/[,，、]/).map((t) => t.trim()).filter(Boolean));
       const host = $("#record-tag-selected");
       host.replaceChildren();
-      selected2.forEach((t) => host.append(button8(t + " ×", "filter-chip", () => {
+      selected2.forEach((t) => host.append(button9(t + " ×", "filter-chip", () => {
         if (getBusy()) return;
         selected2.delete(t);
         field2.value = [...selected2].join(", ");
@@ -3470,12 +3470,12 @@
       $("#difficulty-count").textContent = count ? "已选" : "";
       const chips = $("#active-filters");
       chips.replaceChildren();
-      for (const group of Object.keys(facets)) for (const value of facets[group]) chips.append(button8(`${facetNames[group]} · ${group === "platform" ? platformNames[value] || value : value} ×`, "filter-chip", () => {
+      for (const group of Object.keys(facets)) for (const value of facets[group]) chips.append(button9(`${facetNames[group]} · ${group === "platform" ? platformNames[value] || value : value} ×`, "filter-chip", () => {
         facets[group].delete(value);
         refreshFilters();
         render6();
       }));
-      if (range.some((v) => v !== null)) chips.append(button8("难度区间 ×", "filter-chip", () => {
+      if (range.some((v) => v !== null)) chips.append(button9("难度区间 ×", "filter-chip", () => {
         clearDifficulty();
         render6();
       }));
@@ -3766,7 +3766,7 @@
       }
       renderEditorDifficulty();
     }
-    function draftKey(source, ownerId) {
+    function draftKey2(source, ownerId) {
       return JSON.stringify([source || "new", ownerId]);
     }
     function editorError(error) {
@@ -3800,7 +3800,7 @@
         return;
       }
       const source = record ? key(record) : seed?.source || "new", ownerId = accountId();
-      const candidate = getLocal().draft[draftKey(source, ownerId)];
+      const candidate = getLocal().draft[draftKey2(source, ownerId)];
       const saved = candidate?.source === source && candidate.ownerId === ownerId ? candidate : null;
       const original = record ? structuredClone(record) : null;
       if (original?.kind === "document" && saved?.base?.path === original.path && saved.base.repo === original.repo) original.sha = saved.base.sha;
@@ -3822,7 +3822,7 @@
     async function saveDraft(required = false) {
       if (!getEditor() || getEditor().ownerId !== accountId()) return;
       const { source, ownerId, clientId, record } = getEditor();
-      getLocal().draft[draftKey(source, ownerId)] = { source, ownerId, clientId, ...record?.kind === "document" ? { base: { path: record.path, repo: record.repo, sha: record.sha } } : {}, data: formDraft() };
+      getLocal().draft[draftKey2(source, ownerId)] = { source, ownerId, clientId, ...record?.kind === "document" ? { base: { path: record.path, repo: record.repo, sha: record.sha } } : {}, data: formDraft() };
       try {
         await persistLocal();
         $("#draft-hint").textContent = "编辑草稿已保存到当前设备";
@@ -3911,7 +3911,7 @@ ${data.trick.trim()}` : ""].filter(Boolean).join("\n\n") : data.body;
           getLocal().records = [...getLocal().records.filter((item) => !(existing?.kind === "local" && key(item) === getEditor().source && item.clientId === existing.clientId && item.ownerId === existing.ownerId)), localRecord];
           setSelected(key(localRecord));
         }
-        delete getLocal().draft[draftKey(getEditor().source, getEditor().ownerId)];
+        delete getLocal().draft[draftKey2(getEditor().source, getEditor().ownerId)];
         try {
           await persistLocal();
         } catch (error) {
@@ -4010,13 +4010,13 @@ ${data.trick.trim()}` : ""].filter(Boolean).join("\n\n") : data.body;
         setBusy(false);
       }
     }
-    return { formDraft, fillForm, renderEditorDifficulty, setEditorPlatform, draftKey, editorError, openLocalSolution, openSubmit, saveDraft, saveRecord, deleteDiscussion, deleteRecord };
+    return { formDraft, fillForm, renderEditorDifficulty, setEditorPlatform, draftKey: draftKey2, editorError, openLocalSolution, openSubmit, saveDraft, saveRecord, deleteDiscussion, deleteRecord };
   }
 
   // src/renderer/library/reader.ts
   function createLibraryReader(options) {
     const global2 = window;
-    const { demo, stateLabels, getLocal, setLocal, getAccount, getPermissions, getView, getLibraryScope, getSelected, setSelected, getComments, getBusy, setBusy, getLoading, getError, getRecords, key, isLocal, visibleLocal, canEditRemote, sameRepo, platformCode, authorName, date, quotaBlocked, renderMarkdown, persistLocal, call, render: render6, clearFilters, openSubmit, openLocalSolution, deleteRecord, deleteDiscussion, openExternal, toast, errorMessage } = options;
+    const { demo, stateLabels, getLocal, setLocal, getAccount, getPermissions, getView, getLibraryScope, getSelected, setSelected, getComments, getBusy, setBusy, getLoading, getError, getRecords, key, isLocal, visibleLocal, canEditRemote, sameRepo, platformCode, authorName: authorName2, date, quotaBlocked, renderMarkdown, persistLocal, call, render: render6, clearFilters, openSubmit, openLocalSolution, deleteRecord, deleteDiscussion, openExternal, toast, errorMessage } = options;
     const $ = (selector, root2 = document) => root2.querySelector(selector);
     const $$ = (selector, root2 = document) => Array.from(root2.querySelectorAll(selector));
     function element5(tag, className, text3) {
@@ -4029,14 +4029,14 @@ ${data.trick.trim()}` : ""].filter(Boolean).join("\n\n") : data.body;
       children.filter(Boolean).forEach((child) => parent.append(child));
       return parent;
     }
-    function button8(label, className, action2) {
+    function button9(label, className, action3) {
       const node3 = element5("button", className, label);
       node3.type = "button";
-      node3.addEventListener("click", action2);
+      node3.addEventListener("click", action3);
       return node3;
     }
     function favorite(record) {
-      return getLocal().favorites.some((value) => String(value) === key(record));
+      return options.isFavorite ? options.isFavorite(record) : getLocal().favorites.some((value) => String(value) === key(record));
     }
     function mastery(record) {
       return stateLabels[getLocal().mastery[key(record)]] ? getLocal().mastery[key(record)] : "unreviewed";
@@ -4073,10 +4073,10 @@ ${data.trick.trim()}` : ""].filter(Boolean).join("\n\n") : data.body;
       });
       return row2;
     }
-    function empty(title, description, action2) {
+    function empty(title, description, action3) {
       const box = element5("div", "empty-state");
       append(box, element5("div", "empty-icon", "⌑"), element5("h3", "", title), element5("p", "", description));
-      if (action2) box.append(button8(action2.label, "button secondary", action2.fn));
+      if (action3) box.append(button9(action3.label, "button secondary", action3.fn));
       return box;
     }
     let focusedDetail = false;
@@ -4135,7 +4135,7 @@ ${data.trick.trim()}` : ""].filter(Boolean).join("\n\n") : data.body;
       }
       const fragment = document.createDocumentFragment();
       items.forEach((record2) => {
-        const card = button8("", `record-card${!publicList && key(record2) === getSelected() ? " selected" : ""}`, () => {
+        const card = button9("", `record-card${!publicList && key(record2) === getSelected() ? " selected" : ""}`, () => {
           if (publicList) {
             openDetail(record2);
             return;
@@ -4221,24 +4221,34 @@ ${data.trick.trim()}` : ""].filter(Boolean).join("\n\n") : data.body;
         setBusy(false);
       }
     }
-    function renderDetail(record) {
-      const panel = $("#detail-panel");
+    function renderDetail(record, destination) {
+      const panel = destination || $("#detail-panel");
       const scroll = panel.scrollTop;
       panel.replaceChildren();
-      if (focusedDetail) {
-        const back = button8("← 返回题目列表", "button secondary detail-back", closeDetail);
+      if (!destination && focusedDetail) {
+        const back = button9("← 返回题目列表", "button secondary detail-back", closeDetail);
         back.id = "detail-back-button";
         panel.append(back);
-      } else {
-        const open2 = button8("打开详情 ↗", "button primary detail-open", () => openDetail(record));
+      } else if (!destination) {
+        const open2 = button9("打开详情 ↗", "button primary detail-open", () => openDetail(record));
         open2.id = "open-detail-button";
         panel.append(open2);
       }
-      const actions = append(element5("div", "detail-actions"), button8(favorite(record) ? "★ 已收藏" : "☆ 收藏", "button secondary", () => changeLocal(() => {
-        getLocal().favorites = favorite(record) ? getLocal().favorites.filter((value) => String(value) !== key(record)) : [...getLocal().favorites, key(record)];
-      })), button8("原题 ↗", "button subtle", () => openExternal(record.problemUrl || record.url)));
+      const favoriteButton = button9(favorite(record) ? "★ 已收藏" : "☆ 收藏", "button secondary", () => {
+        if (getBusy()) return;
+        if (options.toggleFavorite) {
+          void options.toggleFavorite(record).then(() => {
+            favoriteButton.textContent = favorite(record) ? "★ 已收藏" : "☆ 收藏";
+            favoriteButton.setAttribute("aria-pressed", String(favorite(record)));
+          }).catch((error) => toast(errorMessage(error)));
+        } else void changeLocal(() => {
+          getLocal().favorites = favorite(record) ? getLocal().favorites.filter((value) => String(value) !== key(record)) : [...getLocal().favorites, key(record)];
+        });
+      });
+      favoriteButton.setAttribute("aria-pressed", String(favorite(record)));
+      const actions = append(element5("div", "detail-actions"), favoriteButton, button9("原题 ↗", "button subtle", () => openExternal(record.problemUrl || record.url)));
       if (record.kind === "document") {
-        const localSolution = button8("＋ 本地题解", "button subtle public-local-solution", () => openLocalSolution(record));
+        const localSolution = button9("＋ 本地题解", "button subtle public-local-solution", () => openLocalSolution(record));
         localSolution.id = "local-solution-button";
         localSolution.title = "为这道题写自己的本地题解；已有本地记录时继续编辑";
         actions.append(localSolution);
@@ -4254,7 +4264,7 @@ ${data.trick.trim()}` : ""].filter(Boolean).join("\n\n") : data.body;
       panel.append(body);
       const masteryButtons = element5("div", "mastery-buttons");
       Object.entries(stateLabels).forEach(([value, label]) => {
-        const control = button8(label, mastery(record) === value ? "active" : "", () => changeLocal(() => {
+        const control = button9(label, mastery(record) === value ? "active" : "", () => changeLocal(() => {
           getLocal().mastery[key(record)] = value;
         }));
         control.setAttribute("aria-pressed", mastery(record) === value ? "true" : "false");
@@ -4262,16 +4272,16 @@ ${data.trick.trim()}` : ""].filter(Boolean).join("\n\n") : data.body;
       });
       append(panel, append(element5("div", "mastery-box"), append(element5("div"), element5("strong", "", "这个思路，掌握了吗？"), element5("small", "", "复习进度仅记录在你的学习空间")), masteryButtons));
       const edits = element5("div", "record-edit-actions");
-      if (record.proposalUrl) edits.append(button8("旧版已投稿副本 · 查看投稿 ↗", "button secondary", () => openExternal(record.proposalUrl)));
+      if (record.proposalUrl) edits.append(button9("旧版已投稿副本 · 查看投稿 ↗", "button secondary", () => openExternal(record.proposalUrl)));
       if (isLocal(record) && visibleLocal(record) || canEditRemote(record)) {
-        const edit = button8(isLocal(record) ? "编辑本地记录" : "编辑正式题解", "button secondary", () => openSubmit(record));
+        const edit = button9(isLocal(record) ? "编辑本地记录" : "编辑正式题解", "button secondary", () => openSubmit(record));
         edit.id = "edit-record-button";
-        const remove = button8(isLocal(record) ? "删除本地记录" : "删除正式题解", "button danger", () => deleteRecord(record));
+        const remove = button9(isLocal(record) ? "删除本地记录" : "删除正式题解", "button danger", () => deleteRecord(record));
         remove.id = "delete-record-button";
         append(edits, edit, remove);
       }
       if (record.kind === "issue" && sameRepo(record) && getAccount() && getPermissions().admin === true) {
-        const remove = button8("永久删除讨论 Issue", "button danger", () => deleteDiscussion(record));
+        const remove = button9("永久删除讨论 Issue", "button danger", () => deleteDiscussion(record));
         remove.id = "delete-issue-button";
         edits.append(remove);
       }
@@ -4346,7 +4356,7 @@ ${data.trick.trim()}` : ""].filter(Boolean).join("\n\n") : data.body;
         container.replaceChildren();
         if (!comments.length) container.append(element5("div", "comment-empty", demo ? "演示讨论区 · 留下第一条思考，不会发送到外部。" : "还没有讨论，你的观察也许就是别人的突破口。"));
         comments.forEach((comment) => {
-          container.append(append(element5("article", "comment-item"), element5("strong", "", authorName(comment.author || comment.user)), element5("p", "", comment.body || "")));
+          container.append(append(element5("article", "comment-item"), element5("strong", "", authorName2(comment.author || comment.user)), element5("p", "", comment.body || "")));
         });
       } catch (error) {
         if (container.isConnected) container.replaceChildren(element5("div", "comment-empty", `讨论暂不可用：${errorMessage(error)}`));
@@ -4833,7 +4843,7 @@ ${data.trick.trim()}` : ""].filter(Boolean).join("\n\n") : data.body;
       const ok = await accountAction("login");
       if (ok) $("#account-dialog").close();
     }
-    async function accountAction(action2) {
+    async function accountAction(action3) {
       if (getBusy()) return false;
       if (demo) {
         $("#account-error").hidden = false;
@@ -4842,14 +4852,14 @@ ${data.trick.trim()}` : ""].filter(Boolean).join("\n\n") : data.body;
       }
       setBusy(true);
       $("#account-error").hidden = true;
-      const resumeSync = action2 === "login" || action2 === "switch" ? reauthNeeded() || quotaBlocked() : false;
+      const resumeSync = action3 === "login" || action3 === "switch" ? reauthNeeded() || quotaBlocked() : false;
       const previousError = getError();
       let loggedIn = false;
       try {
-        if (action2 === "refresh") applyPayload(await call("refreshAccount"));
+        if (action3 === "refresh") applyPayload(await call("refreshAccount"));
         else {
-          if (action2 === "logout" || action2 === "switch") await call("logout");
-          if (action2 === "login" || action2 === "switch") {
+          if (action3 === "logout" || action3 === "switch") await call("logout");
+          if (action3 === "login" || action3 === "switch") {
             $("#auth-message").textContent = "正在请求设备授权…";
             $("#auth-code").textContent = "";
             $("#auth-open-button").hidden = true;
@@ -4876,7 +4886,7 @@ ${data.trick.trim()}` : ""].filter(Boolean).join("\n\n") : data.body;
           renderAccount();
         } catch (_) {
         }
-        if (!loggedIn && previousError && (action2 === "login" || action2 === "switch")) {
+        if (!loggedIn && previousError && (action3 === "login" || action3 === "switch")) {
           setError(previousError);
           updateStatus();
         }
@@ -4969,8 +4979,8 @@ ${data.trick.trim()}` : ""].filter(Boolean).join("\n\n") : data.body;
     });
     $("#clist-save-button")?.addEventListener("click", () => void saveClistCredentials());
     $("#clist-clear-button")?.addEventListener("click", () => void clearClistCredentials());
-    ["login", "logout", "switch", "refresh"].forEach((action2) => {
-      document.getElementById(`account-${action2}`).addEventListener("click", () => accountAction(action2));
+    ["login", "logout", "switch", "refresh"].forEach((action3) => {
+      document.getElementById(`account-${action3}`).addEventListener("click", () => accountAction(action3));
     });
     if (typeof bridge3?.onAuthProgress === "function") bridge3.onAuthProgress(receiveAuthProgress);
     $("#auth-open-button").addEventListener("click", openAuthUrl);
@@ -5224,6 +5234,45 @@ ${data.trick.trim()}` : ""].filter(Boolean).join("\n\n") : data.body;
     return root2;
   }
 
+  // src/renderer/algorithms/note-favorite.ts
+  function noteFavoriteControl(options) {
+    if (!options.isFavorite || !options.onToggleFavorite) return null;
+    const control = document.createElement("span");
+    control.className = "alg-note-favorite-control";
+    const button9 = document.createElement("button");
+    button9.type = "button";
+    button9.className = "alg-button alg-note-favorite";
+    const error = document.createElement("span");
+    error.className = "alg-inline-error";
+    error.hidden = true;
+    error.setAttribute("role", "alert");
+    function update() {
+      const selected2 = options.isFavorite(options.note);
+      button9.textContent = selected2 ? "★ 已收藏" : "☆ 收藏";
+      button9.setAttribute("aria-pressed", String(selected2));
+    }
+    button9.addEventListener("click", () => {
+      void (async () => {
+        if (button9.disabled) return;
+        button9.disabled = true;
+        error.hidden = true;
+        try {
+          await options.onToggleFavorite(options.note);
+          update();
+        } catch (cause) {
+          error.textContent = cause instanceof Error ? cause.message : "收藏保存失败，请重试";
+          error.hidden = false;
+          options.onError?.(cause);
+        } finally {
+          button9.disabled = false;
+        }
+      })();
+    });
+    update();
+    control.append(button9, error);
+    return control;
+  }
+
   // src/renderer/algorithms/browser.ts
   var LEVELS = [
     { id: "basic", label: "入门", tone: "cyan", number: "01" },
@@ -5252,16 +5301,16 @@ ${data.trick.trim()}` : ""].filter(Boolean).join("\n\n") : data.body;
   var active2 = null;
   var instanceId = 0;
   function element3(tag, className, text3) {
-    const el3 = document.createElement(tag);
-    if (className) el3.className = className;
-    if (text3 !== void 0) el3.textContent = String(text3);
-    return el3;
+    const el5 = document.createElement(tag);
+    if (className) el5.className = className;
+    if (text3 !== void 0) el5.textContent = String(text3);
+    return el5;
   }
-  function button5(text3, className, action2) {
-    const el3 = element3("button", className, text3);
-    el3.type = "button";
-    el3.addEventListener("click", action2);
-    return el3;
+  function button5(text3, className, action3) {
+    const el5 = element3("button", className, text3);
+    el5.type = "button";
+    el5.addEventListener("click", action3);
+    return el5;
   }
   function isDirectory(node3) {
     return !isAlgorithmLeaf(node3);
@@ -5601,12 +5650,12 @@ ${data.trick.trim()}` : ""].filter(Boolean).join("\n\n") : data.body;
         return directory;
       }
       const level = levelOf(node3);
-      const el3 = element3("span", `alg-badge alg-tone-${level ? level.tone : "neutral"}`, level ? level.label : node3.color === "parent" ? "目录" : "未分级");
+      const el5 = element3("span", `alg-badge alg-tone-${level ? level.tone : "neutral"}`, level ? level.label : node3.color === "parent" ? "目录" : "未分级");
       const origin = node3.difficultySource?.kind === "user-md" ? "用户颜色文档" : node3.rating?.type === "category" ? "分类基础门槛" : node3.rating?.type === "entry" ? "入口或任务形式" : "本项目逐项定稿";
       const range = node3.rating?.range;
       const coverage2 = range && node3.children?.length ? `；覆盖 D${range.min}–D${range.max}` : "";
-      el3.dataset.algTooltip = level ? `学习难度：${level.label}；依据：${origin}${coverage2}${node3.scope ? `。学习范围：${node3.scope}` : ""}${node3.rationale ? `。${node3.rationale}` : ""}` : node3.color === "parent" ? "目录" : "未指定难度";
-      return el3;
+      el5.dataset.algTooltip = level ? `学习难度：${level.label}；依据：${origin}${coverage2}${node3.scope ? `。学习范围：${node3.scope}` : ""}${node3.rationale ? `。${node3.rationale}` : ""}` : node3.color === "parent" ? "目录" : "未指定难度";
+      return el5;
     }
     function attributeBadge(node3) {
       const names = attributesOf(node3).map((key) => ATTRIBUTES[key]);
@@ -5909,6 +5958,8 @@ ${entry2.node.fullLabel}` : ""}`;
         });
         const actions = element3("div", "reading-detail-actions");
         actions.append(back, button5("打开详情 ↗", "alg-button reading-detail-trigger alg-open-detail", openDetail));
+        const favorite = noteFavoriteControl({ note: reading, isFavorite: opts.isFavorite, onToggleFavorite: opts.onToggleFavorite });
+        if (favorite) actions.append(favorite);
         pane.append(actions, breadcrumbs(reading.nodeId));
         const article = element3("article", "alg-reading");
         const title2 = element3("h2", "alg-reading-title", reading.title || "未命名笔记");
@@ -6401,9 +6452,9 @@ ${entry2.node.fullLabel}` : ""}`;
     for (const entry2 of data.indexEntries) {
       const index = element4("section", "arm-topic-index"), text3 = element4("div", "");
       text3.append(element4("strong", "", entry2.label), element4("p", "", "CDQ 分治、整体二分、莫队与特殊题型，按需要查阅专项索引。"));
-      const action2 = button6("查看专项索引 →", "arm-index-button", () => open2(entry2.id));
-      action2.dataset.node = entry2.id;
-      index.append(text3, action2);
+      const action3 = button6("查看专项索引 →", "arm-index-button", () => open2(entry2.id));
+      action3.dataset.node = entry2.id;
+      index.append(text3, action3);
       root2.append(index);
     }
     const dialog3 = element4("dialog", "arm-detail-dialog");
@@ -6523,12 +6574,12 @@ ${entry2.node.fullLabel}` : ""}`;
       choices.append(element4("h3", "", "知识点"));
       const links = element4("div", "arm-resource-links");
       for (const leaf of options.tree ? roadmapLeaves(options.tree, node3) : []) {
-        const action2 = button6(leaf.label, "arm-leaf-link", () => {
+        const action3 = button6(leaf.label, "arm-leaf-link", () => {
           dialog3.close();
           options.onOpenLeaf?.(leaf.id);
         });
-        action2.dataset.topicId = leaf.id;
-        links.append(action2);
+        action3.dataset.topicId = leaf.id;
+        links.append(action3);
       }
       if (links.childElementCount) choices.append(links);
       else choices.append(element4("p", "arm-fine-print", "暂无可浏览的知识点。"));
@@ -6577,8 +6628,8 @@ ${entry2.node.fullLabel}` : ""}`;
       } finally {
         pending2 = false;
         if (!destroyed) {
-          const action2 = detailBody.querySelector(".arm-focus-button");
-          if (action2) action2.disabled = !options.onFocus;
+          const action3 = detailBody.querySelector(".arm-focus-button");
+          if (action3) action3.disabled = !options.onFocus;
         }
       }
     }
@@ -8250,10 +8301,10 @@ ${entry2.node.fullLabel}` : ""}`;
     if (text3 !== void 0) n.textContent = text3;
     return n;
   }
-  function button7(text3, cls, action2) {
+  function button7(text3, cls, action3) {
     const b = el2("button", text3, `arm-button ${cls}`);
     b.type = "button";
-    b.addEventListener("click", action2);
+    b.addEventListener("click", action3);
     return b;
   }
   function directoryTree(node3) {
@@ -8358,13 +8409,13 @@ ${entry2.node.fullLabel}` : ""}`;
         choices.append(el2("h3", "知识点"));
         const links = el2("div", void 0, "arm-resource-links");
         for (const leaf2 of roadmapLeaves(tree, node3)) {
-          const action2 = button7(leaf2.label, "arm-leaf-link", () => {
+          const action3 = button7(leaf2.label, "arm-leaf-link", () => {
             selected2 = leaf2;
             dialog3.scrollTop = 0;
             render6();
           });
-          action2.dataset.topicId = leaf2.id;
-          links.append(action2);
+          action3.dataset.topicId = leaf2.id;
+          links.append(action3);
         }
         if (links.childElementCount) choices.append(links);
         else choices.append(el2("p", "暂无可浏览的知识点。", "arm-fine-print"));
@@ -8465,7 +8516,7 @@ ${entry2.node.fullLabel}` : ""}`;
   // src/renderer/algorithms/workspace.ts
   function createAlgorithmWorkspace(options) {
     const global2 = window;
-    const { getAlgorithmNotes, setAlgorithmNotes, getAlgorithmTopics, setAlgorithmTopics, getAlgorithmTree, setAlgorithmTree, getAccount, getPermissions, getLocal, getBusy, getReadingDetail, accountId, repo, uuid, setBusy, persistLocal, call, render: render6, renderMarkdown, authorName, date, tags, toast, errorMessage } = options;
+    const { getAlgorithmNotes, setAlgorithmNotes, getAlgorithmTopics, setAlgorithmTopics, getAlgorithmTree, setAlgorithmTree, getAccount, getPermissions, getLocal, getBusy, getReadingDetail, accountId, repo, uuid, setBusy, persistLocal, call, render: render6, renderMarkdown, authorName: authorName2, date, tags, toast, errorMessage } = options;
     const $ = (selector) => document.querySelector(selector);
     function element5(tag, className, text3) {
       const node3 = document.createElement(tag);
@@ -8477,10 +8528,10 @@ ${entry2.node.fullLabel}` : ""}`;
       children.filter(Boolean).forEach((child) => parent.append(child));
       return parent;
     }
-    function button8(label, className, action2) {
+    function button9(label, className, action3) {
       const node3 = element5("button", className, label);
       node3.type = "button";
-      node3.addEventListener("click", action2);
+      node3.addEventListener("click", action3);
       return node3;
     }
     let algorithmSelectedNode = "root";
@@ -8587,7 +8638,7 @@ ${entry2.node.fullLabel}` : ""}`;
       modes.setAttribute("role", "group");
       modes.setAttribute("aria-label", "算法学习方式");
       for (const [mode, title] of [["tree", "知识树"], ["path", "学习路线"]]) {
-        const control = button8(title, "button secondary", () => setAlgorithmMode(mode));
+        const control = button9(title, "button secondary", () => setAlgorithmMode(mode));
         control.dataset.mode = mode;
         control.setAttribute("aria-pressed", String(algorithmMode === mode));
         modes.append(control);
@@ -8735,8 +8786,10 @@ ${entry2.node.fullLabel}` : ""}`;
           openAlgorithmNoteEditor();
         },
         renderMarkdown,
-        authorName,
-        formatDate: date
+        authorName: authorName2,
+        formatDate: date,
+        isFavorite: options.isFavorite,
+        onToggleFavorite: options.onToggleFavorite
       });
       if (algorithmPendingTopic) {
         const id = algorithmPendingTopic;
@@ -8799,10 +8852,17 @@ ${entry2.node.fullLabel}` : ""}`;
       const article = element5("article", "alg-reading"), title = element5("h2", "alg-reading-title", note.title || "未命名笔记");
       const meta = element5("div", "alg-note-meta");
       if (note.featured) meta.append(element5("span", "alg-featured", "精选"));
-      append(meta, element5("span", "alg-note-author", authorName(note.author)), element5("span", "", date(note.updatedAt)));
+      append(meta, element5("span", "alg-note-author", authorName2(note.author)), element5("span", "", date(note.updatedAt)));
       const body = element5("div", "markdown-body alg-markdown");
       renderMarkdown(body, note.body);
-      append(article, title, meta, tags(note), body);
+      append(article, title, meta, tags(note));
+      const favorite = noteFavoriteControl({ note, isFavorite: options.isFavorite, onToggleFavorite: options.onToggleFavorite, onError: (cause) => toast(errorMessage(cause)) });
+      if (favorite) {
+        const actions = element5("div", "reading-detail-actions");
+        actions.append(favorite);
+        article.append(actions);
+      }
+      article.append(body);
       pane.append(article);
       holder.append(pane);
       $("#algorithm-panel").append(holder);
@@ -8888,6 +8948,562 @@ ${entry2.node.fullLabel}` : ""}`;
     }, setSelectedNode, algorithmNodes, learningProgressKey, setAlgorithmMode, openLearningTopic, saveLearningProgress, renderAlgorithmNotes, updateAlgorithmTopicKind, openAlgorithmTopicEditor, isMineNote, openAlgorithmNoteDetail, openAlgorithmNoteEditor, resetRepository };
   }
 
+  // src/renderer/tricks/workspace.ts
+  function el3(tag, cls = "", text3) {
+    const node3 = document.createElement(tag);
+    node3.className = cls;
+    if (text3 !== void 0) node3.textContent = text3;
+    return node3;
+  }
+  function action2(label, cls, run) {
+    const node3 = el3("button", cls, label);
+    node3.type = "button";
+    node3.addEventListener("click", run);
+    return node3;
+  }
+  function authorName(item) {
+    return item.author.name || item.author.login || "匿名作者";
+  }
+  function sameContext(a, b) {
+    return a.sourceKey === b.sourceKey && a.accountId === b.accountId;
+  }
+  var bytes = (value) => new TextEncoder().encode(value).length;
+  function draftKey(context, path = "new") {
+    return `qmx.trick-draft.v1:${JSON.stringify([context.sourceKey, context.accountId, path])}`;
+  }
+  function readDraft(key) {
+    try {
+      const value = JSON.parse(localStorage.getItem(key) || "null");
+      if (!value || typeof value !== "object") return null;
+      const row2 = value;
+      if (typeof row2.clientId !== "string" || !/^[0-9a-f-]{36}$/i.test(row2.clientId) || typeof row2.baseSha !== "string" || typeof row2.title !== "string" || typeof row2.introduction !== "string" || typeof row2.body !== "string" || bytes(row2.title) > 1e3 || bytes(row2.introduction) > 1e4 || bytes(row2.body) > 1e6) return null;
+      return { clientId: row2.clientId, baseSha: row2.baseSha, title: row2.title, introduction: row2.introduction, body: row2.body };
+    } catch {
+      return null;
+    }
+  }
+  function createTrickWorkspace(options) {
+    const host = options.host;
+    host.classList.remove("section-placeholder");
+    host.classList.add("tricks-workspace");
+    host.setAttribute("aria-label", "Trick 集");
+    let scope2 = "", query = "", selected2 = null, listScroll = 0;
+    let editor2 = null;
+    let list = null;
+    let search = null;
+    function items() {
+      const source = options.getContext().sourceKey;
+      return options.getItems().filter((item) => item.sourceKey === source).slice().sort((a, b) => b.updatedAt.localeCompare(a.updatedAt) || a.path.localeCompare(b.path));
+    }
+    function canEdit(item) {
+      const context = options.getContext();
+      return context.canCreate && (context.admin || String(item.authorId) === context.accountId);
+    }
+    function author(item) {
+      const row2 = el3("span", "trick-author");
+      row2.append(el3("span", "trick-avatar", authorName(item).slice(0, 1)), el3("span", "", authorName(item)));
+      return row2;
+    }
+    function reset() {
+      scope2 = "";
+      query = "";
+      selected2 = null;
+      listScroll = 0;
+    }
+    function closeDetail() {
+      const previous = selected2;
+      selected2 = null;
+      render6();
+      const target = Array.from(host.querySelectorAll(".trick-row")).find((row2) => row2.dataset.path === previous);
+      target?.focus({ preventScroll: true });
+      window.scrollTo({ top: listScroll });
+    }
+    function open2(item) {
+      listScroll = window.scrollY;
+      selected2 = item.path;
+      render6();
+      host.querySelector(".trick-back")?.focus({ preventScroll: true });
+      host.scrollIntoView({ block: "start" });
+    }
+    function showDelete(item) {
+      if (!canEdit(item) || options.getBusy()) return;
+      const context = options.getContext(), dialog3 = el3("dialog", "trick-delete-dialog");
+      dialog3.setAttribute("aria-label", "删除 Trick");
+      const heading = el3("h2", "", "删除 Trick？");
+      const message = el3("p", "", `将从 ${context.repo} 删除「${item.title}」，同步后队员也将不再看到它。`);
+      const error = el3("p", "form-error");
+      error.hidden = true;
+      error.setAttribute("role", "alert");
+      let saving = false;
+      const close = () => {
+        if (!saving) {
+          dialog3.close();
+          dialog3.remove();
+          host.querySelector(".trick-delete")?.focus();
+        }
+      };
+      const controls = el3("div", "trick-form-actions");
+      controls.append(action2("取消", "button secondary", close));
+      const confirm = action2("确认删除", "button danger", () => {
+        void (async () => {
+          if (saving || options.getBusy()) return;
+          if (!sameContext(context, options.getContext()) || !canEdit(item)) {
+            error.textContent = "账号或资料库已变化，请关闭后重试。";
+            error.hidden = false;
+            return;
+          }
+          saving = true;
+          options.setBusy(true);
+          error.hidden = true;
+          controls.querySelectorAll("button").forEach((node3) => {
+            node3.disabled = true;
+          });
+          try {
+            await options.remove({ repo: context.repo, sourceKey: context.sourceKey, path: item.path, sha: item.sha });
+            if (sameContext(context, options.getContext())) {
+              options.setItems(options.getItems().filter((row2) => row2.path !== item.path));
+              selected2 = null;
+            }
+            saving = false;
+            close();
+            render6();
+            options.toast("Trick 已删除");
+          } catch (cause) {
+            error.textContent = options.errorMessage(cause);
+            error.hidden = false;
+          } finally {
+            saving = false;
+            options.setBusy(false);
+            controls.querySelectorAll("button").forEach((node3) => {
+              node3.disabled = false;
+            });
+          }
+        })();
+      });
+      controls.append(confirm);
+      dialog3.append(heading, message, error, controls);
+      document.body.append(dialog3);
+      dialog3.addEventListener("cancel", (event) => {
+        event.preventDefault();
+        close();
+      });
+      dialog3.showModal();
+    }
+    function edit(item) {
+      const context = options.getContext();
+      if (options.getBusy() || editor2?.open || !context.canCreate || item && !canEdit(item)) return;
+      const previousFocus = document.activeElement, dialog3 = el3("dialog", "trick-editor");
+      editor2 = dialog3;
+      const key = draftKey(context, item?.path), draft = readDraft(key);
+      const clientId = item?.clientId || draft?.clientId || crypto.randomUUID();
+      let baseSha = draft?.baseSha ?? item?.sha ?? "";
+      const staleDraft = !!item && !!draft && draft.baseSha !== item.sha;
+      dialog3.setAttribute("aria-label", item ? "编辑 Trick" : "新增 Trick");
+      const form = el3("form", "trick-form");
+      form.noValidate = true;
+      const heading = el3("div", "trick-editor-heading");
+      heading.append(el3("h2", "", item ? "编辑 Trick" : "新增 Trick"));
+      let saving = false;
+      const close = (keepDraft = true) => {
+        if (saving) return;
+        if (keepDraft && !storeDraft()) return;
+        dialog3.close();
+        dialog3.remove();
+        editor2 = null;
+        if (previousFocus instanceof HTMLElement && previousFocus.isConnected) previousFocus.focus({ preventScroll: true });
+      };
+      heading.append(action2("×", "icon-button", () => close()));
+      heading.lastElementChild?.setAttribute("aria-label", "关闭编辑");
+      const destination = el3("p", "trick-editor-destination", `共享到 ${context.repo} · 作者：${item ? authorName(item) : context.displayName}`);
+      function field2(label, control) {
+        const row2 = el3("label", "field");
+        row2.append(el3("span", "", label), control);
+        return row2;
+      }
+      const title = el3("input");
+      title.name = "title";
+      title.maxLength = 180;
+      title.required = true;
+      title.value = draft?.title ?? item?.title ?? "";
+      title.placeholder = "用一句话说清这个技巧";
+      const intro = el3("textarea");
+      intro.name = "introduction";
+      intro.rows = 2;
+      intro.maxLength = 2e3;
+      intro.required = true;
+      intro.value = draft?.introduction ?? item?.introduction ?? "";
+      intro.placeholder = "列表里展示的简短说明";
+      const body = el3("textarea");
+      body.name = "body";
+      body.rows = 14;
+      body.required = true;
+      body.value = draft?.body ?? item?.body ?? "";
+      body.placeholder = "支持 Markdown、代码块和公式。写下关键观察、适用条件与示例。";
+      const bodyHeading = el3("div", "trick-body-heading");
+      bodyHeading.append(el3("span", "", "具体内容 · Markdown"));
+      const previewToggle = action2("预览", "button subtle", () => {
+        preview.hidden = !preview.hidden;
+        body.hidden = !preview.hidden;
+        previewToggle.textContent = preview.hidden ? "预览" : "继续编辑";
+        if (!preview.hidden) options.renderMarkdown(preview, body.value);
+      });
+      bodyHeading.append(previewToggle);
+      const preview = el3("div", "markdown-body trick-editor-preview");
+      preview.hidden = true;
+      const bodyField = el3("section", "trick-body-field");
+      body.setAttribute("aria-label", "具体内容");
+      bodyField.append(bodyHeading, body, preview);
+      const error = el3("p", "form-error");
+      error.hidden = true;
+      error.setAttribute("role", "alert");
+      const draftNotice = el3("section", "trick-draft-notice");
+      draftNotice.hidden = !draft;
+      draftNotice.append(el3("p", "", staleDraft ? "已恢复本机草稿，但远端版本已更新。请先对照最新内容，再确认使用草稿保存。" : "已恢复本机草稿。关闭编辑会保留输入，仅在发布成功或主动丢弃后清除。"));
+      const acceptLatest = el3("input");
+      acceptLatest.type = "checkbox";
+      acceptLatest.setAttribute("aria-label", "已核对最新远端，使用草稿保存");
+      if (staleDraft && item) {
+        const compare = el3("details"), summary = el3("summary", "", "查看最新远端内容"), latest = el3("pre", "trick-conflict-latest", `${item.title}
+
+${item.introduction}
+
+${item.body}`);
+        compare.append(summary, latest);
+        const consent = el3("label", "checkbox-field");
+        consent.append(acceptLatest, el3("span", "", "已核对最新远端，使用草稿保存"));
+        draftNotice.append(compare, consent);
+      }
+      const controls = el3("div", "trick-form-actions"), cancel = action2("保存草稿并关闭", "button secondary", () => close()), submit = el3("button", "button primary", item ? "保存修改" : "发布 Trick");
+      submit.type = "submit";
+      controls.append(action2("丢弃草稿", "button subtle", () => {
+        try {
+          localStorage.removeItem(key);
+        } catch {
+        }
+        close(false);
+      }), cancel, submit);
+      function storeDraft() {
+        if (bytes(title.value) > 1e3 || bytes(intro.value) > 1e4 || bytes(body.value) > 1e6) {
+          error.textContent = "内容超过草稿保存上限，请先缩短或复制到其他位置。当前编辑仍保留，不能直接保存草稿关闭。";
+          error.hidden = false;
+          return false;
+        }
+        try {
+          localStorage.setItem(key, JSON.stringify({ clientId, baseSha, title: title.value, introduction: intro.value, body: body.value }));
+          return true;
+        } catch {
+          error.textContent = "本机草稿存储不可用，请复制内容后再丢弃关闭。";
+          error.hidden = false;
+          return false;
+        }
+      }
+      form.addEventListener("input", storeDraft);
+      form.append(heading, destination, draftNotice, field2("标题", title), field2("简介", intro), bodyField, error, controls);
+      dialog3.append(form);
+      document.body.append(dialog3);
+      dialog3.addEventListener("cancel", (event) => {
+        event.preventDefault();
+        close();
+      });
+      form.addEventListener("submit", (event) => {
+        event.preventDefault();
+        void (async () => {
+          if (saving || options.getBusy()) return;
+          const input2 = { title: title.value.trim(), introduction: intro.value.trim(), body: body.value };
+          let problem = "";
+          if (!sameContext(context, options.getContext()) || !options.getContext().canCreate) problem = "账号或资料库已变化，草稿仍保留，请复制后重新打开。";
+          else if (staleDraft && !acceptLatest.checked) problem = "远端版本已变化，请先核对最新内容并勾选确认。";
+          else if (!input2.title || !input2.introduction || !input2.body.trim()) problem = "请填写标题、简介和具体内容。";
+          else if (bytes(input2.title) > 600 || bytes(input2.introduction) > 6e3) problem = "标题最多 600 字节，简介最多 6000 字节。";
+          else if (bytes(input2.body) > 1e6) problem = "具体内容最多 1000000 字节。";
+          if (problem) {
+            error.textContent = problem;
+            error.hidden = false;
+            return;
+          }
+          if (staleDraft && acceptLatest.checked && item) baseSha = item.sha;
+          if (!storeDraft()) return;
+          saving = true;
+          options.setBusy(true);
+          error.hidden = true;
+          form.querySelectorAll("input,textarea,button").forEach((node3) => {
+            node3.disabled = true;
+          });
+          try {
+            const saved = await options.save({ ...input2, clientId, repo: context.repo, sourceKey: context.sourceKey, ...item ? { path: item.path, sha: baseSha } : {} });
+            if (sameContext(context, options.getContext())) {
+              options.setItems([saved, ...options.getItems().filter((row2) => row2.path !== saved.path)]);
+              selected2 = saved.path;
+            }
+            try {
+              localStorage.removeItem(key);
+            } catch {
+            }
+            saving = false;
+            close(false);
+            render6();
+            options.toast(item ? "Trick 已更新" : "Trick 已发布");
+          } catch (cause) {
+            error.textContent = options.errorMessage(cause);
+            error.hidden = false;
+          } finally {
+            saving = false;
+            options.setBusy(false);
+            form.querySelectorAll("input,textarea,button").forEach((node3) => {
+              node3.disabled = false;
+            });
+          }
+        })();
+      });
+      dialog3.showModal();
+      title.focus();
+    }
+    function renderRows() {
+      if (!list) return;
+      list.replaceChildren();
+      const value = query.trim().toLocaleLowerCase();
+      const all = items(), visible = all.filter((item) => `${item.title} ${authorName(item)} ${item.introduction}`.toLocaleLowerCase().includes(value));
+      const count = host.querySelector(".tricks-count");
+      if (count) count.textContent = value ? `${visible.length} / ${all.length} 条` : `${all.length} 条`;
+      if (!visible.length) {
+        const empty = el3("div", "tricks-empty");
+        empty.append(el3("h3", "", value ? "没有匹配的 Trick" : "还没有 Trick"), el3("p", "", value ? "试试其他标题、作者或简介关键词。" : "把解题时的一个小观察，整理成队友也能读懂的技巧。"));
+        if (!value && !options.getContext().canCreate) empty.append(el3("p", "", "同步当前资料库，或使用有写入权限的 GitHub 账号发布。"));
+        list.append(empty);
+        return;
+      }
+      const head = el3("div", "tricks-columns");
+      head.setAttribute("aria-hidden", "true");
+      ["#", "标题", "作者", "简介", ""].forEach((label) => head.append(el3("span", "", label)));
+      list.append(head);
+      const rows = el3("ul", "tricks-directory");
+      visible.forEach((item, index) => {
+        const li = el3("li"), row2 = action2("", "trick-row", () => open2(item));
+        row2.dataset.path = item.path;
+        row2.setAttribute("aria-label", `打开 ${item.title}，作者 ${authorName(item)}`);
+        const title = el3("span", "trick-row-title", item.title);
+        title.title = item.title;
+        const intro = el3("span", "trick-row-intro", item.introduction);
+        intro.title = item.introduction;
+        row2.append(el3("span", "trick-row-number", String(index + 1).padStart(2, "0")), title, author(item), intro, el3("span", "trick-row-arrow", "↗"));
+        li.append(row2);
+        rows.append(li);
+      });
+      list.append(rows);
+    }
+    function render6() {
+      const context = options.getContext(), identity2 = `${context.sourceKey}|${context.accountId || ""}`;
+      if (scope2 !== identity2) {
+        scope2 = identity2;
+        query = "";
+        selected2 = null;
+      }
+      host.replaceChildren();
+      list = null;
+      search = null;
+      const item = selected2 ? items().find((row2) => row2.path === selected2) : void 0;
+      if (item) {
+        const reader = el3("article", "trick-reader"), top = el3("div", "trick-reader-top");
+        top.append(action2("← 返回 Trick 集", "button subtle trick-back", closeDetail));
+        if (options.isFavorite && options.onToggleFavorite) {
+          const star = action2(options.isFavorite(item) ? "★ 已收藏" : "☆ 收藏", "button secondary trick-favorite", () => {
+            if (options.getBusy()) return;
+            void options.onToggleFavorite(item).then(() => {
+              star.textContent = options.isFavorite(item) ? "★ 已收藏" : "☆ 收藏";
+              star.setAttribute("aria-pressed", String(options.isFavorite(item)));
+            }).catch((cause) => options.toast(options.errorMessage(cause)));
+          });
+          star.setAttribute("aria-pressed", String(options.isFavorite(item)));
+          top.append(star);
+        }
+        if (canEdit(item)) {
+          const controls = el3("div", "trick-reader-actions");
+          controls.append(action2("编辑", "button secondary trick-edit", () => edit(item)), action2("删除", "button subtle trick-delete", () => showDelete(item)));
+          top.append(controls);
+        }
+        const intro = el3("p", "trick-reader-intro", item.introduction), body = el3("div", "markdown-body trick-content");
+        options.renderMarkdown(body, item.body);
+        reader.append(top, el3("h2", "trick-reader-title", item.title), author(item), intro, body);
+        host.append(reader);
+        return;
+      }
+      selected2 = null;
+      const toolbar = el3("div", "tricks-toolbar");
+      const label = el3("label", "tricks-search");
+      label.append(el3("span", "", "⌕"));
+      search = el3("input");
+      search.type = "search";
+      search.placeholder = "搜索标题、作者或简介";
+      search.setAttribute("aria-label", "搜索 Trick");
+      search.value = query;
+      search.addEventListener("input", () => {
+        query = search?.value || "";
+        renderRows();
+      });
+      label.append(search);
+      toolbar.append(label, el3("span", "tricks-count"));
+      if (context.canCreate) toolbar.append(action2("＋ 新增 Trick", "button primary trick-create", () => edit()));
+      host.append(toolbar);
+      list = el3("div", "tricks-list");
+      host.append(list);
+      renderRows();
+    }
+    return { render: render6, reset, openEditor: () => edit(), isReading: () => selected2 !== null, closeDetail, focusSearch: () => search?.focus(), hasEditor: () => editor2?.open === true };
+  }
+
+  // src/renderer/favorites/workspace.ts
+  var labels = { solution: "题解", trick: "Trick", algorithm: "算法笔记" };
+  function el4(tag, cls = "", text3) {
+    const n = document.createElement(tag);
+    n.className = cls;
+    if (text3 !== void 0) n.textContent = text3;
+    return n;
+  }
+  function button8(label, cls, run) {
+    const n = el4("button", cls, label);
+    n.type = "button";
+    n.addEventListener("click", run);
+    return n;
+  }
+  function createFavoritesWorkspace(options) {
+    const host = options.host;
+    let context = "", query = "", type = "all", selected2 = null, scroll = 0;
+    function reset() {
+      query = "";
+      type = "all";
+      selected2 = null;
+      context = "";
+    }
+    function back() {
+      const previous = selected2;
+      selected2 = null;
+      render6();
+      Array.from(host.querySelectorAll(".favorite-open")).find((n) => n.dataset.key === previous)?.focus({ preventScroll: true });
+      window.scrollTo({ top: scroll });
+    }
+    function open2(entry2) {
+      scroll = window.scrollY;
+      selected2 = entry2.key;
+      render6();
+      host.querySelector(".favorite-back")?.focus({ preventScroll: true });
+      host.scrollIntoView({ block: "start" });
+    }
+    function render6() {
+      const current = options.getContext();
+      if (context !== current) {
+        context = current;
+        selected2 = null;
+        query = "";
+        type = "all";
+      }
+      host.replaceChildren();
+      const entries = options.getEntries();
+      const entry2 = selected2 ? entries.find((e) => e.key === selected2) : void 0;
+      if (entry2) {
+        const article = el4("article", "favorite-reader"), top = el4("div", "favorite-reader-top");
+        top.append(button8("← 返回个人收藏", "button secondary favorite-back", back));
+        article.append(top);
+        host.append(article);
+        if (entry2.type === "solution") {
+          const mount = el4("section", "favorite-solution-reader");
+          article.append(mount);
+          options.renderSolution(entry2.record, mount);
+          return;
+        }
+        const star = button8("★ 已收藏", "button secondary favorite-toggle", () => {
+          void options.toggle(entry2.record).then(() => {
+            star.textContent = options.isFavorite(entry2.record) ? "★ 已收藏" : "☆ 收藏";
+            star.setAttribute("aria-pressed", String(options.isFavorite(entry2.record)));
+          }).catch((e) => options.toast(options.errorMessage(e)));
+        });
+        star.setAttribute("aria-pressed", "true");
+        top.append(star);
+        article.append(el4("span", "favorite-kind", labels[entry2.type]), el4("h2", "favorite-reader-title", entry2.record.title || "未命名内容"), el4("p", "favorite-reader-meta", `${options.authorName(entry2.record.author)} · ${options.date(entry2.record.updatedAt)}`));
+        if (typeof entry2.record.introduction === "string") article.append(el4("p", "favorite-reader-intro", entry2.record.introduction));
+        const body = el4("div", "markdown-body favorite-body");
+        options.renderMarkdown(body, entry2.record.body);
+        article.append(body);
+        return;
+      }
+      selected2 = null;
+      const tools = el4("div", "favorites-tools"), search = el4("input", "favorites-search");
+      search.type = "search";
+      search.placeholder = "搜索标题、作者、标签或简介";
+      search.setAttribute("aria-label", "搜索个人收藏");
+      search.value = query;
+      const tabs = el4("div", "favorites-types");
+      tabs.setAttribute("role", "group");
+      tabs.setAttribute("aria-label", "收藏类型");
+      const counts = /* @__PURE__ */ new Map([["all", entries.length]]);
+      for (const e of entries) counts.set(e.type, (counts.get(e.type) || 0) + 1);
+      for (const [key, label] of [["all", "全部"], ...Object.entries(labels)]) {
+        const control = button8(`${label} ${counts.get(key) || 0}`, "favorite-type", () => {
+          type = key;
+          render6();
+        });
+        control.dataset.type = key;
+        control.setAttribute("aria-pressed", String(type === key));
+        tabs.append(control);
+      }
+      tools.append(search, tabs);
+      host.append(tools);
+      const list = el4("div", "favorites-list");
+      host.append(list);
+      function rows() {
+        list.replaceChildren();
+        const needle = query.toLocaleLowerCase().trim();
+        const visible = entries.filter((e) => (type === "all" || e.type === type) && `${e.record.title || ""} ${options.authorName(e.record.author)} ${(e.record.tags || []).join(" ")} ${String(e.record.introduction || "")}`.toLocaleLowerCase().includes(needle));
+        const count = el4("div", "favorites-result-count", `${visible.length} 条收藏`);
+        list.append(count);
+        if (!visible.length) {
+          const empty = el4("div", "favorites-empty");
+          empty.append(el4("h3", "", entries.length ? "没有匹配的收藏" : "收藏值得再读的内容"), el4("p", "", entries.length ? "换一个关键词或内容类型试试。" : "在题解、Trick 或算法笔记阅读页点击「收藏」，便可在这里统一查看。"));
+          list.append(empty);
+          return;
+        }
+        const heading = el4("div", "favorites-columns");
+        ["类型", "标题", "作者", "更新"].forEach((t) => heading.append(el4("span", "", t)));
+        heading.setAttribute("aria-hidden", "true");
+        list.append(heading);
+        const ul = el4("ul", "favorites-directory");
+        for (const e of visible) {
+          const li = el4("li", "favorite-row"), read = button8("", "favorite-open", () => open2(e));
+          read.dataset.key = e.key;
+          read.append(el4("span", "favorite-kind", labels[e.type]), el4("span", "favorite-title", e.record.title || "未命名内容"), el4("span", "favorite-author", options.authorName(e.record.author)), el4("time", "favorite-updated", options.date(e.record.updatedAt)));
+          const remove = button8("★", "favorite-remove", () => {
+            void options.toggle(e.record).then(render6).catch((error) => options.toast(options.errorMessage(error)));
+          });
+          remove.title = "取消收藏";
+          remove.setAttribute("aria-label", `取消收藏 ${e.record.title || "未命名内容"}`);
+          li.append(read, remove);
+          ul.append(li);
+        }
+        list.append(ul);
+      }
+      search.addEventListener("input", () => {
+        query = search.value;
+        rows();
+      });
+      rows();
+    }
+    return { render: render6, reset, back, isReading: () => selected2 !== null, focusSearch: () => host.querySelector(".favorites-search")?.focus() };
+  }
+
+  // src/renderer/favorites/model.ts
+  var PREFIX = "qmx-favorite:v1:";
+  function favoriteKey(account, source, type, identity2) {
+    return PREFIX + JSON.stringify([account, source, type, identity2]);
+  }
+  function contentType(record) {
+    return record.kind === "trick" ? "trick" : record.kind === "algorithm-note" ? "algorithm" : "solution";
+  }
+  function contentIdentity(record) {
+    return String(record.path || record.id || record.clientId || "");
+  }
+  function legacyFavorite(values, identity2) {
+    return values.some((value) => (typeof value === "string" || typeof value === "number") && !String(value).startsWith(PREFIX) && String(value) === identity2);
+  }
+
   // src/renderer/app/app.ts
   (() => {
     const $ = (selector, root2 = document) => root2.querySelector(selector);
@@ -8937,10 +9553,10 @@ ${entry2.node.fullLabel}` : ""}`;
       children.filter(Boolean).forEach((child) => parent.append(child));
       return parent;
     }
-    function button8(label, className, action2) {
+    function button9(label, className, action3) {
       const node3 = element5("button", className, label);
       node3.type = "button";
-      node3.addEventListener("click", action2);
+      node3.addEventListener("click", action3);
       return node3;
     }
     function toast(message) {
@@ -9003,8 +9619,40 @@ ${entry2.node.fullLabel}` : ""}`;
     function canEditRemote(record) {
       return record?.kind === "document" && isMine(record) && sameRepo(record) && s.permissions.push === true;
     }
+    function favoriteId(record) {
+      return favoriteKey(accountId(), record.kind === "local" ? "device" : record.sourceKey || repoSource(record.repo, record.serverUrl), contentType(record), contentIdentity(record));
+    }
     function favorite(record) {
-      return reader.favorite(record);
+      return s.local.favorites.includes(favoriteId(record)) || ["local", "document", "issue"].includes(record.kind || "") && legacyFavorite(s.local.favorites, key(record));
+    }
+    function visibleAlgorithmNotes() {
+      return s.algorithmNotes.filter((note) => sameRepo(note) && (note.noteScope === "public" || note.noteScope === "personal" && repoSource().startsWith("https://api.github.com|") && accountId() !== null && String(note.authorId) === accountId()));
+    }
+    function favoriteEntries() {
+      const candidates = [...records().filter((record) => record.kind !== "issue"), ...visibleAlgorithmNotes(), ...(s.tricks || []).filter((item) => item.sourceKey === repoSource()).map((item) => ({ ...item }))];
+      const seen = /* @__PURE__ */ new Set();
+      return candidates.filter((item) => favorite(item)).flatMap((record) => {
+        const id = favoriteId(record);
+        if (seen.has(id)) return [];
+        seen.add(id);
+        return [{ key: id, type: contentType(record), record, source: record.kind === "local" ? "device" : repoSource() }];
+      });
+    }
+    async function toggleFavorite(record) {
+      if (s.busy) throw new Error("请等待当前操作完成");
+      const before = s.local.favorites.slice(), id = favoriteId(record), removing = favorite(record), legacy = key(record);
+      setBusy(true);
+      s.local.favorites = removing ? before.filter((value) => value !== id && !legacyFavorite([value], legacy)) : [...before, id];
+      try {
+        await persistLocal();
+        updateNavigationCounts();
+      } catch (error) {
+        s.local.favorites = before;
+        updateNavigationCounts();
+        throw error;
+      } finally {
+        setBusy(false);
+      }
     }
     function mastery(record) {
       return reader.mastery(record);
@@ -9012,7 +9660,7 @@ ${entry2.node.fullLabel}` : ""}`;
     function tags(record) {
       return reader.tags(record);
     }
-    function authorName(author) {
+    function authorName2(author) {
       return typeof author === "string" ? author : author?.name || author?.login || "匿名学习者";
     }
     function date(value) {
@@ -9062,6 +9710,7 @@ ${entry2.node.fullLabel}` : ""}`;
       if (payload.updateCapability) s.updateCapability = payload.updateCapability;
       updates.renderUpdate();
       s.records = (Array.isArray(payload.records) ? payload.records : []).filter((record) => record.kind === "document");
+      s.tricks = Array.isArray(payload.tricks) ? payload.tricks : [];
       s.algorithmNotes = (Array.isArray(payload.algorithmNotes) ? payload.algorithmNotes : []).filter((record) => record.kind === "algorithm-note");
       s.algorithmTopics = Array.isArray(payload.algorithmTopics) ? payload.algorithmTopics : [];
       s.algorithmNodeContents = Array.isArray(payload.algorithmNodeContents) ? payload.algorithmNodeContents : [];
@@ -9136,7 +9785,7 @@ ${entry2.node.fullLabel}` : ""}`;
         const quota = quotaBlocked();
         if (!demo && !offline && (reauth || quota)) {
           banner.append(document.createTextNode(reauth ? " 请重新登录 GitHub 以恢复同步。" : " 登录 GitHub 后，同步额度可由每小时 60 次提升至 5000 次。"));
-          const login = button8(reauth ? "重新登录 GitHub" : "使用 GitHub 登录", "button secondary", startLoginFromBanner);
+          const login = button9(reauth ? "重新登录 GitHub" : "使用 GitHub 登录", "button secondary", startLoginFromBanner);
           login.id = "banner-login-button";
           login.disabled = s.busy;
           banner.append(login);
@@ -9182,9 +9831,9 @@ ${entry2.node.fullLabel}` : ""}`;
         list.replaceChildren();
         (result.requests || []).forEach((request) => {
           const row2 = element5("article", "tag-request-row");
-          append(row2, element5("strong", "", `${request.category} / ${request.name}`), element5("p", "facet-help", `#${request.number} · ${authorName(request.author)} · ${request.state || "open"}`));
-          if (request.url) row2.append(button8("查看申请 ↗", "button subtle", () => openExternal(request.url)));
-          ["approve", "reject"].forEach((decision) => row2.append(button8(decision === "approve" ? "批准" : "拒绝", "button secondary", async () => {
+          append(row2, element5("strong", "", `${request.category} / ${request.name}`), element5("p", "facet-help", `#${request.number} · ${authorName2(request.author)} · ${request.state || "open"}`));
+          if (request.url) row2.append(button9("查看申请 ↗", "button subtle", () => openExternal(request.url)));
+          ["approve", "reject"].forEach((decision) => row2.append(button9(decision === "approve" ? "批准" : "拒绝", "button secondary", async () => {
             if (s.busy || !s.tagReview?.canReview || demo) return;
             setBusy(true);
             try {
@@ -9213,15 +9862,17 @@ ${entry2.node.fullLabel}` : ""}`;
     function platformCode(value) {
       return Search.normalizePlatform(value);
     }
-    const reader = createLibraryReader({ demo, stateLabels, getLocal: () => s.local, setLocal: (value) => {
+    const reader = createLibraryReader({ demo, stateLabels, isFavorite: favorite, toggleFavorite, getLocal: () => s.local, setLocal: (value) => {
       s.local = value;
     }, getAccount: () => s.account, getPermissions: () => s.permissions, getView: () => s.view, getLibraryScope: () => s.libraryScope, getSelected: () => s.selected, setSelected: (value) => {
       s.selected = value;
-    }, getComments: () => s.comments, getBusy: () => s.busy, setBusy, getLoading: () => s.loading, getError: () => s.error, getRecords: records, key, isLocal, visibleLocal, canEditRemote, sameRepo, platformCode, authorName, date, quotaBlocked, renderMarkdown, persistLocal, call, render: render6, clearFilters, openSubmit: (record) => editor2.openSubmit(record), openLocalSolution: (record) => editor2.openLocalSolution(record), deleteRecord: (record) => editor2.deleteRecord(record), deleteDiscussion: (record) => editor2.deleteDiscussion(record), openExternal, toast, errorMessage });
+    }, getComments: () => s.comments, getBusy: () => s.busy, setBusy, getLoading: () => s.loading, getError: () => s.error, getRecords: records, key, isLocal, visibleLocal, canEditRemote, sameRepo, platformCode, authorName: authorName2, date, quotaBlocked, renderMarkdown, persistLocal, call, render: render6, clearFilters, openSubmit: (record) => editor2.openSubmit(record), openLocalSolution: (record) => editor2.openLocalSolution(record), deleteRecord: (record) => editor2.deleteRecord(record), deleteDiscussion: (record) => editor2.deleteDiscussion(record), openExternal, toast, errorMessage });
     const { openDetail, closeDetail, renderDetail, loadComments, changeLocal } = reader;
     function navigate(view) {
       if (!views[view]) return;
       reader.resetDetail();
+      tricks.reset();
+      favorites.reset();
       s.view = view;
       clearFilters();
       if (view === "home") refreshVisibleContests();
@@ -9260,6 +9911,20 @@ ${entry2.node.fullLabel}` : ""}`;
       updateContestStatus();
       renderContestCards();
     }
+    function updateNavigationCounts() {
+      const all = records();
+      const counts = {
+        public: all.filter((record) => record.kind === "document").length,
+        favorites: favoriteEntries().length,
+        tricks: (s.tricks || []).filter((item) => item.sourceKey === repoSource()).length,
+        algorithms: s.algorithmNotes.filter((note) => sameRepo(note) && (note.noteScope === "public" || note.noteScope === "personal" && repoSource().startsWith("https://api.github.com|") && accountId() !== null && String(note.authorId) === accountId())).length
+      };
+      for (const [view, count] of Object.entries(counts)) {
+        $$(`.nav-item[data-view="${view}"] .nav-count, .rail-nav-item[data-view="${view}"] .nav-count`).forEach((badge) => {
+          badge.textContent = String(count);
+        });
+      }
+    }
     function render6() {
       updateStateFacet();
       document.body.dataset.view = s.view;
@@ -9273,16 +9938,24 @@ ${entry2.node.fullLabel}` : ""}`;
         if (node3.dataset.view === s.view) node3.setAttribute("aria-current", "page");
         else node3.removeAttribute("aria-current");
       });
+      updateNavigationCounts();
       const all = records();
-      $("#count-public").textContent = all.filter((record) => record.kind === "document").length;
-      $("#count-favorites").textContent = all.filter(favorite).length;
       $("#home-panel").hidden = s.view !== "home";
       $("#platform-overview").hidden = s.view !== "home";
       $("#algorithm-panel").hidden = s.view !== "algorithms";
-      const placeholder = ["tricks"].includes(s.view);
-      $("#section-placeholder").hidden = !placeholder;
-      $("#library-panel").hidden = s.view === "home" || placeholder || s.view === "algorithms";
+      const isTricks = s.view === "tricks", isFavorites = s.view === "favorites";
+      $("#section-placeholder").hidden = !isTricks;
+      document.getElementById("favorites-panel").hidden = !isFavorites;
+      $("#library-panel").hidden = s.view === "home" || isTricks || isFavorites || s.view === "algorithms";
       updateStatus();
+      if (isTricks) {
+        tricks.render();
+        return;
+      }
+      if (isFavorites) {
+        favorites.render();
+        return;
+      }
       if (s.view === "home") {
         renderHome();
         return;
@@ -9302,7 +9975,17 @@ ${entry2.node.fullLabel}` : ""}`;
       reader.renderLibrary(items);
     }
     const { highlightCodeBlock, decorateCodeBlocks, codeBlockClick } = CodeBlocks.create({ toast, errorMessage });
-    const algorithms = createAlgorithmWorkspace({ getAlgorithmNotes: () => s.algorithmNotes, setAlgorithmNotes: (value) => {
+    function algorithmFavoriteRecord(note) {
+      return visibleAlgorithmNotes().find((item) => note.path ? item.path === note.path : item.id === note.id);
+    }
+    const algorithms = createAlgorithmWorkspace({ isFavorite: (note) => {
+      const item = algorithmFavoriteRecord(note);
+      return !!item && favorite(item);
+    }, onToggleFavorite: async (note) => {
+      const item = algorithmFavoriteRecord(note);
+      if (!item) throw new Error("笔记已不可见，请同步后重试");
+      await toggleFavorite(item);
+    }, getAlgorithmNotes: () => s.algorithmNotes, setAlgorithmNotes: (value) => {
       s.algorithmNotes = value;
     }, getAlgorithmNodeContents: () => s.algorithmNodeContents || [], setAlgorithmNodeContents: (value) => {
       s.algorithmNodeContents = value;
@@ -9323,8 +10006,38 @@ ${entry2.node.fullLabel}` : ""}`;
       s.algorithmTopics = value;
     }, getAlgorithmTree: () => s.algorithmTree, setAlgorithmTree: (value) => {
       s.algorithmTree = value;
-    }, getAccount: () => s.account, getPermissions: () => s.permissions, getLocal: () => s.local, getBusy: () => s.busy, getReadingDetail: () => ReadingDetail, accountId, repo, repoSource, uuid, setBusy, persistLocal, call, openExternal, render: render6, renderMarkdown, authorName, date, tags, toast, errorMessage });
+    }, getAccount: () => s.account, getPermissions: () => s.permissions, getLocal: () => s.local, getBusy: () => s.busy, getReadingDetail: () => ReadingDetail, accountId, repo, repoSource, uuid, setBusy, persistLocal, call, openExternal, render: render6, renderMarkdown, authorName: authorName2, date, tags, toast, errorMessage });
     const { renderAlgorithmNotes } = algorithms;
+    const favoriteHost = element5("section", "favorites-workspace");
+    favoriteHost.id = "favorites-panel";
+    favoriteHost.hidden = true;
+    favoriteHost.setAttribute("aria-label", "统一个人收藏");
+    $("#library-panel").before(favoriteHost);
+    const favorites = createFavoritesWorkspace({ host: favoriteHost, getEntries: favoriteEntries, getContext: () => JSON.stringify([repoSource(), accountId()]), isFavorite: favorite, toggle: toggleFavorite, renderMarkdown, renderSolution: (record, host) => reader.renderDetail(record, host), authorName: authorName2, date, errorMessage, toast });
+    const tricks = createTrickWorkspace({
+      host: $("#section-placeholder"),
+      getItems: () => s.tricks || [],
+      setItems: (value) => {
+        s.tricks = value;
+        updateNavigationCounts();
+      },
+      getContext: () => ({ sourceKey: repoSource(), repo: repo(), accountId: accountId(), displayName: authorName2(s.account), canCreate: !demo && !!s.account && (s.permissions.push === true || s.permissions.admin === true) && repoSource().startsWith("https://api.github.com|"), admin: s.permissions.admin === true }),
+      getBusy: () => s.busy,
+      setBusy,
+      save: async (input2) => {
+        if (!bridge3) throw new Error("请在桌面客户端登录后发布 Trick");
+        return bridge3.saveTrick(input2);
+      },
+      remove: async (input2) => {
+        if (!bridge3) throw new Error("请在桌面客户端登录后删除 Trick");
+        return bridge3.deleteTrick(input2);
+      },
+      renderMarkdown,
+      toast,
+      errorMessage,
+      isFavorite: (item) => favorite({ ...item }),
+      onToggleFavorite: (item) => toggleFavorite({ ...item })
+    });
     function renderMarkdown(container, body) {
       const source = String(body || "还没有题解内容。可以从记录错因开始。");
       if (window.marked && window.DOMPurify) {
@@ -9416,9 +10129,9 @@ ${entry2.node.fullLabel}` : ""}`;
     }, getComments: () => s.comments, getSelected: () => s.selected, setSelected: (value) => {
       s.selected = value;
     }, getBusy: () => s.busy, setBusy, getAccount: () => s.account, getPermissions: () => s.permissions, accountId, repo, key, uuid, isLocal, visibleLocal, canEditRemote, sameRepo, records, platformCode, colorRatingInput, renderEditorTags, cancelDraftSave: () => clearTimeout(draftTimer), persistLocal, call, refreshFilters, navigate, render: render6, openDetail, toast, errorMessage });
-    const { formDraft, fillForm, renderEditorDifficulty, setEditorPlatform, draftKey, editorError, openLocalSolution, openSubmit, saveDraft, saveRecord, deleteDiscussion, deleteRecord } = editor2;
+    const { formDraft, fillForm, renderEditorDifficulty, setEditorPlatform, draftKey: draftKey2, editorError, openLocalSolution, openSubmit, saveDraft, saveRecord, deleteDiscussion, deleteRecord } = editor2;
     async function sync() {
-      if (s.busy || $("#submit-dialog").open) {
+      if (s.busy || $("#submit-dialog").open || tricks.hasEditor()) {
         toast("请先完成或关闭当前编辑");
         return;
       }
@@ -9442,6 +10155,7 @@ ${entry2.node.fullLabel}` : ""}`;
                 s.records = data.records.map((r) => ({ ...r, repo: currentRepo, serverUrl: currentServer, sourceKey: repoSource(currentRepo, currentServer) }));
                 s.issues = (Array.isArray(data.issues) ? data.issues : []).map((r) => ({ ...r, repo: currentRepo, serverUrl: currentServer, sourceKey: repoSource(currentRepo, currentServer) }));
                 s.algorithmNotes = Array.isArray(data.algorithmNotes) ? data.algorithmNotes : [];
+                s.tricks = Array.isArray(data.tricks) ? data.tricks : [];
                 s.algorithmTopics = Array.isArray(data.algorithmTopics) ? data.algorithmTopics : [];
                 s.algorithmNodeContents = Array.isArray(data.algorithmNodeContents) ? data.algorithmNodeContents : [];
                 s.learningGateContents = Array.isArray(data.learningGateContents) ? data.learningGateContents : [];
@@ -9513,7 +10227,7 @@ ${entry2.node.fullLabel}` : ""}`;
       closeTagPicker(false);
     });
     $("#request-tag-open").addEventListener("click", openTagDialog);
-    const tagEntry = button8("＋ 添加标签", "button subtle", openTagDialog);
+    const tagEntry = button9("＋ 添加标签", "button subtle", openTagDialog);
     tagEntry.id = "tag-manager-button";
     $(".topbar-actions").insertBefore(tagEntry, $("#sync-button"));
     $("#tag-request-form").addEventListener("submit", async (event) => {
@@ -9680,6 +10394,8 @@ ${entry2.node.fullLabel}` : ""}`;
     }, getLocal: () => s.local, repo, repoSource, quotaBlocked, reauthNeeded, call, applyPayload, resetRepositoryData: () => {
       s.records = [];
       s.issues = [];
+      s.tricks = [];
+      tricks.reset();
       s.algorithmNotes = [];
       s.algorithmTopics = [];
       s.algorithmNodeContents = [];
@@ -9691,6 +10407,7 @@ ${entry2.node.fullLabel}` : ""}`;
       s.comments.clear();
       s.selected = null;
       reader.resetDetail();
+      tricks.reset();
     }, clearComments: () => s.comments.clear(), refreshFilters, render: render6, renderUpdate: () => updates.renderUpdate(), updateStatus, sync, writeDemo, toast, errorMessage });
     const { readTheme, readPalette, applyTheme, applyPalette, applyAppearance, applyCodeSettings, renderRepoSelector, renderSettingsRepoList, renderAccount, startLoginFromBanner, accountAction, cancelLogin } = settingsUI;
     $("#sidebar-toggle").addEventListener("click", (event) => {
@@ -9779,7 +10496,7 @@ ${entry2.node.fullLabel}` : ""}`;
       s.update = update;
     }, getUpdateCapability: () => s.updateCapability, getBusy: () => s.busy, setBusy, call, cancelDraftSave: () => clearTimeout(draftTimer), getLocalWrite: () => localWrite, resetLocalWrite: () => {
       localWrite = Promise.resolve();
-    }, hasEditor: () => !!s.editor, saveDraft, persistLocal, renderAccount, toast, errorMessage });
+    }, hasEditor: () => !!s.editor || tricks.hasEditor(), saveDraft, persistLocal, renderAccount, toast, errorMessage });
     $("#submit-form").elements.url.addEventListener("blur", (event) => {
       try {
         const url = new URL(event.target.value);
@@ -9804,11 +10521,29 @@ ${entry2.node.fullLabel}` : ""}`;
     window.addEventListener("online", updateStatus);
     window.addEventListener("offline", updateStatus);
     document.addEventListener("keydown", (event) => {
+      if (event.key === "Escape" && s.view === "favorites" && favorites.isReading() && !document.querySelector("dialog[open]")) {
+        event.preventDefault();
+        favorites.back();
+        return;
+      }
+      if (event.key === "Escape" && s.view === "tricks" && tricks.isReading() && !document.querySelector("dialog[open]")) {
+        event.preventDefault();
+        tricks.closeDetail();
+        return;
+      }
       if (event.key === "/" && !event.ctrlKey && !event.metaKey && !["INPUT", "TEXTAREA", "SELECT"].includes(document.activeElement?.tagName) && !document.querySelector("dialog[open]")) {
         event.preventDefault();
-        if (["home", "tricks", "algorithms"].includes(s.view)) {
-          navigate("public");
+        if (s.view === "favorites") {
+          if (favorites.isReading()) favorites.back();
+          favorites.focusSearch();
+          return;
         }
+        if (s.view === "tricks") {
+          if (tricks.isReading()) tricks.closeDetail();
+          tricks.focusSearch();
+          return;
+        }
+        if (["home", "algorithms"].includes(s.view)) navigate("public");
         $("#search-input").focus();
       }
     });

@@ -84,19 +84,19 @@ async function listGeometry(page, label, width, expected = 20) {
   }
 }
 
-async function cardsPreserved(page, label, expected, desktop) {
-  await count(page, expected);
-  assert.equal(await page.locator('.public-problem-list, .problem-list-columns, .problem-list-row').count(), 0, `${label}: no public row presentation`);
-  assert.equal(await page.locator('#record-list .card-meta').count(), expected, `${label}: card metadata retained`);
-  assert.equal(await page.locator('#record-list .card-footer .card-state').count(), expected, `${label}: card review states retained`);
-  const layout = await page.evaluate(() => {
-    const list = document.querySelector('#record-list'), detail = document.querySelector('#detail-panel'), card = list.querySelector('.record-card');
-    const r = node => { const box = node.getBoundingClientRect(); return { x: box.x, right: box.right, width: box.width, height: box.height }; };
-    return { page: document.documentElement.scrollWidth, viewport: innerWidth, list: r(list), detail: r(detail), card: r(card), radius: parseFloat(getComputedStyle(card).borderRadius), border: parseFloat(getComputedStyle(card).borderTopWidth), gap: parseFloat(getComputedStyle(list).gap) };
-  });
-  assert.ok(layout.page <= layout.viewport + 1, `${label}: cards have no page overflow`);
-  assert.ok(layout.radius >= 6 && layout.border >= 1 && layout.gap >= 8 && layout.card.height >= 110, `${label}: separated bounded cards ${JSON.stringify(layout)}`);
-  if (desktop) assert.ok(layout.list.right <= layout.detail.x + 2, `${label}: cards remain left of preview`);
+async function favoritesPreserved(page, label, expected, desktop) {
+  assert.equal(await page.locator('#favorites-panel .favorite-row').count(), expected, `${label}: existing favorites remain accessible`);
+  assert.equal(await page.locator('#favorites-panel .favorite-reader').count(), 0, `${label}: no automatic favorite preview`);
+  assert.equal(await page.locator('#favorites-panel .card-state').count(), 0, `${label}: mastery stays in the reader rather than the compact index`);
+  const layout = await page.locator('#favorites-panel').evaluate(panel => ({ page: document.documentElement.scrollWidth, viewport: innerWidth, rows: [...panel.querySelectorAll('.favorite-row')].map(row => { const r = row.getBoundingClientRect(); return { width: r.width, height: r.height }; }) }));
+  assert.ok(layout.page <= layout.viewport + 1, `${label}: favorites have no page overflow`);
+  if (desktop) assert.ok(layout.rows.every(row => row.height >= 45 && row.height <= 90), `${label}: compact favorites rows ${JSON.stringify(layout)}`);
+  const first = page.locator('#favorites-panel .favorite-open').first(); const title = await first.locator('.favorite-title').innerText();
+  await first.click();
+  assert.match(await page.locator('.favorite-solution-reader .detail-title').innerText(), new RegExp(title.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')), `${label}: one click reads the selected favorite`);
+  assert.equal(await page.locator('.favorite-solution-reader .mastery-buttons button[aria-pressed="true"]').count(), 1, `${label}: saved mastery remains explicit in reader`);
+  await page.locator('.favorite-back').click();
+  assert.equal(await page.locator('#favorites-panel .favorite-row').count(), expected, `${label}: back restores favorites list`);
 }
 
 async function positions(page) {
@@ -259,7 +259,7 @@ async function returnFromDetail(page, before, label, key) {
         assert.equal(await page.locator('#record-list .problem-author .record-author-name').innerText(), '本地学习者', 'local row retains author name');
         assert.equal(await page.locator('#record-list .card-state, #record-list .card-footer, #record-list .card-meta').count(), 0, 'local rows omit card-only metadata');
         await navigate(page, 'favorites');
-        await cardsPreserved(page, `${theme}/${palette}/${width} favorites`, 2, width > 700);
+        await favoritesPreserved(page, `${theme}/${palette}/${width} favorites`, 2, width > 700);
         checks++;
       }
     }
@@ -290,6 +290,6 @@ async function returnFromDetail(page, before, label, key) {
     assert.equal(await page.evaluate(() => window.publicListFixture.writes), 0, 'filtering and focused reading never mutate local records');
     assert.equal(await page.evaluate(() => window.publicListUnsafe), undefined);
     assert.deepEqual(errors, []);
-    console.log(`PUBLIC PROBLEM LIST UI PASS: 20 fixtures, seven aligned columns and ~42px desktop rows without preview/selection, author variants/escaped unsafe tags, no pass rate, search/facets/tag-hit sorting, title click/Enter/back with focus and scroll, shared local rows and preserved favorites cards, ${checks} theme/palette/viewport cases (390/768/1440) with local table scrolling and reachable authors, 1440x1000 light/dark screenshots with at least 15 rows`);
+    console.log(`PUBLIC PROBLEM LIST UI PASS: 20 fixtures, seven aligned columns and ~42px desktop rows without preview/selection, author variants/escaped unsafe tags, no pass rate, search/facets/tag-hit sorting, title click/Enter/back with focus and scroll, shared local rows and compact favorites with click/read/back and saved mastery, ${checks} theme/palette/viewport cases (390/768/1440) with local table scrolling and reachable authors, 1440x1000 light/dark screenshots with at least 15 rows`);
   } finally { await browser.close(); }
 })().catch(error => { console.error(error); process.exitCode = 1; });

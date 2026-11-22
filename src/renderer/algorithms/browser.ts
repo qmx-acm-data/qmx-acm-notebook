@@ -3,6 +3,7 @@ import { AlgorithmDirectory } from './directory.js';
 import { ReadingDetail } from '../reading/reading-detail.js';
 import { isAlgorithmLeaf, resolveAlgorithmLeaf } from '../../shared/algorithm-leaf.js';
 import { renderLeafReading } from './leaf-reading.js';
+import { noteFavoriteControl } from './note-favorite.js';
 
 type DirectoryNode = import('../../shared/models/algorithm-directory').AlgorithmDirectoryNode;
 type SearchNote = import('../../shared/models/algorithm-directory').AlgorithmDirectorySearchNote;
@@ -473,6 +474,8 @@ function render(options?: Options | null): Controller {
       });
       const actions = element('div', 'reading-detail-actions');
       actions.append(back, button('打开详情 ↗', 'alg-button reading-detail-trigger alg-open-detail', openDetail));
+      const favorite = noteFavoriteControl({ note: reading, isFavorite: opts.isFavorite, onToggleFavorite: opts.onToggleFavorite });
+      if (favorite) actions.append(favorite);
       pane.append(actions, breadcrumbs(reading.nodeId));
       const article = element('article', 'alg-reading');
       const title = element('h2', 'alg-reading-title', reading.title || '未命名笔记'); title.tabIndex = -1;

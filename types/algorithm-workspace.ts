@@ -33,6 +33,8 @@ export interface AlgorithmWorkspaceOptions {
   authorName(author: unknown): string;
   date(value: unknown): string;
   tags(note: import('./app').AppRecord): HTMLElement;
+  isFavorite?: (note: import('./algorithm-browser').AlgorithmBrowserNote) => boolean;
+  onToggleFavorite?: (note: import('./algorithm-browser').AlgorithmBrowserNote) => Promise<void>;
   toast(message: string | undefined): void;
   errorMessage(error: unknown): string;
 }

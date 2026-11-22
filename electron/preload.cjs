@@ -36,6 +36,8 @@
         updateLocal: (...args) => ipcRenderer.invoke('updateLocal', ...args),
         exportLocal: (...args) => ipcRenderer.invoke('exportLocal', ...args),
         saveDocument: (...args) => ipcRenderer.invoke('saveDocument', ...args),
+        saveTrick: (...args) => ipcRenderer.invoke('saveTrick', ...args),
+        deleteTrick: (...args) => ipcRenderer.invoke('deleteTrick', ...args),
         saveAlgorithmTopic: (...args) => ipcRenderer.invoke('saveAlgorithmTopic', ...args),
         saveLearningGate: (...args) => ipcRenderer.invoke('saveLearningGate', ...args),
         saveLearningCurriculum: (...args) => ipcRenderer.invoke('saveLearningCurriculum', ...args),

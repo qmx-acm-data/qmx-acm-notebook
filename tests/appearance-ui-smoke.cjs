@@ -92,6 +92,28 @@ async function libraryLayout(page, label, publicList = false) {
   return layout;
 }
 
+async function favoritesLayout(page, label) {
+  assert.equal(await page.locator('#favorites-panel').isVisible(), true, `${label}: unified favorites panel visible`);
+  assert.equal(await page.locator('#favorites-panel .favorite-row').count(), 2, `${label}: favorites retain public and local entries`);
+  assert.equal(await page.locator('#favorites-panel .favorite-reader').count(), 0, `${label}: favorites omit automatic preview`);
+  const rows = await page.locator('#favorites-panel .favorite-row').evaluateAll(nodes => nodes.map(node => ({ height: node.getBoundingClientRect().height, width: node.getBoundingClientRect().width })));
+  assert.ok(rows.every(row => row.height >= 45 && row.height <= 90 && row.width > 0), `${label}: compact rows stay bounded ${JSON.stringify(rows)}`);
+  const savedStates = [];
+  let samples = await contrast(page, '.favorite-title,.favorite-author,.favorite-updated,.favorite-type,.favorites-result-count', label);
+  for (let index = 0; index < 2; index++) {
+    const origin = page.locator('#favorites-panel .favorite-open').nth(index), title = await origin.locator('.favorite-title').innerText();
+    await origin.click();
+    assert.equal(await page.locator('.favorite-solution-reader .detail-title').innerText(), title, `${label}: click opens matching content`);
+    savedStates.push(await page.locator('.favorite-solution-reader .mastery-buttons button[aria-pressed="true"]').innerText());
+    samples += await contrast(page, '.favorite-solution-reader .mastery-buttons button,.favorite-solution-reader .detail-title,.favorite-back', `${label} reader`);
+    await page.locator('.favorite-back').click();
+    assert.equal(await page.locator('#favorites-panel .favorite-open').nth(index).evaluate(node => node === document.activeElement), true, `${label}: back restores originating favorite focus`);
+  }
+  assert.deepEqual(savedStates.slice().sort(), ['复习中', '已掌握'].sort(), `${label}: saved local/public mastery is retained inside readers`);
+  await noOverflow(page, label);
+  return { samples, savedStates };
+}
+
 async function semanticSnapshot(page) {
   return page.evaluate(() => {
     const style = selector => { const node = document.querySelector(selector); if (!node) throw Error(`Missing semantic fixture: ${selector}`); const s = getComputedStyle(node); return { color: s.color, background: s.backgroundColor }; };
@@ -202,11 +224,9 @@ async function semanticSnapshot(page) {
         assert.equal(await page.locator('.problem-list-row[data-key="appearance-local"]').evaluate(node => node === document.activeElement), true, `${label}: back restores originating local row focus`);
         await libraryLayout(page, `${label} local returned`, true);
         await navigate(page, 'favorites');
-        assert.equal(await page.locator('.record-card').count(), 2, `${label}: favorites retain public and local entries`);
-        await libraryLayout(page, `${label} favorites`);
-        assert.equal(await page.locator('.record-card .card-state').count(), 2, `${label}: favorites retain mastery card semantics`);
-        const favoriteMastery = await page.locator('.record-card .card-state').evaluateAll(nodes => nodes.map(node => ({ text: node.textContent, color: getComputedStyle(node).color, background: getComputedStyle(node).backgroundColor })));
-        if (favoriteMasteryBaseline) assert.deepEqual(favoriteMastery, favoriteMasteryBaseline, `${label}: palette preserves favorite mastered/reviewing state colors`); else favoriteMasteryBaseline = favoriteMastery;
+        const favoriteLayout = await favoritesLayout(page, `${label} favorites`);
+        samples += favoriteLayout.samples;
+        if (favoriteMasteryBaseline) assert.deepEqual(favoriteLayout.savedStates, favoriteMasteryBaseline, `${label}: palette preserves saved favorite mastery`); else favoriteMasteryBaseline = favoriteLayout.savedStates;
         await navigate(page, 'home');
         samples += await contrast(page, '.home-intro h2, .planner-heading h2, .planner-count, .planner-add-button, .planner-empty, .platform-dashboard-empty strong, .platform-dashboard-empty p, .platform-button, .contests-heading h2, .contest-empty', `${label} home`);
         await page.click('.planner-add-tasks .planner-deadline-trigger');
@@ -284,7 +304,7 @@ async function semanticSnapshot(page) {
     await page.waitForFunction(() => document.body.dataset.theme === 'light' && document.body.dataset.palette === 'amber');
     assert.deepEqual(errors, []);
     assert.deepEqual(contrastFailures, [], 'All feature text meets computed contrast requirements');
-    console.log(`APPEARANCE UI PASS: independent 2x6 controls, committed/reload/save/failure/cancel state, compact public/local rows without preview, title/focused-reader/back, bounded favorites cards, semantic colors, ${samples} contrast samples, 390px feature overflow`);
+    console.log(`APPEARANCE UI PASS: independent 2x6 controls, committed/reload/save/failure/cancel state, compact public/local rows without preview, title/focused-reader/back, compact favorites/read/back with saved mastery, semantic colors, ${samples} contrast samples, 390px feature overflow`);
   } finally { await browser.close(); }
 })().catch(error => { if (contrastFailures.length) console.error('APPEARANCE CONTRAST FAILURES\n' + JSON.stringify(contrastFailures, null, 2)); console.error(error); process.exitCode = 1; });
 

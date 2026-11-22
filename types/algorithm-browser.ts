@@ -50,6 +50,8 @@ export interface AlgorithmBrowserOptions {
   authorName?: (author: unknown) => unknown;
   formatDate?: (value: unknown) => unknown;
   renderMarkdown?: (host: HTMLElement, markdown: string) => void;
+  isFavorite?: (note: AlgorithmBrowserNote) => boolean;
+  onToggleFavorite?: (note: AlgorithmBrowserNote) => Promise<void>;
 }
 
 export interface AlgorithmBrowserController {

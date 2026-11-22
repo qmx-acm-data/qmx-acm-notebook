@@ -7,7 +7,7 @@ import type { AppArguments, BoundaryModule, CacheView, FailureView, LocalView, M
 const { app, BrowserWindow, ipcMain, shell, safeStorage, net } = (require('electron') as typeof import('electron'));
 import fs = require('node:fs');
 import path = require('node:path');
-const { GitHub, repoParts, normalizeServerUrl, repositoryKey, parseAlgorithmNodeContent, algorithmContentTargetId, parseLearningGateContent, parseLearningCurriculumContent, learningCurriculumGateIds } = (require('./github.cjs') as typeof import('../github/client.cjs'));
+const { GitHub, repoParts, normalizeServerUrl, repositoryKey, cachedTrick, parseAlgorithmNodeContent, algorithmContentTargetId, parseLearningGateContent, parseLearningCurriculumContent, learningCurriculumGateIds } = (require('./github.cjs') as typeof import('../github/client.cjs'));
 const { randomUUID } = (require('node:crypto') as typeof import('node:crypto'));
 const { spawn } = (require('node:child_process') as typeof import('node:child_process'));
 const { createUpdater } = (require('./updater.cjs') as typeof import('../update/updater.cjs'));
@@ -107,6 +107,15 @@ function saveRepoCache(old: CacheView, updated: CacheView, scope = sourceScope()
 function ensureSource(key: string, generation = loginGeneration) {
   if (key !== sourceScope().sourceKey || generation !== loginGeneration) throw new Error('账号或仓库配置已改变，请重新同步');
 }
+function cachedTricks(value: unknown, scope = sourceScope()) {
+  if (!Array.isArray(value)) return [];
+  const seen = new Set<string>();
+  return value.flatMap((raw: unknown) => {
+    const trick = cachedTrick(raw, scope);
+    if (!trick || seen.has(trick.id)) return [];
+    seen.add(trick.id); return [trick];
+  }).sort((a, b) => b.updatedAt.localeCompare(a.updatedAt) || a.path.localeCompare(b.path));
+}
 function cachedLearningCurriculum(value: unknown, topics: unknown, scope = sourceScope()) {
   if (!value || typeof value !== 'object' || Array.isArray(value)) return null;
   const record = value as Record<string, unknown>;
@@ -178,6 +187,7 @@ function state(error?: string) {
   return {
     records: matching ? (c.records || []).filter(r => r.kind === 'document').map(r => annotate(r, scope)) : [],
     algorithmNotes: matching ? (c.algorithmNotes || []).map(r => annotate(r, scope)) : [],
+    tricks: matching ? cachedTricks(c.tricks, scope) : [],
     algorithmTopics: matching && Array.isArray(c.algorithmTopics) ? c.algorithmTopics.map(topic => annotate(topic, scope)) : [],
     algorithmNodeContents: matching ? cachedAlgorithmNodeContents(c.algorithmNodeContents, c.algorithmTopics, scope) : [],
     learningGateContents: matching ? cachedLearningContents(c.learningGateContents, scope, curriculum) : [],
@@ -282,6 +292,28 @@ function setup() {
     }
     return result;
   }));
+  handle('saveTrick', data => writeOperation(async () => {
+    requireWritableSource();
+    const scope = sourceScope(), generation = loginGeneration;
+    const result = await client().saveTrick(data);
+    ensureSource(scope.sourceKey, generation);
+    const saved = cachedTrick(result, scope);
+    if (!saved) throw new Error('Trick写入结果无效，请先同步核实');
+    const old = read('cache.json', {}) as CacheView, c = repoCache(old, scope.repo, scope.serverUrl);
+    const tricks = cachedTricks(c.tricks, scope).filter(trick => trick.path !== saved.path);
+    tricks.push(saved);
+    saveRepoCache(old, { ...(c.repo === scope.repo ? c : {}), repo: scope.repo, tricks }, scope);
+    return saved;
+  }));
+  handle('deleteTrick', data => writeOperation(async () => {
+    requireWritableSource();
+    const scope = sourceScope(), generation = loginGeneration;
+    const result = await client().deleteTrick(data);
+    ensureSource(scope.sourceKey, generation);
+    const old = read('cache.json', {}) as CacheView, c = repoCache(old, scope.repo, scope.serverUrl);
+    saveRepoCache(old, { ...(c.repo === scope.repo ? c : {}), repo: scope.repo, tricks: cachedTricks(c.tricks, scope).filter(trick => trick.path !== result.path) }, scope);
+    return result;
+  }));
   handle('saveAlgorithmTopic', data => writeOperation(async () => {
     requireWritableSource();
     const scope = sourceScope(), gen = loginGeneration, repo = scope.repo;
@@ -343,7 +375,7 @@ function setup() {
       catch (error) { tagCatalogError = (error as FailureView).status === 401 ? '标签目录授权已失效，请重新登录' : '标签目录暂未更新，继续使用已缓存的标签'; }
       ensureSource(scope.sourceKey, gen);
       const curriculum = cachedLearningCurriculum(result.learningCurriculum, result.algorithmTopics, scope);
-      const updated = { ...result, repo, tagCatalog, tagCatalogError, algorithmNotes: Array.isArray(result.algorithmNotes) ? result.algorithmNotes : [], algorithmTopics: Array.isArray(result.algorithmTopics) ? result.algorithmTopics : [], algorithmNodeContents: cachedAlgorithmNodeContents(result.algorithmNodeContents, result.algorithmTopics, scope), learningCurriculum: curriculum, learningGateContents: cachedLearningContents(result.learningGateContents, scope, curriculum) };
+      const updated = { ...result, repo, tagCatalog, tagCatalogError, tricks: cachedTricks(result.tricks, scope), algorithmNotes: Array.isArray(result.algorithmNotes) ? result.algorithmNotes : [], algorithmTopics: Array.isArray(result.algorithmTopics) ? result.algorithmTopics : [], algorithmNodeContents: cachedAlgorithmNodeContents(result.algorithmNodeContents, result.algorithmTopics, scope), learningCurriculum: curriculum, learningGateContents: cachedLearningContents(result.learningGateContents, scope, curriculum) };
       saveRepoCache(old, updated);
       if (token) { try { await refreshIdentity(); } catch (error) { permissions = null; return state(`资料已同步，账号权限刷新失败：${(error as FailureView).message}`); } }
       return state();
