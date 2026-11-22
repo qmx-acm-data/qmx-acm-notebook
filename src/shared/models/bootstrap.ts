@@ -1,3 +1,4 @@
+import type { Trick } from './trick';
 import type { LearningCurriculumDocument } from './learning-curriculum';
 import type { AlgorithmNodeContent } from './algorithm-node-content';
 import type { LearningGateContent } from './learning-content';
@@ -13,6 +14,7 @@ export type CachedEntry = Record<string, unknown> & SourceScope;
 /** Fields from services not yet migrated remain unknown, including old disk values. */
 export interface BootstrapPayload {
   records: CachedDocument[];
+  tricks: Trick[];
   algorithmNotes: CachedEntry[];
   algorithmTopics: CachedEntry[];
   algorithmNodeContents: AlgorithmNodeContent[];

@@ -7,6 +7,8 @@ const root = path.resolve(__dirname, '..');
 const built = require('./build-app.cjs').main();
 const suites = [
   'navigation-smoke.cjs',
+  'tricks-ui-smoke.cjs',
+  'favorites-center-ui-smoke.cjs',
   'appearance-ui-smoke.cjs',
   'repositories-ui-smoke.cjs',
   'public-local-solution-smoke.cjs',

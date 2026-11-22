@@ -1,3 +1,4 @@
+import type { Trick, SaveTrickInput, DeleteTrickInput, DeletedTrick } from '../models/trick';
 import type { DailyDrawFilters, DailyDrawResult, LibrarySyncResult } from '../models/daily-problem';
 import type { LearningCurriculumDocument, SaveLearningCurriculumInput } from '../models/learning-curriculum';
 import type { LearningGateContent, SaveLearningGateInput } from '../models/learning-content';
@@ -51,6 +52,8 @@ export interface ServiceMethods {
   getComments(number: CommentNumber): Promise<CommentSnapshot[]>;
   propose(record: DocumentWriteInput): Promise<SavedDocument>;
   saveDocument(record: DocumentWriteInput): Promise<SavedDocument>;
+  saveTrick(input: SaveTrickInput): Promise<Trick>;
+  deleteTrick(input: DeleteTrickInput): Promise<DeletedTrick>;
   saveAlgorithmTopic(data: AlgorithmTopicInput): Promise<AlgorithmTopic>;
   saveLearningGate(data: SaveLearningGateInput): Promise<LearningGateContent>;
   saveLearningCurriculum(input: SaveLearningCurriculumInput): Promise<LearningCurriculumDocument>;

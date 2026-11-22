@@ -1,6 +1,8 @@
 /** Type-only adapters for record lists, reading details, and issue discussions. */
 export interface LibraryReaderOptions {
   demo: boolean;
+  isFavorite?(record: import('./app').AppRecord): boolean;
+  toggleFavorite?(record: import('./app').AppRecord): Promise<void>;
   stateLabels: Readonly<Record<string, string>>;
   getLocal(): import('./app').AppState['local'];
   setLocal(local: import('./app').AppState['local']): void;
@@ -53,7 +55,7 @@ export interface LibraryReaderController {
   /** Render the focused record before filters/list updates; false resumes the normal list path. */
   renderFocusedDetail(): boolean;
   renderLibrary(items: import('./app').AppRecord[]): void;
-  renderDetail(record: import('./app').AppRecord): void;
+  renderDetail(record: import('./app').AppRecord, destination?: HTMLElement): void;
   loadComments(record: import('./app').AppRecord, container: HTMLElement): Promise<void>;
   changeLocal(change: () => void): Promise<void>;
 }

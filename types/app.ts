@@ -33,6 +33,7 @@ export interface AppTagRequest { number: number; category: string; name: string;
 export interface AppTagReview { canReview?: boolean; requests?: AppTagRequest[] }
 export interface AppPayload {
   [key: string]: unknown;
+  tricks?: import('../src/shared/models/trick').Trick[];
   records?: AppRecord[]; algorithmNotes?: AppRecord[]; algorithmTopics?: import('../src/shared/models/algorithm-directory').AlgorithmDirectoryTopic[];
   algorithmNodeContents?: import('../src/shared/models/algorithm-node-content').AlgorithmNodeContent[];
   learningGateContents?: import('../src/shared/models/learning-content').LearningGateContent[];
@@ -44,6 +45,7 @@ export interface AppPayload {
   planner?: import('./planner-ui').PlannerUIState; error?: unknown;
 }
 export interface AppState {
+  tricks?: import('../src/shared/models/trick').Trick[];
   view: string; libraryScope: string; records: AppRecord[]; algorithmNotes: AppRecord[];
   algorithmTopics?: import('../src/shared/models/algorithm-directory').AlgorithmDirectoryTopic[];
   algorithmNodeContents?: import('../src/shared/models/algorithm-node-content').AlgorithmNodeContent[];

@@ -4,7 +4,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const { app, BrowserWindow, ipcMain, shell, safeStorage, net } = require('electron');
 const fs = require("node:fs");
 const path = require("node:path");
-const { GitHub, repoParts, normalizeServerUrl, repositoryKey, parseAlgorithmNodeContent, algorithmContentTargetId, parseLearningGateContent, parseLearningCurriculumContent, learningCurriculumGateIds } = require('./github.cjs');
+const { GitHub, repoParts, normalizeServerUrl, repositoryKey, cachedTrick, parseAlgorithmNodeContent, algorithmContentTargetId, parseLearningGateContent, parseLearningCurriculumContent, learningCurriculumGateIds } = require('./github.cjs');
 const { randomUUID } = require('node:crypto');
 const { spawn } = require('node:child_process');
 const { createUpdater } = require('./updater.cjs');
@@ -126,6 +126,18 @@ function ensureSource(key, generation = loginGeneration) {
     if (key !== sourceScope().sourceKey || generation !== loginGeneration)
         throw new Error('账号或仓库配置已改变，请重新同步');
 }
+function cachedTricks(value, scope = sourceScope()) {
+    if (!Array.isArray(value))
+        return [];
+    const seen = new Set();
+    return value.flatMap((raw) => {
+        const trick = cachedTrick(raw, scope);
+        if (!trick || seen.has(trick.id))
+            return [];
+        seen.add(trick.id);
+        return [trick];
+    }).sort((a, b) => b.updatedAt.localeCompare(a.updatedAt) || a.path.localeCompare(b.path));
+}
 function cachedLearningCurriculum(value, topics, scope = sourceScope()) {
     if (!value || typeof value !== 'object' || Array.isArray(value))
         return null;
@@ -234,6 +246,7 @@ function state(error) {
     return {
         records: matching ? (c.records || []).filter(r => r.kind === 'document').map(r => annotate(r, scope)) : [],
         algorithmNotes: matching ? (c.algorithmNotes || []).map(r => annotate(r, scope)) : [],
+        tricks: matching ? cachedTricks(c.tricks, scope) : [],
         algorithmTopics: matching && Array.isArray(c.algorithmTopics) ? c.algorithmTopics.map(topic => annotate(topic, scope)) : [],
         algorithmNodeContents: matching ? cachedAlgorithmNodeContents(c.algorithmNodeContents, c.algorithmTopics, scope) : [],
         learningGateContents: matching ? cachedLearningContents(c.learningGateContents, scope, curriculum) : [],
@@ -351,6 +364,29 @@ function setup() {
         }
         return result;
     }));
+    handle('saveTrick', data => writeOperation(async () => {
+        requireWritableSource();
+        const scope = sourceScope(), generation = loginGeneration;
+        const result = await client().saveTrick(data);
+        ensureSource(scope.sourceKey, generation);
+        const saved = cachedTrick(result, scope);
+        if (!saved)
+            throw new Error('Trick写入结果无效，请先同步核实');
+        const old = read('cache.json', {}), c = repoCache(old, scope.repo, scope.serverUrl);
+        const tricks = cachedTricks(c.tricks, scope).filter(trick => trick.path !== saved.path);
+        tricks.push(saved);
+        saveRepoCache(old, { ...(c.repo === scope.repo ? c : {}), repo: scope.repo, tricks }, scope);
+        return saved;
+    }));
+    handle('deleteTrick', data => writeOperation(async () => {
+        requireWritableSource();
+        const scope = sourceScope(), generation = loginGeneration;
+        const result = await client().deleteTrick(data);
+        ensureSource(scope.sourceKey, generation);
+        const old = read('cache.json', {}), c = repoCache(old, scope.repo, scope.serverUrl);
+        saveRepoCache(old, { ...(c.repo === scope.repo ? c : {}), repo: scope.repo, tricks: cachedTricks(c.tricks, scope).filter(trick => trick.path !== result.path) }, scope);
+        return result;
+    }));
     handle('saveAlgorithmTopic', data => writeOperation(async () => {
         requireWritableSource();
         const scope = sourceScope(), gen = loginGeneration, repo = scope.repo;
@@ -420,7 +456,7 @@ function setup() {
             }
             ensureSource(scope.sourceKey, gen);
             const curriculum = cachedLearningCurriculum(result.learningCurriculum, result.algorithmTopics, scope);
-            const updated = { ...result, repo, tagCatalog, tagCatalogError, algorithmNotes: Array.isArray(result.algorithmNotes) ? result.algorithmNotes : [], algorithmTopics: Array.isArray(result.algorithmTopics) ? result.algorithmTopics : [], algorithmNodeContents: cachedAlgorithmNodeContents(result.algorithmNodeContents, result.algorithmTopics, scope), learningCurriculum: curriculum, learningGateContents: cachedLearningContents(result.learningGateContents, scope, curriculum) };
+            const updated = { ...result, repo, tagCatalog, tagCatalogError, tricks: cachedTricks(result.tricks, scope), algorithmNotes: Array.isArray(result.algorithmNotes) ? result.algorithmNotes : [], algorithmTopics: Array.isArray(result.algorithmTopics) ? result.algorithmTopics : [], algorithmNodeContents: cachedAlgorithmNodeContents(result.algorithmNodeContents, result.algorithmTopics, scope), learningCurriculum: curriculum, learningGateContents: cachedLearningContents(result.learningGateContents, scope, curriculum) };
             saveRepoCache(old, updated);
             if (token) {
                 try {

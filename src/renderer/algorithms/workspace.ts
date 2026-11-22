@@ -5,6 +5,7 @@ import { roadmapData } from './roadmap-data.js';
 import { openRoadmapResources } from './roadmap-resources.js';
 import { applyCurriculumLayout } from '../../shared/learning-curriculum.js';
 import { isAlgorithmLeaf, resolveAlgorithmLeaf } from '../../shared/algorithm-leaf.js';
+import { noteFavoriteControl } from './note-favorite.js';
 /** Algorithm app integration with the browser and learning-route renderers. */
 type Options = import('../../../types/algorithm-workspace').AlgorithmWorkspaceOptions;
 type Controller = import('../../../types/algorithm-workspace').AlgorithmWorkspaceController;
@@ -166,7 +167,8 @@ export function createAlgorithmWorkspace(options: Options): Controller {
       },
       onSelect(id) { algorithmSelectedNode = id; },
       onUpload(id) { algorithmSelectedNode = id; openAlgorithmNoteEditor(); },
-      renderMarkdown, authorName, formatDate: date
+      renderMarkdown, authorName, formatDate: date,
+      isFavorite: options.isFavorite, onToggleFavorite: options.onToggleFavorite
     });
     if (algorithmPendingTopic) { const id = algorithmPendingTopic; algorithmPendingTopic = null; algorithmController.selectNode(id); }
   }
@@ -212,7 +214,10 @@ export function createAlgorithmWorkspace(options: Options): Controller {
     if (note.featured) meta.append(element('span', 'alg-featured', '精选'));
     append(meta, element('span', 'alg-note-author', authorName(note.author)), element('span', '', date(note.updatedAt)));
     const body = element('div', 'markdown-body alg-markdown'); renderMarkdown(body, note.body);
-    append(article, title, meta, tags(note), body); pane.append(article); holder.append(pane); $('#algorithm-panel')!.append(holder);
+    append(article, title, meta, tags(note));
+    const favorite = noteFavoriteControl({ note, isFavorite: options.isFavorite, onToggleFavorite: options.onToggleFavorite, onError: cause => toast(errorMessage(cause)) });
+    if (favorite) { const actions = element('div', 'reading-detail-actions'); actions.append(favorite); article.append(actions); }
+    article.append(body); pane.append(article); holder.append(pane); $('#algorithm-panel')!.append(holder);
     const path = [];
     const stage = global.QMX_ALGORITHM_LEARNING_PATH?.stages!.find(item => item.gates!.some(gate => gateId ? gate.id === gateId : gate.topicIds!.includes(note.nodeId)));
     const gate = stage?.gates!.find(item => gateId ? item.id === gateId : item.topicIds!.includes(note.nodeId));
