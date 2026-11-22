@@ -5,12 +5,35 @@ const path = require('node:path');
 const Module = require('node:module');
 const ts = require('typescript');
 const filename = path.resolve(__dirname, '../src/main/contests/daily-problems.cts');
+const normalizerFilename = path.resolve(__dirname, '../src/main/library/normalize.cts');
 const compiled = ts.transpileModule(fs.readFileSync(filename, 'utf8'), { compilerOptions: { module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2022 } });
 const loaded = new Module(filename, module);
 loaded.filename = filename;
 const originalLoad = Module._load;
+let normalizerExports;
+let luoguDifficultyExports;
 Module._load = function(request, parent, isMain) {
-  if (request === '../ui/tag-presets.js' && parent?.filename === filename) return require('../ui/tag-presets.js');
+  if (request === './luogu-difficulty.js' && parent?.filename === filename) {
+    if (luoguDifficultyExports) return luoguDifficultyExports;
+    const dependencyPath = path.resolve(__dirname, '../src/shared/luogu-difficulty.ts');
+    const dependency = new Module(dependencyPath, module);
+    dependency.filename = dependencyPath;
+    const output = ts.transpileModule(fs.readFileSync(dependencyPath, 'utf8'), { compilerOptions: { module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2022 } });
+    dependency._compile(output.outputText, dependencyPath);
+    luoguDifficultyExports = dependency.exports;
+    return luoguDifficultyExports;
+  }
+  if (request === '../ui/tag-presets.js' && [filename, normalizerFilename].includes(parent?.filename)) return require('../ui/tag-presets.js');
+  if (request === '../ui/luogu-tags.json' && [filename, normalizerFilename].includes(parent?.filename)) return require('../ui/luogu-tags.json');
+  if (request === './library-normalize.cjs' && parent?.filename === filename) {
+    if (normalizerExports) return normalizerExports;
+    const dependency = new Module(normalizerFilename, module);
+    dependency.filename = normalizerFilename;
+    const output = ts.transpileModule(fs.readFileSync(normalizerFilename, 'utf8'), { compilerOptions: { module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2022 } });
+    dependency._compile(output.outputText, normalizerFilename);
+    normalizerExports = dependency.exports;
+    return normalizerExports;
+  }
   if (['./nowcoder-daily.cjs', './libreoj-daily.cjs'].includes(request) && parent?.filename === filename) {
     const dependencyPath = path.resolve(__dirname, '../src/main/contests/', request.replace('.cjs', '.cts'));
     const dependency = new Module(dependencyPath, module);
@@ -53,8 +76,8 @@ test('parses Luogu public list with native levels and complete tag preset names'
   assert.equal(parsed.problems[0].luoguDifficulty, '入门');
   assert.equal(parsed.problems[0].rating, null);
   assert.equal(parsed.problems[0].estimatedLuoguDifficulty, null);
-  assert.deepEqual(parsed.problems[0].tags, ['字符串', '洛谷标签#999']);
-  const presetTagId = Number(require('../ui/tag-presets.js').categories.flatMap(category => category.tags).find(tag => tag.name === '背包 DP').id);
+  assert.deepEqual(parsed.problems[0].tags, ['字符串']);
+  const presetTagId = require('../ui/luogu-tags.json').tags.find(tag => tag.name === '背包 DP').id;
   const completeCatalog = parseLuoguProblemList(`<script id="lentille-context" type="application/json">${JSON.stringify({ data: { problems: { count: 1, result: [{ pid: 'P1001', name: 'Catalog tag', difficulty: 2, tags: [presetTagId] }] } } })}</script>`);
   assert.deepEqual(completeCatalog.problems[0].tags, ['背包 DP']);
   assert.throws(() => parseLuoguProblemList('<html></html>'), /缺少公开数据/);
@@ -179,15 +202,15 @@ test('draws from the local library without any network access', async () => {
       { id: 'LG:P1000', title: 'LG problem', source: 'LG', origin: 'library', url: 'https://www.luogu.com.cn/problem/P1000', rating: null, estimatedCfRating: 900, estimatedLuoguDifficulty: null, luoguDifficulty: '入门', tags: [] }
     ]
   };
-  const offline = async () => { throw new Error('library draws must not fetch'); };
-  const all = await dailyDraw({ source: 'all' }, [], offline, () => 0, undefined, library);
+  const offline = async () => { assert.fail('indexed platform draws must not fetch'); };
+  const all = await dailyDraw({ source: 'all', platform: 'CF' }, [], offline, () => 0, undefined, library);
   assert.equal(all.problem.source, 'CF');
   assert.match(all.note, /本地题库索引 2 题（更新于 2026-11-20）/);
   assert.equal((await dailyDraw({ source: 'LG' }, [], offline, () => 0, undefined, library)).problem.id, 'LG:P1000');
-  assert.equal((await dailyDraw({ tags: ['二分'] }, [], offline, () => 0, undefined, library)).problem.id, 'CF:1A');
-  assert.equal((await dailyDraw({ ratingMin: 900, ratingMax: 900 }, [], offline, () => 0, undefined, library)).problem.id, 'LG:P1000');
-  await assert.rejects(dailyDraw({ ratingMin: 3000 }, [], offline, () => 0, undefined, library), /没有符合条件/);
-  await assert.rejects(dailyDraw({ luoguDifficulty: '省选/NOI-' }, [], offline, () => 0, undefined, library), /没有符合条件/);
+  assert.equal((await dailyDraw({ platform: 'CF', tags: ['二分'] }, [], offline, () => 0, undefined, library)).problem.id, 'CF:1A');
+  assert.equal((await dailyDraw({ platform: 'LG', ratingMin: 900, ratingMax: 900 }, [], offline, () => 0, undefined, library)).problem.id, 'LG:P1000');
+  await assert.rejects(dailyDraw({ platform: 'CF', ratingMin: 3000 }, [], offline, () => 0, undefined, library), /没有符合条件/);
+  await assert.rejects(dailyDraw({ platform: 'LG', luoguDifficulty: '省选/NOI-' }, [], offline, () => 0, undefined, library), /没有符合条件/);
 });
 
 test('draws from scoped records and reports remote fallback', async () => {
@@ -395,7 +418,7 @@ test('Luogu estimates and filters native levels without inventing unknown rating
 
 test('fetches LeetCode anonymously in pages and applies estimated rating filters', async () => {
   const pages = [
-    { data: { problemsetQuestionList: { total: 1001, questions: [{ frontendQuestionId: '1', title: 'Two Sum', titleSlug: 'two-sum', difficulty: 'Easy', paidOnly: false, topicTags: [] }] } } },
+    { data: { problemsetQuestionList: { total: 1001, questions: [{ frontendQuestionId: '1', title: 'Two Sum', titleSlug: 'two-sum', difficulty: 'Easy', paidOnly: false, topicTags: [] }, ...Array.from({ length: 999 }, (_, index) => ({ frontendQuestionId: String(index + 10000), title: 'Paid', titleSlug: `paid-${index}`, difficulty: 'Easy', paidOnly: true, topicTags: [] }))] } } },
     { data: { problemsetQuestionList: { total: 1001, questions: [{ frontendQuestionId: '42', title: 'Hard Problem', titleSlug: 'hard-problem', difficulty: 'Hard', paidOnly: false, topicTags: [] }] } } }
   ];
   const requests = [];
@@ -409,7 +432,8 @@ test('fetches LeetCode anonymously in pages and applies estimated rating filters
   assert.equal(requests[0].url, 'https://leetcode.com/graphql/');
   assert.equal(requests[0].init.credentials, 'omit');
   assert.equal(fetched.problems.length, 2);
-  const hard = await dailyDraw({ source: 'LC', ratingMin: 2200, ratingMax: 2200 }, [], async () => ({ ok: true, json: async () => pages[1] }), () => 0);
+  assert.deepEqual(fetched.errors, []);
+  const hard = await dailyDraw({ source: 'LC', ratingMin: 2200, ratingMax: 2200 }, [], async () => ({ ok: true, json: async () => ({ data: { problemsetQuestionList: { ...pages[1].data.problemsetQuestionList, total: 1 } } }) }), () => 0);
   assert.equal(hard.problem.id, 'LC:42');
   assert.match(hard.note, /启发式/);
 });
@@ -473,7 +497,7 @@ test('requests the Nowcoder CLIST resource for the NC daily source', async () =>
   assert.equal(result.problem.source, 'NC');
 });
 
-test('applies Luogu difficulty and remaining filters to CLIST candidates', async () => {
+test('uses explicitly uncalibrated CLIST references for CF bounds and Luogu levels while retaining raw ratings', async () => {
   const clist = { fetchProblems: async filter => {
     assert.deepEqual(filter, { resource: 'luogu.com.cn' });
     return { problems: [
@@ -481,9 +505,30 @@ test('applies Luogu difficulty and remaining filters to CLIST candidates', async
       { id: 'P1003', name: 'Wrong rating', url: 'https://www.luogu.com.cn/problem/P1003', platform: 'luogu', rating: 1400, tags: [], tagsKnown: true }
     ], report: { requested: 2, accepted: 2, rejected: 0, pages: [0], errors: [], durationMs: 0 } };
   } };
-  const result = await dailyDraw({ source: 'LG', ratingMin: 1300, ratingMax: 1300, luoguDifficulty: '普及' }, [], async () => { throw new Error('fallback source should not be required'); }, () => 0, clist);
+  const offline = async () => { throw new Error('controlled offline'); };
+  const result = await dailyDraw({ source: 'LG' }, [], offline, () => 0, clist);
   assert.equal(result.problem.id, 'LG:P1002');
+  assert.equal(result.problem.clistRating, 1300);
+  assert.equal(result.problem.rating, null);
+  assert.equal(result.problem.estimatedCfRating, 1300);
   assert.equal(result.problem.estimatedLuoguDifficulty, '普及');
+  assert.deepEqual(result.problem.difficultyReference, {
+    method: 'clist-elo-reference-v2', basis: 'clist', confidence: 'low', calibrated: false, resource: 'LG', rawRating: 1300
+  });
+  assert.match(result.problem.ratingEstimateReason, /未跨平台校准.*低置信参考.*不是官方等价/);
+  const bounded = await dailyDraw({ source: 'LG', ratingMin: 1300, ratingMax: 1300, luoguDifficulty: '普及' }, [], offline, () => 0, clist);
+  assert.equal(bounded.problem.id, 'LG:P1002');
+  assert.equal(bounded.problem.rating, null, 'CLIST reference must never become native CF rating');
+  assert.equal(bounded.problem.clistRating, 1300);
+  assert.equal((await dailyDraw({ source: 'LG', ratingMin: 1400, ratingMax: 1400, luoguDifficulty: '普及+/提高-' }, [], offline, () => 0, clist)).problem.id, 'LG:P1003');
+  await assert.rejects(dailyDraw({ source: 'LG', ratingMin: 1500 }, [], offline, () => 0, clist), /没有符合条件/);
+  await assert.rejects(dailyDraw({ source: 'LG', luoguDifficulty: '省选/NOI-' }, [], offline, () => 0, clist), /没有符合条件/);
+});
+
+test('scoped draws preserve official metadata for supplementation protection', async () => {
+  const result = await dailyDraw({ source: 'local' }, [{ kind: 'local', platform: 'LC', title: 'Two Sum', pid: '1', problemUrl: 'https://leetcode.com/problems/two-sum/', difficulty: 'Easy', tags: ['数组'], officialDifficulty: 'Easy', officialTags: ['数组'] }], async () => { throw new Error('no network'); }, () => 0);
+  assert.equal(result.problem.officialDifficulty, 'Easy');
+  assert.deepEqual(result.problem.officialTags, ['数组']);
 });
 
 test('retains native and estimated Luogu-level matching for directed remote sources', async () => {
@@ -503,9 +548,13 @@ test('retains native and estimated Luogu-level matching for directed remote sour
   assert.equal((await dailyDraw({ source: 'LG', luoguDifficulty: '普及+/提高' }, [], async () => ({ ok: true, text: async () => `<script id="lentille-context" type="application/json">${JSON.stringify({ data: { problems: { count: 2, result: [{ pid: 'P2003', name: 'Native level A', difficulty: 4, tags: [] }, { pid: 'P2004', name: 'Native level B', difficulty: 4, tags: [] }] } } })}</script>` }), () => 0)).problem.id, 'LG:P2003');
   await assert.rejects(dailyDraw({ source: 'LG', luoguDifficulty: '提高+/省选-' }, [], async () => ({ ok: true, text: async () => `<script id="lentille-context" type="application/json">${JSON.stringify({ data: { problems: { count: 1, result: [{ pid: 'P2003', name: 'Native level A', difficulty: 4, tags: [] }] } } })}</script>` }), () => 0), /没有符合条件/);
   const ncEstimate = { fetchProblems: async () => ({ problems: [{ id: 'nc-estimated', name: 'NC estimated', url: 'https://ac.nowcoder.com/acm/problem/123', platform: 'nowcoder', rating: 1700, tags: [], tagsKnown: true }], report: { requested: 1, accepted: 1, rejected: 0, rejectionCategories: {}, pages: [0], errors: [], durationMs: 0 } }) };
-  const estimated = await dailyDraw({ source: 'NC', luoguDifficulty: '提高' }, [], async () => { throw new Error('unused'); }, () => 0, ncEstimate);
-  assert.equal(estimated.problem.estimatedLuoguDifficulty, '提高');
-  assert.equal((await dailyDraw({ source: 'NC', luoguDifficulty: '提高' }, [], async () => { throw new Error('unused'); }, () => 0, ncEstimate)).problem.source, 'NC');
+  const clistOnly = await dailyDraw({ source: 'NC' }, [], async () => { throw new Error('unused'); }, () => 0, ncEstimate);
+  assert.equal(clistOnly.problem.clistRating, 1700);
+  assert.equal(clistOnly.problem.rating, null);
+  assert.equal(clistOnly.problem.estimatedCfRating, 1700);
+  assert.equal(clistOnly.problem.estimatedLuoguDifficulty, '提高');
+  assert.equal(clistOnly.problem.difficultyReference.calibrated, false);
+  assert.equal((await dailyDraw({ source: 'NC', luoguDifficulty: '提高' }, [], async () => { throw new Error('unused'); }, () => 0, ncEstimate)).problem.clistRating, 1700);
   await assert.rejects(dailyDraw({ source: 'NC', luoguDifficulty: '省选/NOI-' }, [], async () => { throw new Error('unused'); }, () => 0, ncEstimate), /没有符合条件/);
   const html = `<script id="lentille-context" type="application/json">${JSON.stringify({ data: { problems: { count: 1, result: [{ pid: 'P2001', name: 'Matching native level', difficulty: 4, tags: [] }] } } })}</script>`;
   const clistResult = await dailyDraw({ source: 'LG', luoguDifficulty: '普及+/提高' }, [], async () => ({ ok: true, text: async () => html }), () => 0);
@@ -526,6 +575,168 @@ test('falls back to original source and preserves CLIST and source failure notic
   assert.match(fallback.note, /CLIST 获取失败：mock CLIST unavailable/);
   resetLuoguSnapshot();
   await assert.rejects(dailyDraw({ source: 'LG', luoguDifficulty: 'NOI' }, [], async () => ({ ok: false, status: 503 }), () => 0, clistFailure), /CLIST 获取失败：mock CLIST unavailable.*洛谷获取提示：第 1 页获取失败（HTTP 503）/);
+});
+
+test('reuses successful public source data across concurrent draws without sharing mutable results', async () => {
+  let calls = 0, release;
+  const ready = new Promise(resolve => { release = resolve; });
+  const fetcher = async () => { calls += 1; await ready; return { ok: true, json: async () => payload }; };
+  const first = dailyDraw({ source: 'CF' }, [], fetcher, () => 0);
+  const second = dailyDraw({ source: 'CF', excludedIds: ['CF:1A'] }, [], fetcher, () => 0);
+  assert.equal(calls, 1);
+  release();
+  const [a, b] = await Promise.all([first, second]);
+  assert.equal(a.problem.id, 'CF:1A');
+  assert.equal(b.problem.id, 'CF:1B');
+  a.problem.title = 'Modified by consumer';
+  a.problem.tags.push('consumer mutation');
+  const repeated = await dailyDraw({ source: 'CF' }, [], fetcher, () => 0);
+  assert.equal(calls, 1);
+  assert.equal(repeated.problem.title, 'First');
+  assert.deepEqual(repeated.problem.tags, ['动态规划 DP', '图论']);
+  let otherCalls = 0;
+  await dailyDraw({ source: 'CF' }, [], async () => { otherCalls += 1; return { ok: true, json: async () => payload }; }, () => 0);
+  assert.equal(otherCalls, 1, 'a distinct transport must not reuse another fetcher cache');
+});
+
+test('expires source snapshots and retries failed or empty responses', async () => {
+  const originalNow = Date.now;
+  let now = originalNow(), calls = 0;
+  Date.now = () => now;
+  try {
+    const fetcher = async () => {
+      calls += 1;
+      if (calls === 1) return { ok: false, status: 503 };
+      if (calls === 2) return { ok: true, json: async () => ({ status: 'OK', result: { problems: [] } }) };
+      return { ok: true, json: async () => payload };
+    };
+    await assert.rejects(dailyDraw({ source: 'CF' }, [], fetcher), /HTTP 503/);
+    await assert.rejects(dailyDraw({ source: 'CF' }, [], fetcher), /没有符合条件/);
+    await dailyDraw({ source: 'CF' }, [], fetcher, () => 0);
+    await dailyDraw({ source: 'CF' }, [], fetcher, () => 0);
+    assert.equal(calls, 3);
+    now += 5 * 60_000;
+    await dailyDraw({ source: 'CF' }, [], fetcher, () => 0);
+    assert.equal(calls, 4);
+  } finally { Date.now = originalNow; }
+});
+
+test('reuses AtCoder and LeetCode directories while incomplete source results remain retryable', async () => {
+  const requests = [];
+  let modelsFail = true;
+  const fetcher = async url => {
+    requests.push(url);
+    if (url.endsWith('problems.json')) return { ok: true, json: async () => [{ id: 'abc_a', contest_id: 'abc', title: 'AtCoder' }] };
+    if (url.endsWith('problem-models.json')) {
+      if (modelsFail) throw Error('model unavailable');
+      return { ok: true, json: async () => ({ abc_a: { difficulty: 100 } }) };
+    }
+    return { ok: true, json: async () => ({ data: { problemsetQuestionList: { total: 1, questions: [{ frontendQuestionId: '1', title: 'One', titleSlug: 'one', difficulty: 'Easy', paidOnly: false }] } } }) };
+  };
+  assert.match((await dailyDraw({ source: 'AT' }, [], fetcher, () => 0)).note, /社区难度获取失败/);
+  modelsFail = false;
+  await dailyDraw({ source: 'AT' }, [], fetcher, () => 0);
+  await dailyDraw({ source: 'AT' }, [], fetcher, () => 0);
+  await dailyDraw({ source: 'LC' }, [], fetcher, () => 0);
+  await dailyDraw({ source: 'LC' }, [], fetcher, () => 0);
+  assert.equal(requests.filter(url => url.endsWith('problems.json')).length, 2);
+  assert.equal(requests.filter(url => url.endsWith('problem-models.json')).length, 2);
+  assert.equal(requests.filter(url => url.includes('leetcode.com')).length, 1);
+});
+
+test('uses only missing platform sources with a partial library and keeps scoped sources offline', async () => {
+  const library = { builtAt: null, records: [{ id: 'CF:1A', title: 'Indexed CF', source: 'CF', origin: 'library', url: 'https://codeforces.com/problemset/problem/1/A', rating: 800, estimatedLuoguDifficulty: '入门', luoguDifficulty: '', tags: [] }] };
+  const requests = [];
+  const fetcher = async url => {
+    requests.push(url);
+    assert.ok(!url.includes('codeforces.com'), 'an indexed platform must stay offline');
+    if (url.endsWith('problems.json')) return { ok: true, json: async () => [{ id: 'abc_a', contest_id: 'abc', title: 'Missing AT shard' }] };
+    if (url.endsWith('problem-models.json')) return { ok: true, json: async () => ({}) };
+    throw Error('other platforms offline');
+  };
+  const all = await dailyDraw({ source: 'all' }, [], fetcher, sequence(0.9, 0), undefined, library);
+  assert.equal(all.problem.source, 'AT');
+  assert.ok(requests.some(url => url.endsWith('problems.json')));
+  requests.length = 0;
+  assert.equal((await dailyDraw({ source: 'AT' }, [], fetcher, () => 0, undefined, library)).problem.title, 'Missing AT shard');
+  assert.equal(requests.length, 0, 'a successful missing shard fetch is cached');
+  const noFetch = async () => { assert.fail('scoped source must stay offline'); };
+  const records = [{ kind: 'local', platform: 'CF', pid: '2A', title: 'Scoped CF', problemUrl: 'https://codeforces.com/problemset/problem/2/A' }];
+  assert.equal((await dailyDraw({ source: 'local' }, records, noFetch, () => 0, undefined, library)).problem.id, 'CF:2A');
+  assert.equal((await dailyDraw({ source: 'public' }, records, noFetch, () => 0, undefined, library)).problem.id, 'CF:2A');
+  await assert.rejects(dailyDraw({ source: 'public' }, [], noFetch, () => 0, undefined, library), /没有符合条件/);
+});
+
+test('keeps a complete library offline for all-platform draws and empty filtered pools', async () => {
+  const library = { builtAt: null, records: ['CF', 'AT', 'LG', 'NC', 'LC', 'LOJ'].map(source => ({
+    id: `${source}:1`, title: `${source} indexed`, source, origin: 'library', url: `https://example.com/${source}/1`, rating: null, estimatedLuoguDifficulty: null, luoguDifficulty: '', tags: []
+  })) };
+  let networkCalls = 0, clistCalls = 0;
+  const fetcher = async () => { networkCalls += 1; throw Error('unexpected network'); };
+  const clist = { fetchProblems: async () => { clistCalls += 1; throw Error('unexpected CLIST'); } };
+  assert.equal((await dailyDraw({ source: 'all' }, [], fetcher, () => 0, clist, library)).problem.source, 'CF');
+  await assert.rejects(dailyDraw({ source: 'all', tags: ['missing'] }, [], fetcher, () => 0, clist, library), /没有符合条件/);
+  await assert.rejects(dailyDraw({ source: 'all', excludedIds: library.records.map(problem => problem.id) }, [], fetcher, () => 0, clist, library), /没有其他符合条件/);
+  assert.equal(networkCalls, 0);
+  assert.equal(clistCalls, 0);
+});
+
+test('deduplicates platform URLs before sampling and propagates excluded IDs to URL-only copies', async () => {
+  const records = [
+    { kind: 'local', platform: 'CF', title: 'URL-only first', problemUrl: 'https://codeforces.com/problemset/problem/1/A/' },
+    { kind: 'document', platform: 'CF', pid: '1A', title: 'ID copy', problemUrl: 'https://codeforces.com/problemset/problem/1/A#statement' },
+    { kind: 'local', platform: 'CF', pid: '1B', title: 'Second', problemUrl: 'https://codeforces.com/problemset/problem/1/B' }
+  ];
+  const noFetch = async () => { assert.fail('local source must stay offline'); };
+  assert.equal((await dailyDraw({ source: 'public' }, records, noFetch, sequence(0, 0.6))).problem.title, 'Second');
+  const remote = async () => ({ ok: true, json: async () => payload });
+  for (const excludedIds of [['CF:1A'], ['https://codeforces.com/problemset/problem/1/A']]) {
+    assert.equal((await dailyDraw({ source: 'CF', excludedIds }, records, remote, () => 0)).problem.id, 'CF:1B');
+  }
+  const duplicatesOnly = records.slice(0, 2);
+  await assert.rejects(dailyDraw({ source: 'public', excludedIds: ['CF:1A'] }, duplicatesOnly, noFetch), /没有其他符合条件/);
+});
+
+test('does not reweight or redraw a CLIST copy with a distinct source ID', async () => {
+  const records = [
+    { kind: 'local', platform: 'NC', pid: '123', title: 'Current native ID', problemUrl: 'https://ac.nowcoder.com/acm/problem/123' },
+    { kind: 'local', platform: 'NC', pid: '124', title: 'Other', problemUrl: 'https://ac.nowcoder.com/acm/problem/124' }
+  ];
+  const clist = { fetchProblems: async () => ({ problems: [{ id: 'clist-id-123', name: 'CLIST duplicate', url: records[0].problemUrl, platform: 'nowcoder', rating: 1800, tags: [] }], report: { errors: [] } }) };
+  const offline = async () => { throw Error('offline'); };
+  assert.equal((await dailyDraw({ source: 'NC' }, records, offline, sequence(0, 0.8), clist)).problem.id, 'NC:124');
+  assert.equal((await dailyDraw({ source: 'NC', excludedIds: ['NC:123'] }, records, offline, () => 0, clist)).problem.id, 'NC:124');
+});
+
+test('LeetCode follows short raw pages even when paid questions are filtered', async () => {
+  const questions = [false, true, false, true, false].map((paidOnly, index) => ({ frontendQuestionId: String(index + 1), title: `Problem ${index + 1}`, titleSlug: `problem-${index + 1}`, difficulty: 'Easy', paidOnly, topicTags: [] }));
+  const skips = [];
+  const result = await fetchLeetCodeProblems(async (_url, init) => {
+    const { skip } = JSON.parse(init.body).variables;
+    skips.push(skip);
+    return { ok: true, json: async () => ({ data: { problemsetQuestionList: { total: questions.length, questions: questions.slice(skip, skip + 2) } } }) };
+  });
+  assert.deepEqual(skips, [0, 2, 4]);
+  assert.deepEqual(result.problems.map(problem => problem.id), ['LC:1', 'LC:3', 'LC:5']);
+  assert.deepEqual(result.errors, []);
+});
+
+test('LeetCode retains partial results and reports premature empty pages or request failures', async () => {
+  for (const failure of ['empty', 'network']) {
+    const skips = [];
+    const result = await fetchLeetCodeProblems(async (_url, init) => {
+      const { skip } = JSON.parse(init.body).variables;
+      skips.push(skip);
+      if (skip && failure === 'network') throw new Error('offline');
+      const questions = skip ? [] : [{ frontendQuestionId: '1', title: 'One', titleSlug: 'one', difficulty: 'Easy', paidOnly: false, topicTags: [] }];
+      return { ok: true, json: async () => ({ data: { problemsetQuestionList: { total: 3, questions } } }) };
+    });
+    assert.deepEqual(skips, [0, 1]);
+    assert.deepEqual(result.problems.map(problem => problem.id), ['LC:1']);
+    assert.match(result.errors[0], /已保留 1 道/);
+    assert.match(result.errors[0], failure === 'empty' ? /分页提前为空.*偏移 1/ : /offline/);
+  }
+  assert.deepEqual(await fetchLeetCodeProblems(async () => ({ ok: true, json: async () => ({ data: { problemsetQuestionList: { total: 0, questions: [] } } }) })), { problems: [], errors: [] });
 });
 
 test('returns source errors for HTTP, malformed response and network errors', async () => {

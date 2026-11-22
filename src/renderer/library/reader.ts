@@ -1,4 +1,5 @@
 import { Search } from '../lib/search.js';
+import { tagColorClass } from '../lib/tag-color.js';
 import { authorAvatar, recordAuthor } from './authors.js';
 /** Record previews, focused reading, and issue comments; the app supplies persistence and editing. */
 type Options = import('../../../types/library-reader').LibraryReaderOptions;
@@ -32,7 +33,7 @@ export function createLibraryReader(options: Options): Controller {
     label.title = `${demo ? '演示值 · ' : ''}${code === 'CF' ? 'Codeforces 原生 Rating 色阶' : code === 'LG' ? '洛谷原生难度名称 · 颜色仅用于界面展示' : '平台原始数值 / 难度'}，不跨平台换算`;
     return label;
   }
-  function tags(record: AppRecord) { const row = element('div', 'tag-row'); (Array.isArray(record.tags) ? record.tags : []).forEach(tag => { let hash = 0; for (const char of String(tag)) hash = (hash + char.codePointAt(0)!) % 5; row.append(element('span', `tag tag-color-${hash}`, tag)); }); return row; }
+  function tags(record: AppRecord) { const row = element('div', 'tag-row'); (Array.isArray(record.tags) ? record.tags : []).forEach(tag => { row.append(element('span', `tag ${tagColorClass(String(tag))}`, tag)); }); return row; }
   function empty(title: string, description: string, action?: { label: string; fn: (event: MouseEvent) => unknown }) { const box = element('div', 'empty-state'); append(box, element('div', 'empty-icon', '⌑'), element('h3', '', title), element('p', '', description)); if (action) box.append(button(action.label, 'button secondary', action.fn)); return box; }
   let focusedDetail = false;
   let readerPosition: { window: number; list: number; horizontal: number; panel: number; focus: Element | null } | null = null;

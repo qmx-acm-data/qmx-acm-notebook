@@ -38,20 +38,31 @@ function clone<T>(value: T): T { return JSON.parse(JSON.stringify(value)) as T; 
 export function mergeCatalog(presets: TagCatalog, saved: unknown): TagCatalog {
   const stored = saved as SavedCatalogFields;
   if (!saved || typeof saved !== 'object' || !Array.isArray(stored.categories)) throw new Error('标签目录格式错误：categories 必须是数组');
-  const catalog = clone(presets);
+  // Keep repository extensions when an approved request later saves the merged
+  // catalog. Built-in version/source still describe the current offline directory.
+  const { categories: _storedCategories, approvals: _storedApprovals, ...extensions } = clone(stored);
+  const catalog: TagCatalog = { ...extensions, ...clone(presets) };
   if (stored?.approvals && typeof stored.approvals === 'object' && !Array.isArray(stored.approvals)) catalog.approvals = clone(stored.approvals) as Record<string, unknown>;
   const categories = new Map(catalog.categories.map(category => [String(category.id), category]));
+  const rawTypes = presets.tagTypes;
+  const tagTypes = rawTypes && typeof rawTypes === 'object' && !Array.isArray(rawTypes) ? rawTypes as Record<string, unknown> : {};
   for (const item of (stored?.categories || []) as SavedCategoryFields[]) {
     const id = String(item?.id ?? '');
     let category = categories.get(id);
     if (!category && item?.name) category = catalog.categories.find(x => x.name === item.name);
     if (!category) throw new Error(`标签目录包含未知分类：${id || item?.name || '空分类'}`);
     if (!Array.isArray(item.tags)) throw new Error('标签目录格式错误：分类 tags 必须是数组');
+    Object.assign(category, clone(item), { id: category.id, name: category.name, tags: category.tags });
     for (const rawTag of item.tags as unknown[]) {
       const fields = rawTag as SavedTagFields | null | undefined;
       const tagName = typeof rawTag === 'string' ? normalizeName(rawTag) : normalizeName(fields?.name);
       const tagId = typeof rawTag === 'string' ? '' : String(fields?.id ?? '');
-      if (!category.tags.some(tag => tag.name.toLocaleLowerCase() === tagName.toLocaleLowerCase())) category.tags.push({ id: tagId, name: tagName });
+      const existing = category.tags.find(tag => (tagId && String(tag.id ?? '') === tagId) || tag.name.toLocaleLowerCase() === tagName.toLocaleLowerCase());
+      const metadata = typeof rawTag === 'object' && rawTag !== null ? clone(fields) : {};
+      if (existing) Object.assign(existing, { ...metadata, ...existing });
+      // Preserve older repository entries on future approval writes. Their
+      // official type lets pickers exclude non-algorithm choices without deletion.
+      else category.tags.push({ ...metadata, id: tagId, name: tagName, ...(tagTypes[tagId] !== undefined ? { type: tagTypes[tagId] } : {}) });
     }
   }
   return catalog;

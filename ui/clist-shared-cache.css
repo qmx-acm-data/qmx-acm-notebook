@@ -1,0 +1,91 @@
+/* CLIST cache sharing controls, using the settings theme. */
+.clist-shared-cache {
+  min-width: 0;
+  margin-top: 24px;
+  padding-top: 20px;
+  border-top: 1px solid var(--line);
+  color: var(--text);
+}
+.clist-shared-cache[hidden] { display: none; }
+.clist-shared-cache-heading {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 6px 12px;
+  min-width: 0;
+}
+.clist-shared-cache-heading h3 { margin: 0; font-size: 14px; }
+.clist-shared-cache-summary,
+.clist-shared-cache-intro,
+.clist-shared-cache-history,
+.clist-shared-cache-note,
+.clist-shared-cache-result,
+.clist-shared-cache-error {
+  min-width: 0;
+  font-size: 11px;
+  line-height: 1.7;
+  overflow-wrap: anywhere;
+  color: var(--muted);
+}
+.clist-shared-cache-summary { margin: 0; font-variant-numeric: tabular-nums; }
+.clist-shared-cache-intro { margin: 8px 0; }
+.clist-shared-cache-history { margin: 4px 0 10px; font-variant-numeric: tabular-nums; }
+.clist-shared-cache-note { margin: 8px 0; }
+.clist-shared-cache-platforms {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 6px;
+  min-width: 0;
+  padding: 0;
+  margin: 0;
+  list-style: none;
+}
+.clist-shared-cache-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 2px 8px;
+  min-width: 0;
+  padding: 7px 10px;
+  border: 1px solid var(--line);
+  border-radius: 7px;
+  background: var(--surface-soft);
+}
+.clist-shared-cache-name { min-width: 0; font-size: 11px; font-weight: 650; overflow-wrap: anywhere; }
+.clist-shared-cache-counts { min-width: 0; font-size: 10px; color: var(--muted); font-variant-numeric: tabular-nums; }
+.clist-shared-cache-actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; }
+.clist-shared-cache .button { max-width: 100%; padding: 8px 12px; font-size: 11px; white-space: normal; overflow-wrap: anywhere; }
+.clist-shared-cache-url-label { display: block; margin: 12px 0 5px; font-size: 11px; color: var(--text); }
+.clist-shared-cache-sync { display: flex; gap: 8px; align-items: center; min-width: 0; }
+.clist-shared-cache-url {
+  flex: 1;
+  width: 100%;
+  min-width: 0;
+  padding: 8px 10px;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  background: var(--surface-soft);
+  color: var(--text);
+  font: inherit;
+  font-size: 11px;
+}
+.clist-shared-cache-sync .button { flex: 0 0 auto; }
+.clist-shared-cache-result { margin: 8px 0 0; color: var(--accent); font-variant-numeric: tabular-nums; }
+.clist-shared-cache-error {
+  margin: 10px 0 0;
+  padding: 9px 11px;
+  border: 1px solid color-mix(in srgb, var(--tone-red) 25%, var(--line));
+  border-radius: 7px;
+  color: var(--tone-red);
+  background: color-mix(in srgb, var(--tone-red) 7%, var(--surface));
+}
+.clist-shared-cache-result[hidden], .clist-shared-cache-error[hidden] { display: none; }
+@media (max-width: 480px) {
+  .clist-shared-cache { margin-top: 20px; padding-top: 16px; }
+  .clist-shared-cache-heading { align-items: flex-start; flex-direction: column; }
+  .clist-shared-cache-platforms { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .clist-shared-cache-actions, .clist-shared-cache-sync { display: grid; grid-template-columns: minmax(0, 1fr); gap: 7px; }
+  .clist-shared-cache .button { width: 100%; }
+}

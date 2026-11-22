@@ -1,0 +1,20 @@
+{
+  "schema": 1,
+  "source": "CLIST API v4 problem endpoint, rating__gt=0, six resources",
+  "queriedDate": "2026-11-22",
+  "filename": "clist-initial-cache.json",
+  "sha256": "2fafaf15946ca25360242eed932d12bd2b522cb0adf34518f38c03507abe2dad",
+  "total": 37200,
+  "apiRows": 37726,
+  "apiRequests": 42,
+  "omittedUnsupportedRoutes": 526,
+  "resources": {
+    "codeforces.com": 11439,
+    "atcoder.jp": 7467,
+    "leetcode.com": 4119,
+    "luogu.com.cn": 6020,
+    "ac.nowcoder.com": 8155,
+    "loj.ac": 0
+  },
+  "note": "Only positive CLIST scores and query timestamps. No credentials or personal fields. Counts are cache records, not local problem matches. Nowcoder contest URLs are not automatically mapped to global ACM problem IDs."
+}

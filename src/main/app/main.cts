@@ -4,7 +4,7 @@ import type { Auth } from '../auth/auth.cjs';
 import type { AuthTicket } from '../../shared/models/auth.js';
 import type { SourceScope } from '../../shared/models/bootstrap.js';
 import type { AppArguments, BoundaryModule, CacheView, FailureView, LocalView, MainAccount } from './contracts.js';
-const { app, BrowserWindow, ipcMain, shell, safeStorage, net } = (require('electron') as typeof import('electron'));
+const { app, BrowserWindow, ipcMain, shell, safeStorage, net, dialog } = (require('electron') as typeof import('electron'));
 import fs = require('node:fs');
 import path = require('node:path');
 const { GitHub, repoParts, normalizeServerUrl, repositoryKey, cachedTrick, parseAlgorithmNodeContent, algorithmContentTargetId, parseLearningGateContent, parseLearningCurriculumContent, learningCurriculumGateIds } = (require('./github.cjs') as typeof import('../github/client.cjs'));
@@ -15,10 +15,15 @@ const { prepareFileUpgrade, recoverFileUpgrade, cancelPreparedFileUpgrade, getFi
 const { cleanupUpdateStorage } = (require('./update-storage.cjs') as typeof import('../update/storage.cjs'));
 const { createAuth, createClistCredentials, configureUserData } = (require('./auth.cjs') as typeof import('../auth/auth.cjs'));
 const { createContestService } = (require('./contests.cjs') as typeof import('../contests/service.cjs'));
-const { dailyDraw } = (require('./daily-problems.cjs') as typeof import('../contests/daily-problems.cjs'));
-const { createClistService } = (require('./clist-service.cjs') as typeof import('../clist/service.cjs'));
-const { createLibraryLoader } = (require('./library-index.cjs') as typeof import('../library/index.cjs'));
+const { dailyDraw, applyClistDifficultyReference } = (require('./daily-problems.cjs') as typeof import('../contests/daily-problems.cjs'));
+const { createClistService, createClistRatingCacheReader } = (require('./clist-service.cjs') as typeof import('../clist/service.cjs'));
+const { createDifficultyBackfill, readDifficultyBackfillState, createBackfillOutcomeReader } = (require('./difficulty-backfill.cjs') as typeof import('../library/difficulty-backfill.cjs'));
+const { createLibraryLoader, buildDailyTagCatalog } = (require('./library-index.cjs') as typeof import('../library/index.cjs'));
 const { createSync } = (require('./library-sync.cjs') as typeof import('../library/sync.cjs'));
+const { createProblemEnrichment, canonicalProblemUrl } = require('./problem-enrichment.cjs') as typeof import('../library/enrichment.cjs');
+const { createClistBulk } = require('./clist-bulk.cjs') as typeof import('../clist/bulk.cjs');
+const { createClistSharedCache } = require('./clist-shared-cache.cjs') as typeof import('../clist/shared-cache.cjs');
+const { createProblemAI } = require('./problem-enrichment-ai.cjs') as typeof import('../library/enrichment-ai.cjs');
 const { createPlatformService } = (require('./platform-service.cjs') as typeof import('../platforms/service.cjs'));
 const { createPlannerService } = (require('./planner-service.cjs') as typeof import('../planner/service.cjs'));
 const { createPublicPageReader } = (require('./platform-page.cjs') as typeof import('../platforms/page.cjs'));
@@ -48,6 +53,23 @@ let contestService: ReturnType<typeof createContestService>, platforms: ReturnTy
 let clistService: ReturnType<typeof createClistService> | undefined;
 let libraryLoader: ReturnType<typeof createLibraryLoader> | undefined;
 let librarySyncing = false;
+let librarySyncController: { pause(): void } | null = null;
+let librarySyncPauseRequested = false;
+let librarySyncState: import('../../shared/models/library-sync.js').LibrarySyncState = {
+  running: false, pauseRequested: false, mode: null, startedAt: null, finishedAt: null, platforms: {}, totalCount: 0
+};
+let difficultyBackfill: ReturnType<typeof createDifficultyBackfill> | null = null;
+let difficultyBackfillPauseRequested = false;
+let difficultyBackfillState: import('../../shared/models/difficulty-backfill.js').DifficultyBackfillState = {
+  status: 'idle', running: false, pauseRequested: false, batchSize: 100, processed: 0, found: 0, skipped: 0, failed: 0,
+  startedAt: null, finishedAt: null, platforms: {}
+};
+let problemEnrichment: ReturnType<typeof createProblemEnrichment>;
+let problemAI: ReturnType<typeof createProblemAI>;
+let clistSharedCache: ReturnType<typeof createClistSharedCache>;
+let clistBulk: ReturnType<typeof createClistBulk>;
+let clistBulkRunning = false;
+const recentDrawProblems = new Map<string, import('../../shared/models/daily-problem.js').DailyDrawProblem>();
 let clistCredentialFingerprint = '';
 let clistCredentials: ReturnType<typeof createClistCredentials>;
 let token = '', account: MainAccount | null = null, permissions: (SourceScope & { push: boolean; admin: boolean }) | null = null;
@@ -170,12 +192,82 @@ function librarySnapshot(input: unknown) {
     return snapshot.records.length ? { records: snapshot.records, builtAt: snapshot.builtAt } : undefined;
   } catch { return undefined; }
 }
+function enrichmentProblem(url: string) {
+  const target = canonicalProblemUrl(url);
+  const indexed = libraryLoader?.load().records.find(problem => { try { return canonicalProblemUrl(problem.url) === target; } catch { return false; } });
+  const problem = indexed ?? recentDrawProblems.get(`${sourceScope().sourceKey}|${loginGeneration}|${target}`) ?? null;
+  return problem;
+}
+function readRatingCache(): unknown {
+  try { return JSON.parse(fs.readFileSync(path.join(dir, 'clist-rating-cache.json'), 'utf8')) as unknown; }
+  catch (error) { if ((error as NodeJS.ErrnoException).code === 'ENOENT') return undefined; throw error; }
+}
+let ratingReaderCache: { stamp: string; reader: ReturnType<typeof createClistRatingCacheReader> } | undefined;
+function currentRatingReader() {
+  let stamp: string | undefined;
+  try {
+    const stat = fs.statSync(path.join(dir, 'clist-rating-cache.json'));
+    if (typeof stat.mtimeMs === 'number' && typeof stat.ctimeMs === 'number') stamp = `${stat.dev}:${stat.ino}:${stat.size}:${stat.mtimeMs}:${stat.ctimeMs}`;
+  } catch (error) { if ((error as NodeJS.ErrnoException).code !== 'ENOENT') throw error; }
+  if (stamp !== undefined && ratingReaderCache?.stamp === stamp) return ratingReaderCache.reader;
+  ratingReaderCache = undefined;
+  const reader = createClistRatingCacheReader(readRatingCache());
+  if (stamp !== undefined) ratingReaderCache = { stamp, reader };
+  return reader;
+}
+function cachedClistProblem(problem: import('../../shared/models/daily-problem.js').DailyDrawProblem, reader: (url: string) => import('../clist/service.cjs').ClistRatingResult | null, outcomeReader?: (url: string) => 'not-found' | 'no-rating' | null) {
+  const cached = reader(problem.url);
+  if (cached?.noData) return applyClistDifficultyReference({ ...problem, clistRating: 0, clistRatingCached: true, clistRatingQueriedAt: cached.queriedAt, clistRatingStale: false });
+  const result = cached?.rating != null ? applyClistDifficultyReference({ ...problem, clistRating: cached.rating, clistRatingCached: true, clistRatingQueriedAt: cached.queriedAt, clistRatingStale: false }) : applyClistDifficultyReference(problem);
+  const outcome = outcomeReader?.(problem.url);
+  return result.clistRating == null && outcome === 'not-found' ? { ...result, clistRatingStatus: 'not-found' as const } : result;
+}
+function knownProblemDifficulty(problem: import('../../shared/models/daily-problem.js').DailyDrawProblem): string | null {
+  if (problem.source === 'AT') return problem.communityDifficulty != null ? String(problem.communityDifficulty) : null;
+  return problem.officialDifficulty ?? null;
+}
+type BackfillPlatform = import('../../shared/models/difficulty-backfill.js').DifficultyBackfillPlatformState;
+let backfillGapCache: { key: string; platforms: Record<string, BackfillPlatform> } | null = null;
+function difficultyGaps(): Record<string, BackfillPlatform> {
+  const snapshot = libraryLoader?.load();
+  if (!snapshot) return {};
+  const stamp = (name: string) => { try { const stat = fs.statSync(path.join(dir, name)); return `${stat.mtimeMs}:${stat.size}`; } catch { return 'absent'; } };
+  const key = `${snapshot.builtAt}|${stamp('clist-rating-cache.json')}|${stamp('problem-enrichments.json')}`;
+  if (backfillGapCache?.key === key) return backfillGapCache.platforms;
+  const ratingReader = currentRatingReader();
+  problemEnrichment.refresh();
+  const platforms: Record<string, BackfillPlatform> = {};
+  for (const original of snapshot.records) {
+    const problem = original;
+    const entry = platforms[problem.source] ??= { total: 0, clistCached: 0, clistPending: 0, missing: 0, sourceMissing: 0, resolved: 0, attempted: 0, found: 0 };
+    entry.total = (entry.total ?? 0) + 1;
+    const cached = ratingReader(problem.url);
+    const hasClist = (cached?.rating != null && cached.rating > 0) || (problem.clistRating != null && problem.clistRating > 0);
+    if (hasClist) entry.clistCached = (entry.clistCached ?? 0) + 1;
+    else entry.clistPending = (entry.clistPending ?? 0) + 1;
+    if (knownProblemDifficulty(problem) !== null) continue;
+    entry.sourceMissing = (entry.sourceMissing ?? 0) + 1;
+    const supplemented = problemEnrichment.apply(problem);
+    const resolved = hasClist || (supplemented.supplementInfo?.difficulty === true && ((supplemented.estimatedCfRating != null && supplemented.estimatedCfRating > 0) || Boolean(supplemented.estimatedLuoguDifficulty)));
+    if (resolved) entry.resolved = (entry.resolved ?? 0) + 1;
+    else entry.missing += 1;
+  }
+  backfillGapCache = { key, platforms };
+  return platforms;
+}
+function withDifficultyGaps(state: import('../../shared/models/difficulty-backfill.js').DifficultyBackfillState) {
+  const gaps = difficultyGaps(), platforms: Record<string, BackfillPlatform> = { ...gaps };
+  for (const [key, value] of Object.entries(state.platforms)) platforms[key] = { ...value,
+    missing: gaps[key]?.missing ?? 0, sourceMissing: gaps[key]?.sourceMissing ?? 0, resolved: gaps[key]?.resolved ?? 0,
+    total: gaps[key]?.total ?? 0, clistCached: gaps[key]?.clistCached ?? 0, clistPending: gaps[key]?.clistPending ?? 0 };
+  return { ...state, platforms };
+}
 function refreshClistService() {  let credentials: { username: string; apiKey: string } | null = null;
   try { credentials = clistCredentials?.load() ?? null; } catch { credentials = null; }
   const fingerprint = credentials ? `${credentials.username}\u0000${credentials.apiKey}` : '';
   if (fingerprint !== clistCredentialFingerprint) {
     clistCredentialFingerprint = fingerprint;
-    clistService = credentials ? createClistService({ credentials: { account: credentials.username, key: credentials.apiKey }, fetcher: networkFetch, timeoutMs: 30_000 }) : undefined;
+    clistService = credentials ? createClistService({ credentials: { account: credentials.username, key: credentials.apiKey }, fetcher: networkFetch, timeoutMs: 30_000, readRatingCache, writeRatingCache: value => save('clist-rating-cache.json', value) }) : undefined;
   }
   return clistService;
 }
@@ -231,6 +323,104 @@ function setup() {
   handle('clearClistCredentials', () => { const result = clistCredentials.clear(); clistCredentialFingerprint = ''; clistService = undefined; return result; });
   handle('getClistStatus', () => clistCredentials.status());
   libraryLoader = createLibraryLoader(path.join(dir, 'library'), fs, path);
+  clistSharedCache = createClistSharedCache({ directory: dir, fs, path, fetcher: networkFetch,
+    initialCacheFile: process.env.QMX_ISOLATED_SANDBOX === '1' ? undefined : path.join(__dirname, 'data', 'clist-initial-cache.json') });
+  if (process.env.QMX_ISOLATED_SANDBOX !== '1' && fs.existsSync(path.join(__dirname, 'data', 'clist-initial-cache.json'))) {
+    try { clistSharedCache.ensureInitial(); }
+    catch { /* Preserve damaged cache files; the cache panel reports the read error after the window opens. */ }
+  }
+  clistBulk = createClistBulk({
+    read: () => { try { return JSON.parse(fs.readFileSync(path.join(dir, 'clist-bulk-progress.json'), 'utf8')) as unknown; } catch (error) { if ((error as NodeJS.ErrnoException).code === 'ENOENT') return undefined; throw error; } },
+    save: value => save('clist-bulk-progress.json', value),
+    fetchPage: (resource, offset) => { const service = refreshClistService(); if (!service) throw new Error('请先配置 CLIST 用户名与 API Key'); return service.fetchRatedPage(resource, offset); },
+    mergeRatings: document => clistSharedCache.importDocument(document)
+  });
+  handle('getClistBulkStatus', () => clistBulk.state());
+  handle('pauseClistBulkSync', () => clistBulk.pause());
+  handle('startClistBulkSync', async () => {
+    ensureIdle();
+    if (writeBusy || syncBusy || difficultyBackfill || clistBulkRunning) throw new Error('请等待当前查询或缓存合并完成');
+    if (!refreshClistService()) throw new Error('请先配置 CLIST 用户名与 API Key；内置缓存无需 Key 即可使用');
+    clistBulkRunning = true;
+    try { return await clistBulk.run(); }
+    finally { clistBulkRunning = false; backfillGapCache = null; }
+  });
+  const ensureCacheIdle = () => { if (difficultyBackfill || clistBulkRunning) throw new Error('CLIST 查询正在进行，请先暂停后合并缓存'); };
+  const cacheMerged = () => { clistService = undefined; clistCredentialFingerprint = ''; backfillGapCache = null; };
+  handle('getClistSharedCacheStatus', () => {
+    const status = clistSharedCache.status();
+    const platforms = Object.values(difficultyGaps());
+    return { ...status, libraryTotal: platforms.reduce((sum, entry) => sum + (entry.total ?? 0), 0),
+      libraryMatched: platforms.reduce((sum, entry) => sum + (entry.clistCached ?? 0), 0) };
+  });
+  handle('exportClistSharedCache', () => writeOperation(async () => {
+    const selected = await dialog.showSaveDialog(win, { title: '导出 CLIST 评分缓存', defaultPath: 'qmx-clist-rating-cache.json', filters: [{ name: 'CLIST 评分缓存 JSON', extensions: ['json'] }] });
+    if (selected.canceled || !selected.filePath) return { canceled: true, status: clistSharedCache.status() };
+    return { canceled: false, status: clistSharedCache.exportFile(selected.filePath) };
+  }));
+  handle('importClistSharedCache', () => writeOperation(async () => {
+    ensureCacheIdle();
+    const selected = await dialog.showOpenDialog(win, { title: '导入并合并 CLIST 评分缓存', properties: ['openFile'], filters: [{ name: 'CLIST 评分缓存 JSON', extensions: ['json'] }] });
+    if (selected.canceled || !selected.filePaths[0]) return { canceled: true, imported: 0, updated: 0, kept: 0, ignored: 0, status: clistSharedCache.status() };
+    ensureCacheIdle();
+    const result = clistSharedCache.importFile(selected.filePaths[0]); cacheMerged(); return result;
+  }));
+  handle('syncClistSharedCache', input => writeOperation(async () => {
+    ensureCacheIdle();
+    if (typeof input !== 'string') throw new Error('共享缓存地址无效');
+    const result = await clistSharedCache.syncFromUrl(input); cacheMerged(); return result;
+  }));
+  problemEnrichment = createProblemEnrichment({
+    read: () => { try { return JSON.parse(fs.readFileSync(path.join(dir, 'problem-enrichments.json'), 'utf8')) as unknown; } catch (error) { if ((error as NodeJS.ErrnoException).code === 'ENOENT') return undefined; throw error; } },
+    save: value => save('problem-enrichments.json', value), findProblem: enrichmentProblem
+  });
+  problemAI = createProblemAI({ safeStorage,
+    readConfig: () => { try { return JSON.parse(fs.readFileSync(path.join(dir, 'ai-auth.json'), 'utf8')) as unknown; } catch (error) { if ((error as NodeJS.ErrnoException).code === 'ENOENT') return null; throw error; } },
+    saveConfig: value => save('ai-auth.json', value), fetcher: networkFetch as typeof fetch
+  });
+  handle('getProblemEnrichment', url => {
+      const view = problemEnrichment.view(String(url)), problem = enrichmentProblem(view.url);
+    return { ...view, ...(problem ? { problem: problemEnrichment.apply(cachedClistProblem(problem, currentRatingReader(), createBackfillOutcomeReader(read('difficulty-backfill-ledger.json', undefined)))) } : {}) };
+  });
+  handle('saveProblemEnrichment', input => writeOperation(() => problemEnrichment.saveSupplement(input)));
+  handle('removeProblemEnrichment', input => writeOperation(() => problemEnrichment.removeSupplement(input)));
+  handle('refreshProblemClistRating', input => writeOperation(async () => {
+    if (typeof input !== 'string') throw new Error('题目链接无效');
+    const original = enrichmentProblem(input);
+    if (!original) throw new Error('该题尚未进入当前题库，请先抽取题目');
+      const problem = original;
+    const scope = sourceScope(), generation = loginGeneration;
+    problemEnrichment.refresh();
+    const service = refreshClistService();
+    if (!service) {
+      const previous = cachedClistProblem(problem, currentRatingReader());
+      return { problem: problemEnrichment.apply(previous), message: '请先在设置中配置 CLIST，已保存的评分仍可使用' };
+    }
+    const result = await service.lookupRating(problem.url, true);
+    ensureSource(scope.sourceKey, generation);
+    const updated = result.rating == null ? result.noData ? applyClistDifficultyReference({ ...problem, clistRating: 0 }) : result.error === 'CLIST 未收录该题' ? { ...problem, clistRatingStatus: 'not-found' as const } : problem : applyClistDifficultyReference({ ...problem, clistRating: result.rating,
+      clistRatingStatus: 'available', clistRatingCached: result.cached, clistRatingStale: result.stale, clistRatingQueriedAt: result.queriedAt });
+    const failure = result.error;
+    return { problem: problemEnrichment.apply(updated), message: failure ? result.rating != null ? '刷新失败，保留缓存评分' : failure : '' };
+  }));
+  handle('getProblemAIStatus', () => problemAI.status());
+  handle('saveProblemAIConfig', input => {
+    if (!input || typeof input !== 'object' || Array.isArray(input)) throw new Error('AI 配置格式无效');
+    const value = input as { endpoint?: unknown; model?: unknown; apiKey?: unknown };
+    if (typeof value.endpoint !== 'string' || typeof value.model !== 'string' || (value.apiKey !== undefined && typeof value.apiKey !== 'string')) throw new Error('AI 配置格式无效');
+    const validated = { endpoint: value.endpoint, model: value.model, apiKey: value.apiKey };
+    return writeOperation(() => problemAI.save(validated));
+  });
+  handle('clearProblemAIConfig', () => writeOperation(() => problemAI.clear()));
+  handle('suggestProblemEnrichment', input => writeOperation(async () => {
+    if (!input || typeof input !== 'object' || Array.isArray(input)) throw new Error('AI 建议请求无效');
+    const value = input as { url?: unknown; statementText?: unknown };
+    if (typeof value.url !== 'string' || typeof value.statementText !== 'string') throw new Error('AI 建议请求无效');
+    const view = problemEnrichment.view(value.url);
+    const fields = await problemAI.suggest(view, value.statementText);
+    const { model, ...suggestion } = fields;
+    return problemEnrichment.storeSuggestion(view.url, suggestion, model);
+  }));
   planner = createPlannerService({ read, save });
   platforms = createPlatformService({ read, save, fetcher: networkFetch, readPage: createPublicPageReader({ BrowserWindow }) });
   // Public schedules use stateless Node fetch, separate from Chromium session cookies.
@@ -239,12 +429,79 @@ function setup() {
   handle('updateLibrary', async full => {
     if (librarySyncing) throw new Error('题库正在更新，请稍候');
     librarySyncing = true;
+    librarySyncState = { ...librarySyncState, running: true, pauseRequested: false, mode: full === true ? 'full' : 'incremental', startedAt: new Date().toISOString(), finishedAt: null };
     try {
       // Index sync is a public-data fetch; Node's transport avoids the Chromium
       // redirect challenge that blocks the Luogu listing in the app session.
-      const report = await createSync({ directory: path.join(dir, 'library'), fs, path, fetcher: fetch, full: full === true }).run();
+      const sync = createSync({
+        directory: path.join(dir, 'library'), fs, path, fetcher: fetch, full: full === true,
+        onState: state => { librarySyncState = state; },
+        readState: () => read(path.join('library', 'sync-state.json'), null),
+        writeState: value => save(path.join('library', 'sync-state.json'), value),
+        shouldPause: () => librarySyncPauseRequested
+      });
+      librarySyncController = sync;
+      const report = await sync.run();
+      librarySyncState = { ...librarySyncState, running: false, finishedAt: new Date().toISOString() };
       return report;
-    } finally { librarySyncing = false; }
+    } finally { librarySyncController = null; librarySyncing = false; librarySyncPauseRequested = false; }
+  });
+  handle('getLibrarySyncStatus', () => {
+    if (librarySyncing) return librarySyncState;
+    const persisted = read(path.join('library', 'sync-state.json'), null);
+    const shape = persisted !== null && typeof persisted === 'object' && !Array.isArray(persisted) ? persisted as Record<string, unknown> : null;
+    if (shape && typeof shape.platforms === 'object' && shape.platforms !== null) {
+      return { ...librarySyncState, ...shape, running: false, pauseRequested: false } as import('../../shared/models/library-sync.js').LibrarySyncState;
+    }
+    return { ...librarySyncState, running: false, pauseRequested: false };
+  });
+  handle('pauseLibrarySync', () => {
+    if (!librarySyncing) return librarySyncState;
+    librarySyncPauseRequested = true;
+    librarySyncState = { ...librarySyncState, pauseRequested: true };
+    librarySyncController?.pause();
+    return librarySyncState;
+  });
+  handle('getDifficultyBackfillStatus', () => {
+    if (difficultyBackfill) return withDifficultyGaps(difficultyBackfillState);
+    difficultyBackfillState = readDifficultyBackfillState(read('difficulty-backfill.json', undefined), 100);
+    if (difficultyBackfillState.running) difficultyBackfillState = { ...difficultyBackfillState, running: false, pauseRequested: true, status: 'paused', message: '上次任务已停止，可开始下一批继续' };
+    return withDifficultyGaps(difficultyBackfillState);
+  });
+  handle('pauseDifficultyBackfill', () => {
+    if (!difficultyBackfill) return difficultyBackfillState;
+    difficultyBackfillPauseRequested = true;
+    difficultyBackfillState = { ...difficultyBackfillState, pauseRequested: true, status: 'pausing' };
+    return withDifficultyGaps(difficultyBackfillState);
+  });
+  handle('startDifficultyBackfill', async () => {
+    if (writeBusy || syncBusy || clistBulkRunning) throw new Error('请等待当前分页查询、缓存合并或同步完成');
+    if (difficultyBackfill) throw new Error('难度补全正在进行，请稍候');
+    const clist = refreshClistService();
+    if (!clist) throw new Error('请先在账户设置中配置 CLIST 用户名与 API Key');
+    const snapshot = libraryLoader?.load() ?? { records: [] };
+      const ratingReader = currentRatingReader();
+    const records = snapshot.records.map(problem => ({ id: problem.id, url: problem.url, source: problem.source, officialDifficulty: knownProblemDifficulty(problem),
+      clistRating: ratingReader(problem.url)?.rating ?? (problem.clistRating != null && problem.clistRating > 0 ? problem.clistRating : null) }));
+    difficultyBackfillPauseRequested = false;
+    const controller = createDifficultyBackfill({
+      records,
+      lookup: url => clist.lookupRating(url),
+      readLedger: () => read('difficulty-backfill-ledger.json', undefined),
+      writeLedger: value => save('difficulty-backfill-ledger.json', value),
+      readState: () => read('difficulty-backfill.json', undefined),
+      writeState: value => { difficultyBackfillState = value as import('../../shared/models/difficulty-backfill.js').DifficultyBackfillState; save('difficulty-backfill.json', value); },
+      shouldPause: () => difficultyBackfillPauseRequested,
+      batchSize: 100
+    });
+    difficultyBackfill = controller;
+    try { return withDifficultyGaps(await controller.run()); }
+    finally { difficultyBackfill = null; difficultyBackfillPauseRequested = false; }
+  });
+  handle('getDailyTagCatalog', () => {
+    problemEnrichment.refresh();
+    const snapshot = libraryLoader?.load() ?? { records: [], builtAt: null };
+    return buildDailyTagCatalog({ ...snapshot, records: snapshot.records.map(problem => problemEnrichment.apply(problem)) });
   });
   handle('dailyDraw', async filters => {
     const scope = sourceScope(), generation = loginGeneration;
@@ -252,15 +509,27 @@ function setup() {
     const publicRecords = cache.repo === scope.repo && Array.isArray(cache.records) ? cache.records.filter(record => record.kind === 'document') : [];
     const personal = local() as LocalView;
     const ownRecords = Array.isArray(personal.records) ? personal.records.filter(record => record.kind === 'local' && (record.ownerId == null || account?.id != null && String(record.ownerId) === String(account.id))) : [];
-    const result = await dailyDraw(filters, [...ownRecords, ...publicRecords], networkFetch as typeof fetch, Math.random, refreshClistService(), librarySnapshot(filters));
+    problemEnrichment.refresh();
+      const ratingCache = currentRatingReader();
+    const outcomes = createBackfillOutcomeReader(read('difficulty-backfill-ledger.json', undefined));
+    const rawProblems = new Map<string, import('../../shared/models/daily-problem.js').DailyDrawProblem>();
+    const result = await dailyDraw(filters, [...ownRecords, ...publicRecords], networkFetch as typeof fetch, Math.random, refreshClistService(), librarySnapshot(filters), problem => {
+      try { rawProblems.set(canonicalProblemUrl(problem.url), problem); } catch { /* Historical unsupported URL. */ }
+      return problemEnrichment.apply(cachedClistProblem(problem, ratingCache, outcomes));
+    });
     ensureSource(scope.sourceKey, generation);
+    try {
+      const url = canonicalProblemUrl(result.problem.url), original = rawProblems.get(url);
+      if (original) recentDrawProblems.set(`${scope.sourceKey}|${generation}|${url}`, original);
+    } catch { /* Unsupported historical URL cannot be supplemented. */ }
+    if (recentDrawProblems.size > 100) recentDrawProblems.delete(recentDrawProblems.keys().next().value!);
     return result;
   });
   handle('bindPlatform', (platform, url) => platforms.bind(platform, url));
   handle('refreshPlatform', platform => platforms.refresh(platform));
   handle('unbindPlatform', platform => platforms.unbind(platform));
   registerUpdateHandlers({ handle, app, updater, isWriteBusy: () => writeBusy, isSyncBusy: () => syncBusy,
-    isUpdateBusy: () => updateBusy, isInstalling: () => installing, isPlatformBusy: () => platforms.isBusy(),
+    isUpdateBusy: () => updateBusy, isInstalling: () => installing, isPlatformBusy: () => platforms.isBusy() || clistBulkRunning || difficultyBackfill !== null,
     setUpdateBusy: value => { updateBusy = value; }, setInstalling: value => { installing = value; },
     directory: dir, version: APP_VERSION, process, spawn, path, setTimeout, processEnvForInstaller,
     cleanupUpdateStorage, prepareFileUpgrade, cancelPreparedFileUpgrade, getFileUpgradeCapability });
@@ -377,8 +646,16 @@ function setup() {
       const curriculum = cachedLearningCurriculum(result.learningCurriculum, result.algorithmTopics, scope);
       const updated = { ...result, repo, tagCatalog, tagCatalogError, tricks: cachedTricks(result.tricks, scope), algorithmNotes: Array.isArray(result.algorithmNotes) ? result.algorithmNotes : [], algorithmTopics: Array.isArray(result.algorithmTopics) ? result.algorithmTopics : [], algorithmNodeContents: cachedAlgorithmNodeContents(result.algorithmNodeContents, result.algorithmTopics, scope), learningCurriculum: curriculum, learningGateContents: cachedLearningContents(result.learningGateContents, scope, curriculum) };
       saveRepoCache(old, updated);
+      let sharedCacheError: string | undefined;
+      try {
+        const sharedSource = clistSharedCache.status().sourceUrl;
+        if (sharedSource && !difficultyBackfill && !clistBulkRunning) {
+          await clistSharedCache.syncFromUrl(sharedSource);
+          clistService = undefined; clistCredentialFingerprint = ''; backfillGapCache = null;
+        }
+      } catch { sharedCacheError = '资料已同步，共享 CLIST 缓存暂未更新，继续使用本机缓存'; }
       if (token) { try { await refreshIdentity(); } catch (error) { permissions = null; return state(`资料已同步，账号权限刷新失败：${(error as FailureView).message}`); } }
-      return state();
+      return state(sharedCacheError);
     } finally { syncBusy = false; }
   });
   registerSettingsHandlers({ handle, isWriteBusy: () => writeBusy, isSyncBusy: () => syncBusy,

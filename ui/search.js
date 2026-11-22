@@ -25,13 +25,49 @@ var __QMXStandalone = (() => {
   __export(search_exports, {
     Search: () => Search
   });
+
+  // src/shared/luogu-difficulty.ts
+  var luoguDifficultyLevels = ["入门", "普及-", "普及", "普及+/提高-", "提高", "提高+/省选-", "省选/NOI-", "NOI/NOI+/CTS"];
+  var aliases = {
+    "暂无评定": 0,
+    "入门": 1,
+    "普及-": 2,
+    "普及减": 2,
+    "普及": 3,
+    "普及/提高-": 3,
+    "普及/提高减": 3,
+    "普及提高-": 3,
+    "普及+/提高-": 4,
+    "普及+/提高": 4,
+    "普及加/提高": 4,
+    "提高": 5,
+    "提高+/省选-": 6,
+    "提高/省选-": 6,
+    "省选/NOI-": 7,
+    "省选/NOI减": 7,
+    "NOI/NOI+/CTS": 8,
+    "NOI/NOI+/CTSC": 8,
+    "NOI/CTSC": 8,
+    "NOI": 8,
+    "NOI+": 8
+  };
+  function luoguDifficultyRank(value) {
+    const key = value.trim().replace(/[−–—﹣]/g, "-").replace(/\s/g, "");
+    return Object.hasOwn(aliases, key) ? aliases[key] : null;
+  }
+  function luoguDifficultyLabel(value) {
+    const rank = luoguDifficultyRank(value);
+    return rank === null ? value : rank === 0 ? "暂无评定" : luoguDifficultyLevels[rank - 1];
+  }
+
+  // src/renderer/lib/search.ts
   function text(value) {
     return String(value == null ? "" : value).normalize("NFKC").toLowerCase().replace(/ß/g, "ss").replace(/ς/g, "σ").replace(/\s+/gu, " ").trim();
   }
   function normalizePlatform(value) {
     const name = text(value).replace(/[\s_-]/g, "");
-    const aliases = { cf: "CF", codeforces: "CF", lg: "LG", luogu: "LG", "洛谷": "LG", at: "AT", atcoder: "AT", nc: "NC", nowcoder: "NC", "牛客": "NC", lc: "LC", leetcode: "LC", "力扣": "LC", oth: "Oth", other: "Oth", "其他": "Oth" };
-    return aliases[name] || String(value == null ? "" : value).trim() || "Oth";
+    const aliases2 = { cf: "CF", codeforces: "CF", lg: "LG", luogu: "LG", "洛谷": "LG", at: "AT", atcoder: "AT", nc: "NC", nowcoder: "NC", "牛客": "NC", lc: "LC", leetcode: "LC", "力扣": "LC", oth: "Oth", other: "Oth", "其他": "Oth" };
+    return aliases2[name] || String(value == null ? "" : value).trim() || "Oth";
   }
   var luoguLevels = [
     ["red", ["入门"]],
@@ -46,7 +82,8 @@ var __QMXStandalone = (() => {
   function difficulty(input) {
     const record = input || {};
     const code = normalizePlatform(record.platform);
-    const native = String(record.difficulty == null ? "" : record.difficulty).trim();
+    const rawNative = String(record.difficulty == null ? "" : record.difficulty).trim();
+    const native = code === "LG" ? luoguDifficultyLabel(rawNative) : rawNative;
     const hasRating = record.rating !== void 0 && record.rating !== null && String(record.rating).trim() !== "" && Number.isFinite(Number(record.rating));
     let tone = "neutral", rank = "", level = null;
     if (code === "CF" && hasRating) {

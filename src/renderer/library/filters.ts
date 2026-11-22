@@ -1,4 +1,5 @@
 import { Search } from '../lib/search.js';
+import { tagColorClass } from '../lib/tag-color.js';
 /* Search facets, difficulty ranges and the shared filter/editor tag picker. */
 type Options = import('../../../types/filters-ui').FiltersUIOptions;
 type Controller = import('../../../types/filters-ui').FiltersUIController;
@@ -6,8 +7,9 @@ type AppRecord = import('../../../types/app').AppRecord;
 type AppTagGroup = import('../../../types/app').AppTagGroup;
 type AppQuery = import('../../../types/app').AppQuery;
 type AppQueryAll = import('../../../types/app').AppQueryAll;
+type DailyTagCatalog = import('../../shared/models/daily-problem').DailyTagCatalog;
 
-export function createFilters({ getRecords, getView, getScope, getTagCatalog, getBusy, favorite, mastery, isLocal, isOwnSolution, recordAuthorName, render }: Options): Controller {
+export function createFilters({ getRecords, getView, getScope, getTagCatalog, getDailyTagCatalog, getBusy, favorite, mastery, isLocal, isOwnSolution, recordAuthorName, render }: Options): Controller {
   const $: AppQuery = <T extends Element = HTMLElement>(selector: string, root: ParentNode = document) => root.querySelector<T>(selector);
   const $$: AppQueryAll = <T extends Element = HTMLElement>(selector: string, root: ParentNode = document) => Array.from(root.querySelectorAll<T>(selector));
   function element<K extends keyof HTMLElementTagNameMap>(tag: K, className?: string, text?: unknown): HTMLElementTagNameMap[K] { const node = document.createElement(tag); if (className) node.className = className; if (text !== undefined) node.textContent = String(text); return node; }
@@ -49,12 +51,57 @@ export function createFilters({ getRecords, getView, getScope, getTagCatalog, ge
     const native = all.filter(r => !['CF','LG'].includes(Search.normalizePlatform(r.platform))).map(r => String(r.difficulty || '').trim()).filter(Boolean);
     fillFacetOptions($('#native-difficulty-options')!, 'native', native); updateFacetCounts();
   }
+  let acquiredTagCatalog: DailyTagCatalog | null = null;
+  const tagKey = (value: string) => value.trim().toLocaleLowerCase();
+  function nonAlgorithmTag(value: string) {
+    const excluded = window.QMX_TAG_PRESETS?.nonAlgorithmNames;
+    return /^洛谷标签#-?\d+$/.test(value) || (Array.isArray(excluded) && excluded.some(name => typeof name === 'string' && tagKey(name) === tagKey(value)));
+  }
+  const tagSourceIndex = new Map<string, Set<string>>();
+  function indexTagSources() {
+    tagSourceIndex.clear();
+    const add = (name: string, sources: string[]) => { const key = tagKey(name); const values = tagSourceIndex.get(key) || new Set<string>(); sources.forEach(source => values.add(source)); tagSourceIndex.set(key, values); };
+    for (const category of window.QMX_TAG_PRESETS?.categories || []) for (const tag of category.tags || []) add(String(tag.name), ['LG']);
+    for (const tag of acquiredTagCatalog?.tags || []) add(tag.name, tag.sources);
+  }
+  indexTagSources();
+  function tagSources(value: string): string[] { return [...(tagSourceIndex.get(tagKey(value)) || [])].sort(); }
   function tagGroups(extra: string[] = []) {
-    const groups: AppTagGroup[] = (getTagCatalog()?.categories || []).map(c => ({ id: String(c.id), name: String(c.name), tags: (c.tags || []).map(t => String(t.name)) }));
-    const known = new Set(groups.flatMap(c => c.tags));
-    const historical = [...new Set([...getRecords().flatMap(r => Array.isArray(r.tags) ? r.tags.map(String) : []), ...extra])].filter(t => !known.has(t));
+    const groups: AppTagGroup[] = [];
+    const identities = new Map<AppTagGroup, { ids: Set<string>; names: Set<string> }>();
+    const rawTypes = window.QMX_TAG_PRESETS?.tagTypes;
+    const tagTypes = rawTypes && typeof rawTypes === 'object' && !Array.isArray(rawTypes) ? rawTypes as Record<string, unknown> : {};
+    // A cached GitHub catalog can predate the bundled directory. Always expose
+    // offline presets as well as repository additions, without changing records.
+    for (const catalog of [window.QMX_TAG_PRESETS, getTagCatalog()]) {
+      for (const category of catalog?.categories || []) {
+        let group = groups.find(item => item.id === String(category.id) || item.name === String(category.name));
+        if (!group) {
+          group = { id: String(category.id), name: String(category.name), tags: [] };
+          groups.push(group); identities.set(group, { ids: new Set(), names: new Set() });
+        }
+        const seen = identities.get(group)!;
+        for (const tag of category.tags || []) {
+          // Explicitly typed external entries must be algorithms. Existing record
+          // labels still appear below as history, including manually written tags.
+          const id = 'id' in tag ? String(tag.id ?? '') : '';
+          const type = tagTypes[id] ?? ('type' in tag ? tag.type : undefined);
+          if (type !== undefined && type !== 2) continue;
+          const name = String(tag.name).trim(), key = name.toLocaleLowerCase();
+          if (!name || (id && seen.ids.has(id)) || seen.names.has(key)) continue;
+          if (id) seen.ids.add(id);
+          seen.names.add(key); group.tags.push(name);
+        }
+      }
+    }
+    const knownKeys = new Set(groups.flatMap(c => c.tags).map(tagKey));
+    const acquired = [...new Map((acquiredTagCatalog?.tags || []).filter(tag => typeof tag.name === 'string' && tag.name.trim() && !nonAlgorithmTag(tag.name)).map(tag => [tagKey(tag.name), tag.name.trim()])).values()].filter(name => !knownKeys.has(tagKey(name)));
+    if (acquired.length) groups.push({ id: 'acquired-platform-tags', name: '已获取的平台算法标签', tags: acquired });
+    const known = new Set(groups.flatMap(c => c.tags).map(tagKey));
+    const excludedNames = new Set(Array.isArray(window.QMX_TAG_PRESETS?.nonAlgorithmNames) ? window.QMX_TAG_PRESETS.nonAlgorithmNames as string[] : []);
+    const historical = [...new Set([...getRecords().flatMap(r => Array.isArray(r.tags) ? r.tags.map(String) : []), ...extra])].filter(t => !known.has(tagKey(t)) && (tagPickerContext?.mode !== 'daily' || (!excludedNames.has(t.trim()) && !/^洛谷标签#-?\d+$/.test(t))));
     if (historical.length) groups.push({ id: 'history', name: '历史标签', tags: historical, historical: true });
-    return groups;
+    return groups.filter(group => group.tags.length);
   }
   type TagOption = { label: HTMLLabelElement; input: HTMLInputElement; search: string };
   type TagOptionsView = { selected: Set<string>; onChange: () => void; groups: { heading: HTMLElement; options: TagOption[] }[]; inputs: Map<string, HTMLInputElement[]>; empty: HTMLElement };
@@ -74,8 +121,10 @@ export function createFilters({ getRecords, getView, getScope, getTagCatalog, ge
           const label = element('label', 'facet-option'), input = element('input');
           input.type = 'checkbox'; input.value = value; input.checked = selected.has(value); input.disabled = getBusy();
           const duplicates = inputs.get(value) || []; duplicates.push(input); inputs.set(value, duplicates);
-          append(label, input, element('span', '', value + (group.historical ? ' · 历史' : '')), element('small', '', counts.get(value) || 0)); fragment.append(label);
-          return { label, input, search: `${group.name} ${value}`.toLowerCase() };
+          const sources = tagSources(value);
+          const source = element('small', 'tag-option-sources', sources.join(' · ')); source.title = sources.length ? `算法标签来源：${sources.join('、')}` : '已有题解或自定义标签';
+          append(label, input, element('span', `tag tag-option-name ${tagColorClass(value)}`, value + (group.historical ? ' · 历史' : '')), source, element('small', 'tag-option-count', counts.get(value) || 0)); fragment.append(label);
+          return { label, input, search: `${group.name} ${value} ${sources.join(' ')}`.toLowerCase() };
         });
         return { heading, options };
       });
@@ -89,6 +138,7 @@ export function createFilters({ getRecords, getView, getScope, getTagCatalog, ge
         input.checked ? current.selected.add(input.value) : current.selected.delete(input.value);
         current.inputs.get(input.value)?.forEach(node => { node.checked = input.checked; });
         current.onChange();
+        renderPickerSelection();
       };
       container.replaceChildren(fragment);
     }
@@ -108,6 +158,58 @@ export function createFilters({ getRecords, getView, getScope, getTagCatalog, ge
     view.empty.hidden = matches > 0;
   }
   let tagPickerContext: { mode: string; original: Set<string>; selected: Set<string>; onApply?: (tags: Set<string>) => void } | null = null;
+  function renderPickerSelection() {
+    const context = tagPickerContext;
+    if (!context) return;
+    let host = document.getElementById('tag-picker-selected');
+    if (!host) {
+      host = element('section', 'tag-picker-selected'); host.id = 'tag-picker-selected'; host.setAttribute('aria-label', '已选标签');
+      $('#tag-picker-dialog')!.insertBefore(host, $('#tag-picker-search')!);
+    }
+    const heading = element('div', 'tag-picker-selected-heading');
+    const count = element('span', '', `已选 ${context.selected.size} 个标签`); count.setAttribute('aria-live', 'polite');
+    const clear = button('清空已选', 'button subtle tag-picker-clear', () => {
+      if (getBusy() || tagPickerContext !== context) return;
+      context.selected.clear();
+      tagOptionsViews.get($('#tag-picker-dialog-options')!)?.inputs.forEach(inputs => inputs.forEach(input => { input.checked = false; }));
+      renderPickerSelection();
+    }); clear.disabled = getBusy() || context.selected.size === 0;
+    append(heading, count, clear);
+    const chips = element('div', 'tag-picker-selected-chips');
+    for (const tag of context.selected) {
+      const chip = button(`${tag} ×`, `tag ${tagColorClass(tag)} tag-picker-selected-chip`, () => {
+        if (getBusy() || tagPickerContext !== context) return;
+        context.selected.delete(tag);
+        tagOptionsViews.get($('#tag-picker-dialog-options')!)?.inputs.get(tag)?.forEach(input => { input.checked = false; });
+        renderPickerSelection();
+      });
+      chip.setAttribute('aria-label', `移除标签 ${tag}`); chip.disabled = getBusy(); chips.append(chip);
+    }
+    if (!context.selected.size) chips.append(element('span', 'tag-picker-selection-empty', '尚未选择标签'));
+    host.replaceChildren(heading, chips);
+  }
+  function coverageElement(): HTMLElement {
+    let coverage = document.getElementById('daily-tag-coverage');
+    if (!coverage) { coverage = element('div', 'daily-tag-coverage'); coverage.id = 'daily-tag-coverage'; coverage.setAttribute('role', 'status'); $('#tag-picker-dialog')!.insertBefore(coverage, $('#tag-picker-dialog-options')!); }
+    return coverage;
+  }
+  function showTagCoverage(loading = false, failed = false) {
+    const coverage = coverageElement(); coverage.replaceChildren();
+    coverage.hidden = !getDailyTagCatalog;
+    if (!getDailyTagCatalog) return;
+    if (acquiredTagCatalog) {
+      const summary = element('div', 'daily-tag-coverage-platforms');
+      for (const [platform, info] of Object.entries(acquiredTagCatalog.platforms)) {
+        const label = info.tagged === 0 ? `${platform}：${info.count} 题，未提供标签` : `${platform}：${info.tagged}/${info.count} 题有标签，${info.tagCount} 标签`;
+        const entry = element('span', '', label); entry.dataset.platform = platform; summary.append(entry);
+      }
+      coverage.append(summary);
+      coverage.append(element('small', '', `索引 ${acquiredTagCatalog.total} 题${acquiredTagCatalog.builtAt ? ` · 更新于 ${acquiredTagCatalog.builtAt}` : ' · 尚无更新时间'}`));
+    }
+    if (loading) coverage.append(element('small', '', '正在读取本地索引标签…'));
+    else if (failed) coverage.append(element('small', '', '暂时无法读取索引标签，仍可使用离线算法目录。'));
+    else if (!acquiredTagCatalog || acquiredTagCatalog.total === 0) coverage.append(element('small', '', '尚无本地索引题目；离线算法目录仍可选择。'));
+  }
   function openTagPicker(mode: string, selection?: { selected: Set<string>; onApply(tags: Set<string>): void }) {
     if (getBusy()) return;
     const source = selection?.selected ?? (mode === 'filter' ? facets.tags : new Set($('#submit-form')!.elements.tags.value.split(/[,，、]/).map(t => t.trim()).filter(Boolean)));
@@ -116,8 +218,24 @@ export function createFilters({ getRecords, getView, getScope, getTagCatalog, ge
     $('#tag-picker-hint')!.textContent = mode === 'daily' ? '选择每日一题的算法标签。' : mode === 'filter' ? '命中任一已选标签的题目将显示；确定后应用筛选。' : '选择一个或多个标签，点击确定后加入错题。';
     $('#tag-picker-search')!.value = '';
     fillTagOptions($('#tag-picker-dialog-options')!, tagPickerContext.selected, '', () => {});
+    renderPickerSelection();
     document.body.classList.add('tag-picker-open');
+    showTagCoverage(Boolean(getDailyTagCatalog));
     $('#tag-picker-dialog')!.showModal(); $('#tag-picker-search')!.focus();
+    if (getDailyTagCatalog) {
+      const context = tagPickerContext;
+      void Promise.resolve().then(() => getDailyTagCatalog()).then(catalog => {
+        if (tagPickerContext !== context || !$('#tag-picker-dialog')!.open) return;
+        acquiredTagCatalog = catalog; indexTagSources();
+        const container = $('#tag-picker-dialog-options')!, scroll = container.scrollTop, search = $('#tag-picker-search')!.value;
+        const focused = document.activeElement instanceof HTMLInputElement && container.contains(document.activeElement) ? document.activeElement.value : null;
+        tagOptionsViews.delete(container);
+        fillTagOptions(container, context.selected, search, () => {});
+        container.scrollTop = scroll;
+        if (focused !== null) Array.from(container.querySelectorAll<HTMLInputElement>('input')).find(input => input.value === focused)?.focus({ preventScroll: true });
+        showTagCoverage();
+      }, () => { if (tagPickerContext === context && $('#tag-picker-dialog')!.open) showTagCoverage(false, true); });
+    }
   }
   function closeTagPicker(apply: boolean) {
     if (!tagPickerContext) return;

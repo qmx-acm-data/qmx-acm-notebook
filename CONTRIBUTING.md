@@ -34,7 +34,7 @@ pnpm dist
 
 ## 渐进式 TypeScript 重构
 
-功能保持基线、当前验证记录和未验收范围见 [TypeScript 重构说明](docs/TYPESCRIPT_REFACTOR.md)及[实施计划与执行状态](docs/TYPESCRIPT_REFACTOR_PLAN.md)。主进程、服务、更新器、发布/数据工具、匿名服务器及 renderer 业务源码已迁移到 `src` 下的 TS；必要的 CJS 构建引导、测试、静态资源和生成数据继续保留原格式。`pnpm check:refactor` 汇总严格类型、语法、生成数据和单元检查；`pnpm test:ui:refactor` 运行现有 22 组界面回归，需要 Playwright 和 Microsoft Edge。类型覆盖以 `tsconfig.json`、`tsconfig.preload.json`、`tsconfig.boundary.json`、`tsconfig.modules.json` 和 `tsconfig.node.json` 为准，浏览器配置不引入 Node 全局。
+功能保持基线、当前验证记录和未验收范围见 [TypeScript 重构说明](docs/TYPESCRIPT_REFACTOR.md)及[实施计划与执行状态](docs/TYPESCRIPT_REFACTOR_PLAN.md)。主进程、服务、更新器、发布/数据工具、匿名服务器及 renderer 业务源码已迁移到 `src` 下的 TS；必要的 CJS 构建引导、测试、静态资源和生成数据继续保留原格式。`pnpm check:refactor` 汇总严格类型、语法、生成数据和单元检查；`pnpm test:ui:refactor` 运行现有 36 组界面回归，需要 Playwright 和 Microsoft Edge。类型覆盖以 `tsconfig.json`、`tsconfig.preload.json`、`tsconfig.boundary.json`、`tsconfig.modules.json` 和 `tsconfig.node.json` 为准，浏览器配置不引入 Node 全局。
 
 renderer 使用显式 ES import/export，由固定版本 esbuild 0.25.12 将 `src/renderer/app/app.ts` 打包为浏览器专用单个 IIFE `ui/app.js`。页面只加载第三方库、QMX 静态数据和应用 bundle；业务模块不再通过页面全局互相调用。受版本控制的独立浏览器兼容适配器仍供夹具和单模块测试使用，并接受生成一致性检查，不是第二套手写实现。主进程入口为 `src/main/app/main.cts`，会话及 IPC 职责分别在 `session.cts`、`ipc-handlers.cts`；服务按真实业务目录组织。
 

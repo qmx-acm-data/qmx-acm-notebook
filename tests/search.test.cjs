@@ -44,6 +44,7 @@ test('Luogu levels use native colors, including minus and full-width aliases', (
   assert.equal(difficulty({ platform: '洛谷', difficulty: '提高＋／省选−' }).level, 6);
   assert.equal(difficulty({ platform: 'LG', difficulty: 'NOI+' }).level, 8);
   assert.equal(difficulty({ platform:'LG', difficulty:'普及/提高-' }).level,3);
+  assert.equal(difficulty({ platform:'LG', difficulty:'普及/提高−' }).label, '普及');
   assert.equal(difficulty({ platform:'LG', difficulty:'普及+/提高' }).level,4);
   assert.equal(difficulty({ platform:'LG', difficulty:'NOI/NOI+/CTSC' }).level,8);
 });

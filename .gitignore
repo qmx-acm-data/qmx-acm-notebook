@@ -17,6 +17,13 @@ release/
 .env.*
 !.env.example
 auth.json
+ai-auth.json
+problem-enrichments.json
+clist-rating-cache.json
+difficulty-backfill.json
+difficulty-backfill-ledger.json
+public-difficulty-cache.json
+public-difficulty-cache.json.bak
 local.json
 cache.json
 settings.json

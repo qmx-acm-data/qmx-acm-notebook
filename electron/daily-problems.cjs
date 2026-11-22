@@ -15,7 +15,9 @@ exports.fetchAtCoderProblems = fetchAtCoderProblems;
 exports.filterProblems = filterProblems;
 exports.selectProblem = selectProblem;
 exports.estimateLuoguDifficulty = estimateLuoguDifficulty;
+exports.applyClistDifficultyReference = applyClistDifficultyReference;
 exports.dailyDraw = dailyDraw;
+const { luoguDifficultyRank } = require('./luogu-difficulty.js');
 function object(value) {
     return value !== null && typeof value === 'object' && !Array.isArray(value) ? value : null;
 }
@@ -73,9 +75,11 @@ const luoguDifficultyNames = {
     0: '暂无评定', 1: '入门', 2: '普及−', 3: '普及/提高−', 4: '普及+/提高',
     5: '提高+/省选−', 6: '省选/NOI−', 7: 'NOI/NOI+/CTSC'
 };
-const tagCatalog = require('../ui/tag-presets.js');
-const luoguTagNames = Object.fromEntries((tagCatalog.categories ?? []).flatMap(category => category.tags ?? [])
-    .flatMap(tag => /^-?\d+$/.test(tag.id) ? [[Number(tag.id), tag.name]] : []));
+// Types come from Luogu's own taxonomy: Algorithm only, never Origin/Time/
+// Region/SpecialProblem/Others even when a non-algorithm label looks technical.
+const luoguTagCatalog = require('../ui/luogu-tags.json');
+const luoguAlgorithmType = luoguTagCatalog.types.find(type => type.type === 'Algorithm')?.id;
+const luoguTagNames = Object.fromEntries(luoguTagCatalog.tags.filter(tag => tag.type === luoguAlgorithmType).map(tag => [tag.id, tag.name.replace(/^\uFEFF/, '').trim()]));
 const luoguPageSize = 50;
 const luoguMaxPages = 3;
 let luoguSnapshot = null;
@@ -92,12 +96,13 @@ function estimateLuoguCfRating(level) { return luoguCfRatings[luoguLevelKey(leve
 function parseLuoguProblemList(text) {
     if (typeof text !== 'string')
         throw new Error('洛谷题库响应不是文本');
-    const match = /<script\s+id=["']lentille-context["']\s+type=["']application\/json["']\s*>([\s\S]*?)<\/script>/i.exec(text);
-    if (!match)
+    const content = text.replace(/^\uFEFF/, '').trim();
+    const match = /<script\s+id=["']lentille-context["']\s+type=["']application\/json["']\s*>([\s\S]*?)<\/script>/i.exec(content);
+    if (!match && !content.startsWith('{'))
         throw new Error('洛谷题库缺少公开数据');
     let payload;
     try {
-        payload = JSON.parse(match[1]);
+        payload = JSON.parse(match ? match[1] : content);
     }
     catch {
         throw new Error('洛谷题库 JSON 格式错误');
@@ -111,8 +116,8 @@ function parseLuoguProblemList(text) {
             return [];
         const level = typeof row.difficulty === 'number' && Number.isInteger(row.difficulty) ? luoguDifficultyNames[row.difficulty] : undefined;
         const tagIds = Array.isArray(row.tags) ? row.tags.filter((tag) => typeof tag === 'number' && Number.isSafeInteger(tag)) : [];
-        const tags = tagIds.map(id => luoguTagNames[id] ?? `洛谷标签#${id}`);
-        return [{ id: `LG:${row.pid}`, title: row.name.trim(), source: 'LG', origin: 'public', estimatedCfRating: level ? estimateLuoguCfRating(level) : null, estimatedLuoguDifficulty: null, url: `https://www.luogu.com.cn/problem/${row.pid}`, rating: null, luoguDifficulty: level ?? '', tags }];
+        const tags = [...new Set(tagIds.flatMap(id => luoguTagNames[id] ? [luoguTagNames[id]] : []))];
+        return [{ id: `LG:${row.pid}`, title: row.name.trim(), source: 'LG', origin: 'public', estimatedCfRating: level ? estimateLuoguCfRating(level) : null, estimatedLuoguDifficulty: null, url: `https://www.luogu.com.cn/problem/${row.pid}`, rating: null, luoguDifficulty: level ?? '', officialTags: tags, officialDifficulty: row.difficulty === 0 ? null : level ?? null, tags }];
     });
     return { problems, count: data.count };
 }
@@ -126,7 +131,7 @@ async function fetchLuoguProblems(fetcher = fetch, timeoutMs = 15000, random = M
             const page = pages[index];
             try {
                 const response = await fetcher(`https://www.luogu.com.cn/problem/list?type=P&page=${page}&_contentOnly=1`, {
-                    headers: { accept: 'text/html' }, signal: AbortSignal.timeout(timeoutMs), redirect: 'error', credentials: 'omit'
+                    headers: { accept: 'application/json, text/html', 'x-lentille-request': 'content-only' }, signal: AbortSignal.timeout(timeoutMs), redirect: 'error', credentials: 'omit'
                 });
                 if (!response.ok)
                     throw new Error(`HTTP ${response.status}`);
@@ -204,14 +209,17 @@ function parseLeetCode(payload) {
             const tag = object(item);
             return typeof tag?.name === 'string' && tag.name.trim() ? [tag.name.trim()] : [];
         }) : [];
-        return [{ id: `LC:${row.frontendQuestionId}`, title: row.title.trim(), source: 'LC', origin: 'leetcode', estimatedCfRating: rating, ratingEstimateReason: rating === null ? undefined : `低置信度估算，依据力扣原生难度 ${String(row.difficulty)}，映射为 CF 评分 ${rating}`, estimatedLuoguDifficulty: estimateLuoguDifficulty(rating), url: `https://leetcode.com/problems/${row.titleSlug}/`, rating: null, luoguDifficulty: '', tags }];
+        return [{ id: `LC:${row.frontendQuestionId}`, title: row.title.trim(), source: 'LC', origin: 'leetcode', estimatedCfRating: rating, ratingEstimateReason: rating === null ? undefined : `低置信度估算，依据力扣原生难度 ${String(row.difficulty)}，映射为 CF 评分 ${rating}`, estimatedLuoguDifficulty: estimateLuoguDifficulty(rating), url: `https://leetcode.com/problems/${row.titleSlug}/`, rating: null, luoguDifficulty: '', officialTags: tags, officialDifficulty: ['Easy', 'Medium', 'Hard'].includes(String(row.difficulty)) ? String(row.difficulty) : null, tags }];
     });
 }
 async function fetchLeetCodeProblems(fetcher = fetch, timeoutMs = 15000) {
+    const problems = [];
     try {
-        const problems = [];
         let total = 0;
-        for (let skip = 0; skip < total || skip === 0; skip += 1000) {
+        let skip = 0;
+        for (let page = 0; skip < total || skip === 0; page += 1) {
+            if (page >= 10000)
+                throw new Error('LeetCode 分页超过安全上限，题库尚未完整');
             const response = await fetcher('https://leetcode.com/graphql/', {
                 method: 'POST', headers: { 'content-type': 'application/json' },
                 body: JSON.stringify({ query: leetcodeQuery, variables: { categorySlug: '', limit: 1000, skip, filters: { premiumOnly: false } } }),
@@ -224,12 +232,19 @@ async function fetchLeetCodeProblems(fetcher = fetch, timeoutMs = 15000) {
             if (typeof listing?.total !== 'number' || !Number.isSafeInteger(listing.total) || listing.total < 0)
                 throw new Error('Invalid LeetCode total count');
             total = listing.total;
+            const questions = Array.isArray(listing.questions) ? listing.questions : [];
             problems.push(...parseLeetCode(payload));
+            if (questions.length === 0 && skip < total)
+                throw new Error(`LeetCode 分页提前为空（偏移 ${skip}，共 ${total} 条），题库尚未完整`);
+            skip += questions.length;
+            if (skip >= total)
+                break;
         }
         return { problems, errors: [] };
     }
     catch (error) {
-        return { problems: [], errors: [error instanceof Error ? error.message : 'Unknown source error'] };
+        const message = error instanceof Error ? error.message : 'Unknown source error';
+        return { problems, errors: [problems.length ? `LeetCode 已保留 ${problems.length} 道已获取题目；${message}` : message] };
     }
 }
 async function fetchAtCoderProblems(fetcher = fetch, timeoutMs = 15000) {
@@ -315,15 +330,17 @@ const tagAliases = new Map(tagGroups.flatMap(group => {
     return [...normalized].map(tag => [tag, normalized]);
 }));
 function tagsMatch(problemTags, requestedTag) {
+    const { normalizeAlgorithmTag } = require('./library-normalize.cjs');
+    const canonicalRequested = normalizeAlgorithmTag(requestedTag);
     const requested = normalizedTag(requestedTag);
     const aliases = tagAliases.get(requested);
     return problemTags.some(value => {
         const candidate = normalizedTag(value);
-        return candidate === requested || aliases?.has(candidate) === true;
+        return candidate === requested || aliases?.has(candidate) === true || (canonicalRequested !== null && normalizeAlgorithmTag(value) === canonicalRequested);
     });
 }
 function estimateLuoguDifficulty(rating) {
-    if (rating === null || !Number.isFinite(rating) || rating <= 0)
+    if (rating === null || !Number.isFinite(rating) || rating < 0)
         return null;
     if (rating < 1000)
         return '入门';
@@ -379,13 +396,76 @@ function normalizeRecord(value) {
         estimatedCfRating = storedEstimatedCfRating;
     if (source === 'LC')
         estimatedCfRating = estimateLeetCodeRating(row.difficulty) ?? storedEstimatedCfRating;
-    const estimatedLuoguDifficulty = source === 'LG' && luoguDifficulty
+    const estimatedLuoguDifficulty = source === 'LG' && (luoguDifficultyRank(luoguDifficulty) ?? 0) > 0
         ? null
         : storedEstimatedLuoguDifficulty ?? estimateLuoguDifficulty(rating ?? estimatedCfRating);
-    return { id, title: row.title.trim(), source, origin, communityDifficulty, estimatedCfRating, estimatedLuoguDifficulty, ratingEstimateReason: storedRatingEstimateReason, url: url.href, rating, luoguDifficulty, tags };
+    const { normalizeOfficialMetadata } = require('./library-normalize.cjs');
+    const official = normalizeOfficialMetadata({ ...row, luoguDifficulty, officialDifficulty: typeof row.officialDifficulty === 'string' || row.officialDifficulty === null ? row.officialDifficulty : typeof row.difficulty === 'string' && row.difficulty.trim() ? row.difficulty : undefined }, source, tags);
+    return { id, title: row.title.trim(), source, origin, communityDifficulty, estimatedCfRating, estimatedLuoguDifficulty, ratingEstimateReason: storedRatingEstimateReason, url: url.href, rating, luoguDifficulty, tags, ...official };
+}
+const dailySourceSnapshots = new WeakMap();
+const dailySourceMaxAgeMs = 5 * 60_000;
+function copySourceResult(result) {
+    return { problems: result.problems.map(problem => ({ ...problem, tags: [...problem.tags] })), errors: [...result.errors] };
+}
+/** Repeated draws share public source data, never account-scoped records. */
+async function loadDailySource(fetcher, source, load) {
+    let snapshots = dailySourceSnapshots.get(fetcher);
+    if (!snapshots) {
+        snapshots = new Map();
+        dailySourceSnapshots.set(fetcher, snapshots);
+    }
+    const previous = snapshots.get(source);
+    if (previous?.pending)
+        return copySourceResult(await previous.pending);
+    if (previous?.result && Date.now() - previous.at >= 0 && Date.now() - previous.at < dailySourceMaxAgeMs)
+        return copySourceResult(previous.result);
+    const pending = load();
+    const snapshot = { at: 0, pending };
+    snapshots.set(source, snapshot);
+    try {
+        const result = await pending;
+        // A failed or incomplete fetch must remain retryable on the next draw.
+        if (result.problems.length > 0 && result.errors.length === 0) {
+            snapshot.at = Date.now();
+            snapshot.result = copySourceResult(result);
+        }
+        return copySourceResult(result);
+    }
+    finally {
+        snapshot.pending = undefined;
+        if (!snapshot.result)
+            snapshots.delete(source);
+    }
+}
+/** CLIST ratings are resource-specific, not standardized. This explicitly named
+ * heuristic is a reference assumption, never a fitted cross-site calibration.
+ * Native CF and native Luogu values always take precedence. */
+function applyClistDifficultyReference(problem) {
+    const raw = problem.clistRating;
+    if (raw === 0) {
+        const zeroEstimate = problem.difficultyReference?.basis === 'clist' || problem.estimatedCfRating === 0;
+        return { ...problem, clistRating: null, clistRatingStatus: 'no-data',
+            ...(zeroEstimate && !problem.supplementInfo?.difficulty ? { estimatedCfRating: null, estimatedLuoguDifficulty: null, difficultyReference: undefined, ratingEstimateReason: undefined } : {}) };
+    }
+    if (problem.supplementInfo?.difficulty)
+        return problem;
+    if (typeof raw !== 'number' || !Number.isFinite(raw) || raw < 0)
+        return problem;
+    const reference = Math.max(0, Math.min(3500, Math.round(raw / 100) * 100));
+    const nativeCf = problem.source === 'CF' && problem.rating !== null;
+    return {
+        ...problem,
+        clistRatingStatus: 'available',
+        estimatedCfRating: nativeCf ? null : reference,
+        estimatedLuoguDifficulty: problem.source === 'LG' && (luoguDifficultyRank(problem.luoguDifficulty) ?? 0) > 0 ? null : estimateLuoguDifficulty(nativeCf ? problem.rating : reference),
+        difficultyReference: { method: 'clist-elo-reference-v2', basis: 'clist', confidence: 'low', calibrated: false, resource: problem.source, rawRating: raw },
+        ratingEstimateReason: `CLIST 原始评分 ${raw}（${problem.source} 站内标尺）。CF 参考 ${nativeCf ? problem.rating : reference}，洛谷参考采用本项目分档；这是未跨平台校准的低置信参考，不是官方等价${raw > 3500 ? '；CF 参考显示上限为 3500' : ''}。CLIST 作者明确说明各站评分未标准化。`
+    };
 }
 /** Records must already be restricted to the current repository and visible account. */
-async function dailyDraw(input, records, fetcher = fetch, random = Math.random, clist, library) {
+async function dailyDraw(input, records, fetcher = fetch, random = Math.random, clist, library, supplement) {
+    const startedAt = performance.now();
     const filter = object(input);
     if (!filter)
         throw new Error('抽题筛选格式不正确');
@@ -425,7 +505,24 @@ async function dailyDraw(input, records, fetcher = fetch, random = Math.random, 
     const level = filter.luoguDifficulty ?? filter.difficulty ?? '';
     if (typeof level !== 'string' || level.length > 100)
         throw new Error('难度格式不正确');
-    const normalizedLevel = level.trim().replace(/−/g, '-');
+    const normalizedLevel = level.trim();
+    const exactLevelRank = normalizedLevel ? luoguDifficultyRank(normalizedLevel) : null;
+    if (normalizedLevel && exactLevelRank === null)
+        throw new Error('洛谷难度不支持');
+    const luoguBound = (value, label) => {
+        if (value === undefined || value === '')
+            return undefined;
+        if (typeof value !== 'string')
+            throw new Error(`${label}洛谷难度格式不正确`);
+        const rank = luoguDifficultyRank(value);
+        if (rank === null || rank < 1 || rank > 8)
+            throw new Error(`${label}洛谷难度不支持，请选择入门至 NOI/NOI+/CTS，不能使用暂无评定`);
+        return rank;
+    };
+    const luoguMin = luoguBound(filter.luoguDifficultyMin, '最低');
+    const luoguMax = luoguBound(filter.luoguDifficultyMax, '最高');
+    if (luoguMin !== undefined && luoguMax !== undefined && luoguMin > luoguMax)
+        throw new Error('最低洛谷难度不能高于最高洛谷难度');
     if (filter.tags !== undefined && (!Array.isArray(filter.tags) || filter.tags.length > 30 || filter.tags.some(tag => typeof tag !== 'string' || tag.length > 100)))
         throw new Error('标签格式不正确');
     const tags = (Array.isArray(filter.tags) ? filter.tags : []).map(tag => tag.trim().toLowerCase()).filter(Boolean);
@@ -436,83 +533,99 @@ async function dailyDraw(input, records, fetcher = fetch, random = Math.random, 
     const candidates = records.map(normalizeRecord).filter((p) => p !== null);
     const errors = [];
     const libraryRecords = Array.isArray(library?.records) ? library.records : [];
-    // A populated local index removes every network round trip from the draw.
-    if (libraryRecords.length) {
+    // Each indexed platform stays offline; missing shards can still use public sources.
+    const indexedPlatforms = new Set(libraryRecords.map(problem => problem.source));
+    if (source === 'all')
         candidates.push(...libraryRecords.map(problem => ({ ...problem })));
-    }
-    else {
-        const clistSource = source === 'all' && (!platform || platform === 'LG' || platform === 'NC') && tags.length === 0 && clist;
-        if (clistSource) {
-            const clistResources = platform ? [platform] : ['LG', 'NC'];
-            for (const target of clistResources) {
-                const clistFilter = { resource: target === 'LG' ? 'luogu.com.cn' : 'ac.nowcoder.com' };
-                try {
-                    const remote = await clist.fetchProblems(clistFilter);
-                    candidates.push(...remote.problems.map(problem => ({
-                        id: `${problem.platform === 'luogu' ? 'LG' : 'NC'}:${problem.id}`,
-                        title: problem.name,
-                        source: problem.platform === 'luogu' ? 'LG' : 'NC',
-                        origin: (problem.platform === 'luogu' ? 'clist-luogu' : 'clist-nowcoder'),
-                        estimatedCfRating: problem.rating,
-                        estimatedLuoguDifficulty: estimateLuoguDifficulty(problem.rating),
-                        url: problem.url,
-                        rating: problem.rating,
-                        luoguDifficulty: '',
-                        tags: problem.tags
-                    })));
-                    errors.push(...remote.report.errors.map(error => `CLIST 获取提示：${error}`));
-                }
-                catch (error) {
-                    errors.push(`CLIST 获取失败：${error instanceof Error ? error.message : '未知错误'}`);
-                }
+    const needsRemote = (target) => source === 'all' && (!platform || platform === target) && !indexedPlatforms.has(target);
+    const clistSource = (needsRemote('LG') || needsRemote('NC')) && tags.length === 0 && clist;
+    if (clistSource) {
+        const clistResources = ['LG', 'NC'].filter(needsRemote);
+        for (const target of clistResources) {
+            const clistFilter = { resource: target === 'LG' ? 'luogu.com.cn' : 'ac.nowcoder.com' };
+            try {
+                const remote = await clist.fetchProblems(clistFilter);
+                candidates.push(...remote.problems.map(problem => ({
+                    id: `${problem.platform === 'luogu' ? 'LG' : 'NC'}:${problem.id}`,
+                    title: problem.name,
+                    source: problem.platform === 'luogu' ? 'LG' : 'NC',
+                    origin: (problem.platform === 'luogu' ? 'clist-luogu' : 'clist-nowcoder'),
+                    estimatedCfRating: null,
+                    estimatedLuoguDifficulty: null,
+                    url: problem.url,
+                    rating: null,
+                    clistRating: problem.rating,
+                    luoguDifficulty: '',
+                    tags: problem.tags
+                })));
+                errors.push(...remote.report.errors.map(error => `CLIST 获取提示：${error}`));
+            }
+            catch (error) {
+                errors.push(`CLIST 获取失败：${error instanceof Error ? error.message : '未知错误'}`);
             }
         }
-        if (source === 'all' && (!platform || platform === 'CF')) {
-            const remote = await fetchDailyProblems(fetcher);
-            if (remote.errors[0])
-                errors.push(`Codeforces 获取失败：${remote.errors[0].message}`);
-            candidates.push(...remote.problems.map(p => ({ id: `CF:${p.id.slice('codeforces:'.length).toUpperCase()}`, title: p.title, source: 'CF', origin: 'codeforces', estimatedLuoguDifficulty: estimateLuoguDifficulty(p.rating), url: p.url, rating: p.rating, luoguDifficulty: '', tags: p.tags })));
-        }
-        if (source === 'all' && (!platform || platform === 'AT')) {
-            const remote = await fetchAtCoderProblems(fetcher);
-            candidates.push(...remote.problems);
-            errors.push(...remote.errors);
-        }
-        if (source === 'all' && (!platform || platform === 'LG')) {
-            const remote = await fetchLuoguProblems(fetcher);
-            candidates.push(...remote.problems);
-            errors.push(...remote.errors.map(error => `洛谷获取提示：${error}`));
-        }
-        if (source === 'all' && (!platform || platform === 'LC')) {
-            const remote = await fetchLeetCodeProblems(fetcher);
-            candidates.push(...remote.problems);
-            errors.push(...remote.errors.map(error => `力扣获取失败：${error}`));
-        }
-        if (source === 'all' && (!platform || platform === 'NC')) {
-            const { fetchNowcoderProblems, estimateNowcoderCfRating } = await import('./nowcoder-daily.cjs');
-            const remote = await fetchNowcoderProblems(fetcher);
-            candidates.push(...remote.problems.map(problem => ({
-                id: problem.id,
-                title: problem.title,
-                source: 'NC',
-                origin: 'nowcoder',
-                communityDifficulty: problem.difficulty,
-                estimatedCfRating: estimateNowcoderCfRating(problem.difficulty),
-                estimatedLuoguDifficulty: estimateLuoguDifficulty(estimateNowcoderCfRating(problem.difficulty)),
-                url: problem.url,
-                rating: null,
-                luoguDifficulty: '',
-                tags: problem.tags
-            })));
-            errors.push(...remote.errors.map(error => `牛客专题 ${error.topicId} 获取失败：${error.message}`));
-        }
-        if (source === 'all' && (!platform || platform === 'LOJ')) {
-            const { fetchLibreOJProblems } = await import('./libreoj-daily.cjs');
-            const remote = await fetchLibreOJProblems(fetcher);
-            candidates.push(...remote.problems);
-            errors.push(...remote.errors.map(error => `LibreOJ 获取提示：${error}`));
-        }
     }
+    if (needsRemote('CF')) {
+        const remote = await loadDailySource(fetcher, 'CF', async () => {
+            const result = await fetchDailyProblems(fetcher);
+            return {
+                problems: result.problems.map(p => ({ id: `CF:${p.id.slice('codeforces:'.length).toUpperCase()}`, title: p.title, source: 'CF', origin: 'codeforces', estimatedLuoguDifficulty: estimateLuoguDifficulty(p.rating), url: p.url, rating: p.rating, luoguDifficulty: '', tags: p.tags })),
+                errors: result.errors.map(error => error.message)
+            };
+        });
+        if (remote.errors[0])
+            errors.push(`Codeforces 获取失败：${remote.errors[0]}`);
+        candidates.push(...remote.problems);
+    }
+    if (needsRemote('AT')) {
+        const remote = await loadDailySource(fetcher, 'AT', () => fetchAtCoderProblems(fetcher));
+        candidates.push(...remote.problems);
+        errors.push(...remote.errors);
+    }
+    if (needsRemote('LG')) {
+        const remote = await fetchLuoguProblems(fetcher);
+        candidates.push(...remote.problems);
+        errors.push(...remote.errors.map(error => `洛谷获取提示：${error}`));
+    }
+    if (needsRemote('LC')) {
+        const remote = await loadDailySource(fetcher, 'LC', () => fetchLeetCodeProblems(fetcher));
+        candidates.push(...remote.problems);
+        errors.push(...remote.errors.map(error => `力扣获取失败：${error}`));
+    }
+    if (needsRemote('NC')) {
+        const remote = await loadDailySource(fetcher, 'NC', async () => {
+            const { fetchNowcoderProblems, estimateNowcoderCfRating } = await import('./nowcoder-daily.cjs');
+            const result = await fetchNowcoderProblems(fetcher);
+            return {
+                problems: result.problems.map(problem => ({
+                    id: problem.id,
+                    title: problem.title,
+                    source: 'NC',
+                    origin: 'nowcoder',
+                    communityDifficulty: problem.difficulty,
+                    estimatedCfRating: estimateNowcoderCfRating(problem.difficulty),
+                    estimatedLuoguDifficulty: estimateLuoguDifficulty(estimateNowcoderCfRating(problem.difficulty)),
+                    url: problem.url,
+                    rating: null,
+                    luoguDifficulty: '',
+                    tags: problem.tags
+                })),
+                errors: result.errors.map(error => `牛客专题 ${error.topicId} 获取失败：${error.message}`)
+            };
+        });
+        candidates.push(...remote.problems);
+        errors.push(...remote.errors);
+    }
+    if (needsRemote('LOJ')) {
+        const remote = await loadDailySource(fetcher, 'LOJ', async () => {
+            const { fetchLibreOJProblems } = await import('./libreoj-daily.cjs');
+            return fetchLibreOJProblems(fetcher);
+        });
+        candidates.push(...remote.problems);
+        errors.push(...remote.errors.map(error => `LibreOJ 获取提示：${error}`));
+    }
+    for (let i = 0; i < candidates.length; i += 1)
+        candidates[i] = applyClistDifficultyReference(candidates[i]);
     for (const candidate of candidates) {
         if (candidate.ratingEstimateReason)
             continue;
@@ -527,21 +640,47 @@ async function dailyDraw(input, records, fetcher = fetch, random = Math.random, 
             candidate.ratingEstimateReason = `低置信度估算，依据来源评分 ${candidate.rating} 映射为洛谷等级 ${candidate.estimatedLuoguDifficulty}，非官方等价`;
         }
     }
+    if (supplement)
+        for (let index = 0; index < candidates.length; index += 1)
+            candidates[index] = supplement(candidates[index]);
+    const problemUrlKey = (value) => {
+        try {
+            const url = new URL(value);
+            url.hash = '';
+            url.pathname = url.pathname.replace(/\/+$/, '') || '/';
+            return url.href;
+        }
+        catch {
+            return value;
+        }
+    };
+    // A redraw excludes every copy, including URL-only records and CLIST IDs.
+    const excludedUrls = new Set([...excluded].map(problemUrlKey));
+    for (const candidate of candidates)
+        if (excluded.has(candidate.id))
+            excludedUrls.add(problemUrlKey(candidate.url));
     const seen = new Set();
+    const seenUrls = new Set();
     const eligible = candidates.filter(p => {
         const comparableRating = p.rating ?? p.estimatedCfRating ?? null;
-        const hasNativeLuoguLevel = p.source === 'LG' && p.origin !== 'clist-luogu' && p.luoguDifficulty !== '';
-        const actualLevel = hasNativeLuoguLevel ? p.luoguDifficulty : p.estimatedLuoguDifficulty || '';
-        const levelMatches = luoguLevelKey(actualLevel) === luoguLevelKey(normalizedLevel);
-        if (source === 'local' && p.origin !== 'local' || source === 'public' && p.origin !== 'local' && p.origin !== 'public' || platform && p.source !== platform || min !== undefined && (comparableRating === null || comparableRating < min) || max !== undefined && (comparableRating === null || comparableRating > max) || level && !levelMatches)
+        const nativeLevelRank = p.source === 'LG' && p.origin !== 'clist-luogu' ? luoguDifficultyRank(p.luoguDifficulty) : null;
+        const hasNativeLuoguLevel = nativeLevelRank !== null && nativeLevelRank >= 1;
+        const actualLevelRank = hasNativeLuoguLevel ? nativeLevelRank : luoguDifficultyRank(p.estimatedLuoguDifficulty ?? '');
+        const levelMatches = exactLevelRank === 0 ? nativeLevelRank === 0 || actualLevelRank === 0 : actualLevelRank === exactLevelRank;
+        if (source === 'local' && p.origin !== 'local' || source === 'public' && p.origin !== 'local' && p.origin !== 'public' || platform && p.source !== platform || min !== undefined && (comparableRating === null || comparableRating < min) || max !== undefined && (comparableRating === null || comparableRating > max) || normalizedLevel && !levelMatches)
+            return false;
+        if ((luoguMin !== undefined || luoguMax !== undefined) && (actualLevelRank === null || actualLevelRank < 1 || luoguMin !== undefined && actualLevelRank < luoguMin || luoguMax !== undefined && actualLevelRank > luoguMax))
             return false;
         if ((communityMin !== undefined || communityMax !== undefined) && (p.communityDifficulty == null || communityMin !== undefined && p.communityDifficulty < communityMin || communityMax !== undefined && p.communityDifficulty > communityMax))
             return false;
         if (!tags.every(tag => tagsMatch(p.tags, tag)))
             return false;
-        if (excluded.has(p.id) || excluded.has(p.url) || seen.has(p.id))
+        const url = problemUrlKey(p.url);
+        const sourceUrl = `${p.source}:${url}`;
+        if (excluded.has(p.id) || excludedUrls.has(url) || seen.has(p.id) || seenUrls.has(sourceUrl))
             return false;
         seen.add(p.id);
+        seenUrls.add(sourceUrl);
         return true;
     });
     if (!eligible.length) {
@@ -569,9 +708,29 @@ async function dailyDraw(input, records, fetcher = fetch, random = Math.random, 
     const pickValue = random();
     if (!Number.isFinite(pickValue) || pickValue < 0 || pickValue >= 1)
         throw new RangeError('random must return a value in [0, 1)');
-    const problem = bucket[Math.min(bucket.length - 1, Math.floor(pickValue * bucket.length))];
+    let problem = bucket[Math.min(bucket.length - 1, Math.floor(pickValue * bucket.length))];
     const notes = [...errors];
-    if (libraryRecords.length)
+    // Drawing stays offline and fast: cached CLIST scores are already applied by the
+    // caller, and missing ones are filled by the explicit refresh button or the
+    // difficulty backfill queue. A rate-limited lookup here would delay every draw.
+    if (problem.clistRating == null && problem.clistRatingStatus !== 'no-data' && problem.clistRatingStatus !== 'not-found')
+        problem = { ...problem, clistRatingStatus: source !== 'all' ? 'not-requested' : clist ? 'not-obtained' : 'not-configured' };
+    if (source === 'all' && !clist && problem.clistRating == null)
+        notes.push('CLIST 未配置 API Key：本次使用原生或来源启发式难度，并非 CLIST 评级；配置后可用“刷新评分”或难度补全');
+    const platformCoverage = {};
+    for (const candidate of candidates) {
+        const entry = platformCoverage[candidate.source] ??= { count: 0, tagged: 0 };
+        entry.count += 1;
+        if (candidate.tags.length)
+            entry.tagged += 1;
+    }
+    const { normalizeSourceAlgorithmTags } = require('./library-normalize.cjs');
+    problem = { ...problem, tags: normalizeSourceAlgorithmTags(problem.tags, problem.supplementInfo?.tags ? 'CF' : problem.source) };
+    const diagnostics = {
+        durationMs: Math.max(0, performance.now() - startedAt), candidateCount: eligible.length, platforms: platformCoverage,
+        dataMode: source !== 'all' ? 'scoped' : libraryRecords.length ? [...new Set(candidates.map(p => p.source))].some(code => !indexedPlatforms.has(code)) ? 'mixed' : 'index' : 'online'
+    };
+    if (source === 'all' && libraryRecords.length)
         notes.push(`本地题库索引 ${libraryRecords.length} 题${library?.builtAt ? `（更新于 ${library.builtAt.slice(0, 10)}）` : ''}`);
     if (problem.origin === 'clist-luogu')
         notes.push('候选来源：CLIST 洛谷题库');
@@ -579,13 +738,13 @@ async function dailyDraw(input, records, fetcher = fetch, random = Math.random, 
         notes.push('候选来源：CLIST 牛客题库');
     if (problem.origin === 'libreoj' && problem.estimatedCfRating == null)
         notes.push('LibreOJ 未提供官方难度，提交统计不足以生成估算');
-    if (problem.source === 'LG' && problem.rating == null && problem.estimatedCfRating != null)
+    if (problem.source === 'LG' && problem.clistRating == null && problem.rating == null && problem.estimatedCfRating != null)
         notes.push(`洛谷难度 ${problem.luoguDifficulty || problem.estimatedLuoguDifficulty || ''} 对应 CF 评分约 ${problem.estimatedCfRating}（启发式估算，非官方等价）`);
-    if (problem.origin === 'atcoder-problems')
+    if (problem.origin === 'atcoder-problems' && problem.clistRating == null)
         notes.push(problem.communityDifficulty == null ? 'AtCoder Problems 社区难度未知，无法估算 CF 评分' : `AtCoder Problems 社区估算难度：${problem.communityDifficulty}；CF 评分约 ${problem.estimatedCfRating}（启发式：社区难度加 800，取整到百位并限制在 800–3500，非官方等价）`);
-    if (problem.origin === 'leetcode')
+    if (problem.origin === 'leetcode' && problem.clistRating == null)
         notes.push(`力扣 ${problem.id.slice(3)} 题目难度映射为 CF 评分约 ${problem.estimatedCfRating}（启发式 Easy=1000、Medium=1600、Hard=2200，非官方等价）`);
-    if (problem.origin === 'nowcoder')
+    if (problem.origin === 'nowcoder' && problem.clistRating == null)
         notes.push(problem.communityDifficulty == null ? '牛客原生难度未知，无法估算 CF 评分' : `牛客原生难度 ${problem.communityDifficulty}/5；CF 评分约 ${problem.estimatedCfRating}（启发式 1=800、2=1200、3=1600、4=2000、5=2400，非官方等价）`);
-    return notes.length ? { problem, note: notes.join('；') } : { problem };
+    return notes.length ? { problem, note: notes.join('；'), diagnostics } : { problem, diagnostics };
 }

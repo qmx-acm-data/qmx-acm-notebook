@@ -19,8 +19,8 @@ export function identify(url: unknown) {
     const u = new URL(url as string);
     let m;
     if (/(^|\.)codeforces\.com$/.test(u.hostname)) {
-      m = u.pathname.match(/\/(?:problemset\/problem|contest|gym)\/(\d+)\/(?:problem\/)?([A-Za-z]\d*)/);
-      if (m) return { pid: `CF${m[1]}${m[2].toUpperCase()}`, platform: 'CF' };
+      m = u.pathname.match(/^\/(?:problemset\/problem\/(\d+)\/([A-Za-z0-9]+)|(?:contest|gym)\/(\d+)\/problem\/([A-Za-z0-9]+))\/?$/);
+      if (m) return { pid: `CF${m[1] ?? m[3]}${(m[2] ?? m[4]).toUpperCase()}`, platform: 'CF' };
     }
     if (u.hostname === 'atcoder.jp' && (m = u.pathname.match(/\/tasks\/([\w-]+)/))) return { pid: m[1], platform: 'AT' };
     if (/(^|\.)luogu\.com\.cn$/.test(u.hostname) && (m = u.pathname.match(/\/problem\/([\w-]+)/))) return { pid: m[1], platform: 'LG' };

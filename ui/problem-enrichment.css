@@ -1,0 +1,32 @@
+.problem-enrichment-dialog{box-sizing:border-box;width:min(760px,calc(100vw - 28px));max-height:calc(100vh - 32px);max-height:calc(100dvh - 32px);padding:22px;border:1px solid var(--line,#d7dce5);border-radius:14px;background:var(--surface,#fff);color:var(--text,#202838);box-shadow:0 16px 60px #0003;overflow:auto;font-size:13px;line-height:1.6;color-scheme:inherit}
+.problem-enrichment-dialog::backdrop{background:#0007;backdrop-filter:none}
+.problem-enrichment-dialog *{box-sizing:border-box}
+.problem-enrichment-dialog [hidden]{display:none!important}
+.problem-enrichment-dialog .enrichment-header{display:flex;align-items:center;justify-content:space-between;gap:16px}
+.problem-enrichment-dialog h2{margin:0;font-size:19px;line-height:1.35}
+.problem-enrichment-dialog h3{margin:0 0 10px;font-size:15px;line-height:1.4;overflow-wrap:anywhere}
+.problem-enrichment-dialog p{margin:6px 0;overflow-wrap:anywhere;white-space:pre-wrap}
+.problem-enrichment-dialog .enrichment-status,.problem-enrichment-dialog .enrichment-hint,.problem-enrichment-dialog small{color:var(--muted,#687386);font-size:12px}
+.problem-enrichment-dialog .enrichment-status{margin:12px 0}
+.problem-enrichment-dialog .enrichment-error{padding:9px 12px;border:1px solid var(--tone-orange,#b75b20);border-radius:7px;color:var(--tone-orange,#b75b20)}
+.problem-enrichment-dialog .enrichment-content{display:grid;gap:16px}
+.problem-enrichment-dialog .enrichment-content>section{min-width:0;padding:15px;border:1px solid var(--line,#d7dce5);border-radius:9px;background:var(--surface-soft,#f6f8fc)}
+.problem-enrichment-dialog .enrichment-fields{display:grid;grid-template-columns:1fr 1fr;gap:10px 14px}
+.problem-enrichment-dialog .enrichment-fields>.enrichment-field:first-child,.problem-enrichment-dialog .enrichment-fields>.enrichment-field:last-child,.problem-enrichment-dialog .enrichment-fields>.enrichment-hint{grid-column:1/-1}
+.problem-enrichment-dialog .enrichment-field{display:flex;flex-direction:column;gap:5px;margin:11px 0;min-width:0;font-size:12px}
+.problem-enrichment-dialog .enrichment-fields>.enrichment-field{margin:0}
+.problem-enrichment-dialog .enrichment-field>span{font-weight:600}
+.problem-enrichment-dialog input,.problem-enrichment-dialog select,.problem-enrichment-dialog textarea{width:100%;min-width:0;padding:9px 10px;border:1px solid var(--line,#d7dce5);border-radius:7px;background:var(--surface,#fff);color:var(--text,#202838);font:inherit;line-height:1.5}
+.problem-enrichment-dialog textarea{resize:vertical;min-height:84px;max-height:40vh}
+.problem-enrichment-dialog :is(input,select,textarea,button,summary):focus-visible{outline:2px solid var(--accent,#5275d9);outline-offset:2px}
+.problem-enrichment-dialog :is(input,select,textarea,button):disabled{opacity:.55;cursor:not-allowed}
+.problem-enrichment-dialog .button{display:inline-flex;align-items:center;justify-content:center;padding:8px 12px;border:1px solid var(--line,#d7dce5);border-radius:7px;font:inherit;font-size:12px;line-height:1.4;cursor:pointer;white-space:normal;background:var(--surface,#fff);color:var(--text,#202838)}
+.problem-enrichment-dialog .button.primary{background:var(--accent,#5275d9);border-color:var(--accent,#5275d9);color:var(--accent-ink,#fff)}
+.problem-enrichment-dialog .enrichment-actions{display:flex;flex-wrap:wrap;gap:9px;margin-top:14px}
+.problem-enrichment-dialog .enrichment-badge{display:inline-flex;align-items:center;padding:3px 8px;border:1px solid var(--line,#d7dce5);border-radius:5px;background:var(--surface,#fff);color:var(--accent,#5275d9);font-size:11px;font-weight:650}
+.problem-enrichment-dialog .enrichment-pending-badge{color:var(--tone-orange,#b75b20)}
+.problem-enrichment-dialog .enrichment-pending{margin-top:15px;padding:13px;border:1px dashed var(--line,#d7dce5);border-radius:8px}
+.problem-enrichment-dialog .enrichment-values{margin:10px 0}
+.problem-enrichment-dialog .enrichment-ai-config{padding:11px;border:1px solid var(--line,#d7dce5);border-radius:7px}
+.problem-enrichment-dialog .enrichment-ai-config summary{cursor:pointer;font-weight:600}
+@media(max-width:520px){.problem-enrichment-dialog{padding:15px;width:calc(100vw - 16px);max-height:calc(100dvh - 16px)}.problem-enrichment-dialog .enrichment-content>section{padding:11px}.problem-enrichment-dialog .enrichment-fields{grid-template-columns:1fr}.problem-enrichment-dialog .enrichment-actions{flex-direction:column}.problem-enrichment-dialog h2{font-size:17px}}

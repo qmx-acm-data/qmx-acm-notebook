@@ -5,6 +5,9 @@ const ts = require('typescript');
 const { sourceMapOptions, stripSourceMapComment, generatedOutput } = require('./source-maps.cjs');
 const root = path.resolve(__dirname, '..');
 const targets = [
+  ['src/renderer/account/clist-bulk-panel.ts', 'ui/clist-bulk-panel.js', 'ClistBulkPanel', 'NotebookClistBulkPanel', false],
+  ['src/renderer/account/clist-shared-cache-panel.ts', 'ui/clist-shared-cache-panel.js', 'ClistSharedCachePanel', 'NotebookClistSharedCachePanel', false],
+  ['src/renderer/home/problem-enrichment.ts', 'ui/problem-enrichment.js', 'ProblemEnrichment', 'ProblemEnrichment', false],
   ['src/renderer/home/daily-problem.ts', 'ui/daily-problem.js', 'DailyProblem', 'DailyProblem', false],
   [
     "src/renderer/lib/search.ts",
@@ -96,9 +99,24 @@ const targets = [
     "Updates",
     "NotebookUpdates",
     false
+  ],
+  [
+    "src/renderer/account/library-sync-panel.ts",
+    "ui/library-sync-panel.js",
+    "LibrarySyncPanel",
+    "NotebookLibrarySyncPanel",
+    false
+  ],
+  [
+    "src/renderer/account/difficulty-backfill-panel.ts",
+    "ui/difficulty-backfill-panel.js",
+    "DifficultyBackfillPanel",
+    "NotebookDifficultyBackfillPanel",
+    false
   ]
 ];
 const nodeTargets = [
+  ['src/shared/luogu-difficulty.ts', 'electron/luogu-difficulty.js'],
   ['src/shared/models/algorithm-node-content.ts', 'electron/algorithm-node-content-model.cjs'],
   ['src/main/records/parser.cts', 'electron/record-parser.cjs'],
   ['src/main/auth/auth.cts', 'electron/auth.cjs'],
@@ -109,8 +127,13 @@ const nodeTargets = [
   ['src/main/contests/service.cts', 'electron/contests.cjs'],
   ['src/main/contests/daily-problems.cts', 'electron/daily-problems.cjs'],
   ['src/main/library/index.cts', 'electron/library-index.cjs'],
+  ['src/main/library/enrichment.cts', 'electron/problem-enrichment.cjs'],
+  ['src/main/library/enrichment-ai.cts', 'electron/problem-enrichment-ai.cjs'],
   ['src/main/library/normalize.cts', 'electron/library-normalize.cjs'],
   ['src/main/library/sync.cts', 'electron/library-sync.cjs'],
+  ['src/main/library/difficulty-backfill.cts', 'electron/difficulty-backfill.cjs'],
+  ['src/main/clist/shared-cache.cts', 'electron/clist-shared-cache.cjs'],
+  ['src/main/clist/bulk.cts', 'electron/clist-bulk.cjs'],
   ['src/main/clist/service.cts', 'electron/clist-service.cjs'],
   ['src/main/contests/libreoj-daily.cts', 'electron/libreoj-daily.cjs'],
   ['src/main/contests/libreoj-statement.cts', 'electron/libreoj-statement.cjs'],

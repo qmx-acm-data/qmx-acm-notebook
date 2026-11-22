@@ -9,7 +9,8 @@ const { compile } = require('../tools/build-preload.cjs');
 
 // Keep this explicit so adding, removing, or reordering a public IPC method is reviewed.
 const methods = [
-  'plannerAction', 'bindPlatform', 'refreshPlatform', 'unbindPlatform', 'getContests', 'updateLibrary', 'dailyDraw',
+  'plannerAction', 'bindPlatform', 'refreshPlatform', 'unbindPlatform', 'getContests', 'updateLibrary', 'dailyDraw', 'getDailyTagCatalog', 'getClistBulkStatus', 'startClistBulkSync', 'pauseClistBulkSync', 'getClistSharedCacheStatus', 'exportClistSharedCache', 'importClistSharedCache', 'syncClistSharedCache', 'getLibrarySyncStatus', 'pauseLibrarySync', 'getDifficultyBackfillStatus', 'startDifficultyBackfill', 'pauseDifficultyBackfill', 'refreshProblemClistRating',
+  'getProblemEnrichment', 'saveProblemEnrichment', 'removeProblemEnrichment', 'suggestProblemEnrichment', 'saveProblemAIConfig', 'clearProblemAIConfig', 'getProblemAIStatus',
   'bootstrap', 'sync', 'submit', 'comment', 'openExternal', 'openAuthUrl', 'formatCode',
   'saveSettings', 'login', 'logout', 'saveClistCredentials', 'clearClistCredentials', 'getClistStatus',
   'cancelLogin', 'getComments', 'propose',
@@ -56,11 +57,11 @@ const implementations = [
 ];
 
 for (const [label, readCode] of implementations) {
-  test(`${label}: preload exposes the exact 44 methods in order and forwards every argument`, async () => {
+  test(`${label}: preload exposes the exact 65 methods in order and forwards every argument`, async () => {
     const calls = [], result = { saved: true };
     const pending = Promise.resolve(result);
     const { bridge } = loadPreload(readCode(), (...args) => { calls.push(args); return pending; });
-    assert.equal(methods.length, 44);
+    assert.equal(methods.length, 65);
     assert.deepEqual(Object.keys(bridge), [...methods, 'onAuthProgress', 'onUpdateProgress']);
     for (const name of methods) {
       const payload = { method: name }, sequence = [name, undefined];

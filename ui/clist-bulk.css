@@ -1,0 +1,23 @@
+/* Paginated CLIST cache progress inside the settings dialog. */
+.clist-bulk { min-width: 0; margin-top: 24px; padding-top: 20px; border-top: 1px solid var(--line); color: var(--text); }
+.clist-bulk[hidden] { display: none; }
+.clist-bulk-heading { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: baseline; gap: 6px 12px; min-width: 0; }
+.clist-bulk-heading h3 { margin: 0; font-size: 14px; }
+.clist-bulk-summary, .clist-bulk-intro, .clist-bulk-baseline, .clist-bulk-hint, .clist-bulk-result, .clist-bulk-error { min-width: 0; color: var(--muted); font-size: 11px; line-height: 1.7; overflow-wrap: anywhere; }
+.clist-bulk-summary { margin: 0; font-variant-numeric: tabular-nums; }
+.clist-bulk-intro, .clist-bulk-baseline, .clist-bulk-hint { margin: 8px 0; }
+.clist-bulk-resources { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 7px; margin: 10px 0 0; padding: 0; list-style: none; min-width: 0; }
+.clist-bulk-row { display: flex; flex-direction: column; gap: 3px; padding: 9px 11px; min-width: 0; border: 1px solid var(--line); border-radius: 7px; background: var(--surface-soft); }
+.clist-bulk-name { font-size: 11px; overflow-wrap: anywhere; }
+.clist-bulk-counts, .clist-bulk-resource-status { color: var(--muted); font-size: 10px; line-height: 1.7; font-variant-numeric: tabular-nums; overflow-wrap: anywhere; }
+.clist-bulk-actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; }
+.clist-bulk .button { min-width: 0; max-width: 100%; padding: 8px 12px; font-size: 11px; white-space: normal; overflow-wrap: anywhere; }
+.clist-bulk-result { margin: 10px 0 0; color: var(--accent); }
+.clist-bulk-error { margin: 10px 0 0; padding: 9px 11px; border: 1px solid color-mix(in srgb, var(--tone-red) 25%, var(--line)); border-radius: 7px; color: var(--tone-red); background: color-mix(in srgb, var(--tone-red) 7%, var(--surface)); }
+.clist-bulk-result[hidden], .clist-bulk-error[hidden], .clist-bulk-hint[hidden] { display: none; }
+@media (max-width: 480px) {
+  .clist-bulk { margin-top: 20px; padding-top: 16px; }
+  .clist-bulk-heading { flex-direction: column; align-items: flex-start; }
+  .clist-bulk-resources, .clist-bulk-actions { display: grid; grid-template-columns: minmax(0, 1fr); }
+  .clist-bulk .button { width: 100%; }
+}

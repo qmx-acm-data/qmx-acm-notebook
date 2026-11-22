@@ -78,6 +78,34 @@ test('easy add accepts official HTTP/HTTPS problem routes for all supported plat
   assert.equal(h.restart().state().problems.length, urls.length);
 });
 
+test('CF 921 numeric indices preserve leading zeros through add and restart and require complete routes', () => {
+  const urls = ['https://codeforces.com/problemset/problem/921/01',
+    'https://codeforces.com/contest/921/problem/14',
+    'https://contest.codeforces.com/contest/921/problem/01/',
+    'https://codeforces.com/gym/921/problem/01',
+    'https://codeforces.com/problemset/problem/921/1',
+    'https://codeforces.com/problemset/problem/921/aB2'];
+  const h = harness();
+  for (const url of urls) {
+    const added = h.service.action('addProblem', { url }).problems.at(-1);
+    assert.equal(added.url, url);
+  }
+  assert.deepEqual(h.restart().state().problems.map(row => row.url), urls);
+  const count = h.writes.length;
+  for (const url of ['https://codeforces.com/problemset/problem/921/01/extra',
+    'https://codeforces.com/contest/921/problem/14.json',
+    'https://codeforces.com/contest/921/problem/14_extra',
+    'https://codeforces.com/gym/921/problem/01/extra',
+    'https://codeforces.com/contest/921/14',
+    'https://codeforces.com/problemset/problem/921/problem/01',
+    'https://codeforces.com/prefix/contest/921/problem/14',
+    'https://unsupported.codeforces.com/contest/921/problem/14']) {
+    assert.throws(() => h.service.action('addProblem', { url }), url);
+  }
+  assert.equal(h.writes.length, count);
+  assert.deepEqual(h.restart().state().problems.map(row => row.url), urls);
+});
+
 test('unsafe links, wrong paths, credentials, host tricks, malformed fields, and unknown IDs never save', () => {
   const h = harness();
   h.service.action('addProblem', { title: 'Original', url: URL });

@@ -7,7 +7,7 @@ const node_crypto_1 = require("node:crypto");
 const LIMIT = 500;
 const LAYOUTS = new Set(['balanced', 'compact', 'focus']);
 const PROBLEM_PATHS = [
-    [['codeforces.com', 'www.codeforces.com', 'contest.codeforces.com'], /^\/(?:problemset\/problem\/\d+\/[A-Za-z]\d*|(?:contest|gym)\/\d+\/problem\/[A-Za-z]\d*|problemsets\/acmsguru\/problem\/\d+\/\d+)\/?$/],
+    [['codeforces.com', 'www.codeforces.com', 'contest.codeforces.com'], /^\/(?:problemset\/problem\/\d+\/[A-Za-z0-9]+|(?:contest|gym)\/\d+\/problem\/[A-Za-z0-9]+|problemsets\/acmsguru\/problem\/\d+\/\d+)\/?$/],
     [['atcoder.jp', 'www.atcoder.jp'], /^\/contests\/[\w-]+\/tasks\/[\w-]+\/?$/],
     [['luogu.com.cn', 'www.luogu.com.cn', 'luogu.com', 'www.luogu.com'], /^\/problem\/[A-Za-z0-9_-]+\/?$/],
     [['ac.nowcoder.com', 'www.nowcoder.com', 'nowcoder.com'], /^\/acm\/(?:problem\/\d+|contest\/\d+\/[A-Za-z0-9]+)\/?$/],
