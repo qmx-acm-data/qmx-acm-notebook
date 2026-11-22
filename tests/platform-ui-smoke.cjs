@@ -172,6 +172,7 @@ const path = require('node:path');
     const cells = panel.locator('.platform-heatmap-day');
     assert.ok([365, 366].includes(await cells.count()));
     const todayCell = () => panel.locator(`.platform-heatmap-day[data-date="${today}"]`);
+    // Finish hover's required scrolling before scroll events can dismiss its tooltip.
     await todayCell().scrollIntoViewIfNeeded();
     await page.evaluate(() => new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve))));
     await todayCell().hover();

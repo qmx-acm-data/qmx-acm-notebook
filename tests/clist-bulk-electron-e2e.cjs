@@ -12,6 +12,8 @@ const { appPath } = require('./app-path.cjs');
 // Profiles and OS-encrypted synthetic credentials are created under os.tmpdir().
 const ROOT = appPath('');
 const INITIAL = appPath('electron/data/clist-initial-cache.json');
+const EXPECTED_VERSION = JSON.parse(fs.readFileSync(appPath('package.json'), 'utf8')).version;
+const STARTUP_ONLY = process.argv.includes('--startup-preservation-only');
 const BULK_METHODS = ['getClistBulkStatus', 'startClistBulkSync', 'pauseClistBulkSync'];
 const RESOURCES = ['codeforces.com', 'atcoder.jp', 'leetcode.com', 'luogu.com.cn', 'ac.nowcoder.com', 'loj.ac'];
 const URLS = {
@@ -181,7 +183,69 @@ function assertRequests(requests) {
 }
 function privateFree(value) { assert.doesNotMatch(typeof value === 'string' ? value : JSON.stringify(value), /synthetic_bulk_e2e_account|synthetic-bulk-e2e-key|PRIVATE_LOCAL|PRIVATE_SOURCE|authorization|apiKey|encrypted/i); }
 
+async function startupPreservation() {
+  const results = [];
+  for (const kind of ['bad-cache-json', 'bad-source-and-marker']) {
+    const fixture = profile(`production-${kind}`, { schema: 1, ratings: { [URLS.CF]: rating('codeforces.com', 999, NEW_DATE) }, localRoot: { owner: 'PRIVATE_LOCAL_STARTUP', preserve: [null, false] } });
+    // Malformed bytes deliberately contain private sentinels so raw JSON parser
+    // errors cannot pass as the user-facing, sanitized CLIST cache failure.
+    const damaged = label => Buffer.from(`{ "PRIVATE_${label}": "${USER}", "apiKey": "${KEY}", broken-json\r\n`, 'utf8');
+    if (kind === 'bad-cache-json') fs.writeFileSync(fixture.cacheFile, damaged('LOCAL_STARTUP'));
+    else {
+      fs.writeFileSync(fixture.source, damaged('SOURCE_STARTUP'));
+      // A broken marker alone is recoverable; invalid source metadata must stop
+      // that recovery before either the personal cache or marker is replaced.
+      fs.writeFileSync(fixture.marker, damaged('MARKER_STARTUP'));
+    }
+    const files = [fixture.cacheFile, fixture.source, fixture.marker];
+    const before = new Map(files.map(file => [file, fs.existsSync(file) ? fs.readFileSync(file) : null]));
+    function preserved() {
+      for (const [file, bytes] of before) {
+        if (bytes === null) assert.equal(fs.existsSync(file), false, `Startup created ${path.basename(file)} after failure`);
+        else assert.deepEqual(fs.readFileSync(file), bytes, `Startup overwrote ${path.basename(file)} after failure`);
+      }
+      unchanged(fixture);
+    }
+    let app;
+    try {
+      const launched = await launch(fixture, false);
+      app = launched.app;
+      const { page, runtime } = launched;
+      const bootstrap = await invoke(page, 'bootstrap');
+      assert.equal(bootstrap.appVersion, EXPECTED_VERSION); privateFree(bootstrap);
+      await openSettings(page);
+      assert.equal(await page.locator('#settings-dialog').isVisible(), true);
+      assert.equal(await page.locator('.daily-problem').isVisible(), true);
+      const error = page.locator('#clist-shared-cache-panel .clist-shared-cache-error');
+      await error.waitFor({ state: 'visible', timeout: 10000 });
+      const errorText = await error.innerText();
+      assert.match(errorText, /不是有效的 CLIST 评分缓存/); privateFree(errorText);
+      assert.doesNotMatch(errorText, /SyntaxError|Unexpected token|JSON\.parse|broken-json|PRIVATE_|[A-Z]:\\/i);
+      assert.ok(!errorText.includes(fixture.directory), 'Cache failure exposed the private profile path');
+      await assert.rejects(() => invoke(page, 'getClistSharedCacheStatus'), error => {
+        assert.match(error.message, /不是有效的 CLIST 评分缓存/); privateFree(error.message);
+        assert.doesNotMatch(error.message, /SyntaxError|Unexpected token|broken-json|PRIVATE_/i);
+        return true;
+      });
+      preserved();
+      const transport = await evidence(app);
+      assert.equal(transport.requests.length, 0); assert.ok(transport.updaterChecks >= 1);
+      assert.deepEqual(transport.writes.filter(name => /^clist-(?:rating-cache|shared-source|initial-cache-state)\.json/.test(name)), [], 'Failed startup must not stage or write CLIST files');
+      await app.close(); app = undefined;
+      preserved();
+      results.push({ scenario: kind, appVersion: bootstrap.appVersion, noEnvSkip: runtime.isolated, dailyVisible: true, settingsOpened: true, safeError: errorText, preservedFiles: [...before].filter(([, bytes]) => bytes !== null).map(([file]) => path.basename(file)), clistWrites: 0, externalRequests: 0, updaterChecks: transport.updaterChecks });
+    } finally { if (app) await app.close(); }
+  }
+  return results;
+}
+
 (async () => {
+  const startup = await startupPreservation();
+  if (STARTUP_ONLY) {
+    console.log('PASS CLIST production startup preservation: bad cache JSON and bad source/initial marker; daily/settings visible, safe status rejection, original bytes unchanged, no env skip, zero external transport');
+    console.log(JSON.stringify({ syntheticTestFixture: true, appVersion: EXPECTED_VERSION, startup }));
+    return;
+  }
   const initialBytes = fs.readFileSync(INITIAL), baseline = JSON.parse(initialBytes);
   assert.equal(Object.keys(baseline.ratings).length, 37200); assert.ok(baseline.ratings[URLS.CF]);
   assert.ok(Date.parse(NEW_DATE) <= Date.now());
@@ -196,7 +260,7 @@ function privateFree(value) { assert.doesNotMatch(typeof value === 'string' ? va
   fs.writeFileSync(bulk.source, json(SOURCE));
   const exportFile = path.join(bulk.directory, 'shared-export.json'), rawFile = path.join(bulk.directory, 'shared-raw.json');
   let app, page, runtime;
-  const report = { syntheticTestFixture: true, phaseA: {}, phaseB: {}, network: [] };
+  const report = { syntheticTestFixture: true, startup, phaseA: {}, phaseB: {}, network: [] };
   try {
     // Phase A: ordinary production setup; no QMX_ISOLATED_SANDBOX seed bypass.
     ({ app, page, runtime } = await launch(clean, false));

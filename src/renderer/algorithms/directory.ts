@@ -51,6 +51,11 @@ const COLORS = ['basic', 'beginner', 'intermediate', 'advanced', 'expert'];
 function splitMixed(tree: DirectoryNode): DirectoryBranch {
   function visit(node: DirectoryNode): void {
     node.children = Array.isArray(node.children) ? node.children : [];
+    // These bundled entries are actual content endpoints, not empty classification folders.
+    if (!node.children.length && ['feishu-part-9-5-1', 'directory-contest-experience'].includes(node.id) && node.origin !== 'admin') {
+      node.kind = 'algorithm'; node.color = 'unrated';
+      node.rating = { status: 'unrated', type: 'entry' };
+    }
     if (node.kind === 'algorithm' && node.children.length) {
       const content: DirectoryNode = { ...node, id: `algorithm-content-${node.id}`, children: [], kind: 'algorithm', contentOf: node.id };
       for (const key of ['legacyIds', 'sourceHeading', 'part', 'nestedPart', 'metadata']) delete content[key];

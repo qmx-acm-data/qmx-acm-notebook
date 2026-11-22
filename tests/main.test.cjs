@@ -89,7 +89,7 @@ function harness({ files = {}, account = { id: 42, login: 'alice' }, backend = {
   class FakeGitHub {
     constructor(options) { this.options = options; }
   }
-  for (const method of ['saveDocument', 'deleteDocument', 'deleteIssue', 'sync', 'saveLearningGate', 'saveLearningCurriculum', 'profile', 'identity', 'saveAlgorithmNote', 'saveAlgorithmTopic', 'comment', 'comments', 'getTagCatalog', 'requestTag', 'getTagReview', 'reviewTag']) {
+  for (const method of ['saveDocument', 'saveTrick', 'deleteTrick', 'deleteDocument', 'deleteIssue', 'sync', 'saveLearningGate', 'saveLearningCurriculum', 'saveAlgorithmNodeContent', 'profile', 'identity', 'saveAlgorithmNote', 'saveAlgorithmTopic', 'comment', 'comments', 'getTagCatalog', 'requestTag', 'getTagReview', 'reviewTag']) {
     FakeGitHub.prototype[method] = async function (...args) {
       calls.push({ method, args: clone(args), options: clone(this.options) });
       if (backend[method]) return backend[method](...args, this.options);
@@ -168,7 +168,7 @@ function harness({ files = {}, account = { id: 42, login: 'alice' }, backend = {
       if (name === './ipc-handlers.cjs') return require(appPath('electron/ipc-handlers.cjs'));
       if (name === './session.cjs') return require(appPath('electron/session.cjs'));
       if (name === './algorithm-topics.cjs') return require(appPath('electron/algorithm-topics.cjs'));
-      if (name === './github.cjs') return { GitHub: FakeGitHub, normalizeServerUrl, repositoryKey, parseLearningGateContent: require(appPath('electron/github.cjs')).parseLearningGateContent, parseLearningCurriculumContent: require(appPath('electron/github.cjs')).parseLearningCurriculumContent, learningCurriculumGateIds: require(appPath('electron/github.cjs')).learningCurriculumGateIds, repoParts(repo) { if (!/^[\w.-]+\/[\w.-]+$/.test(repo || '')) throw new Error('Invalid repo'); return repo.split('/'); } };
+      if (name === './github.cjs') return { GitHub: FakeGitHub, normalizeServerUrl, repositoryKey, cachedTrick: require(appPath('electron/github.cjs')).cachedTrick, parseAlgorithmNodeContent: require(appPath('electron/github.cjs')).parseAlgorithmNodeContent, algorithmContentTargetId: require(appPath('electron/github.cjs')).algorithmContentTargetId, parseLearningGateContent: require(appPath('electron/github.cjs')).parseLearningGateContent, parseLearningCurriculumContent: require(appPath('electron/github.cjs')).parseLearningCurriculumContent, learningCurriculumGateIds: require(appPath('electron/github.cjs')).learningCurriculumGateIds, repoParts(repo) { if (!/^[\w.-]+\/[\w.-]+$/.test(repo || '')) throw new Error('Invalid repo'); return repo.split('/'); } };
       throw new Error(`Unexpected dependency ${name}`);
     }, __dirname: path.dirname(MAIN),
   });

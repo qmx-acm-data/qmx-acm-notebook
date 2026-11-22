@@ -98,11 +98,14 @@ assert.match(await page.locator('#detail-panel').innerText(),/Edited local Markd
 await page.click('#detail-back-button');
 assert.doesNotMatch(await page.locator('#record-list').innerText(),/Saved local reader/,'public library still excludes local records');
 await page.locator('.rail-nav-item[data-view="favorites"]').click();
-assert.match(await page.locator('#record-list').innerText(),/Saved local reader/);
+assert.match(await page.locator('#favorites-panel').innerText(),/Saved local reader/);
+assert.equal(await page.locator('#favorites-panel .favorite-reader').count(),0,'favorites list has no automatic preview');
 await page.reload();
 await page.locator('.rail-nav-item[data-view="favorites"]').click();
-await page.getByRole('button',{name:/Saved local reader/}).click();
-assert.match(await page.locator('#detail-panel').innerText(),/Edited local Markdown/,'saved local content remains accessible after reload');
+await page.locator('#favorites-panel .favorite-open').filter({hasText:'Saved local reader'}).click();
+assert.match(await page.locator('.favorite-solution-reader').innerText(),/Edited local Markdown/,'saved local content remains accessible after reload');
+await page.locator('.favorite-back').click();
+assert.match(await page.locator('#favorites-panel').innerText(),/Saved local reader/,'favorites reader returns to its compact list');
 await page.hover('.sidebar');
 await page.locator('.brand').click();
 assert.equal(await page.locator('body').getAttribute('data-view'),'home');

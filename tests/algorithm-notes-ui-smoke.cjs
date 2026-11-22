@@ -7,7 +7,7 @@ const legacy = require('../docs/algorithm-research/legacy-node-map.json');
 const path = require('node:path');
 const { pathToFileURL } = require('node:url');
 const { chromium } = require('playwright');
-const tree = require(appPath('ui/algorithm-tree.js'));
+const tree = require(appPath('ui/algorithm-directory.js')).hydrate(require(appPath('ui/algorithm-tree.js')));
 
 const nodes = []; (function walk(node) { nodes.push(node); (node.children || []).forEach(walk); })(tree);
 const byId = new Map(nodes.flatMap(node => [node.id, ...(node.legacyIds || [])].map(id => [id, node])));
@@ -20,22 +20,25 @@ const OLD_DP = 'xcpc-动态规划-1';
 const DP = canonical(OLD_DP);
 const PACK = canonical('xcpc-01背包-1');
 const FUNCTION = canonical('xcpc-函数-1');
+const leaf = node => node.kind === 'algorithm' && !node.children?.length;
+const DP_LEAF = nodes.find(node => leaf(node) && node.label === '线性 DP').id;
 const hasAttribute = (node, attribute) => (node.attributes || []).includes(attribute);
 const nodeForNote = note => byId.get(note.nodeId);
+const containsNode = (node, id) => node.id === id || (node.children || []).some(child => containsNode(child, id));
 const MALICIOUS_TITLE = '<img src=x onerror="window.__algorithmXss=1">恶意标题';
 const MALICIOUS_TAG = '<svg onload="window.__algorithmXss=2">标签';
 const MALICIOUS_AUTHOR = '<img src=x onerror="window.__algorithmXss=3">';
 const NOTES = [
-  { id: 'n1', noteScope: 'public', nodeId: DP, title: '背包状态设计', author: 'admin', authorId: 1, tags: ['动态规划', '背包'], featured: true, updatedAt: '2026-11-08', body: '# 状态转移\n\n复杂度为 $O(nW)$。\n\n```cpp\nint answer = 42;\n```\n\n<img src="missing" onerror="window.__algorithmXss=4"><script>window.__algorithmXss=5</script>\n\n[危险链接](javascript:window.__algorithmXss=6)\n\n<iframe src="https://example.invalid"></iframe><style>body{display:none}</style>' },
-  { id: 'n2', noteScope: 'public', nodeId: OLD_DP, title: '线性 DP 入门', author: 'alice', authorId: 2, tags: ['动态规划'], updatedAt: '2026-11-07', body: '线性状态。' },
-  { id: 'n3', noteScope: 'personal', nodeId: DP, title: '我的状态机笔记', author: 'alice', authorId: 2, tags: ['状态机', 'private-only-token'], updatedAt: '2026-11-06', body: '个人内容。' },
+  { id: 'n1', noteScope: 'public', nodeId: DP_LEAF, title: '背包状态设计', author: 'admin', authorId: 1, tags: ['动态规划', '背包'], featured: true, updatedAt: '2026-11-08', body: '# 状态转移\n\n复杂度为 $O(nW)$。\n\n```cpp\nint answer = 42;\n```\n\n<img src="missing" onerror="window.__algorithmXss=4"><script>window.__algorithmXss=5</script>\n\n[危险链接](javascript:window.__algorithmXss=6)\n\n<iframe src="https://example.invalid"></iframe><style>body{display:none}</style>' },
+  { id: 'n2', noteScope: 'public', nodeId: DP_LEAF, title: '线性 DP 入门', author: 'alice', authorId: 2, tags: ['动态规划'], updatedAt: '2026-11-07', body: '线性状态。' },
+  { id: 'n3', noteScope: 'personal', nodeId: DP_LEAF, title: '我的状态机笔记', author: 'alice', authorId: 2, tags: ['状态机', 'private-only-token'], updatedAt: '2026-11-06', body: '个人内容。' },
   { id: 'n4', noteScope: 'public', nodeId: FUNCTION, title: '青档函数笔记', author: 'bob', authorId: 3, tags: ['语法', 'tag-only-token'], updatedAt: '2026-11-05', body: '入门内容。' },
   { id: 'n5', noteScope: 'public', nodeId: PACK, title: '01背包子节点笔记', author: 'carol', authorId: 4, tags: ['背包'], updatedAt: '2026-11-04', body: '子节点内容。' },
-  { id: 'other-private', noteScope: 'personal', nodeId: DP, title: '他人的私密状态机', author: 'bob', authorId: 3, tags: ['状态机'], updatedAt: '2026-11-09', body: '绝不能泄露。' },
-  { id: 'unsafe', noteScope: 'public', nodeId: DP, title: MALICIOUS_TITLE, author: MALICIOUS_AUTHOR, authorId: 99, tags: [MALICIOUS_TAG], updatedAt: '2026-11-03', body: '安全显示字符串。' },
+  { id: 'other-private', noteScope: 'personal', nodeId: DP_LEAF, title: '他人的私密状态机', author: 'bob', authorId: 3, tags: ['状态机'], updatedAt: '2026-11-09', body: '绝不能泄露。' },
+  { id: 'unsafe', noteScope: 'public', nodeId: DP_LEAF, title: MALICIOUS_TITLE, author: MALICIOUS_AUTHOR, authorId: 99, tags: [MALICIOUS_TAG], updatedAt: '2026-11-03', body: '安全显示字符串。' },
   ...['basic', 'beginner', 'intermediate', 'advanced', 'expert', 'board', 'useful', 'useless'].map((color, index) => {
     const nodes = []; (function walk(node) { nodes.push(node); (node.children || []).forEach(walk); })(tree);
-    return { id: `category-${color}`, noteScope: 'public', nodeId: nodes.find(node => node.color === color || hasAttribute(node, color)).id, title: `分类样本 ${color}`, author: `level-author-${index}`, authorId: 10 + index, tags: [`level-${color}`], updatedAt: '2026-11-01', body: `${color} 样本内容。` };
+    return { id: `category-${color}`, noteScope: 'public', nodeId: nodes.find(node => leaf(node) && (node.color === color || hasAttribute(node, color))).id, title: `分类样本 ${color}`, author: `level-author-${index}`, authorId: 10 + index, tags: [`level-${color}`], updatedAt: '2026-11-01', body: `${color} 样本内容。` };
   }),
 ].map(note => ({ kind: 'algorithm-note', featured: false, ...note }));
 
@@ -115,14 +118,34 @@ async function assertTextContrast(page, selector, theme) {
 
 const item = (page, id) => page.locator(`.alg-tree-item[data-node-id="${id}"]`);
 const row = (page, id) => page.locator(`.alg-tree-item[data-node-id="${id}"] > .alg-tree-row`);
-const resultCards = page => page.locator('.alg-pane .alg-note-list:not(.alg-selected-note-list) .alg-note-card');
-const noteTitles = page => resultCards(page).locator('.alg-note-title').allTextContents();
+const directCards = page => page.locator('.alg-pane .alg-leaf-reading .alg-note-card');
+const directTitles = page => directCards(page).locator('.alg-note-title').allTextContents();
+const visibleLeafIds = page => page.locator('.alg-tree-item[data-kind="topic"]').evaluateAll(items => items.map(item => item.dataset.nodeId).sort());
+async function assertReadingPane(page) {
+  assert.equal(await page.locator('.alg-pane .alg-result-summary, .alg-pane .alg-result-topic, .alg-pane .alg-search-note-list').count(), 0, 'filters never append duplicate global results to the reading pane');
+  if (await page.locator('.alg-pane .alg-leaf-reading').count()) {
+    assert.deepEqual(await page.locator('.alg-pane .alg-leaf-reading > section > .alg-section-heading > h3').allTextContents(), ['简介', '精选笔记', '全部笔记'], 'selected leaf has exactly three reading sections under active criteria');
+  }
+}
+async function applyFilters(page) {
+  await page.locator('.alg-search-submit').click();
+  await assertReadingPane(page);
+}
+async function assertScopedLeaf(page, nodeId, scope = 'public') {
+  assert.equal(await item(page, nodeId).count(), 1, `${nodeId} remains reachable in the filtered tree`);
+  await row(page, nodeId).locator('.alg-tree-label').click();
+  await assertReadingPane(page);
+  assert.deepEqual((await directTitles(page)).sort(), NOTES.filter(note => note.nodeId === nodeId && note.noteScope === scope && (scope === 'public' || note.authorId === 2)).map(note => note.title).sort(), 'selected leaf shows all directly attached notes in the current scope');
+}
+async function expandAll(page) {
+  await page.evaluate(() => { for (let i = 0; i < 1000; i++) { const control = document.querySelector('.alg-tree-item[aria-expanded="false"] > .alg-tree-row > button.alg-disclosure'); if (!control) return; control.click(); } throw Error('Tree did not fully expand'); });
+}
 const scopeButton = (page, scope) => page.locator('.alg-scope-button').filter({ hasText: scope === 'personal' ? '我的笔记' : '公开笔记' });
 async function clearFilters(page) {
   await page.locator('.alg-search').fill('');
   await page.locator('.alg-attribute').selectOption('');
   await page.locator('.alg-legend-button[data-level=""]').click();
-  await page.locator('.alg-search-submit').click();
+  await applyFilters(page);
 }
 async function assertNoOverflow(page, label) {
   const dimensions = await page.evaluate(() => ({
@@ -152,11 +175,14 @@ async function assertNoOverflow(page, label) {
   try {
     const page = await openAlgorithms(browser, errors);
     const difficultyIds = ['basic', 'beginner', 'intermediate', 'advanced', 'expert'];
-    assert.deepEqual(await page.locator('.alg-legend-button[data-level]').evaluateAll(nodes => nodes.map(node => node.dataset.level)), ['', ...difficultyIds]);
+    assert.deepEqual(await page.locator('.alg-legend-button[data-level]').evaluateAll(nodes => nodes.map(node => node.dataset.level)), ['', ...difficultyIds, ...(nodes.some(node => leaf(node) && !difficultyIds.includes(node.color)) ? ['unrated'] : [])]);
     assert.deepEqual(await page.locator('.alg-attribute option').evaluateAll(nodes => nodes.map(node => node.value)), ['', 'board', 'useful', 'useless']);
     assert.match(await page.locator('.alg-tier-hint:not(.alg-search-hint)').innerText(), /模板、常用、低频是独立属性/);
     assert.ok((await page.locator('.alg-tree-status').innerText()).includes(String(nodes.length)));
     assert.equal(await item(page, 'root').getAttribute('aria-selected'), 'true');
+    assert.equal(await page.locator('.alg-tree-item[data-depth="2"]').count(), 0, 'fresh render collapses nested directories');
+    assert.equal(await page.locator('#algorithm-upload-button').isVisible(), false, 'directory has no upload entry');
+    assert.equal(await page.locator('.alg-pane .alg-note-card, .alg-pane .alg-empty').count(), 0, 'directory has no note section');
     assert.equal(await row(page, DP).locator('.alg-badge').count(), 0, 'directory has no difficulty badge');
     assert.equal(await page.locator('.alg-detail-heading .alg-badge').count(), 0, 'directory detail has no difficulty badge');
     assert.equal(await row(page, DP).locator('.alg-node-kind').textContent(), '目录');
@@ -171,12 +197,16 @@ async function assertNoOverflow(page, label) {
     await row(page, DP).locator('.alg-tree-label').click();
     assert.equal(await item(page, DP).getAttribute('aria-selected'), 'true');
     assert.equal(await item(page, DP).getAttribute('aria-expanded'), 'true', 'title click does not collapse the directory');
-    assert.ok((await noteTitles(page)).includes('背包状态设计'));
+    assert.equal(await page.locator('.alg-pane .alg-note-card, .alg-pane .alg-empty').count(), 0, 'selected directory contains child cards only');
+    assert.equal(await page.locator('#algorithm-upload-button').isVisible(), false);
+    await expandAll(page);
+    await row(page, DP_LEAF).locator('.alg-tree-label').click();
+    assert.ok((await directTitles(page)).includes('背包状态设计'));
     assert.equal(await page.locator('.alg-note-card').first().locator('.alg-note-title').innerText(), '背包状态设计', 'featured notes sort first');
     assert.equal(await page.locator('.alg-featured').first().innerText(), '精选');
-    assert.ok(!(await noteTitles(page)).includes('我的状态机笔记'));
-    assert.ok(!(await noteTitles(page)).includes('他人的私密状态机'));
-    assert.ok((await noteTitles(page)).includes(MALICIOUS_TITLE));
+    assert.ok(!(await directTitles(page)).includes('我的状态机笔记'));
+    assert.ok(!(await directTitles(page)).includes('他人的私密状态机'));
+    assert.ok((await directTitles(page)).includes(MALICIOUS_TITLE));
     const unsafe = page.locator('.alg-note-card').filter({ has: page.locator('.alg-note-title', { hasText: MALICIOUS_TITLE }) });
     assert.equal(await unsafe.locator('.alg-note-author').innerText(), MALICIOUS_AUTHOR);
     assert.equal(await unsafe.locator('.alg-tag').innerText(), MALICIOUS_TAG);
@@ -195,74 +225,124 @@ async function assertNoOverflow(page, label) {
     const ids = await page.locator('.alg-tree-item').evaluateAll(nodes => nodes.map(node => node.dataset.nodeId).sort());
     assert.deepEqual(ids, nodes.map(node => node.id).sort());
     await row(page, PACK).locator('.alg-tree-label').click();
-    assert.ok((await noteTitles(page)).includes('01背包子节点笔记'));
+    assert.ok((await directTitles(page)).includes('01背包子节点笔记'));
 
     // Draft changes must leave both the current tree and results unchanged until submitted.
     const beforeDraft = await page.locator('.alg-workspace').innerHTML();
     await page.locator('.alg-search').fill('不存在的算法');
     await page.locator('.alg-legend-button[data-level="expert"]').click();
     assert.equal(await page.locator('.alg-workspace').innerHTML(), beforeDraft);
-    await page.locator('.alg-search-submit').click();
-    assert.equal(await page.locator('.alg-result-topic').count(), 0);
+    await applyFilters(page);
+    assert.equal(await page.locator('.alg-tree-item').count(), 0, 'unmatched query and difficulty leave no tree results');
+    assert.equal(await page.locator('.alg-tree-empty').count(), 1);
     await clearFilters(page);
-    await page.locator('.alg-search').fill('迭代加深启发式搜索');
-    await page.locator('.alg-search').press('Enter');
-    assert.equal(await page.locator('.alg-result-topic-name').first().innerText(), 'IDA* 搜索');
-    await page.locator('.alg-result-topic').first().click();
-    assert.equal(await page.locator('.alg-detail-title').innerText(), '迭代加深启发式搜索（IDA*）');
-    await clearFilters(page);
+    for (const [query, fullLabel] of [['迭代加深启发式搜索', '迭代加深启发式搜索（IDA*）'], ['kmp', '字符串匹配（KMP）'], ['字符串匹配', '字符串匹配（KMP）']]) {
+      const target = nodes.find(node => leaf(node) && node.fullLabel === fullLabel);
+      assert.ok(target, `${query} fixture has a concrete leaf`);
+      await page.locator('.alg-search').fill(query);
+      await page.locator('.alg-search').press('Enter');
+      await assertReadingPane(page);
+      assert.equal(await item(page, target.id).count(), 1, `${query} matches aliases and case-insensitive algorithm names in the tree`);
+      await row(page, target.id).locator('.alg-tree-label').click();
+      assert.equal(await page.locator('.alg-detail-title').innerText(), fullLabel);
+      await assertReadingPane(page);
+      await clearFilters(page);
+    }
     assert.equal(await page.locator('.alg-add-topic').count(), 0, 'non-admin has no add-topic controls');
 
     // Search independently covers a node label, note title, tag and author.
     const searches = [
       ['01背包', '01背包子节点笔记', PACK],
-      ['背包状态设计', '背包状态设计', DP],
+      ['背包状态设计', '背包状态设计', DP_LEAF],
       ['tag-only-token', '青档函数笔记', FUNCTION],
       ['carol', '01背包子节点笔记', PACK],
     ];
     for (const [query, title, nodeId] of searches) {
       await page.locator('.alg-search').fill(query);
 
-      await page.locator('.alg-search-submit').click();
-      assert.deepEqual(await noteTitles(page), [title], `global search for ${query}`);
-      assert.equal(await item(page, nodeId).count(), 1, `${query} reveals its associated directory`);
+      await applyFilters(page);
+      assert.deepEqual(await visibleLeafIds(page), [nodeId], `search for ${query} reveals the matching algorithm leaf`);
       assert.equal(await item(page, 'root').count(), 1, `${query} preserves the ancestor chain`);
+      await row(page, 'root').locator('.alg-tree-label').click();
+      assert.deepEqual(await page.locator('.alg-pane .alg-topic-name strong').allTextContents(), tree.children.filter(child => containsNode(child, nodeId)).map(child => child.label), `${query} limits directory cards to matching child branches`);
+      await assertReadingPane(page);
+      await assertScopedLeaf(page, nodeId);
+      assert.ok((await directTitles(page)).includes(title), `${query} leads to its note`);
     }
+    await page.locator('.alg-search').fill('背包 carol');
+    await applyFilters(page);
+    assert.deepEqual(await visibleLeafIds(page), [PACK], 'all search terms can match across node and note author fields');
+    await assertScopedLeaf(page, PACK);
+    await page.locator('.alg-search').fill('背包 nonexistent-term');
+    await applyFilters(page);
+    assert.equal(await page.locator('.alg-tree-item').count(), 0, 'every search term is required');
     await page.locator('.alg-search').fill('private-only-token');
 
-    await page.locator('.alg-search-submit').click();
-    assert.deepEqual(await noteTitles(page), [], 'public search excludes personal notes');
+    await applyFilters(page);
+    assert.deepEqual(await visibleLeafIds(page), [], 'public search excludes personal notes');
     await scopeButton(page, 'personal').click();
-    assert.deepEqual(await noteTitles(page), ['我的状态机笔记']);
+    assert.deepEqual(await visibleLeafIds(page), [DP_LEAF]);
+    await assertScopedLeaf(page, DP_LEAF, 'personal');
     await page.locator('.alg-search').fill('状态机');
 
-    await page.locator('.alg-search-submit').click();
-    assert.deepEqual(await noteTitles(page), ['我的状态机笔记'], 'personal scope excludes other authors');
+    await applyFilters(page);
+    assert.deepEqual(await visibleLeafIds(page), [DP_LEAF], 'personal search matches own note leaf');
+    await assertScopedLeaf(page, DP_LEAF, 'personal');
+    assert.deepEqual(await directTitles(page), ['我的状态机笔记'], 'personal scope excludes other authors');
     await page.locator('.alg-search').fill('背包状态设计');
 
-    await page.locator('.alg-search-submit').click();
-    assert.deepEqual(await noteTitles(page), [], 'personal search excludes public notes');
+    await applyFilters(page);
+    assert.deepEqual(await visibleLeafIds(page), [], 'personal search excludes public notes');
     await scopeButton(page, 'public').click();
-    assert.deepEqual(await noteTitles(page), ['背包状态设计']);
+    assert.deepEqual(await visibleLeafIds(page), [DP_LEAF]);
+    await assertScopedLeaf(page, DP_LEAF);
     await clearFilters(page);
+
+    // Notes-only applies immediately in the current scope and composes with committed facets.
+    await page.locator('.alg-has-notes').click();
+    assert.equal(await page.locator('.alg-has-notes').getAttribute('aria-pressed'), 'true');
+    const publicLeafIds = new Set(NOTES.filter(note => note.noteScope === 'public').map(note => nodeForNote(note).id));
+    assert.deepEqual(await visibleLeafIds(page), [...publicLeafIds].sort(), 'notes-only tree contains exactly the public note leaves');
+    await assertReadingPane(page);
+    await scopeButton(page, 'personal').click();
+    assert.deepEqual(await visibleLeafIds(page), [DP_LEAF], 'personal notes-only filter includes only own note leaves');
+    await assertScopedLeaf(page, DP_LEAF, 'personal');
+    await scopeButton(page, 'public').click();
+    await page.locator('.alg-legend-button[data-level="beginner"]').click();
+    await page.locator('.alg-search').fill('背包');
+    await applyFilters(page);
+    assert.deepEqual(await visibleLeafIds(page), [DP_LEAF, PACK].sort(), 'notes-only composes with query and difficulty, including a matching note tag');
+    await assertScopedLeaf(page, PACK);
+    assert.equal(await item(page, 'root').getAttribute('aria-expanded'), 'true', 'conditions automatically expand matching ancestors');
+    await row(page, DP).locator('.alg-disclosure').click();
+    assert.equal(await item(page, DP).getAttribute('aria-expanded'), 'false', 'filtered ancestors can still be collapsed');
+    await page.locator('#sync-button').click();
+    await page.waitForFunction(() => !document.querySelector('#sync-button').disabled);
+    assert.equal(await item(page, DP).getAttribute('aria-expanded'), 'false', 'active criteria rerender preserves filtered collapse');
+    await page.locator('.alg-clear').click();
+    assert.equal(await page.locator('.alg-has-notes').getAttribute('aria-pressed'), 'false');
+    assert.equal(await item(page, 'root').getAttribute('aria-selected'), 'true');
+    assert.equal(await item(page, DP).getAttribute('aria-expanded'), 'false');
+    assert.equal(await page.locator('.alg-tree-item[data-depth="2"]').count(), 0, 'clear restores initial nested collapse');
+    await row(page, DP).locator('.alg-disclosure').click();
+    await applyFilters(page);
+    assert.equal(await item(page, DP).getAttribute('aria-expanded'), 'false', 'no-condition search refresh resets expansion');
 
     // Every difficulty returns only notes assigned that level; retained parent
     // directories give context without receiving a child difficulty themselves.
     for (const level of difficultyIds) {
       await page.locator(`.alg-legend-button[data-level="${level}"]`).click();
 
-      await page.locator('.alg-search-submit').click();
-      const expected = NOTES.filter(note => note.noteScope === 'public').filter(note => {
-        const nodes = []; (function walk(node) { nodes.push(node); (node.children || []).forEach(walk); })(tree);
-        return nodeForNote(note).color === level;
-      }).map(note => note.title).sort();
-      assert.deepEqual((await noteTitles(page)).sort(), expected, `${level} note results`);
+      await applyFilters(page);
+      const expectedNoteLeaves = [...new Set(NOTES.filter(note => note.noteScope === 'public' && nodeForNote(note).color === level).map(note => note.nodeId))];
+      assert.ok(expectedNoteLeaves.length > 0, `${level} fixture has notes to read`);
+      for (const nodeId of expectedNoteLeaves) await assertScopedLeaf(page, nodeId);
       assert.equal(await item(page, 'root').count(), 1);
       assert.equal(await row(page, 'root').locator('.alg-badge').count(), 0, 'retained ancestor is a directory, never rated');
       const renderedIds = await page.locator('.alg-tree-item').evaluateAll(nodes => nodes.map(node => node.dataset.nodeId));
       const expectedIds = new Set();
       (function collect(node, ancestors = []) {
-        if (node.color === level) [...ancestors, node.id].forEach(id => expectedIds.add(id));
+        if (leaf(node) && node.color === level) [...ancestors, node.id].forEach(id => expectedIds.add(id));
         (node.children || []).forEach(child => collect(child, [...ancestors, node.id]));
       })(tree);
       assert.deepEqual(renderedIds.sort(), [...expectedIds].sort(), `${level} shows matching nodes and their ancestors`);
@@ -270,8 +350,11 @@ async function assertNoOverflow(page, label) {
     await page.locator('.alg-legend-button[data-level=""]').click();
     for (const attribute of ['board', 'useful', 'useless']) {
       await page.locator('.alg-attribute').selectOption(attribute);
-      await page.locator('.alg-search-submit').click();
-      assert.deepEqual((await noteTitles(page)).sort(), NOTES.filter(note => note.noteScope === 'public' && hasAttribute(nodeForNote(note), attribute)).map(note => note.title).sort());
+      await applyFilters(page);
+      assert.deepEqual(await visibleLeafIds(page), nodes.filter(node => leaf(node) && hasAttribute(node, attribute)).map(node => node.id).sort(), `${attribute} matches only leaves with the independent attribute`);
+      const expectedNoteLeaves = [...new Set(NOTES.filter(note => note.noteScope === 'public' && hasAttribute(nodeForNote(note), attribute)).map(note => note.nodeId))];
+      assert.ok(expectedNoteLeaves.length > 0, `${attribute} fixture has notes to read`);
+      for (const nodeId of expectedNoteLeaves) await assertScopedLeaf(page, nodeId);
       assert.equal(await page.locator('.alg-legend-button[data-level=""]').getAttribute('aria-pressed'), 'true', 'usage attributes do not select a difficulty');
       assert.ok((await page.locator('.alg-pane .alg-attribute-badge').allTextContents()).length > 0);
       assert.ok(!(await page.locator('.alg-pane .alg-badge').allTextContents()).includes('未分级'), 'attributes retain independent algorithm difficulties');
@@ -280,15 +363,16 @@ async function assertNoOverflow(page, label) {
 
     // The reader occupies only the right pane and back restores selection,
     // expanded directory, query and difficulty, including the result set.
+    await expandAll(page);
     await row(page, PACK).locator('.alg-tree-label').click();
     await page.locator('.alg-legend-button[data-level="beginner"]').click();
     await page.locator('.alg-search').fill('背包');
 
-    await page.locator('.alg-search-submit').click();
+    await applyFilters(page);
     const beforeReader = await page.locator('.alg-tree').evaluate(node => ({ html: node.innerHTML, scroll: node.parentElement.scrollTop }));
-    const beforeTitles = await noteTitles(page);
-    assert.equal(await page.locator('.alg-selected-note-list .alg-note-title').innerText(), '01背包子节点笔记', 'selected topic notes remain available alongside difficulty results');
-    await resultCards(page).filter({ hasText: '01背包子节点笔记' }).click();
+    const beforeTitles = await directTitles(page);
+    assert.equal(await page.locator('.alg-leaf-reading .alg-note-title').innerText(), '01背包子节点笔记', 'selected topic notes remain available with active query and difficulty');
+    await directCards(page).filter({ hasText: '01背包子节点笔记' }).click();
     assert.equal(await page.locator('.alg-reading-title').innerText(), '01背包子节点笔记');
     assert.equal(await page.locator('.alg-sidebar').isVisible(), true);
     assert.deepEqual(await page.locator('.alg-tree').evaluate(node => ({ html: node.innerHTML, scroll: node.parentElement.scrollTop })), beforeReader, 'reader preserves the exact directory and scroll');
@@ -296,9 +380,11 @@ async function assertNoOverflow(page, label) {
     assert.equal(await item(page, PACK).getAttribute('aria-selected'), 'true');
     assert.equal(await page.locator('.alg-search').inputValue(), '背包');
     assert.equal(await page.locator('.alg-legend-button[data-level="beginner"]').getAttribute('aria-pressed'), 'true');
-    assert.deepEqual(await noteTitles(page), beforeTitles);
+    assert.deepEqual(await directTitles(page), beforeTitles);
+    await assertReadingPane(page);
     await clearFilters(page);
-    await row(page, DP).locator('.alg-tree-label').click();
+    await expandAll(page);
+    await row(page, DP_LEAF).locator('.alg-tree-label').click();
     await page.locator('.alg-note-card').filter({ hasText: '背包状态设计' }).click();
     await page.waitForSelector('.alg-markdown .katex');
     assert.equal(await page.locator('.alg-markdown h1').innerText(), '状态转移');
@@ -314,7 +400,7 @@ async function assertNoOverflow(page, label) {
     await page.locator('#algorithm-upload-button').click();
     assert.equal(await page.locator('#algorithm-note-dialog').evaluate(node => node.open), true);
     assert.equal(await page.locator('#algorithm-note-node').inputValue(), PACK);
-    assert.equal(await page.locator('#algorithm-note-node option').count(), nodes.length);
+    assert.equal(await page.locator('#algorithm-note-node option').count(), nodes.filter(leaf).length, 'upload selector lists algorithm leaves only');
     assert.equal(await page.locator('#algorithm-note-form [name="noteScope"]').inputValue(), 'personal');
     assert.equal(await page.locator('#algorithm-note-form [name="noteScope"]').isDisabled(), true);
     await page.locator('#algorithm-note-form [name="noteTitle"]').fill('新上传的背包笔记');
@@ -328,7 +414,9 @@ async function assertNoOverflow(page, label) {
     assert.equal(saved[0].noteScope, 'personal');
     assert.deepEqual(saved[0].tags, ['背包', '测试']);
     await scopeButton(page, 'personal').click();
-    assert.ok((await noteTitles(page)).includes('新上传的背包笔记'));
+    await expandAll(page);
+    await row(page, PACK).locator('.alg-tree-label').click();
+    assert.ok((await directTitles(page)).includes('新上传的背包笔记'));
     await scopeButton(page, 'public').click();
 
     // Arrow keys move focus through actual visible rows, expand/collapse, move
@@ -349,6 +437,9 @@ async function assertNoOverflow(page, label) {
     await page.keyboard.press('Enter');
     assert.equal(await item(page, firstId).getAttribute('aria-selected'), 'true');
     assert.equal(await page.locator('.alg-detail-title').innerText(), tree.children[0].fullLabel);
+    assert.equal(await item(page, firstId).getAttribute('aria-expanded'), 'false', 'selecting a collapsed directory preserves its state');
+    await page.keyboard.press('ArrowRight');
+    assert.equal(await item(page, firstId).getAttribute('aria-expanded'), 'true');
     await page.keyboard.press('ArrowLeft');
     assert.equal(await item(page, firstId).getAttribute('aria-expanded'), 'false');
     await page.keyboard.press('ArrowRight');
@@ -369,12 +460,13 @@ async function assertNoOverflow(page, label) {
       measured += await assertTextContrast(page, '.alg-tree-label, .alg-badge, .alg-attribute-badge, .alg-legend-button, .alg-legend-button > span:not(.alg-legend-dot)', theme);
       await page.locator('.alg-search').fill('背包状态设计');
 
-      await page.locator('.alg-search-submit').click();
+      await applyFilters(page);
+      await assertScopedLeaf(page, DP_LEAF);
       measured += await assertTextContrast(page, '.alg-note-title, .alg-featured, .alg-tag', theme);
       await assertNoOverflow(page, `${theme} desktop`);
       await page.setViewportSize({ width: 390, height: 844 });
       await assertNoOverflow(page, `${theme} 390px results`);
-      await resultCards(page).click();
+      await directCards(page).filter({ hasText: '背包状态设计' }).click();
       await page.waitForSelector('.alg-markdown .katex');
       await assertNoOverflow(page, `${theme} 390px reader`);
       await page.locator('.alg-reader-back').click();
@@ -386,6 +478,8 @@ async function assertNoOverflow(page, label) {
 
     for (const permission of [{ signedIn: false, push: false }, { signedIn: true, push: false }]) {
       const restricted = await openAlgorithms(browser, errors, permission);
+      await expandAll(restricted);
+      await row(restricted, PACK).locator('.alg-tree-label').click();
       assert.equal(await restricted.locator('#algorithm-upload-button').isDisabled(), true);
       assert.match(await restricted.locator('.alg-upload-hint').innerText(), permission.signedIn ? /写入权限/ : /登录/);
       await restricted.locator('#algorithm-upload-button').evaluate(button => button.click());
@@ -398,9 +492,10 @@ async function assertNoOverflow(page, label) {
       await restricted.close();
     }
     const adminPage = await openAlgorithms(browser, errors, { admin: true });
-    await row(adminPage, DP).locator('.alg-tree-label').click();
+    await expandAll(adminPage);
+    await row(adminPage, DP_LEAF).locator('.alg-tree-label').click();
     await adminPage.locator('#algorithm-upload-button').click();
-    assert.equal(await adminPage.locator('#algorithm-note-node').inputValue(), DP);
+    assert.equal(await adminPage.locator('#algorithm-note-node').inputValue(), DP_LEAF);
     assert.equal(await adminPage.locator('#algorithm-note-form [name="noteScope"]').isDisabled(), false);
     assert.equal(await adminPage.locator('#algorithm-note-form [name="noteScope"]').inputValue(), 'public');
     await adminPage.locator('[data-close="algorithm-note-dialog"]').first().click();
@@ -431,12 +526,14 @@ async function assertNoOverflow(page, label) {
     assert.equal(await adminPage.locator('.alg-detail-title').innerText(), '测试算法完整名称');
     await adminPage.locator('.rail-nav-item[data-view="home"]').click();
     await adminPage.locator('.rail-nav-item[data-view="algorithms"]').click();
+    await expandAll(adminPage);
     assert.equal(await item(adminPage, added).count(), 1, 'new topic survives view changes');
     await adminPage.reload();
     await adminPage.locator('.rail-nav-item[data-view="algorithms"]').click();
     await adminPage.locator('.alg-search').fill('测试算法');
     await adminPage.locator('.alg-search-submit').click();
-    assert.ok((await adminPage.locator('.alg-result-topic-name').allTextContents()).includes('测试算法'), 'bootstrap reload restores stored custom topic');
+    assert.equal(await row(adminPage, content).locator('.alg-tree-label').innerText(), '测试算法', 'bootstrap reload restores stored custom topic in matching tree');
+    await assertReadingPane(adminPage);
     await adminPage.close();
 
     // Node labels follow the same text-only boundary as note metadata. Mutate

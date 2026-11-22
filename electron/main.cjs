@@ -4,7 +4,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const { app, BrowserWindow, ipcMain, shell, safeStorage, net, dialog } = require('electron');
 const fs = require("node:fs");
 const path = require("node:path");
-const { GitHub, repoParts, normalizeServerUrl, repositoryKey, parseLearningGateContent, parseLearningCurriculumContent, learningCurriculumGateIds } = require('./github.cjs');
+const { GitHub, repoParts, normalizeServerUrl, repositoryKey, cachedTrick, parseAlgorithmNodeContent, algorithmContentTargetId, parseLearningGateContent, parseLearningCurriculumContent, learningCurriculumGateIds } = require('./github.cjs');
 const { randomUUID } = require('node:crypto');
 const { spawn } = require('node:child_process');
 const { createUpdater } = require('./updater.cjs');
@@ -148,6 +148,18 @@ function ensureSource(key, generation = loginGeneration) {
     if (key !== sourceScope().sourceKey || generation !== loginGeneration)
         throw new Error('账号或仓库配置已改变，请重新同步');
 }
+function cachedTricks(value, scope = sourceScope()) {
+    if (!Array.isArray(value))
+        return [];
+    const seen = new Set();
+    return value.flatMap((raw) => {
+        const trick = cachedTrick(raw, scope);
+        if (!trick || seen.has(trick.id))
+            return [];
+        seen.add(trick.id);
+        return [trick];
+    }).sort((a, b) => b.updatedAt.localeCompare(a.updatedAt) || a.path.localeCompare(b.path));
+}
 function cachedLearningCurriculum(value, topics, scope = sourceScope()) {
     if (!value || typeof value !== 'object' || Array.isArray(value))
         return null;
@@ -180,6 +192,36 @@ function cachedLearningContents(value, scope = sourceScope(), curriculum = null)
             return [];
         }
     });
+}
+function cachedAlgorithmNodeContents(value, topics, scope = sourceScope()) {
+    if (!Array.isArray(value))
+        return [];
+    try {
+        const additions = Array.isArray(topics) ? require('./algorithm-topics.cjs').validateTopics(topics) : [];
+        const seen = new Set();
+        return value.flatMap((raw) => {
+            if (!raw || typeof raw !== 'object' || Array.isArray(raw))
+                return [];
+            const record = raw;
+            if (record.repo !== scope.repo || record.sourceKey !== scope.sourceKey || record.serverUrl !== scope.serverUrl)
+                return [];
+            try {
+                const content = parseAlgorithmNodeContent({ ...record, schema: 1 }, record.sha);
+                const storageNodeId = content.storageNodeId ?? content.nodeId;
+                const nodeId = algorithmContentTargetId(storageNodeId, additions);
+                if (!nodeId || algorithmContentTargetId(content.nodeId, additions) !== nodeId || seen.has(nodeId))
+                    return [];
+                seen.add(nodeId);
+                return [annotate({ ...content, nodeId, ...(storageNodeId === nodeId ? {} : { storageNodeId }) }, scope)];
+            }
+            catch {
+                return [];
+            }
+        });
+    }
+    catch {
+        return [];
+    }
 }
 function libraryPlatforms(input) {
     const filter = input && typeof input === 'object' ? input : {};
@@ -329,7 +371,9 @@ function state(error) {
     return {
         records: matching ? (c.records || []).filter(r => r.kind === 'document').map(r => annotate(r, scope)) : [],
         algorithmNotes: matching ? (c.algorithmNotes || []).map(r => annotate(r, scope)) : [],
+        tricks: matching ? cachedTricks(c.tricks, scope) : [],
         algorithmTopics: matching && Array.isArray(c.algorithmTopics) ? c.algorithmTopics.map(topic => annotate(topic, scope)) : [],
+        algorithmNodeContents: matching ? cachedAlgorithmNodeContents(c.algorithmNodeContents, c.algorithmTopics, scope) : [],
         learningGateContents: matching ? cachedLearningContents(c.learningGateContents, scope, curriculum) : [],
         learningCurriculum: curriculum,
         issues: matching ? (c.issues || (c.records || []).filter(r => r.kind === 'issue')).map(r => annotate(r, scope)) : [],
@@ -382,8 +426,12 @@ function setup() {
     libraryLoader = createLibraryLoader(path.join(dir, 'library'), fs, path);
     clistSharedCache = createClistSharedCache({ directory: dir, fs, path, fetcher: networkFetch,
         initialCacheFile: process.env.QMX_ISOLATED_SANDBOX === '1' ? undefined : path.join(__dirname, 'data', 'clist-initial-cache.json') });
-    if (process.env.QMX_ISOLATED_SANDBOX !== '1' && fs.existsSync(path.join(__dirname, 'data', 'clist-initial-cache.json')))
-        clistSharedCache.ensureInitial();
+    if (process.env.QMX_ISOLATED_SANDBOX !== '1' && fs.existsSync(path.join(__dirname, 'data', 'clist-initial-cache.json'))) {
+        try {
+            clistSharedCache.ensureInitial();
+        }
+        catch { /* Preserve damaged cache files; the cache panel reports the read error after the window opens. */ }
+    }
     clistBulk = createClistBulk({
         read: () => { try {
             return JSON.parse(fs.readFileSync(path.join(dir, 'clist-bulk-progress.json'), 'utf8'));
@@ -684,6 +732,29 @@ function setup() {
         }
         return result;
     }));
+    handle('saveTrick', data => writeOperation(async () => {
+        requireWritableSource();
+        const scope = sourceScope(), generation = loginGeneration;
+        const result = await client().saveTrick(data);
+        ensureSource(scope.sourceKey, generation);
+        const saved = cachedTrick(result, scope);
+        if (!saved)
+            throw new Error('Trick写入结果无效，请先同步核实');
+        const old = read('cache.json', {}), c = repoCache(old, scope.repo, scope.serverUrl);
+        const tricks = cachedTricks(c.tricks, scope).filter(trick => trick.path !== saved.path);
+        tricks.push(saved);
+        saveRepoCache(old, { ...(c.repo === scope.repo ? c : {}), repo: scope.repo, tricks }, scope);
+        return saved;
+    }));
+    handle('deleteTrick', data => writeOperation(async () => {
+        requireWritableSource();
+        const scope = sourceScope(), generation = loginGeneration;
+        const result = await client().deleteTrick(data);
+        ensureSource(scope.sourceKey, generation);
+        const old = read('cache.json', {}), c = repoCache(old, scope.repo, scope.serverUrl);
+        saveRepoCache(old, { ...(c.repo === scope.repo ? c : {}), repo: scope.repo, tricks: cachedTricks(c.tricks, scope).filter(trick => trick.path !== result.path) }, scope);
+        return result;
+    }));
     handle('saveAlgorithmTopic', data => writeOperation(async () => {
         requireWritableSource();
         const scope = sourceScope(), gen = loginGeneration, repo = scope.repo;
@@ -695,6 +766,18 @@ function setup() {
         const updated = { ...(c.repo === repo ? c : {}), repo, algorithmTopics: result.topics };
         saveRepoCache(old, updated);
         return result.topic;
+    }));
+    handle('saveAlgorithmNodeContent', data => writeOperation(async () => {
+        requireWritableSource();
+        const scope = sourceScope(), gen = loginGeneration;
+        const result = await client().saveAlgorithmNodeContent(data);
+        ensureSource(scope.sourceKey, gen);
+        const old = read('cache.json', {}), c = repoCache(old, scope.repo, scope.serverUrl);
+        const contents = cachedAlgorithmNodeContents(c.algorithmNodeContents, c.algorithmTopics, scope).filter(content => content.nodeId !== result.nodeId);
+        const saved = annotate(result, scope);
+        contents.push(saved);
+        saveRepoCache(old, { ...(c.repo === scope.repo ? c : {}), repo: scope.repo, algorithmNodeContents: contents }, scope);
+        return saved;
     }));
     handle('saveLearningCurriculum', data => writeOperation(async () => {
         requireWritableSource();
@@ -741,7 +824,7 @@ function setup() {
             }
             ensureSource(scope.sourceKey, gen);
             const curriculum = cachedLearningCurriculum(result.learningCurriculum, result.algorithmTopics, scope);
-            const updated = { ...result, repo, tagCatalog, tagCatalogError, algorithmNotes: Array.isArray(result.algorithmNotes) ? result.algorithmNotes : [], algorithmTopics: Array.isArray(result.algorithmTopics) ? result.algorithmTopics : [], learningCurriculum: curriculum, learningGateContents: cachedLearningContents(result.learningGateContents, scope, curriculum) };
+            const updated = { ...result, repo, tagCatalog, tagCatalogError, tricks: cachedTricks(result.tricks, scope), algorithmNotes: Array.isArray(result.algorithmNotes) ? result.algorithmNotes : [], algorithmTopics: Array.isArray(result.algorithmTopics) ? result.algorithmTopics : [], algorithmNodeContents: cachedAlgorithmNodeContents(result.algorithmNodeContents, result.algorithmTopics, scope), learningCurriculum: curriculum, learningGateContents: cachedLearningContents(result.learningGateContents, scope, curriculum) };
             saveRepoCache(old, updated);
             let sharedCacheError;
             try {
@@ -789,7 +872,7 @@ function setup() {
     });
     registerRecordHandlers({ handle, writeOperation, requireWritableSource,
         getAccount: () => account, getToken: () => token, local, settings, read, save, client, annotate,
-        sourceScope, repositoryKey, repoCache, saveRepoCache });
+        sourceScope, getLoginGeneration: () => loginGeneration, ensureSource, repositoryKey, repoCache, saveRepoCache });
     require('./ipc-boundary.cjs').registerBoundary(handle, {
         plannerAction: (action, payload) => planner.action(action, payload),
         bootstrap: () => state(),

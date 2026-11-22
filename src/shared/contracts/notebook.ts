@@ -4,8 +4,10 @@ import type { ClistSharedCacheStatus, ClistSharedCacheResult } from '../models/c
 import type { LibrarySyncState } from '../models/library-sync';
 import type { DifficultyBackfillState } from '../models/difficulty-backfill';
 import type { DailyDrawFilters, DailyDrawResult, DailyTagCatalog, LibrarySyncResult } from '../models/daily-problem';
+import type { Trick, SaveTrickInput, DeleteTrickInput, DeletedTrick } from '../models/trick';
 import type { LearningCurriculumDocument, SaveLearningCurriculumInput } from '../models/learning-curriculum';
 import type { LearningGateContent, SaveLearningGateInput } from '../models/learning-content';
+import type { AlgorithmNodeContent, SaveAlgorithmNodeContentInput } from '../models/algorithm-node-content';
 import type { BootstrapPayload } from '../models/bootstrap';
 import type { LocalDataSnapshot, LocalUpdate } from '../models/records';
 import type { PlannerActionArgs, PlannerSnapshot } from '../models/planner';
@@ -76,9 +78,12 @@ export interface ServiceMethods {
   getComments(number: CommentNumber): Promise<CommentSnapshot[]>;
   propose(record: DocumentWriteInput): Promise<SavedDocument>;
   saveDocument(record: DocumentWriteInput): Promise<SavedDocument>;
+  saveTrick(input: SaveTrickInput): Promise<Trick>;
+  deleteTrick(input: DeleteTrickInput): Promise<DeletedTrick>;
   saveAlgorithmTopic(data: AlgorithmTopicInput): Promise<AlgorithmTopic>;
   saveLearningGate(data: SaveLearningGateInput): Promise<LearningGateContent>;
   saveLearningCurriculum(input: SaveLearningCurriculumInput): Promise<LearningCurriculumDocument>;
+  saveAlgorithmNodeContent(input: SaveAlgorithmNodeContentInput): Promise<AlgorithmNodeContent>;
   saveAlgorithmNote(record: AlgorithmNoteInput): Promise<SavedDocument>;
   deleteDocument(record: DeleteDocumentInput): Promise<DeletedDocument>;
   deleteIssue(record: IssueInput): Promise<DeletedIssue>;

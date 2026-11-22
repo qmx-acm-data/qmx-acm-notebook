@@ -1,5 +1,18 @@
 import type { LearningPathController, LearningPathProgress } from '../../../types/learning-path.js';
 import type { RoadmapData, RoadmapEdge, RoadmapNode } from '../../shared/models/learning-roadmap.js';
+import type { AlgorithmDirectoryNode } from '../../shared/models/algorithm-directory.js';
+import type { AlgorithmNodeContent } from '../../shared/models/algorithm-node-content.js';
+import { resolveAlgorithmLeaf } from '../../shared/algorithm-leaf.js';
+
+/** Route categories describe their range in one Markdown document. */
+export function roadmapIntroduction(node: RoadmapNode): string {
+  return [node.detail[0], node.detail[1], node.detail[2].map(text => `- ${text}`).join('\n')].filter(Boolean).join('\n\n');
+}
+export function roadmapLeaves(tree: AlgorithmDirectoryNode, node: RoadmapNode): AlgorithmDirectoryNode[] {
+  const leaves = new Map<string, AlgorithmDirectoryNode>();
+  for (const id of node.topicIds || []) { const leaf = resolveAlgorithmLeaf(tree, id); if (leaf) leaves.set(leaf.id, leaf); }
+  return [...leaves.values()];
+}
 
 export interface RoadmapOptions {
   host: HTMLElement;
@@ -7,6 +20,13 @@ export interface RoadmapOptions {
   progress?: LearningPathProgress;
   onFocus?: (id: string | null) => Promise<unknown>;
   onOpenResources?: (node: RoadmapNode) => void;
+  tree?: AlgorithmDirectoryNode;
+  nodeContents?: AlgorithmNodeContent[];
+  renderMarkdown?: (host: HTMLElement, markdown: string) => void;
+  onOpenLeaf?: (topicId: string) => void;
+  canManage?: boolean;
+  getIntroduction?: (node: RoadmapNode) => string | undefined;
+  onSaveIntroduction?: (nodeId: string, markdown: string) => Promise<void>;
   toast?: (message: string) => void;
 }
 
@@ -271,41 +291,46 @@ function render(options: RoadmapOptions): LearningPathController {
     insightCopy.textContent = current ? `${current.label} · ${current.detail[0]}` : bookmark ? `当前关注：${bookmark.label}。可以随时沿相关基础回补，或选择其他分支。` : '选一个节点，查看它的知识范围与前后联系。';
     insightOpen.hidden = !current;
   }
-  function detailSection(title: string, entries: string[]): HTMLElement {
-    const section = element('section', 'arm-detail-section'); section.append(element('h3', '', title));
-    const list = element('ul', ''); entries.forEach(text => list.append(element('li', '', text))); section.append(list); return section;
-  }
-  function relationGroup(title: string, ids: string[], parent: HTMLElement): void {
-    if (!ids.length) return;
-    const group = element('div', 'arm-relation-group'); group.append(element('p', '', title));
-    for (const id of ids) {
-      const node = byId.get(id); if (!node) continue;
-      const action = button(node.label, 'arm-relation-button', () => open(id)); action.dataset.node = id; group.append(action);
-    }
-    parent.append(group);
-  }
+  const introductions = new Map<string, string>();
   function renderDetail(node: RoadmapNode): void {
     detailBody.replaceChildren();
-    const row = data.rows[node.row]; breadcrumb.textContent = `四层大纲 / ${row?.name || '专项索引'} / ${node.label}`;
-    const pill = element('span', 'arm-stage-pill', row?.name || '专项索引'); pill.style.setProperty('--arm-stage', row?.color || '#4778be');
+    const row = data.rows[node.row]; breadcrumb.textContent = `四层大纲 / ${row?.name || '专项索引'} / 目录`;
     const title = element('h2', 'arm-detail-title', node.label); title.id = `${uid}-detail-title`;
-    detailBody.append(pill, title, element('p', 'arm-detail-tagline', node.detail[0]), element('p', 'arm-dialog-intro', node.detail[1]));
-    const layout = element('div', 'arm-detail-layout'), left = element('div', ''), right = element('aside', '');
-    left.append(detailSection('重点知识范围', node.detail[2]), detailSection('理解时注意', node.detail[3]));
-    const relations = element('section', 'arm-detail-section'); relations.append(element('h3', '', '在框架中的联系'));
-    relationGroup('相关基础', data.edges.filter(edge => edge.to === node.id && !edge.bidir).map(edge => edge.from), relations);
-    relationGroup('可以延伸到', data.edges.filter(edge => edge.from === node.id && !edge.bidir).map(edge => edge.to), relations);
-    relationGroup('适合对照理解', data.edges.filter(edge => edge.bidir && (edge.from === node.id || edge.to === node.id)).map(edge => edge.from === node.id ? edge.to : edge.from), relations);
-    if (!relations.querySelector('.arm-relation-group')) relations.append(element('p', 'arm-fine-print', '按当前问题需要查阅，相关方法可结合各分支理解。'));
-    const practice = element('section', 'arm-practice-box'); practice.append(element('h3', '', '可选应用 / 混练建议'), element('p', '', node.detail[4]));
-    right.append(relations, practice); layout.append(left, right); detailBody.append(layout);
-    const extra = element('details', 'arm-detail-extra'); extra.append(element('summary', '', '怎样使用这个节点定位自己？'), element('p', '', '阶段表示内容展开的大致层次。可以在不同分支处于不同位置；看到题目有需要或有兴趣时，也可以先进入，再从相关基础回补。')); detailBody.append(extra);
+    detailBody.append(title);
+    const introduction = element('section', 'arm-directory-introduction');
+    const heading = element('div', 'arm-directory-heading'); heading.append(element('h3', '', '简介'));
+    const markdown = introductions.get(node.id) ?? options.getIntroduction?.(node) ?? roadmapIntroduction(node);
+    const body = element('div', 'markdown-body arm-directory-markdown');
+    if (options.renderMarkdown) options.renderMarkdown(body, markdown); else body.textContent = markdown;
+    introduction.append(heading, body); detailBody.append(introduction);
+    if (options.canManage && options.onSaveIntroduction) heading.append(button('编辑简介', 'arm-edit-introduction', () => {
+      const form = element('form', 'arm-introduction-form'), input = element('textarea', 'arm-introduction-input');
+      input.name = 'introduction'; input.rows = 12; input.value = markdown; input.setAttribute('aria-label', '目录简介（Markdown）');
+      const error = element('p', 'arm-focus-error'); error.hidden = true; error.setAttribute('role', 'alert');
+      const actions = element('div', 'arm-resource-actions');
+      const cancel = button('取消', '', () => renderDetail(node)), save = element('button', 'arm-button', '保存简介'); save.type = 'submit';
+      actions.append(cancel, save); form.append(input, error, actions); introduction.replaceChildren(form);
+      form.addEventListener('submit', async event => {
+        event.preventDefault(); if (save.disabled) return;
+        if (!input.value.trim() || input.value.length > 6000) { error.textContent = '简介须为1–6000字。'; error.hidden = false; return; }
+        input.disabled = cancel.disabled = save.disabled = true;
+        const isCurrentEditor = () => !destroyed && dialog.open && detailNode?.id === node.id && form.isConnected;
+        try { await options.onSaveIntroduction!(node.id, input.value); introductions.set(node.id, input.value); if (isCurrentEditor()) renderDetail(node); }
+        catch (cause) { if (isCurrentEditor()) { error.textContent = cause instanceof Error ? cause.message : '简介保存失败，请重试。'; error.hidden = false; input.disabled = cancel.disabled = save.disabled = false; } }
+      }); input.focus();
+    }));
+    const choices = element('section', 'arm-leaf-choices'); choices.append(element('h3', '', '知识点'));
+    const links = element('div', 'arm-resource-links');
+    for (const leaf of options.tree ? roadmapLeaves(options.tree, node) : []) {
+      const action = button(leaf.label, 'arm-leaf-link', () => { dialog.close(); options.onOpenLeaf?.(leaf.id); });
+      action.dataset.topicId = leaf.id; links.append(action);
+    }
+    if (links.childElementCount) choices.append(links); else choices.append(element('p', 'arm-fine-print', '暂无可浏览的知识点。'));
+    detailBody.append(choices);
     const actions = element('div', 'arm-detail-actions');
-    const focusButton = button(position === node.id ? '取消当前关注' : '标记当前关注', 'arm-focus-button', () => { void saveFocus(node); });
-    focusButton.setAttribute('aria-pressed', String(position === node.id)); focusButton.disabled = pending || !options.onFocus;
-    const resources = button('查看相关笔记与题单', 'arm-resources-button', () => { dialog.close(); options.onOpenResources?.(node); }); resources.disabled = !options.onOpenResources;
-    actions.append(focusButton, resources); detailBody.append(actions);
-    const error = element('p', 'arm-focus-error'); error.setAttribute('role', 'alert'); error.hidden = true; detailBody.append(error);
+    if (options.onOpenResources) actions.append(button('浏览知识点', 'arm-resources-button', () => { dialog.close(); options.onOpenResources?.(node); }));
+    if (options.onFocus) { const focus = button(position === node.id ? '取消当前关注' : '设为当前关注', 'arm-focus-button', () => { void saveFocus(node); }); focus.disabled = pending; focus.setAttribute('aria-pressed', String(position === node.id)); actions.append(focus); }
+    const error = element('p', 'arm-focus-error'); error.hidden = true; error.setAttribute('role', 'alert'); detailBody.append(actions, error);
   }
   async function saveFocus(node: RoadmapNode): Promise<void> {
     if (pending || destroyed || !options.onFocus) return;
@@ -350,7 +375,11 @@ function render(options: RoadmapOptions): LearningPathController {
   const observer = new ResizeObserver(scheduleFit); observer.observe(scroll);
   return {
     selectGate(id: string): boolean { const node = data.nodes.find(entry => entry.gateIds?.includes(id)); return node ? open(node.id) : false; },
-    selectTopic(id: string): boolean { const node = [...data.nodes, ...data.indexEntries].find(entry => entry.topicIds?.includes(id)); return node ? open(node.id) : false; },
+    selectTopic(id: string): boolean {
+      const leafId = options.tree ? resolveAlgorithmLeaf(options.tree, id)?.id : undefined;
+      const node = [...data.nodes, ...data.indexEntries].find(entry => entry.topicIds?.includes(id) || (leafId && options.tree && roadmapLeaves(options.tree, entry).some(leaf => leaf.id === leafId)));
+      return node ? open(node.id) : false;
+    },
     destroy(): void {
       if (destroyed) return;
       destroyed = true; observer.disconnect(); if (frame) cancelAnimationFrame(frame);

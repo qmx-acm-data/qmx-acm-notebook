@@ -242,12 +242,14 @@ export interface RecordHandlers {
   client(): GitHub;
   annotate: Annotate;
   sourceScope(): SourceScope;
+  getLoginGeneration(): number;
+  ensureSource(key: string, generation: number): void;
   repositoryKey: typeof import('../github/client.cjs').repositoryKey;
   repoCache: RepoCache;
   saveRepoCache: SaveRepoCache;
 }
 
-export function registerRecordHandlers({ handle, writeOperation, requireWritableSource, getAccount, getToken, local, settings, read, save, client, annotate, sourceScope, repositoryKey, repoCache, saveRepoCache }: RecordHandlers): void {
+export function registerRecordHandlers({ handle, writeOperation, requireWritableSource, getAccount, getToken, local, settings, read, save, client, annotate, sourceScope, getLoginGeneration, ensureSource, repositoryKey, repoCache, saveRepoCache }: RecordHandlers): void {
   function checkRecordRepo(record: RecordView) {
     const scope = sourceScope();
     if (record.repo && record.repo !== scope.repo) throw new Error('该题解属于其他仓库，请切换到原仓库后操作');
@@ -290,7 +292,9 @@ export function registerRecordHandlers({ handle, writeOperation, requireWritable
   handle('saveAlgorithmNote', record => writeOperation(async () => {
     checkRecordRepo(record); requireWritableSource();
     if (!getAccount()?.id || !getToken()) throw new Error('请先登录 GitHub');
-    const result = annotate(await client().saveAlgorithmNote(record));
+    const scope = sourceScope(), generation = getLoginGeneration();
+    const result = annotate(await client().saveAlgorithmNote(record), scope);
+    ensureSource(scope.sourceKey, generation);
     const old = read('cache.json', {}) as CacheView, cache = repoCache(old);
     const notes = (cache.algorithmNotes || []).filter(item => item.path !== result.path);
     saveRepoCache(old, { ...cache, algorithmNotes: [...notes, result] });

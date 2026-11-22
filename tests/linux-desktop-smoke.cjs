@@ -123,7 +123,7 @@ async function bounded(promise, milliseconds, message) {
     // The UI renders optimistically; poll the real IPC bootstrap until disk persistence finishes.
     await page.waitForFunction(async () => {
       const state = await window.notebook.bootstrap();
-      return state.local.records.length === 1 && state.local.favorites.includes(state.local.records[0].id);
+      return state.local.records.length === 1 && state.local.favorites.includes('qmx-favorite:v1:' + JSON.stringify([null, 'device', 'solution', state.local.records[0].id]));
     });
     const saved = await page.evaluate(() => window.notebook.bootstrap());
     assert.equal(saved.local.records.length, 1);
@@ -133,7 +133,7 @@ async function bounded(promise, milliseconds, message) {
     assert.equal(record.kind, 'local');
     assert.equal(record.ownerId, null);
     assert.match(record.clientId, /^[0-9a-f-]{36}$/i);
-    assert.deepEqual(saved.local.favorites, [record.id]);
+    assert.deepEqual(saved.local.favorites, ['qmx-favorite:v1:' + JSON.stringify([null, 'device', 'solution', record.id])]);
     await close();
 
     const restored = await launch();
@@ -141,10 +141,10 @@ async function bounded(promise, milliseconds, message) {
     assert.equal(restored.settings.clientId, DEFAULT_CLIENT_ID);
     assert.equal(restored.settings.autoSync, false);
     assert.deepEqual(restored.local.records, saved.local.records, 'Full local content and identity must survive relaunch');
-    assert.deepEqual(restored.local.favorites, [record.id]);
+    assert.deepEqual(restored.local.favorites, saved.local.favorites);
     await page.locator('.sidebar').hover();
     await page.locator('.nav-item[data-view="favorites"]').click();
-    await page.locator('.record-card').filter({ hasText: title }).click();
+    await page.locator('.favorite-open').filter({ hasText: title }).click();
     await page.getByRole('button', { name: '★ 已收藏', exact: true }).waitFor();
     await page.click('#edit-record-button');
     assert.equal(await page.inputValue('#submit-dialog [name="title"]'), title);

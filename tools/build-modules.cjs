@@ -117,6 +117,7 @@ const targets = [
 ];
 const nodeTargets = [
   ['src/shared/luogu-difficulty.ts', 'electron/luogu-difficulty.js'],
+  ['src/shared/models/algorithm-node-content.ts', 'electron/algorithm-node-content-model.cjs'],
   ['src/main/records/parser.cts', 'electron/record-parser.cjs'],
   ['src/main/auth/auth.cts', 'electron/auth.cjs'],
   ['src/main/planner/service.cts', 'electron/planner-service.cjs'],

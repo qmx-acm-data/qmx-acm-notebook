@@ -179,11 +179,11 @@
   function compact2(value) {
     return normalize(value).replace(/[\s_\-()/（）、，,·.:：]/gu, "");
   }
-  function score(query, fields2) {
+  function score(query, fields) {
     const phrase = normalize(query);
     if (!phrase) return 1;
     const terms = phrase.split(/\s+/u).filter(Boolean);
-    const prepared = fields2.map((field3) => ({ value: normalize(field3.value), dense: compact2(field3.value), weight: field3.weight || 1 }));
+    const prepared = fields.map((field3) => ({ value: normalize(field3.value), dense: compact2(field3.value), weight: field3.weight || 1 }));
     let total = 0;
     for (const term of terms) {
       const dense = compact2(term);
@@ -226,6 +226,11 @@
   function splitMixed(tree) {
     function visit(node4) {
       node4.children = Array.isArray(node4.children) ? node4.children : [];
+      if (!node4.children.length && ["feishu-part-9-5-1", "directory-contest-experience"].includes(node4.id) && node4.origin !== "admin") {
+        node4.kind = "algorithm";
+        node4.color = "unrated";
+        node4.rating = { status: "unrated", type: "entry" };
+      }
       if (node4.kind === "algorithm" && node4.children.length) {
         const content = { ...node4, id: `algorithm-content-${node4.id}`, children: [], kind: "algorithm", contentOf: node4.id };
         for (const key of ["legacyIds", "sourceHeading", "part", "nestedPart", "metadata"]) delete content[key];
@@ -406,10 +411,10 @@
     if (text3 !== void 0) node4.textContent = String(text3);
     return node4;
   }
-  function button(text3, className, action2) {
+  function button(text3, className, action3) {
     const node4 = element("button", className, text3);
     node4.type = "button";
-    node4.addEventListener("click", action2);
+    node4.addEventListener("click", action3);
     return node4;
   }
   function metadata(code) {
@@ -873,9 +878,9 @@
       const row2 = element("div", "platform-binding-row");
       row2.dataset.platform = platform.code;
       const label = element("span", "platform-binding-name", platform.name);
-      const action2 = button(bound(platform.code) ? username(platform.code) : "绑定账号", "platform-button platform-bind-account", () => openDialog(platform.code));
-      action2.disabled = pending.has(platform.code);
-      row2.append(label, action2);
+      const action3 = button(bound(platform.code) ? username(platform.code) : "绑定账号", "platform-button platform-bind-account", () => openDialog(platform.code));
+      action3.disabled = pending.has(platform.code);
+      row2.append(label, action3);
       rows.append(row2);
     }
     root2.classList.add("notebook-platforms", "platform-settings");
@@ -887,10 +892,10 @@
     drawBindings();
     if (modalCode) syncDialog();
   }
-  function showError(message2) {
-    modalError.textContent = message2 || "";
-    modalError.hidden = !message2;
-    input.setAttribute("aria-invalid", message2 ? "true" : "false");
+  function showError(message) {
+    modalError.textContent = message || "";
+    modalError.hidden = !message;
+    input.setAttribute("aria-invalid", message ? "true" : "false");
   }
   function syncDialog() {
     const busy2 = pending.has(modalCode);
@@ -1083,7 +1088,7 @@
     if (enhanced.has(input2)) return enhanced.get(input2);
     if (!(input2 instanceof HTMLInputElement) || input2.type !== "datetime-local") throw new TypeError("NotebookDeadline.enhance requires a datetime-local input.");
     const id = `planner-deadline-${++sequence}`;
-    const button8 = action("", "planner-deadline-trigger", () => {
+    const button10 = action("", "planner-deadline-trigger", () => {
       if (input2.disabled || input2.matches(":disabled")) return;
       if (opened) close();
       else open2();
@@ -1096,12 +1101,12 @@
     path.setAttribute("d", "M5.5 2.5v3m9-3v3M3 8h14M4.5 4h11A1.5 1.5 0 0 1 17 5.5v10a1.5 1.5 0 0 1-1.5 1.5h-11A1.5 1.5 0 0 1 3 15.5v-10A1.5 1.5 0 0 1 4.5 4ZM6.5 11h2m3 0h2m-7 3h2");
     icon.append(path);
     const caption = node("span", "planner-deadline-caption");
-    button8.append(icon, caption);
-    button8.setAttribute("aria-haspopup", "dialog");
-    button8.setAttribute("aria-expanded", "false");
-    button8.setAttribute("aria-controls", id);
+    button10.append(icon, caption);
+    button10.setAttribute("aria-haspopup", "dialog");
+    button10.setAttribute("aria-expanded", "false");
+    button10.setAttribute("aria-controls", id);
     input2.hidden = true;
-    input2.insertAdjacentElement("afterend", button8);
+    input2.insertAdjacentElement("afterend", button10);
     const popover = node("div", "planner-deadline-popover");
     popover.id = id;
     popover.setAttribute("popover", "auto");
@@ -1168,8 +1173,8 @@
       error.textContent = "";
       time3.removeAttribute("aria-invalid");
     }
-    function fail(message2, target) {
-      error.textContent = message2;
+    function fail(message, target) {
+      error.textContent = message;
       error.hidden = false;
       if (target === time3) time3.setAttribute("aria-invalid", "true");
       target.focus({ preventScroll: true });
@@ -1178,12 +1183,12 @@
     function refresh() {
       const value = parts(input2.value);
       caption.textContent = value ? `${Number(value[1].split("-")[1])}/${Number(value[1].split("-")[2])} ${value[2]}` : "截止时间";
-      button8.classList.toggle("has-deadline", Boolean(value));
-      button8.disabled = input2.disabled || input2.matches(":disabled");
+      button10.classList.toggle("has-deadline", Boolean(value));
+      button10.disabled = input2.disabled || input2.matches(":disabled");
       const label = input2.getAttribute("aria-label") || "截止时间（可选，使用本机时区）";
-      button8.setAttribute("aria-label", value ? `${label}：${value[1]} ${value[2]}` : label);
-      button8.title = value ? `${value[1]} ${input2.value.split("T")[1]}（本机时区）` : label;
-      if (button8.disabled && opened) close();
+      button10.setAttribute("aria-label", value ? `${label}：${value[1]} ${value[2]}` : label);
+      button10.title = value ? `${value[1]} ${input2.value.split("T")[1]}（本机时区）` : label;
+      if (button10.disabled && opened) close();
       return api;
     }
     function renderCalendar(focusDate) {
@@ -1247,7 +1252,7 @@
     }
     function position() {
       if (!opened) return;
-      if (!button8.isConnected || button8.disabled) {
+      if (!button10.isConnected || button10.disabled) {
         close();
         return;
       }
@@ -1257,7 +1262,7 @@
       const rightEdge = leftEdge + (viewport?.width || window.innerWidth) - 16;
       const bottomEdge = topEdge + (viewport?.height || window.innerHeight) - 16;
       popover.style.maxHeight = `${Math.max(0, bottomEdge - topEdge)}px`;
-      const anchor = button8.getBoundingClientRect();
+      const anchor = button10.getBoundingClientRect();
       const box = popover.getBoundingClientRect();
       const below = anchor.bottom + 7;
       const above = anchor.top - box.height - 7;
@@ -1274,14 +1279,14 @@
       if (!opened) return;
       opened = false;
       if (active === api) active = null;
-      button8.setAttribute("aria-expanded", "false");
+      button10.setAttribute("aria-expanded", "false");
       cancelAnimationFrame(frame);
       window.removeEventListener("resize", schedulePosition);
       document.removeEventListener("scroll", schedulePosition, true);
       window.visualViewport?.removeEventListener("resize", schedulePosition);
       window.visualViewport?.removeEventListener("scroll", schedulePosition);
       queueMicrotask(() => {
-        if (!active && button8.isConnected && !button8.disabled) button8.focus({ preventScroll: true });
+        if (!active && button10.isConnected && !button10.disabled) button10.focus({ preventScroll: true });
       });
     }
     function close() {
@@ -1290,7 +1295,7 @@
     }
     function open2() {
       refresh();
-      if (opened || button8.disabled || !button8.isConnected) return;
+      if (opened || button10.disabled || !button10.isConnected) return;
       if (active && active !== api) active.close();
       original = input2.value;
       originalParts = parts(original);
@@ -1305,7 +1310,7 @@
       popover.showPopover();
       opened = true;
       active = api;
-      button8.setAttribute("aria-expanded", "true");
+      button10.setAttribute("aria-expanded", "true");
       position();
       const focusDate = draftDate || dateKey(today);
       (calendar.querySelector(`[data-date="${focusDate}"]`) || calendar.querySelector("button:not(:disabled)")).focus({ preventScroll: true });
@@ -1358,7 +1363,7 @@
     }));
     const observer = new MutationObserver(refresh);
     observer.observe(input2, { attributes: true, attributeFilter: ["disabled", "value", "aria-label"] });
-    const api = { input: input2, button: button8, popover, refresh, open: open2, close };
+    const api = { input: input2, button: button10, popover, refresh, open: open2, close };
     enhanced.set(input2, api);
     refresh();
     return api;
@@ -1385,10 +1390,10 @@
     if (text3 !== void 0) node4.textContent = String(text3);
     return node4;
   };
-  function button2(text3, className, action2) {
+  function button2(text3, className, action3) {
     const node4 = el("button", className, text3);
     node4.type = "button";
-    node4.addEventListener("click", action2);
+    node4.addEventListener("click", action3);
     return node4;
   }
   function field(label, name, type, placeholder, maxLength) {
@@ -1406,9 +1411,9 @@
   function errorText2(error) {
     return String(typeof error === "string" ? error : error?.message || "保存失败，请重试。").replace(/^Error:\s*/, "");
   }
-  function showError2(target, message2) {
-    target.textContent = message2 || "";
-    target.hidden = !message2;
+  function showError2(target, message) {
+    target.textContent = message || "";
+    target.hidden = !message;
   }
   function safeURL2(value) {
     const url = new URL(String(value).trim());
@@ -1485,14 +1490,14 @@
       });
     }
   }
-  async function mutate2(action2, payload, errorNode, success) {
+  async function mutate2(action3, payload, errorNode, success) {
     if (busy) return false;
     showError2(errorNode, "");
     updateBusy(true);
     let next;
     try {
       if (typeof bridge2?.plannerAction !== "function") throw new Error("计划暂不可用，请稍后重试。");
-      next = await bridge2.plannerAction(...[action2, payload]);
+      next = await bridge2.plannerAction(...[action3, payload]);
       if (!next || !Array.isArray(next.problems) || !Array.isArray(next.tasks)) throw new Error("保存结果无效，请重试。");
     } catch (error) {
       showError2(errorNode, errorText2(error));
@@ -1883,7 +1888,7 @@
   function create({ demo, getSettings, setSettings, getView, getLoading, canRefresh, call, writeDemo, toast, errorMessage, openExternal }) {
     const $ = (selector, root2 = document) => root2.querySelector(selector);
     const $$ = (selector, root2 = document) => Array.from(root2.querySelectorAll(selector));
-    function element4(tag, className, text3) {
+    function element5(tag, className, text3) {
       const node4 = document.createElement(tag);
       if (className) node4.className = className;
       if (text3 !== void 0) node4.textContent = String(text3);
@@ -1895,10 +1900,10 @@
       });
       return parent;
     }
-    function button8(label, className, action2) {
-      const node4 = element4("button", className, label);
+    function button10(label, className, action3) {
+      const node4 = element5("button", className, label);
       node4.type = "button";
-      node4.addEventListener("click", action2);
+      node4.addEventListener("click", action3);
       return node4;
     }
     const contestPlatforms = [
@@ -1954,7 +1959,7 @@
     function contestTypeBadge(platformId, contest) {
       const type = atcoderContestType(platformId, contest);
       if (!type) return null;
-      const badge = element4("span", "contest-type-badge", type.label);
+      const badge = element5("span", "contest-type-badge", type.label);
       badge.title = type.name;
       badge.setAttribute("aria-label", `${type.label} · ${type.name}`);
       return badge;
@@ -1993,7 +1998,7 @@
       return (platform?.contests || []).map((contest) => ({ ...contest, start: contestTimestamp(contest.startTime), end: contestTimestamp(contest.endTime) })).filter((contest) => contest.start !== null && contest.end !== null && contest.end > contest.start && contest.end > now && !isContestOptedOut(platform.id, contest.id)).sort((a, b) => a.start - b.start || String(a.id).localeCompare(String(b.id))).slice(0, 3);
     }
     function contestLink(label, url, className, focusKey) {
-      const link = element4("a", className, label);
+      const link = element5("a", className, label);
       link.href = url;
       link.dataset.contestFocus = focusKey;
       link.addEventListener("click", (event) => {
@@ -2033,47 +2038,47 @@
       const activeFocusNode = grid.contains(document.activeElement) ? document.activeElement : null;
       const focus = activeFocusNode?.dataset.contestFocus || null;
       grid.replaceChildren();
-      const sources2 = element4("div", "contest-sources");
+      const sources2 = element5("div", "contest-sources");
       for (const platform of contestPlatforms) {
         const source = contestData?.platforms.find((item) => item.id === platform.id);
         const items2 = visibleContests(source, now);
-        const chip = element4("div", "contest-source");
+        const chip = element5("div", "contest-source");
         chip.dataset.platform = platform.id;
         const status2 = !source ? "尚未获取" : source.error ? items2.length ? "更新失败 · 保留赛程" : "获取失败" : source.stale ? "缓存待更新" : items2.length ? "已更新" : "暂无赛程";
         chip.title = `${platform.name} · ${status2} · ${source?.updatedAt ? `更新于 ${contestTime(source.updatedAt)} · 北京时间` : "尚无成功更新时间"}`;
-        append(chip, contestLink(`${platform.name} ↗`, platform.url, "contest-official-link", `${platform.id}:official`), element4("span", `contest-source-status${source?.error ? " is-error" : source?.stale ? " is-stale" : ""}`, status2));
+        append(chip, contestLink(`${platform.name} ↗`, platform.url, "contest-official-link", `${platform.id}:official`), element5("span", `contest-source-status${source?.error ? " is-error" : source?.stale ? " is-stale" : ""}`, status2));
         sources2.append(chip);
       }
-      const list = element4("div", "contest-list");
+      const list = element5("div", "contest-list");
       const items = mergedContests(now);
       for (const contest of items) {
         const { platform } = contest, active3 = contest.start <= now;
-        const row2 = element4("article", `contest-card${active3 ? " is-active" : ""}`);
+        const row2 = element5("article", `contest-card${active3 ? " is-active" : ""}`);
         row2.dataset.platform = platform.id;
         row2.dataset.contestId = String(contest.id);
-        const label = element4("span", "contest-phase", active3 ? "正在进行" : "即将开始");
+        const label = element5("span", "contest-phase", active3 ? "正在进行" : "即将开始");
         const title = contestLink(contest.title || "未命名比赛", contest.url, "contest-title", `${platform.id}:${contest.id}`);
         title.title = contest.title;
-        const start2 = element4("time", "", contestTime(contest.startTime));
+        const start2 = element5("time", "", contestTime(contest.startTime));
         start2.dateTime = contest.startTime;
         start2.title = `开始 ${contestTime(contest.startTime)} · 结束 ${contestTime(contest.endTime)} · 北京时间`;
-        const schedule = element4("span", "contest-schedule");
+        const schedule = element5("span", "contest-schedule");
         schedule.append(start2);
-        const countdown = element4("span", "contest-countdown");
+        const countdown = element5("span", "contest-countdown");
         countdown.dataset.target = String(active3 ? contest.end : contest.start);
         countdown.dataset.phase = active3 ? "active" : "upcoming";
         countdown.textContent = `${active3 ? "距结束" : "距开始"} ${contestDuration(Number(countdown.dataset.target) - now)}`;
-        const duration = element4("span", "contest-duration", `赛时 ${contestDuration(contest.end - contest.start).replace(/ 0秒$/, "").trim()}`);
-        const decline = button8("不参加", "contest-decline", () => {
+        const duration = element5("span", "contest-duration", `赛时 ${contestDuration(contest.end - contest.start).replace(/ 0秒$/, "").trim()}`);
+        const decline = button10("不参加", "contest-decline", () => {
           void setContestOptOut(platform.id, contest.id, true);
         });
         decline.dataset.contestFocus = `${platform.id}:${contest.id}:decline`;
         decline.setAttribute("aria-label", `不参加：${contest.title}`);
-        const titleGroup = append(element4("span", "contest-title-group"), contestTypeBadge(platform.id, contest), title);
-        append(row2, element4("span", "contest-platform-label", platform.name), titleGroup, label, schedule, duration, countdown, decline);
+        const titleGroup = append(element5("span", "contest-title-group"), contestTypeBadge(platform.id, contest), title);
+        append(row2, element5("span", "contest-platform-label", platform.name), titleGroup, label, schedule, duration, countdown, decline);
         list.append(row2);
       }
-      if (!items.length) list.append(element4("p", "contest-empty", contestsPending ? "正在载入比赛…" : "暂无可显示的比赛，可通过上方平台链接查看官方赛程。"));
+      if (!items.length) list.append(element5("p", "contest-empty", contestsPending ? "正在载入比赛…" : "暂无可显示的比赛，可通过上方平台链接查看官方赛程。"));
       grid.append(sources2, list);
       contestSignature = JSON.stringify(items.map((contest) => [contest.platform.id, contest.id, contest.start <= now ? "active" : "upcoming"]));
       updateContestPreferenceControls();
@@ -2145,8 +2150,8 @@
       if (!options) return;
       options.replaceChildren();
       for (const entry2 of contestRestoreEntries) {
-        const label = element4("label", "contest-restore-option");
-        const checkbox = element4("input");
+        const label = element5("label", "contest-restore-option");
+        const checkbox = element5("input");
         checkbox.type = "checkbox";
         checkbox.value = entry2.key;
         checkbox.checked = contestRestoreSelection.has(entry2.key);
@@ -2155,15 +2160,15 @@
           else contestRestoreSelection.delete(entry2.key);
           updateContestRestoreCount();
         });
-        const text3 = element4("span", "contest-restore-option-copy");
+        const text3 = element5("span", "contest-restore-option-copy");
         const details = entry2.start !== null && entry2.end !== null && entry2.end > entry2.start ? `${contestTime(entry2.startTime)} · 赛时 ${contestDuration(entry2.end - entry2.start).replace(/ 0秒$/, "").trim()}${entry2.end <= Date.now() ? " · 已结束" : ""}` : "暂无赛程详情（可恢复隐藏偏好）";
-        const heading = append(element4("span", "contest-restore-option-heading"), contestTypeBadge(entry2.platform.id, entry2), element4("strong", "", `${entry2.platform.name} · ${entry2.title || `比赛 ${entry2.id}`}`));
-        append(text3, heading, element4("small", "", details));
+        const heading = append(element5("span", "contest-restore-option-heading"), contestTypeBadge(entry2.platform.id, entry2), element5("strong", "", `${entry2.platform.name} · ${entry2.title || `比赛 ${entry2.id}`}`));
+        append(text3, heading, element5("small", "", details));
         label.title = `${entry2.platform.name} · ${entry2.title || `比赛 ${entry2.id}`}`;
         append(label, checkbox, text3);
         options.append(label);
       }
-      if (!contestRestoreEntries.length) options.append(element4("p", "contest-empty", "当前缓存中找不到已隐藏的比赛，刷新赛程后再试。"));
+      if (!contestRestoreEntries.length) options.append(element5("p", "contest-empty", "当前缓存中找不到已隐藏的比赛，刷新赛程后再试。"));
       updateContestRestoreCount();
     }
     function openContestRestore() {
@@ -2202,23 +2207,23 @@
       }
     }
     function renderHomeContests() {
-      const panel = element4("section", "home-contests");
+      const panel = element5("section", "home-contests");
       panel.setAttribute("aria-labelledby", "contests-title");
-      const title = element4("h2", "", "比赛提醒");
+      const title = element5("h2", "", "比赛提醒");
       title.id = "contests-title";
-      const refresh = button8("刷新赛程", "button secondary", () => {
+      const refresh = button10("刷新赛程", "button secondary", () => {
         void refreshContests(true);
       });
       refresh.id = "contests-refresh";
-      const restore = button8("", "button subtle contest-restore", openContestRestore);
+      const restore = button10("", "button subtle contest-restore", openContestRestore);
       restore.id = "contests-restore";
-      const actions = append(element4("div", "contest-actions"), restore, refresh);
-      const status2 = element4("p", "contests-status");
+      const actions = append(element5("div", "contest-actions"), restore, refresh);
+      const status2 = element5("p", "contests-status");
       status2.id = "contests-status";
       status2.setAttribute("role", "status");
-      const grid = element4("div", "contest-platforms");
+      const grid = element5("div", "contest-platforms");
       grid.id = "contest-platforms";
-      append(panel, append(element4("div", "contests-heading"), append(element4("div"), element4("div", "eyebrow", "CONTEST COUNTDOWN"), title, element4("p", "contest-timezone", "所有时间均为北京时间（UTC+8）")), actions), status2, grid);
+      append(panel, append(element5("div", "contests-heading"), append(element5("div"), element5("div", "eyebrow", "CONTEST COUNTDOWN"), title, element5("p", "contest-timezone", "所有时间均为北京时间（UTC+8）")), actions), status2, grid);
       return panel;
     }
     function closeContestRestore() {
@@ -2273,16 +2278,16 @@
   var luoguLevels2 = ["暂无评定", "入门", "普及−", "普及/提高−", "普及+/提高", "提高+/省选−", "省选/NOI−", "NOI/NOI+/CTSC"];
   var activeDialog = null;
   function node2(tag, className = "", text3) {
-    const element4 = document.createElement(tag);
-    element4.className = className;
-    if (text3 !== void 0) element4.textContent = text3;
-    return element4;
+    const element5 = document.createElement(tag);
+    element5.className = className;
+    if (text3 !== void 0) element5.textContent = text3;
+    return element5;
   }
-  function button3(label, className, action2) {
-    const element4 = node2("button", `button ${className}`, label);
-    element4.type = "button";
-    element4.addEventListener("click", action2);
-    return element4;
+  function button3(label, className, action3) {
+    const element5 = node2("button", `button ${className}`, label);
+    element5.type = "button";
+    element5.addEventListener("click", action3);
+    return element5;
   }
   function field2(label, control, hint) {
     const wrapper = node2("label", "enrichment-field");
@@ -2404,19 +2409,19 @@
     manualFields.append(field2("补充算法标签（逗号分隔）", tags), tagHint, field2("CF 参考评分", cf), field2("洛谷参考难度", lg), difficultyHint, field2("补充理由", reason, "说明标签或参考难度的依据；所有补充均保留来源标记。"));
     const save = button3("保存手动补充", "primary enrichment-save", () => void run(async () => {
       if (!bridge3 || !view) return;
-      const fields2 = { reason: reason.value.trim() };
-      if (view.canSupplementTags) fields2.tags = [...new Set(tags.value.split(/[,，]/).map((value) => value.trim()).filter(Boolean))];
+      const fields = { reason: reason.value.trim() };
+      if (view.canSupplementTags) fields.tags = [...new Set(tags.value.split(/[,，]/).map((value) => value.trim()).filter(Boolean))];
       if (view.canSupplementDifficulty) {
         if (cf.value.trim()) {
           const rating = Number(cf.value);
           if (!Number.isInteger(rating) || rating < 800 || rating > 3500) throw new Error("CF 参考评分必须为 800–3500 的整数");
-          fields2.cfRating = rating;
+          fields.cfRating = rating;
         }
-        if (lg.value) fields2.luoguDifficulty = lg.value;
+        if (lg.value) fields.luoguDifficulty = lg.value;
       }
-      if (!fields2.reason) throw new Error("请填写补充理由");
-      if (!fields2.tags?.length && fields2.cfRating == null && (!fields2.luoguDifficulty || fields2.luoguDifficulty === "暂无评定")) throw new Error("请至少补充一项缺失的算法标签或难度");
-      view = await bridge3.saveProblemEnrichment({ ...fields2, url: view.url, expectedRevision: view.revision });
+      if (!fields.reason) throw new Error("请填写补充理由");
+      if (!fields.tags?.length && fields.cfRating == null && (!fields.luoguDifficulty || fields.luoguDifficulty === "暂无评定")) throw new Error("请至少补充一项缺失的算法标签或难度");
+      view = await bridge3.saveProblemEnrichment({ ...fields, url: view.url, expectedRevision: view.revision });
       renderView();
       status2.textContent = "手动补充已保存";
       onApplied();
@@ -2475,12 +2480,12 @@
       }
       syncDisabled();
     }
-    function describe(fields2) {
+    function describe(fields) {
       const detail = node2("div", "enrichment-values");
-      if (fields2.tags !== void 0) detail.append(node2("p", "", `算法标签：${fields2.tags.join("、") || "未补充"}`));
-      if (fields2.cfRating !== void 0) detail.append(node2("p", "", `CF 参考评分：${fields2.cfRating ?? "未补充"}`));
-      if (fields2.luoguDifficulty !== void 0) detail.append(node2("p", "", `洛谷参考难度：${luoguDifficultyLabel(fields2.luoguDifficulty)}`));
-      detail.append(node2("p", "enrichment-reason-copy", `理由：${fields2.reason}`));
+      if (fields.tags !== void 0) detail.append(node2("p", "", `算法标签：${fields.tags.join("、") || "未补充"}`));
+      if (fields.cfRating !== void 0) detail.append(node2("p", "", `CF 参考评分：${fields.cfRating ?? "未补充"}`));
+      if (fields.luoguDifficulty !== void 0) detail.append(node2("p", "", `洛谷参考难度：${luoguDifficultyLabel(fields.luoguDifficulty)}`));
+      detail.append(node2("p", "enrichment-reason-copy", `理由：${fields.reason}`));
       return detail;
     }
     function renderView() {
@@ -2513,14 +2518,14 @@
       approve.disabled = !view.suggestion || Boolean(view.suggestion.tags?.length && !view.canSupplementTags) || Boolean((view.suggestion.cfRating != null || view.suggestion.luoguDifficulty && view.suggestion.luoguDifficulty !== "暂无评定") && !view.canSupplementDifficulty);
       dialog3.setAttribute("aria-busy", "false");
     }
-    async function run(action2) {
+    async function run(action3) {
       if (busy2 || !dialog3.isConnected) return;
       busy2 = true;
       error.hidden = true;
       dialog3.setAttribute("aria-busy", "true");
       syncDisabled();
       try {
-        await action2();
+        await action3();
       } catch (failure) {
         if (dialog3.isConnected) {
           error.textContent = failure instanceof Error ? failure.message : "操作失败，请重试";
@@ -2571,21 +2576,21 @@
   var luoguLevels3 = luoguDifficultyLevels;
   var formatDuration = (durationMs) => durationMs < 1e3 ? `${Math.round(durationMs)} 毫秒` : `${(durationMs / 1e3).toFixed(2)} 秒`;
   function node3(tag, className = "", text3) {
-    const element4 = document.createElement(tag);
-    element4.className = className;
-    if (text3 !== void 0) element4.textContent = text3;
-    return element4;
+    const element5 = document.createElement(tag);
+    element5.className = className;
+    if (text3 !== void 0) element5.textContent = text3;
+    return element5;
   }
   function button4(label, className, onClick) {
-    const element4 = node3("button", className, label);
-    element4.type = "button";
-    element4.addEventListener("click", onClick);
-    return element4;
+    const element5 = node3("button", className, label);
+    element5.type = "button";
+    element5.addEventListener("click", onClick);
+    return element5;
   }
   function option(value, label) {
-    const element4 = node3("option", "", label);
-    element4.value = value;
-    return element4;
+    const element5 = node3("option", "", label);
+    element5.value = value;
+    return element5;
   }
   function create2({ draw: drawApi, openExternal, chooseTags, updateLibrary, autoDraw = false, contextKey = "" }) {
     if (activeContext !== contextKey) {
@@ -2715,13 +2720,13 @@
         if (!isCurrent() || !cachedResult) return;
         cachedResult = { ...cachedResult, problem: refreshed.problem };
         resultRevision += 1;
-        const message2 = refreshed.message.trim();
-        clistRefreshFeedback = message2 ? { message: message2.length > 48 ? `${message2.slice(0, 47)}…` : message2, detail: message2 } : null;
+        const message = refreshed.message.trim();
+        clistRefreshFeedback = message ? { message: message.length > 48 ? `${message.slice(0, 47)}…` : message, detail: message } : null;
       } catch (cause) {
         if (!isCurrent()) return;
         const detail = cause instanceof Error ? cause.message : "评分查询失败，请稍后重试";
-        const message2 = `评分刷新失败：${detail}`;
-        clistRefreshFeedback = { message: message2.length > 48 ? `${message2.slice(0, 47)}…` : message2, detail };
+        const message = `评分刷新失败：${detail}`;
+        clistRefreshFeedback = { message: message.length > 48 ? `${message.slice(0, 47)}…` : message, detail };
       } finally {
         if (pendingClistRefresh === request) pendingClistRefresh = null;
         if (generation === contextGeneration) notifyMount();
@@ -3040,8 +3045,8 @@
       const update = getUpdate() || {};
       if (getUpdateCapability()?.supported === false) $("#update-notice").textContent = getUpdateCapability().reason;
       const latest = update.latestVersion ? ` ${update.latestVersion}` : "";
-      const labels = { checking: "正在检查更新…", available: `发现新版本${latest}，可点击检查更新进行升级。`, downloading: `正在下载新版本${latest}…`, ready: `新版本${latest}的签名和文件已校验，正在准备更新。`, installing: "本地记录已备份，退出后将备份并替换程序文件，完成后自动重启。", error: "更新失败，请点击检查更新重试。" };
-      let text3 = labels[update.phase] || (update.available === false && !!update.message ? `当前版本 ${getAppVersion() || update.currentVersion || "未知"}，暂无可用更新。` : "可随时检查更新，无需登录 GitHub。");
+      const labels2 = { checking: "正在检查更新…", available: `发现新版本${latest}，可点击检查更新进行升级。`, downloading: `正在下载新版本${latest}…`, ready: `新版本${latest}的签名和文件已校验，正在准备更新。`, installing: "本地记录已备份，退出后将备份并替换程序文件，完成后自动重启。", error: "更新失败，请点击检查更新重试。" };
+      let text3 = labels2[update.phase] || (update.available === false && !!update.message ? `当前版本 ${getAppVersion() || update.currentVersion || "未知"}，暂无可用更新。` : "可随时检查更新，无需登录 GitHub。");
       if (update.phase === "checking" || update.phase === "available" || update.phase === "downloading" || update.phase === "ready" || update.phase === "installing" || update.phase === "error" || update.available === false) {
         if (update.message) text3 += ` ${update.message}`;
       }
@@ -3195,7 +3200,7 @@
   var CodeBlocks = { create: create4 };
   function create4({ toast, errorMessage }) {
     const $$ = (selector, root2 = document) => Array.from(root2.querySelectorAll(selector));
-    function element4(tag, className, text3) {
+    function element5(tag, className, text3) {
       const node4 = document.createElement(tag);
       if (className) node4.className = className;
       if (text3 !== void 0) node4.textContent = String(text3);
@@ -3234,9 +3239,9 @@
       } catch (_) {
       }
     }
-    function announceCodeStatus(pre, message2) {
+    function announceCodeStatus(pre, message) {
       const status2 = pre.closest(".code-block")?.querySelector(".code-status");
-      if (status2) status2.textContent = message2;
+      if (status2) status2.textContent = message;
     }
     function preserveCodeScroll(pre, mutate3) {
       const scroller = pre.closest(".detail-panel");
@@ -3247,7 +3252,7 @@
       pre.scrollLeft = preLeft;
     }
     function legacyCopyText(text3) {
-      const area = element4("textarea", "clipboard-helper");
+      const area = element5("textarea", "clipboard-helper");
       area.value = text3;
       area.setAttribute("readonly", "");
       area.setAttribute("aria-hidden", "true");
@@ -3333,9 +3338,9 @@
         toast("已格式化代码块");
         announceCodeStatus(pre, "已格式化");
       } catch (error) {
-        const message2 = "格式化失败：" + errorMessage(error);
-        toast(message2);
-        announceCodeStatus(pre, message2);
+        const message = "格式化失败：" + errorMessage(error);
+        toast(message);
+        announceCodeStatus(pre, message);
       } finally {
         actionButton.disabled = false;
         actionButton.removeAttribute("aria-busy");
@@ -3345,18 +3350,18 @@
     function decorateCodeBlocks(container) {
       $$("pre", container).forEach((pre) => {
         if (pre.closest(".code-block")) return;
-        const block = element4("div", "code-block");
+        const block = element5("div", "code-block");
         pre.replaceWith(block);
         block.append(pre);
-        const actions = element4("div", "code-actions");
+        const actions = element5("div", "code-actions");
         actions.setAttribute("role", "group");
         actions.setAttribute("aria-label", "代码块操作");
-        const copy = element4("button", "code-action-button", "复制");
+        const copy = element5("button", "code-action-button", "复制");
         copy.type = "button";
         copy.dataset.action = "copy";
         copy.title = "复制代码";
         copy.setAttribute("aria-label", "复制代码");
-        const format = element4("button", "code-action-button", "格式化");
+        const format = element5("button", "code-action-button", "格式化");
         format.type = "button";
         format.dataset.action = "format";
         format.title = "格式化代码";
@@ -3367,7 +3372,7 @@
           format.title = language ? `暂不支持 ${language} 代码的格式化` : "未能识别代码语言，无法格式化";
           format.setAttribute("aria-label", format.title);
         }
-        const status2 = element4("span", "code-status");
+        const status2 = element5("span", "code-status");
         status2.setAttribute("role", "status");
         append(actions, copy, format, status2);
         block.append(actions);
@@ -3823,7 +3828,7 @@
   function createFilters({ getRecords, getView, getScope, getTagCatalog, getDailyTagCatalog, getBusy, favorite, mastery, isLocal, isOwnSolution, recordAuthorName: recordAuthorName2, render: render6 }) {
     const $ = (selector, root2 = document) => root2.querySelector(selector);
     const $$ = (selector, root2 = document) => Array.from(root2.querySelectorAll(selector));
-    function element4(tag, className, text3) {
+    function element5(tag, className, text3) {
       const node4 = document.createElement(tag);
       if (className) node4.className = className;
       if (text3 !== void 0) node4.textContent = String(text3);
@@ -3833,10 +3838,10 @@
       children.filter(Boolean).forEach((child) => parent.append(child));
       return parent;
     }
-    function button8(label, className, action2) {
-      const node4 = element4("button", className, label);
+    function button10(label, className, action3) {
+      const node4 = element5("button", className, label);
       node4.type = "button";
-      node4.addEventListener("click", action2);
+      node4.addEventListener("click", action3);
       return node4;
     }
     const stateLabels = { unreviewed: "待复习", reviewing: "复习中", mastered: "已掌握" };
@@ -3852,8 +3857,8 @@
       values.forEach((value) => counts.set(String(value), (counts.get(String(value)) || 0) + 1));
       const options = [.../* @__PURE__ */ new Set([...counts.keys(), ...facets[group]])].sort((a, b) => a.localeCompare(b, "zh-CN"));
       options.filter((value) => (group === "platform" ? platformNames[value] || value : value).toLowerCase().includes(search.toLowerCase())).forEach((value) => {
-        const label = element4("label", "facet-option");
-        const input2 = element4("input");
+        const label = element5("label", "facet-option");
+        const input2 = element5("input");
         input2.type = "checkbox";
         input2.value = value;
         input2.checked = facets[group].has(value);
@@ -3866,10 +3871,10 @@
           updateFacetCounts();
           render6();
         });
-        append(label, input2, element4("span", "", group === "platform" ? platformNames[value] || value : value), element4("small", "", counts.get(value) || 0));
+        append(label, input2, element5("span", "", group === "platform" ? platformNames[value] || value : value), element5("small", "", counts.get(value) || 0));
         container.append(label);
       });
-      if (!container.children.length) container.append(element4("p", "facet-help", "没有匹配的选项"));
+      if (!container.children.length) container.append(element5("p", "facet-help", "没有匹配的选项"));
     }
     function refreshFilters() {
       const all = getRecords();
@@ -3877,27 +3882,27 @@
         const host = $(group === "tags" ? "#tag-filter" : group === "authors" ? "#author-filter" : "#platform-filter");
         const values = group === "tags" ? all.flatMap((r) => Array.isArray(r.tags) ? r.tags : []) : all.map((r) => facetValue(r, group));
         if (group === "tags") {
-          const trigger = button8("", "facet-trigger", () => openTagPicker("filter"));
-          append(trigger, document.createTextNode(facetNames[group] + " "), element4("span", "facet-chevron", "⌄"));
+          const trigger = button10("", "facet-trigger", () => openTagPicker("filter"));
+          append(trigger, document.createTextNode(facetNames[group] + " "), element5("span", "facet-chevron", "⌄"));
           trigger.id = "tag-filter-trigger";
           trigger.setAttribute("aria-haspopup", "dialog");
           host.replaceChildren(trigger);
         } else {
           const wasOpen = host.querySelector("details")?.open;
           const query = host.querySelector('input[type="search"]')?.value || "";
-          const details = element4("details");
+          const details = element5("details");
           details.open = !!wasOpen;
-          const summary = element4("summary");
-          append(summary, document.createTextNode(facetNames[group] + " "), element4("span", "facet-count"), element4("span", "facet-chevron", "⌄"));
-          const popover = element4("div", "facet-popover");
-          const search = element4("input", "facet-search");
+          const summary = element5("summary");
+          append(summary, document.createTextNode(facetNames[group] + " "), element5("span", "facet-count"), element5("span", "facet-chevron", "⌄"));
+          const popover = element5("div", "facet-popover");
+          const search = element5("input", "facet-search");
           search.type = "search";
           search.placeholder = `查找${facetNames[group]}`;
           search.setAttribute("aria-label", `查找${facetNames[group]}`);
           search.value = query;
-          const options = element4("div", "facet-options");
+          const options = element5("div", "facet-options");
           search.addEventListener("input", () => fillFacetOptions(options, group, values, search.value));
-          append(popover, search, options, button8("清除本组", "facet-clear", () => {
+          append(popover, search, options, button10("清除本组", "facet-clear", () => {
             facets[group].clear();
             fillFacetOptions(options, group, values, search.value);
             updateFacetCounts();
@@ -3978,10 +3983,10 @@
         const inputs = /* @__PURE__ */ new Map();
         const fragment = document.createDocumentFragment();
         const groups = tagGroups([...selected2]).map((group) => {
-          const heading = element4("strong", "tag-category-heading", group.name);
+          const heading = element5("strong", "tag-category-heading", group.name);
           fragment.append(heading);
           const options = group.tags.map((value) => {
-            const label = element4("label", "facet-option"), input2 = element4("input");
+            const label = element5("label", "facet-option"), input2 = element5("input");
             input2.type = "checkbox";
             input2.value = value;
             input2.checked = selected2.has(value);
@@ -3990,15 +3995,15 @@
             duplicates.push(input2);
             inputs.set(value, duplicates);
             const sources2 = tagSources(value);
-            const source = element4("small", "tag-option-sources", sources2.join(" · "));
+            const source = element5("small", "tag-option-sources", sources2.join(" · "));
             source.title = sources2.length ? `算法标签来源：${sources2.join("、")}` : "已有题解或自定义标签";
-            append(label, input2, element4("span", `tag tag-option-name ${tagColorClass(value)}`, value + (group.historical ? " · 历史" : "")), source, element4("small", "tag-option-count", counts.get(value) || 0));
+            append(label, input2, element5("span", `tag tag-option-name ${tagColorClass(value)}`, value + (group.historical ? " · 历史" : "")), source, element5("small", "tag-option-count", counts.get(value) || 0));
             fragment.append(label);
             return { label, input: input2, search: `${group.name} ${value} ${sources2.join(" ")}`.toLowerCase() };
           });
           return { heading, options };
         });
-        const empty = element4("p", "facet-help", "没有匹配的标签");
+        const empty = element5("p", "facet-help", "没有匹配的标签");
         fragment.append(empty);
         view = { selected: selected2, onChange: onChange2, groups, inputs, empty };
         tagOptionsViews.set(container, view);
@@ -4039,15 +4044,15 @@
       if (!context) return;
       let host = document.getElementById("tag-picker-selected");
       if (!host) {
-        host = element4("section", "tag-picker-selected");
+        host = element5("section", "tag-picker-selected");
         host.id = "tag-picker-selected";
         host.setAttribute("aria-label", "已选标签");
         $("#tag-picker-dialog").insertBefore(host, $("#tag-picker-search"));
       }
-      const heading = element4("div", "tag-picker-selected-heading");
-      const count3 = element4("span", "", `已选 ${context.selected.size} 个标签`);
+      const heading = element5("div", "tag-picker-selected-heading");
+      const count3 = element5("span", "", `已选 ${context.selected.size} 个标签`);
       count3.setAttribute("aria-live", "polite");
-      const clear = button8("清空已选", "button subtle tag-picker-clear", () => {
+      const clear = button10("清空已选", "button subtle tag-picker-clear", () => {
         if (getBusy() || tagPickerContext !== context) return;
         context.selected.clear();
         tagOptionsViews.get($("#tag-picker-dialog-options"))?.inputs.forEach((inputs) => inputs.forEach((input2) => {
@@ -4057,9 +4062,9 @@
       });
       clear.disabled = getBusy() || context.selected.size === 0;
       append(heading, count3, clear);
-      const chips = element4("div", "tag-picker-selected-chips");
+      const chips = element5("div", "tag-picker-selected-chips");
       for (const tag of context.selected) {
-        const chip = button8(`${tag} ×`, `tag ${tagColorClass(tag)} tag-picker-selected-chip`, () => {
+        const chip = button10(`${tag} ×`, `tag ${tagColorClass(tag)} tag-picker-selected-chip`, () => {
           if (getBusy() || tagPickerContext !== context) return;
           context.selected.delete(tag);
           tagOptionsViews.get($("#tag-picker-dialog-options"))?.inputs.get(tag)?.forEach((input2) => {
@@ -4071,13 +4076,13 @@
         chip.disabled = getBusy();
         chips.append(chip);
       }
-      if (!context.selected.size) chips.append(element4("span", "tag-picker-selection-empty", "尚未选择标签"));
+      if (!context.selected.size) chips.append(element5("span", "tag-picker-selection-empty", "尚未选择标签"));
       host.replaceChildren(heading, chips);
     }
     function coverageElement() {
       let coverage2 = document.getElementById("daily-tag-coverage");
       if (!coverage2) {
-        coverage2 = element4("div", "daily-tag-coverage");
+        coverage2 = element5("div", "daily-tag-coverage");
         coverage2.id = "daily-tag-coverage";
         coverage2.setAttribute("role", "status");
         $("#tag-picker-dialog").insertBefore(coverage2, $("#tag-picker-dialog-options"));
@@ -4090,19 +4095,19 @@
       coverage2.hidden = !getDailyTagCatalog;
       if (!getDailyTagCatalog) return;
       if (acquiredTagCatalog) {
-        const summary = element4("div", "daily-tag-coverage-platforms");
+        const summary = element5("div", "daily-tag-coverage-platforms");
         for (const [platform, info] of Object.entries(acquiredTagCatalog.platforms)) {
           const label = info.tagged === 0 ? `${platform}：${info.count} 题，未提供标签` : `${platform}：${info.tagged}/${info.count} 题有标签，${info.tagCount} 标签`;
-          const entry2 = element4("span", "", label);
+          const entry2 = element5("span", "", label);
           entry2.dataset.platform = platform;
           summary.append(entry2);
         }
         coverage2.append(summary);
-        coverage2.append(element4("small", "", `索引 ${acquiredTagCatalog.total} 题${acquiredTagCatalog.builtAt ? ` · 更新于 ${acquiredTagCatalog.builtAt}` : " · 尚无更新时间"}`));
+        coverage2.append(element5("small", "", `索引 ${acquiredTagCatalog.total} 题${acquiredTagCatalog.builtAt ? ` · 更新于 ${acquiredTagCatalog.builtAt}` : " · 尚无更新时间"}`));
       }
-      if (loading) coverage2.append(element4("small", "", "正在读取本地索引标签…"));
-      else if (failed) coverage2.append(element4("small", "", "暂时无法读取索引标签，仍可使用离线算法目录。"));
-      else if (!acquiredTagCatalog || acquiredTagCatalog.total === 0) coverage2.append(element4("small", "", "尚无本地索引题目；离线算法目录仍可选择。"));
+      if (loading) coverage2.append(element5("small", "", "正在读取本地索引标签…"));
+      else if (failed) coverage2.append(element5("small", "", "暂时无法读取索引标签，仍可使用离线算法目录。"));
+      else if (!acquiredTagCatalog || acquiredTagCatalog.total === 0) coverage2.append(element5("small", "", "尚无本地索引题目；离线算法目录仍可选择。"));
     }
     function openTagPicker(mode, selection) {
       if (getBusy()) return;
@@ -4165,7 +4170,7 @@
       const selected2 = new Set(field3.value.split(/[,，、]/).map((t) => t.trim()).filter(Boolean));
       const host = $("#record-tag-selected");
       host.replaceChildren();
-      selected2.forEach((t) => host.append(button8(t + " ×", "filter-chip", () => {
+      selected2.forEach((t) => host.append(button10(t + " ×", "filter-chip", () => {
         if (getBusy()) return;
         selected2.delete(t);
         field3.value = [...selected2].join(", ");
@@ -4192,12 +4197,12 @@
       $("#difficulty-count").textContent = count3 ? "已选" : "";
       const chips = $("#active-filters");
       chips.replaceChildren();
-      for (const group of Object.keys(facets)) for (const value of facets[group]) chips.append(button8(`${facetNames[group]} · ${group === "platform" ? platformNames[value] || value : value} ×`, "filter-chip", () => {
+      for (const group of Object.keys(facets)) for (const value of facets[group]) chips.append(button10(`${facetNames[group]} · ${group === "platform" ? platformNames[value] || value : value} ×`, "filter-chip", () => {
         facets[group].delete(value);
         refreshFilters();
         render6();
       }));
-      if (range.some((v) => v !== null)) chips.append(button8("难度区间 ×", "filter-chip", () => {
+      if (range.some((v) => v !== null)) chips.append(button10("难度区间 ×", "filter-chip", () => {
         clearDifficulty();
         render6();
       }));
@@ -4327,7 +4332,7 @@
   function createEditor(options) {
     const { demo, getEditor, setEditor, getLocal, setLocal, getRecords, setRecords, getIssues, setIssues, getComments, getSelected, setSelected, getBusy, setBusy, getAccount, getPermissions, accountId, repo, key, uuid, isLocal, visibleLocal, canEditRemote, sameRepo, records, platformCode, colorRatingInput, renderEditorTags, cancelDraftSave, persistLocal, call, refreshFilters, navigate, render: render6, openDetail, toast, errorMessage } = options;
     const $ = (selector) => document.querySelector(selector);
-    function element4(tag, className, text3) {
+    function element5(tag, className, text3) {
       const node4 = document.createElement(tag);
       if (className) node4.className = className;
       if (text3 !== void 0) node4.textContent = String(text3);
@@ -4352,11 +4357,11 @@
       const form = $("#submit-form"), host = $("#editor-difficulty-picker");
       const platform = platformCode(form.elements.platform.value);
       const rating = form.elements.rating, native = form.elements.difficulty;
-      const wrapper = element4("div", "editor-difficulty-controls");
+      const wrapper = element5("div", "editor-difficulty-controls");
       if (platform === "CF") {
-        const ratingField = element4("label", "range-field");
-        ratingField.append(element4("span", "", "Codeforces Rating"));
-        const input2 = element4("input", "rating-range");
+        const ratingField = element5("label", "range-field");
+        ratingField.append(element5("span", "", "Codeforces Rating"));
+        const input2 = element5("input", "rating-range");
         input2.type = "number";
         input2.min = "0";
         input2.max = "10000";
@@ -4375,10 +4380,10 @@
         ratingField.append(input2);
         wrapper.append(ratingField);
       } else if (platform === "LG") {
-        const select = element4("select", "luogu-range");
+        const select = element5("select", "luogu-range");
         select.setAttribute("aria-label", "洛谷原生难度");
         [["", "未指定"], ...editorLuoguLevels.map((name) => [name, name])].forEach(([value, label], index) => {
-          const option2 = element4("option", index ? `tone-${editorLuoguTones[index - 1]}` : "", label);
+          const option2 = element5("option", index ? `tone-${editorLuoguTones[index - 1]}` : "", label);
           option2.value = value;
           select.append(option2);
         });
@@ -4386,7 +4391,7 @@
         const known2 = current.level ? editorLuoguLevels[current.level - 1] : editorLuoguLevels.find((level) => level === native.value);
         if (known2) select.value = known2;
         else if (native.value) {
-          const legacy = element4("option", "", native.value);
+          const legacy = element5("option", "", native.value);
           legacy.value = native.value;
           select.append(legacy);
           select.value = native.value;
@@ -4401,14 +4406,14 @@
           color2();
         });
         color2();
-        const field3 = element4("label", "range-field");
-        field3.append(element4("span", "", "洛谷难度"), select);
+        const field3 = element5("label", "range-field");
+        field3.append(element5("span", "", "洛谷难度"), select);
         wrapper.append(field3);
       } else if (platform === "LC") {
-        const select = element4("select", "luogu-range");
+        const select = element5("select", "luogu-range");
         select.setAttribute("aria-label", "LeetCode 原生难度");
         [["", "未指定", ""], ["Easy", "Easy / 简单", "green"], ["Medium", "Medium / 中等", "yellow"], ["Hard", "Hard / 困难", "red"]].forEach(([value, label, tone]) => {
-          const option2 = element4("option", tone ? `tone-${tone}` : "", label);
+          const option2 = element5("option", tone ? `tone-${tone}` : "", label);
           option2.value = value;
           select.append(option2);
         });
@@ -4416,7 +4421,7 @@
         const known2 = ["Easy", "Medium", "Hard"][level - 1];
         if (known2) select.value = known2;
         else if (native.value) {
-          const legacy = element4("option", "", native.value);
+          const legacy = element5("option", "", native.value);
           legacy.value = native.value;
           select.append(legacy);
           select.value = native.value;
@@ -4432,17 +4437,17 @@
         color2();
         wrapper.append(select);
       } else {
-        const input2 = element4("input");
+        const input2 = element5("input");
         input2.type = "text";
         input2.maxLength = 60;
         input2.placeholder = "原生难度，如 ABC D / 3";
         input2.setAttribute("aria-label", "平台原生难度");
         input2.value = native.value;
-        const datalist = element4("datalist");
+        const datalist = element5("datalist");
         datalist.id = "editor-native-difficulties";
         const values = platform === "AT" ? ["ABC A", "ABC B", "ABC C", "ABC D", "ABC E", "ABC F", "ARC A", "ARC B", "ARC C", "ARC D", "ARC E", "ARC F"] : platform === "NC" ? ["简单", "中等", "困难"] : [];
         values.forEach((value) => {
-          const option2 = element4("option");
+          const option2 = element5("option");
           option2.value = value;
           datalist.append(option2);
         });
@@ -4453,12 +4458,12 @@
         wrapper.append(input2, datalist);
       }
       if (platform !== "LG") {
-        const field3 = element4("label", "range-field");
-        field3.append(element4("span", "", "洛谷难度（可选）"));
-        const select = element4("select", "luogu-range");
+        const field3 = element5("label", "range-field");
+        field3.append(element5("span", "", "洛谷难度（可选）"));
+        const select = element5("select", "luogu-range");
         select.setAttribute("aria-label", "补充洛谷难度");
         [["", "未指定"], ...editorLuoguLevels.map((name) => [name, name])].forEach(([value, label], index) => {
-          const option2 = element4("option", index ? `tone-${editorLuoguTones[index - 1]}` : "", label);
+          const option2 = element5("option", index ? `tone-${editorLuoguTones[index - 1]}` : "", label);
           option2.value = value;
           select.append(option2);
         });
@@ -4488,7 +4493,7 @@
       }
       renderEditorDifficulty();
     }
-    function draftKey(source, ownerId) {
+    function draftKey2(source, ownerId) {
       return JSON.stringify([source || "new", ownerId]);
     }
     function editorError(error) {
@@ -4522,7 +4527,7 @@
         return;
       }
       const source = record2 ? key(record2) : seed?.source || "new", ownerId = accountId();
-      const candidate = getLocal().draft[draftKey(source, ownerId)];
+      const candidate = getLocal().draft[draftKey2(source, ownerId)];
       const saved = candidate?.source === source && candidate.ownerId === ownerId ? candidate : null;
       const original = record2 ? structuredClone(record2) : null;
       if (original?.kind === "document" && saved?.base?.path === original.path && saved.base.repo === original.repo) original.sha = saved.base.sha;
@@ -4544,7 +4549,7 @@
     async function saveDraft(required = false) {
       if (!getEditor() || getEditor().ownerId !== accountId()) return;
       const { source, ownerId, clientId, record: record2 } = getEditor();
-      getLocal().draft[draftKey(source, ownerId)] = { source, ownerId, clientId, ...record2?.kind === "document" ? { base: { path: record2.path, repo: record2.repo, sha: record2.sha } } : {}, data: formDraft() };
+      getLocal().draft[draftKey2(source, ownerId)] = { source, ownerId, clientId, ...record2?.kind === "document" ? { base: { path: record2.path, repo: record2.repo, sha: record2.sha } } : {}, data: formDraft() };
       try {
         await persistLocal();
         $("#draft-hint").textContent = "编辑草稿已保存到当前设备";
@@ -4633,7 +4638,7 @@ ${data.trick.trim()}` : ""].filter(Boolean).join("\n\n") : data.body;
           getLocal().records = [...getLocal().records.filter((item) => !(existing?.kind === "local" && key(item) === getEditor().source && item.clientId === existing.clientId && item.ownerId === existing.ownerId)), localRecord];
           setSelected(key(localRecord));
         }
-        delete getLocal().draft[draftKey(getEditor().source, getEditor().ownerId)];
+        delete getLocal().draft[draftKey2(getEditor().source, getEditor().ownerId)];
         try {
           await persistLocal();
         } catch (error) {
@@ -4732,16 +4737,16 @@ ${data.trick.trim()}` : ""].filter(Boolean).join("\n\n") : data.body;
         setBusy(false);
       }
     }
-    return { formDraft, fillForm, renderEditorDifficulty, setEditorPlatform, draftKey, editorError, openLocalSolution, openSubmit, saveDraft, saveRecord, deleteDiscussion, deleteRecord };
+    return { formDraft, fillForm, renderEditorDifficulty, setEditorPlatform, draftKey: draftKey2, editorError, openLocalSolution, openSubmit, saveDraft, saveRecord, deleteDiscussion, deleteRecord };
   }
 
   // src/renderer/library/reader.ts
   function createLibraryReader(options) {
     const global2 = window;
-    const { demo, stateLabels, getLocal, setLocal, getAccount, getPermissions, getView, getLibraryScope, getSelected, setSelected, getComments, getBusy, setBusy, getLoading, getError, getRecords, key, isLocal, visibleLocal, canEditRemote, sameRepo, platformCode, authorName, date, quotaBlocked, renderMarkdown, persistLocal, call, render: render6, clearFilters, openSubmit, openLocalSolution, deleteRecord, deleteDiscussion, openExternal, toast, errorMessage } = options;
+    const { demo, stateLabels, getLocal, setLocal, getAccount, getPermissions, getView, getLibraryScope, getSelected, setSelected, getComments, getBusy, setBusy, getLoading, getError, getRecords, key, isLocal, visibleLocal, canEditRemote, sameRepo, platformCode, authorName: authorName2, date, quotaBlocked, renderMarkdown, persistLocal, call, render: render6, clearFilters, openSubmit, openLocalSolution, deleteRecord, deleteDiscussion, openExternal, toast, errorMessage } = options;
     const $ = (selector, root2 = document) => root2.querySelector(selector);
     const $$ = (selector, root2 = document) => Array.from(root2.querySelectorAll(selector));
-    function element4(tag, className, text3) {
+    function element5(tag, className, text3) {
       const node4 = document.createElement(tag);
       if (className) node4.className = className;
       if (text3 !== void 0) node4.textContent = String(text3);
@@ -4751,52 +4756,52 @@ ${data.trick.trim()}` : ""].filter(Boolean).join("\n\n") : data.body;
       children.filter(Boolean).forEach((child) => parent.append(child));
       return parent;
     }
-    function button8(label, className, action2) {
-      const node4 = element4("button", className, label);
+    function button10(label, className, action3) {
+      const node4 = element5("button", className, label);
       node4.type = "button";
-      node4.addEventListener("click", action2);
+      node4.addEventListener("click", action3);
       return node4;
     }
     function favorite(record2) {
-      return getLocal().favorites.some((value) => String(value) === key(record2));
+      return options.isFavorite ? options.isFavorite(record2) : getLocal().favorites.some((value) => String(value) === key(record2));
     }
     function mastery(record2) {
       return stateLabels[getLocal().mastery[key(record2)]] ? getLocal().mastery[key(record2)] : "unreviewed";
     }
     function badge(record2) {
-      return element4("span", `badge ${isLocal(record2) ? "local" : "shared"}`, isLocal(record2) ? record2.proposalUrl ? "旧版已投稿副本" : "仅本地 · 未上传" : record2.kind === "document" ? "正式题解" : "讨论 Issue");
+      return element5("span", `badge ${isLocal(record2) ? "local" : "shared"}`, isLocal(record2) ? record2.proposalUrl ? "旧版已投稿副本" : "仅本地 · 未上传" : record2.kind === "document" ? "正式题解" : "讨论 Issue");
     }
     function platformLabel(record2) {
       const code = platformCode(record2.platform);
       const names = { CF: "Codeforces", AT: "AtCoder", LG: "洛谷", NC: "牛客", LC: "LeetCode" };
-      const label = element4("span", "platform-label", names[code] || record2.platform || "其他平台");
+      const label = element5("span", "platform-label", names[code] || record2.platform || "其他平台");
       label.dataset.platform = ["CF", "AT", "LG", "NC", "LC"].includes(code) ? code : "Oth";
       return label;
     }
     function supplementaryDifficultyBadge(record2) {
-      if (platformCode(record2.platform) === "LG" || !record2.luoguDifficulty) return element4("span");
+      if (platformCode(record2.platform) === "LG" || !record2.luoguDifficulty) return element5("span");
       const info = Search.difficulty({ platform: "LG", difficulty: record2.luoguDifficulty });
-      return element4("span", `difficulty-badge tone-${info.tone}`, `洛谷 · ${record2.luoguDifficulty}`);
+      return element5("span", `difficulty-badge tone-${info.tone}`, `洛谷 · ${record2.luoguDifficulty}`);
     }
     function difficultyBadge(record2) {
       const { tone, rank, label: text3 } = Search.difficulty(record2);
       if (!text3) return null;
       const code = Search.normalizePlatform(record2.platform);
-      const label = element4("span", `difficulty-badge tone-${tone}${rank ? ` rank-${rank}` : ""}`, text3);
+      const label = element5("span", `difficulty-badge tone-${tone}${rank ? ` rank-${rank}` : ""}`, text3);
       label.title = `${demo ? "演示值 · " : ""}${code === "CF" ? "Codeforces 原生 Rating 色阶" : code === "LG" ? "洛谷原生难度名称 · 颜色仅用于界面展示" : "平台原始数值 / 难度"}，不跨平台换算`;
       return label;
     }
     function tags(record2) {
-      const row2 = element4("div", "tag-row");
+      const row2 = element5("div", "tag-row");
       (Array.isArray(record2.tags) ? record2.tags : []).forEach((tag) => {
-        row2.append(element4("span", `tag ${tagColorClass(String(tag))}`, tag));
+        row2.append(element5("span", `tag ${tagColorClass(String(tag))}`, tag));
       });
       return row2;
     }
-    function empty(title, description, action2) {
-      const box = element4("div", "empty-state");
-      append(box, element4("div", "empty-icon", "⌑"), element4("h3", "", title), element4("p", "", description));
-      if (action2) box.append(button8(action2.label, "button secondary", action2.fn));
+    function empty(title, description, action3) {
+      const box = element5("div", "empty-state");
+      append(box, element5("div", "empty-icon", "⌑"), element5("h3", "", title), element5("p", "", description));
+      if (action3) box.append(button10(action3.label, "button secondary", action3.fn));
       return box;
     }
     let focusedDetail = false;
@@ -4848,14 +4853,14 @@ ${data.trick.trim()}` : ""].filter(Boolean).join("\n\n") : data.body;
       const publicList = getView() === "public";
       $("#library-panel").classList.toggle("public-problem-list", publicList);
       if (publicList) {
-        const heading = element4("div", "problem-list-columns");
+        const heading = element5("div", "problem-list-columns");
         heading.setAttribute("aria-hidden", "true");
-        ["平台", "题号", "算法标签", "题目", "难度", "作者", "更新"].forEach((label) => heading.append(element4("span", "", label)));
+        ["平台", "题号", "算法标签", "题目", "难度", "作者", "更新"].forEach((label) => heading.append(element5("span", "", label)));
         list.append(heading);
       }
       const fragment = document.createDocumentFragment();
       items.forEach((record3) => {
-        const card = button8("", `record-card${!publicList && key(record3) === getSelected() ? " selected" : ""}`, () => {
+        const card = button10("", `record-card${!publicList && key(record3) === getSelected() ? " selected" : ""}`, () => {
           if (publicList) {
             openDetail(record3);
             return;
@@ -4881,34 +4886,34 @@ ${data.trick.trim()}` : ""].filter(Boolean).join("\n\n") : data.body;
         if (publicList) {
           card.classList.add("problem-list-row");
           const platform = platformLabel(record3);
-          const identity2 = element4("span", "problem-id", record3.pid || "—");
+          const identity2 = element5("span", "problem-id", record3.pid || "—");
           const algorithms = tags(record3);
           algorithms.classList.add("problem-algorithms");
           algorithms.title = (record3.tags || []).join(" · ");
-          const problem = append(element4("div", "problem-summary"), element4("h2", "card-title", record3.title || "未命名错题"));
-          const difficulty2 = element4("span", "problem-difficulty");
+          const problem = append(element5("div", "problem-summary"), element5("h2", "card-title", record3.title || "未命名错题"));
+          const difficulty2 = element5("span", "problem-difficulty");
           const native = difficultyBadge(record3);
           if (native) difficulty2.append(native);
           if (platformCode(record3.platform) !== "LG" && record3.luoguDifficulty) difficulty2.append(supplementaryDifficultyBadge(record3));
-          if (!difficulty2.childElementCount) difficulty2.append(element4("span", "problem-difficulty-empty", "未标注"));
+          if (!difficulty2.childElementCount) difficulty2.append(element5("span", "problem-difficulty-empty", "未标注"));
           const author = recordAuthor(record3, getAccount());
-          const authorCell = append(element4("span", "problem-author"), authorAvatar(author), element4("span", "record-author-name", author.name));
+          const authorCell = append(element5("span", "problem-author"), authorAvatar(author), element5("span", "record-author-name", author.name));
           authorCell.title = author.name;
           authorCell.setAttribute("aria-label", `作者 ${author.name}`);
-          const updated = element4("time", "problem-updated", date(record3.updatedAt));
+          const updated = element5("time", "problem-updated", date(record3.updatedAt));
           const timestamp2 = new Date(record3.updatedAt);
           if (Number.isFinite(timestamp2.getTime())) updated.dateTime = timestamp2.toISOString();
           append(card, platform, identity2, algorithms, problem, difficulty2, authorCell, updated);
           if (favorite(record3)) {
-            const mark = element4("span", "problem-favorite", "★");
+            const mark = element5("span", "problem-favorite", "★");
             mark.setAttribute("aria-label", "已收藏");
             problem.querySelector("h2").append(mark);
           }
         } else {
           const author = recordAuthor(record3, getAccount());
-          const authorLine = append(element4("div", "card-author"), authorAvatar(author), element4("span", "record-author-name", author.name));
+          const authorLine = append(element5("div", "card-author"), authorAvatar(author), element5("span", "record-author-name", author.name));
           authorLine.setAttribute("aria-label", `作者 ${author.name}`);
-          append(card, append(element4("div", "card-meta"), platformLabel(record3), element4("span", "", record3.pid || `#${record3.number || "本地"}`), difficultyBadge(record3), supplementaryDifficultyBadge(record3), badge(record3)), element4("h2", "card-title", record3.title || "未命名错题"), tags(record3), authorLine, append(element4("div", "card-footer"), element4("span", `card-state ${mastery(record3)}`, stateLabels[mastery(record3)]), element4("span", "", `${favorite(record3) ? "★ · " : ""}${date(record3.updatedAt)}`)));
+          append(card, append(element5("div", "card-meta"), platformLabel(record3), element5("span", "", record3.pid || `#${record3.number || "本地"}`), difficultyBadge(record3), supplementaryDifficultyBadge(record3), badge(record3)), element5("h2", "card-title", record3.title || "未命名错题"), tags(record3), authorLine, append(element5("div", "card-footer"), element5("span", `card-state ${mastery(record3)}`, stateLabels[mastery(record3)]), element5("span", "", `${favorite(record3) ? "★ · " : ""}${date(record3.updatedAt)}`)));
         }
         fragment.append(card);
       });
@@ -4941,76 +4946,86 @@ ${data.trick.trim()}` : ""].filter(Boolean).join("\n\n") : data.body;
         setBusy(false);
       }
     }
-    function renderDetail(record2) {
-      const panel = $("#detail-panel");
+    function renderDetail(record2, destination) {
+      const panel = destination || $("#detail-panel");
       const scroll = panel.scrollTop;
       panel.replaceChildren();
-      if (focusedDetail) {
-        const back = button8("← 返回题目列表", "button secondary detail-back", closeDetail);
+      if (!destination && focusedDetail) {
+        const back = button10("← 返回题目列表", "button secondary detail-back", closeDetail);
         back.id = "detail-back-button";
         panel.append(back);
-      } else {
-        const open2 = button8("打开详情 ↗", "button primary detail-open", () => openDetail(record2));
+      } else if (!destination) {
+        const open2 = button10("打开详情 ↗", "button primary detail-open", () => openDetail(record2));
         open2.id = "open-detail-button";
         panel.append(open2);
       }
-      const actions = append(element4("div", "detail-actions"), button8(favorite(record2) ? "★ 已收藏" : "☆ 收藏", "button secondary", () => changeLocal(() => {
-        getLocal().favorites = favorite(record2) ? getLocal().favorites.filter((value) => String(value) !== key(record2)) : [...getLocal().favorites, key(record2)];
-      })), button8("原题 ↗", "button subtle", () => openExternal(record2.problemUrl || record2.url)));
+      const favoriteButton = button10(favorite(record2) ? "★ 已收藏" : "☆ 收藏", "button secondary", () => {
+        if (getBusy()) return;
+        if (options.toggleFavorite) {
+          void options.toggleFavorite(record2).then(() => {
+            favoriteButton.textContent = favorite(record2) ? "★ 已收藏" : "☆ 收藏";
+            favoriteButton.setAttribute("aria-pressed", String(favorite(record2)));
+          }).catch((error) => toast(errorMessage(error)));
+        } else void changeLocal(() => {
+          getLocal().favorites = favorite(record2) ? getLocal().favorites.filter((value) => String(value) !== key(record2)) : [...getLocal().favorites, key(record2)];
+        });
+      });
+      favoriteButton.setAttribute("aria-pressed", String(favorite(record2)));
+      const actions = append(element5("div", "detail-actions"), favoriteButton, button10("原题 ↗", "button subtle", () => openExternal(record2.problemUrl || record2.url)));
       if (record2.kind === "document") {
-        const localSolution = button8("＋ 本地题解", "button subtle public-local-solution", () => openLocalSolution(record2));
+        const localSolution = button10("＋ 本地题解", "button subtle public-local-solution", () => openLocalSolution(record2));
         localSolution.id = "local-solution-button";
         localSolution.title = "为这道题写自己的本地题解；已有本地记录时继续编辑";
         actions.append(localSolution);
       }
-      append(panel, append(element4("div", "detail-top"), append(element4("div", "detail-meta"), platformLabel(record2), element4("span", "", record2.pid || `#${record2.number || "本地"}`), difficultyBadge(record2), supplementaryDifficultyBadge(record2), badge(record2)), actions), element4("h2", "detail-title", record2.title || "未命名错题"));
+      append(panel, append(element5("div", "detail-top"), append(element5("div", "detail-meta"), platformLabel(record2), element5("span", "", record2.pid || `#${record2.number || "本地"}`), difficultyBadge(record2), supplementaryDifficultyBadge(record2), badge(record2)), actions), element5("h2", "detail-title", record2.title || "未命名错题"));
       const author = recordAuthor(record2, getAccount());
-      append(panel, append(element4("div", "author-row"), authorAvatar(author), element4("span", "record-author-name", author.name), element4("span", "separator", "·"), element4("span", "", `更新于 ${date(record2.updatedAt)}`), record2.kind === "document" ? element4("span", "badge document", "正式题解") : null));
+      append(panel, append(element5("div", "author-row"), authorAvatar(author), element5("span", "record-author-name", author.name), element5("span", "separator", "·"), element5("span", "", `更新于 ${date(record2.updatedAt)}`), record2.kind === "document" ? element5("span", "badge document", "正式题解") : null));
       const tagrow = tags(record2);
       tagrow.classList.add("detail-tags");
-      append(panel, tagrow, element4("hr", "detail-divider"), element4("div", "body-label", "思路与复盘"));
-      const body = element4("div", "markdown-body");
+      append(panel, tagrow, element5("hr", "detail-divider"), element5("div", "body-label", "思路与复盘"));
+      const body = element5("div", "markdown-body");
       renderMarkdown(body, record2.body);
       panel.append(body);
-      const masteryButtons = element4("div", "mastery-buttons");
+      const masteryButtons = element5("div", "mastery-buttons");
       Object.entries(stateLabels).forEach(([value, label]) => {
-        const control = button8(label, mastery(record2) === value ? "active" : "", () => changeLocal(() => {
+        const control = button10(label, mastery(record2) === value ? "active" : "", () => changeLocal(() => {
           getLocal().mastery[key(record2)] = value;
         }));
         control.setAttribute("aria-pressed", mastery(record2) === value ? "true" : "false");
         masteryButtons.append(control);
       });
-      append(panel, append(element4("div", "mastery-box"), append(element4("div"), element4("strong", "", "这个思路，掌握了吗？"), element4("small", "", "复习进度仅记录在你的学习空间")), masteryButtons));
-      const edits = element4("div", "record-edit-actions");
-      if (record2.proposalUrl) edits.append(button8("旧版已投稿副本 · 查看投稿 ↗", "button secondary", () => openExternal(record2.proposalUrl)));
+      append(panel, append(element5("div", "mastery-box"), append(element5("div"), element5("strong", "", "这个思路，掌握了吗？"), element5("small", "", "复习进度仅记录在你的学习空间")), masteryButtons));
+      const edits = element5("div", "record-edit-actions");
+      if (record2.proposalUrl) edits.append(button10("旧版已投稿副本 · 查看投稿 ↗", "button secondary", () => openExternal(record2.proposalUrl)));
       if (isLocal(record2) && visibleLocal(record2) || canEditRemote(record2)) {
-        const edit = button8(isLocal(record2) ? "编辑本地记录" : "编辑正式题解", "button secondary", () => openSubmit(record2));
+        const edit = button10(isLocal(record2) ? "编辑本地记录" : "编辑正式题解", "button secondary", () => openSubmit(record2));
         edit.id = "edit-record-button";
-        const remove = button8(isLocal(record2) ? "删除本地记录" : "删除正式题解", "button danger", () => deleteRecord(record2));
+        const remove = button10(isLocal(record2) ? "删除本地记录" : "删除正式题解", "button danger", () => deleteRecord(record2));
         remove.id = "delete-record-button";
         append(edits, edit, remove);
       }
       if (record2.kind === "issue" && sameRepo(record2) && getAccount() && getPermissions().admin === true) {
-        const remove = button8("永久删除讨论 Issue", "button danger", () => deleteDiscussion(record2));
+        const remove = button10("永久删除讨论 Issue", "button danger", () => deleteDiscussion(record2));
         remove.id = "delete-issue-button";
         edits.append(remove);
       }
       panel.append(edits);
       panel.scrollTop = scroll;
       if (record2.kind !== "issue" || !record2.number) return;
-      const comments = element4("section", "comments-section");
-      append(comments, append(element4("div", "section-heading"), element4("h3", "", "一起讨论")));
-      const commentList = element4("div");
+      const comments = element5("section", "comments-section");
+      append(comments, append(element5("div", "section-heading"), element5("h3", "", "一起讨论")));
+      const commentList = element5("div");
       comments.append(commentList);
       panel.append(comments);
-      const form = element4("form", "comment-form");
-      const input2 = element4("textarea");
+      const form = element5("form", "comment-form");
+      const input2 = element5("textarea");
       input2.rows = 2;
       input2.placeholder = "分享你的观察，或提出一个问题…";
       input2.setAttribute("aria-label", "评论内容");
       input2.required = true;
       input2.maxLength = 1e4;
-      const submit = element4("button", "button secondary", demo ? "演示评论" : "发表讨论");
+      const submit = element5("button", "button secondary", demo ? "演示评论" : "发表讨论");
       submit.type = "submit";
       append(form, input2, submit);
       comments.append(form);
@@ -5050,7 +5065,7 @@ ${data.trick.trim()}` : ""].filter(Boolean).join("\n\n") : data.body;
     }
     async function loadComments(record2, container) {
       const request = ++commentRequest;
-      container.replaceChildren(element4("div", "comment-empty", "正在加载讨论…"));
+      container.replaceChildren(element5("div", "comment-empty", "正在加载讨论…"));
       try {
         let comments = getComments().get(key(record2));
         if (!comments) {
@@ -5064,12 +5079,12 @@ ${data.trick.trim()}` : ""].filter(Boolean).join("\n\n") : data.body;
         }
         if (request !== commentRequest || !container.isConnected) return;
         container.replaceChildren();
-        if (!comments.length) container.append(element4("div", "comment-empty", demo ? "演示讨论区 · 留下第一条思考，不会发送到外部。" : "还没有讨论，你的观察也许就是别人的突破口。"));
+        if (!comments.length) container.append(element5("div", "comment-empty", demo ? "演示讨论区 · 留下第一条思考，不会发送到外部。" : "还没有讨论，你的观察也许就是别人的突破口。"));
         comments.forEach((comment) => {
-          container.append(append(element4("article", "comment-item"), element4("strong", "", authorName(comment.author || comment.user)), element4("p", "", comment.body || "")));
+          container.append(append(element5("article", "comment-item"), element5("strong", "", authorName2(comment.author || comment.user)), element5("p", "", comment.body || "")));
         });
       } catch (error) {
-        if (container.isConnected) container.replaceChildren(element4("div", "comment-empty", `讨论暂不可用：${errorMessage(error)}`));
+        if (container.isConnected) container.replaceChildren(element5("div", "comment-empty", `讨论暂不可用：${errorMessage(error)}`));
       }
     }
     return { favorite, mastery, tags, openDetail, closeDetail, resetDetail, isFocusedDetail, renderFocusedDetail, renderLibrary, renderDetail, loadComments, changeLocal };
@@ -5131,8 +5146,8 @@ ${data.trick.trim()}` : ""].filter(Boolean).join("\n\n") : data.body;
       cursor: toOptionalCount(source.cursor),
       updatedAt: toTime(source.updatedAt)
     };
-    const message2 = toText(source.message);
-    if (message2 !== void 0) state4.message = message2;
+    const message = toText(source.message);
+    if (message !== void 0) state4.message = message;
     return state4;
   }
   function normalizeState(value) {
@@ -5223,7 +5238,7 @@ ${data.trick.trim()}` : ""].filter(Boolean).join("\n\n") : data.body;
     }
     const bridge3 = candidate;
     const pollMs = typeof options.pollMs === "number" && Number.isFinite(options.pollMs) && options.pollMs >= 20 ? Math.floor(options.pollMs) : DEFAULT_POLL_MS;
-    const confirmAction = options.confirm ?? ((message2) => view ? view.confirm(message2) : false);
+    const confirmAction = options.confirm ?? ((message) => view ? view.confirm(message) : false);
     const onToast = options.onToast ?? (() => {
     });
     const onError = options.onError ?? (() => {
@@ -5233,40 +5248,40 @@ ${data.trick.trim()}` : ""].filter(Boolean).join("\n\n") : data.body;
     let refreshing = false;
     let destroyed = false;
     let timer = null;
-    function element4(tag, className = "", text3) {
+    function element5(tag, className = "", text3) {
       const node4 = doc.createElement(tag);
       if (className) node4.className = className;
       if (text3 !== void 0) node4.textContent = text3;
       return node4;
     }
-    const heading = element4("div", "library-sync-heading");
-    const title = element4("h3", "", "题库缓存");
+    const heading = element5("div", "library-sync-heading");
+    const title = element5("h3", "", "题库缓存");
     title.id = "library-sync-heading";
-    const summary = element4("p", "library-sync-summary");
+    const summary = element5("p", "library-sync-summary");
     summary.setAttribute("role", "status");
     summary.setAttribute("aria-live", "polite");
     heading.append(title, summary);
-    const intro = element4("p", "library-sync-intro", "逐平台维护本地题库缓存；更新在后台继续，关闭弹窗不会中断。");
-    const platforms2 = element4("ul", "library-sync-platforms");
+    const intro = element5("p", "library-sync-intro", "逐平台维护本地题库缓存；更新在后台继续，关闭弹窗不会中断。");
+    const platforms2 = element5("ul", "library-sync-platforms");
     platforms2.setAttribute("aria-label", "各平台题库缓存进度");
-    const empty = element4("p", "library-sync-empty", "尚未开始更新。点击「增量更新」建立本地题库缓存，已有数据会保留。");
-    const failedNote = element4("p", "library-sync-failed");
+    const empty = element5("p", "library-sync-empty", "尚未开始更新。点击「增量更新」建立本地题库缓存，已有数据会保留。");
+    const failedNote = element5("p", "library-sync-failed");
     failedNote.hidden = true;
-    const actions = element4("div", "library-sync-actions");
-    const incremental = element4("button", "button secondary", "增量更新");
+    const actions = element5("div", "library-sync-actions");
+    const incremental = element5("button", "button secondary", "增量更新");
     incremental.type = "button";
     incremental.dataset.action = "incremental";
-    const full = element4("button", "button secondary", "完整重建");
+    const full = element5("button", "button secondary", "完整重建");
     full.type = "button";
     full.dataset.action = "full";
-    const pause = element4("button", "button secondary", "暂停");
+    const pause = element5("button", "button secondary", "暂停");
     pause.type = "button";
     pause.dataset.action = "pause";
     actions.append(incremental, full, pause);
-    const feedback = element4("p", "library-sync-feedback");
+    const feedback = element5("p", "library-sync-feedback");
     feedback.setAttribute("role", "status");
     feedback.hidden = true;
-    const error = element4("p", "library-sync-error");
+    const error = element5("p", "library-sync-error");
     error.hidden = true;
     error.setAttribute("role", "alert");
     section.setAttribute("aria-labelledby", "library-sync-heading");
@@ -5290,34 +5305,34 @@ ${data.trick.trim()}` : ""].filter(Boolean).join("\n\n") : data.body;
       section.setAttribute("aria-busy", String(pending2 || running));
     }
     function renderRow(key, row2) {
-      const item = element4("li", "library-sync-row");
+      const item = element5("li", "library-sync-row");
       item.dataset.platform = key;
       item.dataset.status = row2.status;
       const name = PLATFORM_NAMES[key] || key;
-      const line = element4("div", "library-sync-line");
-      const status2 = element4("span", `library-sync-status ${STATUS_TONES[row2.status]}`, STATUS_LABELS[row2.status]);
+      const line = element5("div", "library-sync-line");
+      const status2 = element5("span", `library-sync-status ${STATUS_TONES[row2.status]}`, STATUS_LABELS[row2.status]);
       status2.dataset.status = row2.status;
-      line.append(element4("span", "library-sync-name", name), status2, element4("span", "library-sync-count", progressText(row2)));
+      line.append(element5("span", "library-sync-name", name), status2, element5("span", "library-sync-count", progressText(row2)));
       const total = row2.total !== null && row2.total > 0 ? row2.total : null;
       const max = total ?? Math.max(row2.known, row2.fetched, 1);
       const now = total === null ? Math.min(row2.known, max) : Math.min(row2.fetched, total);
       const percent = total === null ? 0 : Math.round(Math.min(1, row2.fetched / total) * 100);
-      const bar = element4("div", `library-sync-bar${total === null ? " is-indeterminate" : ""}`);
+      const bar = element5("div", `library-sync-bar${total === null ? " is-indeterminate" : ""}`);
       bar.hidden = row2.status === "skipped" || row2.status === "done" || row2.status === "idle";
       bar.setAttribute("role", "progressbar");
       bar.setAttribute("aria-label", `${name} 题库更新进度`);
       bar.setAttribute("aria-valuemin", "0");
       bar.setAttribute("aria-valuemax", String(max));
       bar.setAttribute("aria-valuenow", String(now));
-      const fill = element4("div", "library-sync-bar-fill");
+      const fill = element5("div", "library-sync-bar-fill");
       if (total !== null) fill.style.width = `${percent}%`;
       bar.append(fill);
-      const meta = element4("div", "library-sync-meta");
-      meta.append(element4("span", "library-sync-added", `新增 ${formatNumber(row2.added)}`));
-      meta.append(element4("span", "library-sync-updated", row2.updatedAt ? `更新于 ${formatTime(row2.updatedAt)}` : "未更新"));
+      const meta = element5("div", "library-sync-meta");
+      meta.append(element5("span", "library-sync-added", `新增 ${formatNumber(row2.added)}`));
+      meta.append(element5("span", "library-sync-updated", row2.updatedAt ? `更新于 ${formatTime(row2.updatedAt)}` : "未更新"));
       item.append(line, bar, meta);
-      const message2 = row2.message ?? (row2.status === "skipped" ? "题量未变，已跳过" : row2.status === "failed" ? "更新失败，可重试" : "");
-      if (message2) item.append(element4("p", "library-sync-message", message2));
+      const message = row2.message ?? (row2.status === "skipped" ? "题量未变，已跳过" : row2.status === "failed" ? "更新失败，可重试" : "");
+      if (message) item.append(element5("p", "library-sync-message", message));
       return item;
     }
     function render6(state4) {
@@ -5379,13 +5394,13 @@ ${data.trick.trim()}` : ""].filter(Boolean).join("\n\n") : data.body;
       view.clearInterval(timer);
       timer = null;
     }
-    async function runAction(kind, action2) {
+    async function runAction(kind, action3) {
       if (actionPending !== null && kind !== "pause" || destroyed) return;
       actionPending = kind;
       error.hidden = true;
       syncControls();
       try {
-        await action2();
+        await action3();
       } catch (failure) {
         reportError(failure);
       } finally {
@@ -5503,8 +5518,8 @@ ${data.trick.trim()}` : ""].filter(Boolean).join("\n\n") : data.body;
       finishedAt: toTime2(source.finishedAt),
       platforms: platforms2
     };
-    const message2 = toText2(source.message);
-    if (message2 !== void 0) state4.message = message2;
+    const message = toText2(source.message);
+    if (message !== void 0) state4.message = message;
     return state4;
   }
   function normalizeClistStatus(value) {
@@ -5581,37 +5596,37 @@ ${data.trick.trim()}` : ""].filter(Boolean).join("\n\n") : data.body;
     let refreshing = false;
     let destroyed = false;
     let timer = null;
-    function element4(tag, className = "", text3) {
+    function element5(tag, className = "", text3) {
       const node4 = doc.createElement(tag);
       if (className) node4.className = className;
       if (text3 !== void 0) node4.textContent = text3;
       return node4;
     }
-    const heading = element4("div", "difficulty-backfill-heading");
-    const title = element4("h3", "", "CLIST 评分缓存");
+    const heading = element5("div", "difficulty-backfill-heading");
+    const title = element5("h3", "", "CLIST 评分缓存");
     title.id = "difficulty-backfill-heading";
-    const summary = element4("p", "difficulty-backfill-summary");
+    const summary = element5("p", "difficulty-backfill-summary");
     summary.setAttribute("role", "status");
     summary.setAttribute("aria-live", "polite");
     heading.append(title, summary);
-    const history = element4("p", "difficulty-backfill-history");
-    const legacy = element4("p", "difficulty-backfill-legacy");
+    const history = element5("p", "difficulty-backfill-history");
+    const legacy = element5("p", "difficulty-backfill-legacy");
     legacy.hidden = true;
-    const intro = element4("p", "difficulty-backfill-intro", "所有题目按批查询；有效评分写入本机缓存；没有有效CLIST评分则沿用原生或社区难度。每批默认 100 题，遵守 CLIST 限流。");
-    const hint = element4("p", "difficulty-backfill-hint", CLIST_HINT);
+    const intro = element5("p", "difficulty-backfill-intro", "所有题目按批查询；有效评分写入本机缓存；没有有效CLIST评分则沿用原生或社区难度。每批默认 100 题，遵守 CLIST 限流。");
+    const hint = element5("p", "difficulty-backfill-hint", CLIST_HINT);
     hint.setAttribute("role", "status");
     hint.hidden = true;
-    const platforms2 = element4("ul", "difficulty-backfill-platforms");
+    const platforms2 = element5("ul", "difficulty-backfill-platforms");
     platforms2.setAttribute("aria-label", "各平台 CLIST 评分缓存进度");
-    const actions = element4("div", "difficulty-backfill-actions");
-    const startButton = element4("button", "button secondary", "开始缓存");
+    const actions = element5("div", "difficulty-backfill-actions");
+    const startButton = element5("button", "button secondary", "开始缓存");
     startButton.type = "button";
     startButton.dataset.action = "start";
-    const pauseButton = element4("button", "button secondary", "暂停");
+    const pauseButton = element5("button", "button secondary", "暂停");
     pauseButton.type = "button";
     pauseButton.dataset.action = "pause";
     actions.append(startButton, pauseButton);
-    const error = element4("p", "difficulty-backfill-error");
+    const error = element5("p", "difficulty-backfill-error");
     error.hidden = true;
     error.setAttribute("role", "alert");
     section.setAttribute("aria-labelledby", "difficulty-backfill-heading");
@@ -5648,25 +5663,25 @@ ${data.trick.trim()}` : ""].filter(Boolean).join("\n\n") : data.body;
       section.setAttribute("aria-busy", String(pending2 || running));
     }
     function renderRow(key, row2) {
-      const item = element4("li", "difficulty-backfill-row");
+      const item = element5("li", "difficulty-backfill-row");
       item.dataset.platform = key;
-      const line = element4("div", "difficulty-backfill-line");
+      const line = element5("div", "difficulty-backfill-line");
       const name = PLATFORM_NAMES2[key] || key;
-      line.append(element4("span", "difficulty-backfill-name", name));
+      line.append(element5("span", "difficulty-backfill-name", name));
       if (row2.total !== void 0 && row2.clistCached !== void 0 && row2.clistPending !== void 0) {
-        line.append(element4("span", "difficulty-backfill-cache", `待查 CLIST ${formatNumber2(row2.clistPending)} · 已缓存 ${formatNumber2(row2.clistCached)} / 总题 ${formatNumber2(row2.total)}`));
+        line.append(element5("span", "difficulty-backfill-cache", `待查 CLIST ${formatNumber2(row2.clistPending)} · 已缓存 ${formatNumber2(row2.clistCached)} / 总题 ${formatNumber2(row2.total)}`));
       }
-      const gaps = element4("div", "difficulty-backfill-gaps");
-      gaps.append(element4("span", "difficulty-backfill-missing", `仍无可用难度 ${formatNumber2(row2.missing)}`));
+      const gaps = element5("div", "difficulty-backfill-gaps");
+      gaps.append(element5("span", "difficulty-backfill-missing", `仍无可用难度 ${formatNumber2(row2.missing)}`));
       if (row2.sourceMissing !== void 0 && row2.resolved !== void 0) {
-        gaps.append(element4("span", "difficulty-backfill-coverage", `原生/社区缺失 ${formatNumber2(row2.sourceMissing)} · 已补 ${formatNumber2(row2.resolved)}`));
+        gaps.append(element5("span", "difficulty-backfill-coverage", `原生/社区缺失 ${formatNumber2(row2.sourceMissing)} · 已补 ${formatNumber2(row2.resolved)}`));
       }
-      const counts = element4("div", "difficulty-backfill-counts");
-      counts.append(element4("span", "difficulty-backfill-attempted", `本批查询 ${formatNumber2(row2.attempted)}：`));
-      counts.append(element4("span", "difficulty-backfill-found", `查到 ${formatNumber2(row2.found)}`));
-      counts.append(element4("span", "difficulty-backfill-not-found", `未收录 ${formatNumber2(row2.notFound ?? 0)}`));
-      counts.append(element4("span", "difficulty-backfill-no-rating", `无评分 ${formatNumber2(row2.noRating ?? 0)}`));
-      counts.append(element4("span", "difficulty-backfill-failed", `失败 ${formatNumber2(row2.failed ?? 0)}`));
+      const counts = element5("div", "difficulty-backfill-counts");
+      counts.append(element5("span", "difficulty-backfill-attempted", `本批查询 ${formatNumber2(row2.attempted)}：`));
+      counts.append(element5("span", "difficulty-backfill-found", `查到 ${formatNumber2(row2.found)}`));
+      counts.append(element5("span", "difficulty-backfill-not-found", `未收录 ${formatNumber2(row2.notFound ?? 0)}`));
+      counts.append(element5("span", "difficulty-backfill-no-rating", `无评分 ${formatNumber2(row2.noRating ?? 0)}`));
+      counts.append(element5("span", "difficulty-backfill-failed", `失败 ${formatNumber2(row2.failed ?? 0)}`));
       item.append(line, gaps, counts);
       return item;
     }
@@ -5752,7 +5767,7 @@ ${data.trick.trim()}` : ""].filter(Boolean).join("\n\n") : data.body;
       view.clearInterval(timer);
       timer = null;
     }
-    async function runAction(kind, action2) {
+    async function runAction(kind, action3) {
       if (destroyed) return;
       if (kind === "start") {
         if (actionPending !== null || isRunningState(current) || clist?.configured !== true) return;
@@ -5764,7 +5779,7 @@ ${data.trick.trim()}` : ""].filter(Boolean).join("\n\n") : data.body;
       error.hidden = true;
       syncControls();
       try {
-        await action2();
+        await action3();
       } catch (failure) {
         reportError(failure);
       } finally {
@@ -5900,34 +5915,34 @@ ${data.trick.trim()}` : ""].filter(Boolean).join("\n\n") : data.body;
     let actionVersion = 0;
     let urlEdited = false;
     let urlRevision = 0;
-    function element4(tag, className = "", text3) {
+    function element5(tag, className = "", text3) {
       const node4 = doc.createElement(tag);
       node4.className = className;
       if (text3 !== void 0) node4.textContent = text3;
       return node4;
     }
-    const heading = element4("div", "clist-shared-cache-heading");
-    const title = element4("h3", "", "CLIST 缓存共享");
+    const heading = element5("div", "clist-shared-cache-heading");
+    const title = element5("h3", "", "CLIST 缓存共享");
     title.id = "clist-shared-cache-heading";
-    const summary = element4("p", "clist-shared-cache-summary", "正在读取 CLIST 缓存状态…");
+    const summary = element5("p", "clist-shared-cache-summary", "正在读取 CLIST 缓存状态…");
     summary.setAttribute("role", "status");
     summary.setAttribute("aria-live", "polite");
     heading.append(title, summary);
-    const intro = element4("p", "clist-shared-cache-intro", "仅共享 CLIST 真实正分。无需 Key，共享文件导入后与本机缓存按查询时间合并，保留个人缓存和单题刷新。");
-    const history = element4("p", "clist-shared-cache-history");
-    const platforms2 = element4("ul", "clist-shared-cache-platforms");
+    const intro = element5("p", "clist-shared-cache-intro", "仅共享 CLIST 真实正分。无需 Key，共享文件导入后与本机缓存按查询时间合并，保留个人缓存和单题刷新。");
+    const history = element5("p", "clist-shared-cache-history");
+    const platforms2 = element5("ul", "clist-shared-cache-platforms");
     platforms2.setAttribute("aria-label", "各平台 CLIST 正分缓存数量");
-    const actions = element4("div", "clist-shared-cache-actions");
-    const exportButton = element4("button", "button secondary", "导出 CLIST 缓存");
-    const importButton = element4("button", "button secondary", "导入并合并缓存");
+    const actions = element5("div", "clist-shared-cache-actions");
+    const exportButton = element5("button", "button secondary", "导出 CLIST 缓存");
+    const importButton = element5("button", "button secondary", "导入并合并缓存");
     exportButton.type = "button";
     exportButton.dataset.action = "export";
     importButton.type = "button";
     importButton.dataset.action = "import";
     actions.append(exportButton, importButton);
-    const uploadNote = element4("p", "clist-shared-cache-note", "导出后可放到你选定的公共下载位置，本客户端不会自动上传");
-    const urlLabel = element4("label", "clist-shared-cache-url-label", "共享缓存文件地址（可选）");
-    const urlInput = element4("input", "clist-shared-cache-url");
+    const uploadNote = element5("p", "clist-shared-cache-note", "导出后可放到你选定的公共下载位置，本客户端不会自动上传");
+    const urlLabel = element5("label", "clist-shared-cache-url-label", "共享缓存文件地址（可选）");
+    const urlInput = element5("input", "clist-shared-cache-url");
     urlInput.id = "clist-shared-cache-url";
     urlInput.type = "text";
     urlInput.inputMode = "url";
@@ -5935,31 +5950,31 @@ ${data.trick.trim()}` : ""].filter(Boolean).join("\n\n") : data.body;
     urlInput.autocomplete = "off";
     urlInput.spellcheck = false;
     urlLabel.htmlFor = urlInput.id;
-    const syncButton = element4("button", "button secondary", "同步共享缓存");
+    const syncButton = element5("button", "button secondary", "同步共享缓存");
     syncButton.type = "button";
     syncButton.dataset.action = "sync";
-    const syncRow = element4("div", "clist-shared-cache-sync");
+    const syncRow = element5("div", "clist-shared-cache-sync");
     syncRow.append(urlInput, syncButton);
-    const syncNote = element4("p", "clist-shared-cache-note", "填写 HTTPS 共享缓存文件地址后，每个人都无需 Key 即可获取共享基线。刷新评分仍使用个人 CLIST 配置。");
-    const resultSummary = element4("p", "clist-shared-cache-result");
+    const syncNote = element5("p", "clist-shared-cache-note", "填写 HTTPS 共享缓存文件地址后，每个人都无需 Key 即可获取共享基线。刷新评分仍使用个人 CLIST 配置。");
+    const resultSummary = element5("p", "clist-shared-cache-result");
     resultSummary.hidden = true;
     resultSummary.setAttribute("role", "status");
     resultSummary.setAttribute("aria-live", "polite");
-    const error = element4("p", "clist-shared-cache-error");
+    const error = element5("p", "clist-shared-cache-error");
     error.hidden = true;
     error.setAttribute("role", "alert");
     section.setAttribute("aria-labelledby", title.id);
     section.replaceChildren(heading, intro, history, platforms2, actions, uploadNote, urlLabel, syncRow, syncNote, resultSummary, error);
     section.hidden = false;
     function syncControls() {
-      for (const button8 of [exportButton, importButton, syncButton]) {
-        button8.disabled = pending2 !== null;
-        button8.setAttribute("aria-busy", String(button8.dataset.action === pending2));
+      for (const button10 of [exportButton, importButton, syncButton]) {
+        button10.disabled = pending2 !== null;
+        button10.setAttribute("aria-busy", String(button10.dataset.action === pending2));
       }
       section.setAttribute("aria-busy", String(pending2 !== null));
     }
-    function showError3(message2) {
-      error.textContent = message2;
+    function showError3(message) {
+      error.textContent = message;
       error.hidden = false;
     }
     function fillSavedUrl() {
@@ -5972,10 +5987,10 @@ ${data.trick.trim()}` : ""].filter(Boolean).join("\n\n") : data.body;
       history.textContent = [state4.libraryMatched !== void 0 && state4.libraryTotal !== void 0 ? `本地题库已匹配 ${NUMBER_FORMAT3.format(state4.libraryMatched)} / ${NUMBER_FORMAT3.format(state4.libraryTotal)} 题` : "", state4.initialTotal === void 0 ? "" : `内置基线 ${NUMBER_FORMAT3.format(state4.initialTotal)} 条（不等于本地题库匹配 ${NUMBER_FORMAT3.format(state4.initialTotal)} 条）`, state4.initialAppliedAt ? `基线合并：${state4.initialAppliedAt}` : "", `最近同步：${state4.lastSyncedAt ?? "尚未同步"}`, state4.newestQuery ? `最新查询：${state4.newestQuery}` : ""].filter(Boolean).join(" · ");
       const keys = [...PLATFORM_ORDER3, ...Object.keys(state4.platforms).filter((key) => !PLATFORM_ORDER3.includes(key))];
       platforms2.replaceChildren(...keys.map((key) => {
-        const row2 = element4("li", "clist-shared-cache-row");
+        const row2 = element5("li", "clist-shared-cache-row");
         row2.dataset.platform = key;
-        const name = element4("span", "clist-shared-cache-name", Object.prototype.hasOwnProperty.call(PLATFORM_NAMES3, key) ? PLATFORM_NAMES3[key] : key);
-        const counts = element4("span", "clist-shared-cache-counts", `${NUMBER_FORMAT3.format(Object.prototype.hasOwnProperty.call(state4.platforms, key) ? state4.platforms[key] : 0)} 题`);
+        const name = element5("span", "clist-shared-cache-name", Object.prototype.hasOwnProperty.call(PLATFORM_NAMES3, key) ? PLATFORM_NAMES3[key] : key);
+        const counts = element5("span", "clist-shared-cache-counts", `${NUMBER_FORMAT3.format(Object.prototype.hasOwnProperty.call(state4.platforms, key) ? state4.platforms[key] : 0)} 题`);
         row2.append(name, counts);
         return row2;
       }));
@@ -6180,37 +6195,37 @@ ${data.trick.trim()}` : ""].filter(Boolean).join("\n\n") : data.body;
     let starting = false, pausing = false, refreshing = false, destroyed = false;
     let timer = null, version = 0, startVersion = 0, actionFailure = null;
     let initialTotal = null;
-    function element4(tag, className = "", text3) {
+    function element5(tag, className = "", text3) {
       const node4 = doc.createElement(tag);
       node4.className = className;
       if (text3 !== void 0) node4.textContent = text3;
       return node4;
     }
-    const heading = element4("div", "clist-bulk-heading");
-    const title = element4("h3", "", "CLIST 批量缓存");
+    const heading = element5("div", "clist-bulk-heading");
+    const title = element5("h3", "", "CLIST 批量缓存");
     title.id = "clist-bulk-heading";
-    const summary = element4("p", "clist-bulk-summary", "正在读取批量缓存状态…");
+    const summary = element5("p", "clist-bulk-summary", "正在读取批量缓存状态…");
     summary.setAttribute("role", "status");
     summary.setAttribute("aria-live", "polite");
     heading.append(title, summary);
-    const intro = element4("p", "clist-bulk-intro", "每次请求 1 页，最多 1000 条，最多 10 次/分钟；先使用内置基线，再分页更新，并与个人缓存合并。");
-    const baseline = element4("p", "clist-bulk-baseline");
-    const hint = element4("p", "clist-bulk-hint", "使用初始缓存不需要 Key；更新评分需先在账户设置配置个人 CLIST 用户名与 API Key。");
+    const intro = element5("p", "clist-bulk-intro", "每次请求 1 页，最多 1000 条，最多 10 次/分钟；先使用内置基线，再分页更新，并与个人缓存合并。");
+    const baseline = element5("p", "clist-bulk-baseline");
+    const hint = element5("p", "clist-bulk-hint", "使用初始缓存不需要 Key；更新评分需先在账户设置配置个人 CLIST 用户名与 API Key。");
     hint.setAttribute("role", "status");
-    const resources = element4("ul", "clist-bulk-resources");
+    const resources = element5("ul", "clist-bulk-resources");
     resources.setAttribute("aria-label", "各平台 CLIST 分页更新进度");
-    const result = element4("p", "clist-bulk-result");
+    const result = element5("p", "clist-bulk-result");
     result.setAttribute("role", "status");
     result.hidden = true;
-    const actions = element4("div", "clist-bulk-actions");
-    const startButton = element4("button", "button secondary", "批量刷新评分");
+    const actions = element5("div", "clist-bulk-actions");
+    const startButton = element5("button", "button secondary", "批量刷新评分");
     startButton.type = "button";
     startButton.dataset.action = "start";
-    const pauseButton = element4("button", "button secondary", "暂停");
+    const pauseButton = element5("button", "button secondary", "暂停");
     pauseButton.type = "button";
     pauseButton.dataset.action = "pause";
     actions.append(startButton, pauseButton);
-    const error = element4("p", "clist-bulk-error");
+    const error = element5("p", "clist-bulk-error");
     error.setAttribute("role", "alert");
     error.hidden = true;
     section.setAttribute("aria-labelledby", title.id);
@@ -6251,12 +6266,12 @@ ${data.trick.trim()}` : ""].filter(Boolean).join("\n\n") : data.body;
       summary.textContent = `${phase} · 已请求 ${NUMBERS.format(sum("pages"))} 页${totalKnown ? ` / 总页 ${NUMBERS.format(pagesTotal)}` : " / 总页待获取"} · 记录 ${NUMBERS.format(sum("offset"))} / ${totalKnown ? NUMBERS.format(total) : "待获取"} · 已合并 ${NUMBERS.format(sum("imported"))} · 忽略 ${NUMBERS.format(sum("ignored"))}${empty ? " · CLIST 暂无有效分" : ""}`;
       resources.replaceChildren(...RESOURCES.map(([resource, platform, name]) => {
         const row2 = state4.resources[resource];
-        const item = element4("li", "clist-bulk-row");
+        const item = element5("li", "clist-bulk-row");
         item.dataset.platform = platform;
         item.dataset.resource = resource;
-        item.append(element4("strong", "clist-bulk-name", `${platform} · ${name}`));
-        item.append(element4("span", "clist-bulk-counts", row2 ? `总记录 ${row2.total === null ? "待获取" : NUMBERS.format(row2.total)} · 游标 ${NUMBERS.format(row2.offset)} · 页数 ${NUMBERS.format(row2.pages)} · 合并 ${NUMBERS.format(row2.imported)} · 忽略 ${NUMBERS.format(row2.ignored ?? 0)}` : "总记录待获取 · 游标 0 · 页数 0 · 合并 0 · 忽略 0"));
-        item.append(element4("span", "clist-bulk-resource-status", row2?.status === "done" && row2.total === 0 && row2.imported === 0 ? "CLIST 暂无有效分" : row2 ? LABELS[row2.status] : "等待更新"));
+        item.append(element5("strong", "clist-bulk-name", `${platform} · ${name}`));
+        item.append(element5("span", "clist-bulk-counts", row2 ? `总记录 ${row2.total === null ? "待获取" : NUMBERS.format(row2.total)} · 游标 ${NUMBERS.format(row2.offset)} · 页数 ${NUMBERS.format(row2.pages)} · 合并 ${NUMBERS.format(row2.imported)} · 忽略 ${NUMBERS.format(row2.ignored ?? 0)}` : "总记录待获取 · 游标 0 · 页数 0 · 合并 0 · 忽略 0"));
+        item.append(element5("span", "clist-bulk-resource-status", row2?.status === "done" && row2.total === 0 && row2.imported === 0 ? "CLIST 暂无有效分" : row2 ? LABELS[row2.status] : "等待更新"));
         return item;
       }));
       result.hidden = state4.status !== "done";
@@ -6312,7 +6327,7 @@ ${data.trick.trim()}` : ""].filter(Boolean).join("\n\n") : data.body;
         refreshing = false;
       }
     }
-    async function action2(kind) {
+    async function action3(kind) {
       if (destroyed) return;
       if (kind === "start" ? starting || pausing || running() || !configured : pausing || current?.pauseRequested === true || !(running() || starting && startVersion === version)) return;
       if (kind === "start") starting = true;
@@ -6353,10 +6368,10 @@ ${data.trick.trim()}` : ""].filter(Boolean).join("\n\n") : data.body;
       timer = null;
     }
     startButton.addEventListener("click", () => {
-      void action2("start");
+      void action3("start");
     });
     pauseButton.addEventListener("click", () => {
-      void action2("pause");
+      void action3("pause");
     });
     controls();
     start();
@@ -6374,7 +6389,7 @@ ${data.trick.trim()}` : ""].filter(Boolean).join("\n\n") : data.body;
   function createSettings(options) {
     const { demo, bridge: bridge3, themeStorage, paletteStorage, getBusy, setBusy, getSettings, setSettings, getAccount, getAuthStatus, getPermissions, setPermissionsRepo, getError, setError, getLocal, repo, repoSource, quotaBlocked, reauthNeeded, call, applyPayload, resetRepositoryData, resetSourceView, clearComments, refreshFilters, render: render6, renderUpdate, updateStatus, sync, writeDemo, toast, errorMessage } = options;
     const $ = (selector, root2 = document) => root2.querySelector(selector);
-    function element4(tag, className, text3) {
+    function element5(tag, className, text3) {
       const node4 = document.createElement(tag);
       if (className) node4.className = className;
       if (text3 !== void 0) node4.textContent = String(text3);
@@ -6907,12 +6922,12 @@ ${data.trick.trim()}` : ""].filter(Boolean).join("\n\n") : data.body;
       const account = getAccount(), permissions = getPermissions(), authStatus = getAuthStatus();
       const box = $("#account-details");
       box.replaceChildren();
-      for (const [label, value] of [["姓名", account?.name || "未设置"], ["GitHub 登录名", account?.login || "未登录"], ["GitHub ID", account?.id ?? "未登录"], ["当前仓库", repo() || "未配置"], ["权限", account ? permissions.admin ? "管理员 · 可直接维护自己的题解" : permissions.push ? "可推送 · 可直接维护自己的题解" : "只读 · 可使用本地记录" : "未登录 · 仅本地编辑"]]) append(box, element4("dt", "", label), element4("dd", "", value));
+      for (const [label, value] of [["姓名", account?.name || "未设置"], ["GitHub 登录名", account?.login || "未登录"], ["GitHub ID", account?.id ?? "未登录"], ["当前仓库", repo() || "未配置"], ["权限", account ? permissions.admin ? "管理员 · 可直接维护自己的题解" : permissions.push ? "可推送 · 可直接维护自己的题解" : "只读 · 可使用本地记录" : "未登录 · 仅本地编辑"]]) append(box, element5("dt", "", label), element5("dd", "", value));
       const clistUsername = $("#clist-username");
       if (clistUsername) clistUsername.value = "";
       void renderClistStatus();
       const authLabel = { anonymous: "未登录", restored: "已恢复，等待验证", verified: "已验证", expired: "授权已过期，请重新登录", unverified: "尚未验证，请联网刷新", "recovery-required": "凭证恢复失败，请重新授权" };
-      if (authLabel[authStatus?.status]) append(box, element4("dt", "", "认证状态"), element4("dd", "", authLabel[authStatus.status]));
+      if (authLabel[authStatus?.status]) append(box, element5("dt", "", "认证状态"), element5("dd", "", authLabel[authStatus.status]));
       $("#account-login").textContent = ["expired", "recovery-required"].includes(authStatus?.status) ? "重新授权 GitHub" : "登录 GitHub";
       $("#account-login").hidden = !!account && !["expired", "recovery-required"].includes(authStatus?.status);
       ["account-switch", "account-logout", "account-refresh"].forEach((id) => {
@@ -6937,7 +6952,7 @@ ${data.trick.trim()}` : ""].filter(Boolean).join("\n\n") : data.body;
       const ok = await accountAction("login");
       if (ok) $("#account-dialog").close();
     }
-    async function accountAction(action2) {
+    async function accountAction(action3) {
       if (getBusy()) return false;
       if (demo) {
         $("#account-error").hidden = false;
@@ -6946,14 +6961,14 @@ ${data.trick.trim()}` : ""].filter(Boolean).join("\n\n") : data.body;
       }
       setBusy(true);
       $("#account-error").hidden = true;
-      const resumeSync = action2 === "login" || action2 === "switch" ? reauthNeeded() || quotaBlocked() : false;
+      const resumeSync = action3 === "login" || action3 === "switch" ? reauthNeeded() || quotaBlocked() : false;
       const previousError = getError();
       let loggedIn = false;
       try {
-        if (action2 === "refresh") applyPayload(await call("refreshAccount"));
+        if (action3 === "refresh") applyPayload(await call("refreshAccount"));
         else {
-          if (action2 === "logout" || action2 === "switch") await call("logout");
-          if (action2 === "login" || action2 === "switch") {
+          if (action3 === "logout" || action3 === "switch") await call("logout");
+          if (action3 === "login" || action3 === "switch") {
             $("#auth-message").textContent = "正在请求设备授权…";
             $("#auth-code").textContent = "";
             $("#auth-open-button").hidden = true;
@@ -6980,7 +6995,7 @@ ${data.trick.trim()}` : ""].filter(Boolean).join("\n\n") : data.body;
           renderAccount();
         } catch (_) {
         }
-        if (!loggedIn && previousError && (action2 === "login" || action2 === "switch")) {
+        if (!loggedIn && previousError && (action3 === "login" || action3 === "switch")) {
           setError(previousError);
           updateStatus();
         }
@@ -7040,7 +7055,7 @@ ${data.trick.trim()}` : ""].filter(Boolean).join("\n\n") : data.body;
         if (demo) {
           const blob = new Blob([JSON.stringify(getLocal(), null, 2)], { type: "application/json" });
           const href = URL.createObjectURL(blob);
-          const link = element4("a");
+          const link = element5("a");
           link.href = href;
           link.download = "acm-notebook-demo-local.json";
           link.click();
@@ -7082,8 +7097,8 @@ ${data.trick.trim()}` : ""].filter(Boolean).join("\n\n") : data.body;
     });
     $("#clist-save-button")?.addEventListener("click", () => void saveClistCredentials());
     $("#clist-clear-button")?.addEventListener("click", () => void clearClistCredentials());
-    ["login", "logout", "switch", "refresh"].forEach((action2) => {
-      document.getElementById(`account-${action2}`).addEventListener("click", () => accountAction(action2));
+    ["login", "logout", "switch", "refresh"].forEach((action3) => {
+      document.getElementById(`account-${action3}`).addEventListener("click", () => accountAction(action3));
     });
     if (typeof bridge3?.onAuthProgress === "function") bridge3.onAuthProgress(receiveAuthProgress);
     $("#auth-open-button").addEventListener("click", openAuthUrl);
@@ -7141,6 +7156,244 @@ ${data.trick.trim()}` : ""].filter(Boolean).join("\n\n") : data.body;
     };
   }
 
+  // src/shared/algorithm-leaf.ts
+  function isAlgorithmLeaf(node4) {
+    return node4.kind === "algorithm" && !(node4.children || []).length;
+  }
+  function resolveAlgorithmLeaf(tree, id) {
+    if (typeof id !== "string") return null;
+    const index = /* @__PURE__ */ new Map();
+    function walk(node4) {
+      index.set(node4.id, node4);
+      for (const alias of node4.legacyIds || []) index.set(alias, node4);
+      (node4.children || []).forEach(walk);
+    }
+    walk(tree);
+    let current = index.get(id);
+    const seen = /* @__PURE__ */ new Set();
+    while (current && !seen.has(current.id)) {
+      if (isAlgorithmLeaf(current)) return current;
+      seen.add(current.id);
+      const parentId = current.id;
+      current = (current.children || []).find((child) => child.contentOf === parentId || child.id === current?.algorithmContentId);
+    }
+    return null;
+  }
+
+  // src/renderer/algorithms/leaf-reading.ts
+  function element2(tag, cls = "", text3) {
+    const n = document.createElement(tag);
+    n.className = cls;
+    if (text3 !== void 0) n.textContent = text3;
+    return n;
+  }
+  function button5(label, cls, run) {
+    const n = element2("button", cls, label);
+    n.type = "button";
+    n.addEventListener("click", run);
+    return n;
+  }
+  function noteKey(note) {
+    return String(note.path || note.id || note.clientId || `${String(note.nodeId)}:${String(note.title)}:${String(note.authorId)}`);
+  }
+  function renderLeafReading(options) {
+    const root2 = element2("section", "alg-leaf-reading");
+    root2.dataset.nodeId = options.node.id;
+    let current = options.content || null;
+    function markdown(host, text3) {
+      if (options.renderMarkdown) options.renderMarkdown(host, text3);
+      else host.textContent = text3;
+    }
+    function render6() {
+      root2.replaceChildren();
+      const intro = element2("section", "alg-leaf-introduction"), heading = element2("div", "alg-section-heading");
+      heading.append(element2("h3", "", "简介"));
+      if (options.canManage && options.onSave) heading.append(button5("编辑简介与精选", "alg-text-button alg-edit-leaf-content", edit));
+      intro.append(heading);
+      const body = element2("div", "markdown-body alg-introduction-markdown");
+      const introduction = current?.introduction ?? options.node.scope ?? "";
+      if (introduction.trim()) markdown(body, introduction);
+      else body.append(element2("p", "alg-inline-empty", "暂无简介。"));
+      intro.append(body);
+      root2.append(intro);
+      const selectedPaths = new Set(current?.featuredNotePaths || []);
+      const isFeatured = (note) => current ? typeof note.path === "string" && selectedPaths.has(note.path) : note.featured === true;
+      const featured = options.notes.filter(isFeatured), ordinary = options.notes.filter((note) => !isFeatured(note));
+      for (const [title, notes, cls] of [["精选笔记", featured, "alg-featured-section"], ["全部笔记", ordinary, "alg-all-notes-section"]]) {
+        const section = element2("section", cls), row2 = element2("div", "alg-section-heading");
+        row2.append(element2("h3", "", title), element2("span", "alg-section-count", String(notes.length)));
+        section.append(row2);
+        const list = element2("div", "alg-note-list");
+        for (const note of notes) {
+          const card = button5("", `alg-note-card${isFeatured(note) ? " alg-note-featured" : ""}`, () => options.onRead(note));
+          card.dataset.noteKey = noteKey(note);
+          const meta = element2("div", "alg-note-meta");
+          if (isFeatured(note)) meta.append(element2("span", "alg-featured", "精选"));
+          if (note.author) meta.append(element2("span", "alg-note-author", String(options.authorName?.(note.author) || note.author)));
+          if (note.updatedAt) meta.append(element2("span", "", String(options.formatDate?.(note.updatedAt) || note.updatedAt)));
+          card.append(element2("h4", "alg-note-title", String(note.title || "未命名笔记")), meta);
+          if (Array.isArray(note.tags) && note.tags.length) {
+            const tags = element2("div", "alg-note-tags");
+            note.tags.forEach((tag) => tags.append(element2("span", "alg-tag", String(tag))));
+            card.append(tags);
+          }
+          list.append(card);
+        }
+        if (notes.length) section.append(list);
+        else section.append(element2("p", "alg-inline-empty", title === "精选笔记" ? "暂无精选笔记。" : "暂无其他笔记。"));
+        if (title === "全部笔记" && options.onUpload) section.append(button5("＋ 上传笔记", "alg-text-button alg-leaf-upload", options.onUpload));
+        root2.append(section);
+      }
+    }
+    function edit() {
+      if (!options.canManage || !options.onSave) return;
+      const previous = document.activeElement, dialog3 = element2("dialog", "alg-leaf-editor");
+      dialog3.setAttribute("aria-label", "编辑简介与精选笔记");
+      const form = element2("form", "alg-leaf-content-form");
+      form.noValidate = true;
+      const header = element2("header", "alg-leaf-editor-header");
+      header.append(element2("h2", "", `${options.node.label} · 简介与精选`));
+      const introduction = element2("textarea", "alg-leaf-markdown-input");
+      introduction.name = "introduction";
+      introduction.rows = 11;
+      introduction.value = current?.introduction ?? options.node.scope ?? "";
+      introduction.setAttribute("aria-label", "Markdown简介");
+      const label = element2("label", "alg-leaf-field");
+      label.append(element2("strong", "", "简介（Markdown）"), introduction);
+      const preview = element2("section", "alg-leaf-preview");
+      preview.append(element2("h3", "", "预览"));
+      const previewBody = element2("div", "markdown-body");
+      preview.append(previewBody);
+      const renderPreview = () => markdown(previewBody, introduction.value);
+      introduction.addEventListener("input", renderPreview);
+      renderPreview();
+      const choices = element2("fieldset", "alg-featured-choices");
+      choices.append(element2("legend", "", "精选笔记（可多选）"));
+      const visiblePaths = new Set(options.notes.flatMap((note) => typeof note.path === "string" ? [note.path] : []));
+      const chosen = new Set(current?.featuredNotePaths || options.notes.filter((note) => note.featured === true).flatMap((note) => typeof note.path === "string" ? [note.path] : []));
+      for (const note of options.notes) {
+        if (typeof note.path !== "string") continue;
+        const row2 = element2("label", "alg-featured-choice"), check = element2("input");
+        check.type = "checkbox";
+        check.value = note.path;
+        check.checked = chosen.has(note.path);
+        check.name = "featuredNotePaths";
+        check.addEventListener("change", () => {
+          if (check.checked) chosen.add(check.value);
+          else chosen.delete(check.value);
+        });
+        row2.append(check, element2("span", "", String(note.title || "未命名笔记")));
+        choices.append(row2);
+      }
+      for (const path of [...chosen].filter((path2) => !visiblePaths.has(path2))) {
+        const row2 = element2("label", "alg-featured-choice alg-featured-unavailable"), check = element2("input");
+        check.type = "checkbox";
+        check.checked = true;
+        check.name = "featuredNotePaths";
+        check.value = path;
+        check.addEventListener("change", () => {
+          if (check.checked) chosen.add(path);
+          else chosen.delete(path);
+        });
+        row2.append(check, element2("span", "", "其他范围或已不可用的精选引用（取消勾选可移除）"));
+        choices.append(row2);
+      }
+      if (!visiblePaths.size) choices.append(element2("p", "alg-inline-empty", "当前范围暂无可新增的精选。不可用的旧引用可在上方移除。"));
+      const error = element2("p", "alg-inline-error");
+      error.hidden = true;
+      error.setAttribute("role", "alert");
+      let busy2 = false;
+      function close() {
+        if (busy2) return;
+        dialog3.close();
+        dialog3.remove();
+        if (previous instanceof HTMLElement && previous.isConnected) previous.focus({ preventScroll: true });
+      }
+      const actions = element2("div", "alg-leaf-editor-actions"), cancel = button5("取消", "alg-button", close), save = element2("button", "alg-button alg-button-primary", "保存");
+      save.type = "submit";
+      actions.append(cancel, save);
+      form.append(header, label, preview, choices, error, actions);
+      dialog3.append(form);
+      root2.append(dialog3);
+      dialog3.addEventListener("cancel", (event) => {
+        event.preventDefault();
+        close();
+      });
+      form.addEventListener("submit", async (event) => {
+        event.preventDefault();
+        if (busy2) return;
+        const text3 = introduction.value;
+        if (new TextEncoder().encode(text3).length > 1e5 || chosen.size > 100) {
+          error.textContent = "简介最多100000字节，精选最多100篇。";
+          error.hidden = false;
+          return;
+        }
+        busy2 = true;
+        error.hidden = true;
+        form.querySelectorAll("input,textarea,button").forEach((n) => {
+          n.disabled = true;
+        });
+        try {
+          const saved = await options.onSave({ nodeId: options.node.id, introduction: text3, featuredNotePaths: [...chosen], sha: current?.sha || null, ...current?.storageNodeId ? { storageNodeId: current.storageNodeId } : {} });
+          current = saved;
+          busy2 = false;
+          close();
+          render6();
+        } catch (cause) {
+          busy2 = false;
+          error.textContent = cause instanceof Error ? cause.message : "保存失败，请重试";
+          error.hidden = false;
+          form.querySelectorAll("input,textarea,button").forEach((n) => {
+            n.disabled = false;
+          });
+        }
+      });
+      dialog3.showModal();
+      introduction.focus();
+    }
+    render6();
+    return root2;
+  }
+
+  // src/renderer/algorithms/note-favorite.ts
+  function noteFavoriteControl(options) {
+    if (!options.isFavorite || !options.onToggleFavorite) return null;
+    const control = document.createElement("span");
+    control.className = "alg-note-favorite-control";
+    const button10 = document.createElement("button");
+    button10.type = "button";
+    button10.className = "alg-button alg-note-favorite";
+    const error = document.createElement("span");
+    error.className = "alg-inline-error";
+    error.hidden = true;
+    error.setAttribute("role", "alert");
+    function update() {
+      const selected2 = options.isFavorite(options.note);
+      button10.textContent = selected2 ? "★ 已收藏" : "☆ 收藏";
+      button10.setAttribute("aria-pressed", String(selected2));
+    }
+    button10.addEventListener("click", () => {
+      void (async () => {
+        if (button10.disabled) return;
+        button10.disabled = true;
+        error.hidden = true;
+        try {
+          await options.onToggleFavorite(options.note);
+          update();
+        } catch (cause) {
+          error.textContent = cause instanceof Error ? cause.message : "收藏保存失败，请重试";
+          error.hidden = false;
+          options.onError?.(cause);
+        } finally {
+          button10.disabled = false;
+        }
+      })();
+    });
+    update();
+    control.append(button10, error);
+    return control;
+  }
+
   // src/renderer/algorithms/browser.ts
   var LEVELS = [
     { id: "basic", label: "入门", tone: "cyan", number: "01" },
@@ -7160,7 +7413,7 @@ ${data.trick.trim()}` : ""].filter(Boolean).join("\n\n") : data.body;
     selectedNode: null,
     expanded: /* @__PURE__ */ new Set(),
     scope: "public",
-    initialized: false,
+    hasNotes: false,
     reading: null,
     listScroll: 0,
     paneScroll: 0,
@@ -7168,20 +7421,20 @@ ${data.trick.trim()}` : ""].filter(Boolean).join("\n\n") : data.body;
   };
   var active2 = null;
   var instanceId = 0;
-  function element2(tag, className, text3) {
-    const el3 = document.createElement(tag);
-    if (className) el3.className = className;
-    if (text3 !== void 0) el3.textContent = String(text3);
-    return el3;
+  function element3(tag, className, text3) {
+    const el5 = document.createElement(tag);
+    if (className) el5.className = className;
+    if (text3 !== void 0) el5.textContent = String(text3);
+    return el5;
   }
-  function button5(text3, className, action2) {
-    const el3 = element2("button", className, text3);
-    el3.type = "button";
-    el3.addEventListener("click", action2);
-    return el3;
+  function button6(text3, className, action3) {
+    const el5 = element3("button", className, text3);
+    el5.type = "button";
+    el5.addEventListener("click", action3);
+    return el5;
   }
   function isDirectory(node4) {
-    return node4.kind === "directory" || node4.kind === "category" || node4.color === "parent";
+    return !isAlgorithmLeaf(node4);
   }
   function levelOf(node4) {
     return isDirectory(node4) ? void 0 : LEVELS.find((level) => level.id === node4.color);
@@ -7192,7 +7445,7 @@ ${data.trick.trim()}` : ""].filter(Boolean).join("\n\n") : data.body;
   function tagsOf(note) {
     return Array.isArray(note.tags) ? note.tags.map(String) : [];
   }
-  function noteKey(note) {
+  function noteKey2(note) {
     return String(note.path || note.id || note.clientId || `${note.nodeId}:${note.title}:${note.authorId}`);
   }
   function excerpt(body) {
@@ -7207,7 +7460,8 @@ ${data.trick.trim()}` : ""].filter(Boolean).join("\n\n") : data.body;
       draftLevel: state3.draftLevel,
       selectedNode: state3.selectedNode,
       expanded: Array.from(state3.expanded),
-      scope: state3.scope
+      scope: state3.scope,
+      hasNotes: state3.hasNotes
     };
   }
   function render4(options) {
@@ -7231,9 +7485,12 @@ ${data.trick.trim()}` : ""].filter(Boolean).join("\n\n") : data.body;
       });
     }
     index(root2, null, 0, []);
-    if (!state3.initialized) {
-      state3.expanded.add(root2.id);
-      state3.initialized = true;
+    if (!(state3.search.trim() || state3.level || state3.attribute || state3.hasNotes)) {
+      state3.expanded = /* @__PURE__ */ new Set([root2.id]);
+      state3.selectedNode = root2.id;
+      state3.reading = null;
+      state3.treeScroll = 0;
+      state3.paneScroll = 0;
     }
     state3.selectedNode = byId.get(state3.selectedNode)?.node.id || root2.id;
     const nextScope = opts.scope === "personal" ? "personal" : opts.scope === "public" ? "public" : state3.scope;
@@ -7244,8 +7501,12 @@ ${data.trick.trim()}` : ""].filter(Boolean).join("\n\n") : data.body;
     state3.scope = nextScope;
     const accountId = opts.account && opts.account.id;
     const notes = (Array.isArray(opts.notes) ? opts.notes : []).filter((note) => state3.scope === "personal" ? note.noteScope === "personal" && accountId != null && String(note.authorId) === String(accountId) : note.noteScope === "public").map((note) => {
-      const canonicalId = byId.get(note.nodeId)?.node.id;
+      const original = byId.get(note.nodeId)?.node;
+      const canonicalId = original ? resolveAlgorithmLeaf(root2, original.id)?.id : void 0;
       return canonicalId && canonicalId !== note.nodeId ? { ...note, nodeId: canonicalId } : note;
+    }).filter((note) => {
+      const node4 = byId.get(note.nodeId)?.node;
+      return Boolean(node4 && isAlgorithmLeaf(node4));
     });
     const nameOf = (author) => {
       try {
@@ -7277,19 +7538,18 @@ ${data.trick.trim()}` : ""].filter(Boolean).join("\n\n") : data.body;
         entry2 = byId.get(entry2.parent);
       }
     }
-    expandAncestors(state3.selectedNode);
-    if (state3.reading && !notes.some((note) => noteKey(note) === state3.reading)) state3.reading = null;
-    const shell = element2("section", "alg-browser");
+    if (state3.reading && !notes.some((note) => noteKey2(note) === state3.reading)) state3.reading = null;
+    const shell = element3("section", "alg-browser");
     shell.setAttribute("aria-label", "算法知识与笔记浏览器");
     const uid = `alg-browser-${++instanceId}`;
-    const top = element2("header", "alg-toolbar");
-    const brand = element2("div", "alg-brand");
-    brand.append(element2("span", "alg-eyebrow", "KNOWLEDGE EXPLORER"), element2("h2", "alg-title", "算法知识库"));
-    const scopeSwitch = element2("div", "alg-scope");
+    const top = element3("header", "alg-toolbar");
+    const brand = element3("div", "alg-brand");
+    brand.append(element3("span", "alg-eyebrow", "KNOWLEDGE EXPLORER"), element3("h2", "alg-title", "算法知识库"));
+    const scopeSwitch = element3("div", "alg-scope");
     scopeSwitch.setAttribute("role", "group");
     scopeSwitch.setAttribute("aria-label", "笔记范围");
     ["public", "personal"].forEach((scope2) => {
-      const control = button5(scope2 === "public" ? "公开笔记" : "我的笔记", "alg-scope-button", () => {
+      const control = button6(scope2 === "public" ? "公开笔记" : "我的笔记", "alg-scope-button", () => {
         if (scope2 === state3.scope) return;
         if (typeof opts.onScopeChange === "function") opts.onScopeChange(scope2);
         else if (scope2 !== "personal" || opts.account) {
@@ -7301,60 +7561,68 @@ ${data.trick.trim()}` : ""].filter(Boolean).join("\n\n") : data.body;
       control.setAttribute("aria-pressed", String(scope2 === state3.scope));
       scopeSwitch.append(control);
     });
-    const uploadWrap = element2("div", "alg-upload-wrap");
-    const upload = button5("＋ 上传笔记", "alg-button alg-button-primary", () => {
-      if (!opts.canUpload || !opts.account || typeof opts.onUpload !== "function") return;
+    const uploadWrap = element3("div", "alg-upload-wrap");
+    const upload = button6("＋ 上传笔记", "alg-button alg-button-primary", () => {
+      if (!opts.canUpload || !opts.account || typeof opts.onUpload !== "function" || !isAlgorithmLeaf(byId.get(state3.selectedNode).node)) return;
       if (typeof opts.onSelect === "function") opts.onSelect(state3.selectedNode);
       opts.onUpload(state3.selectedNode);
     });
     upload.disabled = !opts.canUpload || !opts.account || typeof opts.onUpload !== "function";
     upload.id = "algorithm-upload-button";
     uploadWrap.append(upload);
+    uploadWrap.hidden = !isAlgorithmLeaf(byId.get(state3.selectedNode).node);
     if (upload.disabled) {
-      const explanation = element2("span", "alg-upload-hint", opts.account ? "需要仓库写入权限才能上传" : "登录具有写入权限的账户后可上传");
+      const explanation = element3("span", "alg-upload-hint", opts.account ? "需要仓库写入权限才能上传" : "登录具有写入权限的账户后可上传");
       explanation.id = `${uid}-upload-hint`;
       upload.setAttribute("aria-describedby", explanation.id);
       uploadWrap.append(explanation);
     }
     top.append(brand, scopeSwitch, uploadWrap);
-    const filters = element2("section", "alg-filters");
+    const filters = element3("section", "alg-filters");
     filters.setAttribute("aria-label", "检索与筛选");
-    const searchRow = element2("div", "alg-search-row");
-    const searchWrap = element2("label", "alg-search-wrap");
-    const searchIcon = element2("span", "alg-search-icon", "⌕");
+    const searchRow = element3("div", "alg-search-row");
+    const searchWrap = element3("label", "alg-search-wrap");
+    const searchIcon = element3("span", "alg-search-icon", "⌕");
     searchIcon.setAttribute("aria-hidden", "true");
-    const search = element2("input", "alg-search");
+    const search = element3("input", "alg-search");
     search.type = "search";
     search.value = state3.draftSearch;
     search.placeholder = "搜索算法、路径、笔记标题、标签或作者";
     search.setAttribute("aria-label", "搜索算法、路径、笔记标题、标签或作者");
     searchWrap.append(searchIcon, search);
-    const attributeLabel = element2("label", "alg-attribute-label", "属性");
-    const attribute = element2("select", "alg-attribute");
+    const attributeLabel = element3("label", "alg-attribute-label", "属性");
+    const attribute = element3("select", "alg-attribute");
     attribute.setAttribute("aria-label", "按类型或使用频率筛选");
     [["", "全部属性"], ...Object.entries(ATTRIBUTES)].forEach(([value, label]) => {
-      const option2 = element2("option", "", label);
+      const option2 = element3("option", "", label);
       option2.value = value;
       attribute.append(option2);
     });
     attribute.value = state3.draftAttribute;
     attributeLabel.append(attribute);
-    const submitSearch = button5("搜索", "alg-button alg-button-primary alg-search-submit", applySearch);
-    const clear = button5("清除筛选", "alg-text-button alg-clear", () => {
+    const submitSearch = button6("搜索", "alg-button alg-button-primary alg-search-submit", applySearch);
+    const clear = button6("清除筛选", "alg-text-button alg-clear", () => {
       state3.search = "";
       state3.level = "";
       state3.attribute = "";
       state3.draftSearch = "";
       state3.draftLevel = "";
       state3.draftAttribute = "";
+      state3.hasNotes = false;
       state3.reading = null;
       search.value = "";
       attribute.value = "";
-      refresh();
+      refresh({ reset: true, newQuery: true });
       search.focus();
     });
-    searchRow.append(searchWrap, submitSearch, attributeLabel, clear);
-    const legend = element2("div", "alg-legend");
+    const hasNotes = button6("仅看已有笔记", "alg-button alg-has-notes", () => {
+      state3.hasNotes = !state3.hasNotes;
+      state3.reading = null;
+      refresh({ reset: !state3.hasNotes && !(state3.search.trim() || state3.level || state3.attribute), newQuery: true });
+    });
+    hasNotes.setAttribute("aria-pressed", String(state3.hasNotes));
+    searchRow.append(searchWrap, submitSearch, attributeLabel, hasNotes, clear);
+    const legend = element3("div", "alg-legend");
     legend.setAttribute("role", "group");
     legend.setAttribute("aria-label", "学习参考难度筛选");
     const legendButtons = [];
@@ -7365,7 +7633,7 @@ ${data.trick.trim()}` : ""].filter(Boolean).join("\n\n") : data.body;
       const key = level ? level.id : "unrated";
       levelCounts.set(key, levelCounts.get(key) + 1);
     });
-    const allLevel = button5(`全部 ${all.length}`, "alg-legend-button alg-tone-neutral", () => {
+    const allLevel = button6(`全部 ${all.length}`, "alg-legend-button alg-tone-neutral", () => {
       state3.draftLevel = "";
       updateDraftControls();
     });
@@ -7373,39 +7641,39 @@ ${data.trick.trim()}` : ""].filter(Boolean).join("\n\n") : data.body;
     legendButtons.push(allLevel);
     legend.append(allLevel);
     [...LEVELS, ...levelCounts.get("unrated") ? [{ id: "unrated", label: "未分级", tone: "neutral", number: "—" }] : []].forEach((level) => {
-      const control = button5("", `alg-legend-button alg-tone-${level.tone}`, () => {
+      const control = button6("", `alg-legend-button alg-tone-${level.tone}`, () => {
         state3.draftLevel = state3.draftLevel === level.id ? "" : level.id;
         updateDraftControls();
       });
       control.dataset.level = level.id;
-      control.append(element2("span", "alg-legend-dot"), element2("span", "", `${level.number} ${level.label}`), element2("span", "alg-legend-count", levelCounts.get(level.id)));
+      control.append(element3("span", "alg-legend-dot"), element3("span", "", `${level.number} ${level.label}`), element3("span", "alg-legend-count", levelCounts.get(level.id)));
       control.title = `${level.label}：${levelCounts.get(level.id)} 个节点；点击筛选，再次点击取消`;
       legendButtons.push(control);
       legend.append(control);
     });
-    const searchHint = element2("p", "alg-tier-hint alg-search-hint");
-    searchHint.append(element2("strong", "", "点击搜索按钮才会进行跳转哦，也可以按回车确认。"));
+    const searchHint = element3("p", "alg-tier-hint alg-search-hint");
+    searchHint.append(element3("strong", "", "点击搜索按钮才会进行跳转哦，也可以按回车确认。"));
     searchHint.id = `${uid}-search-hint`;
     search.setAttribute("aria-describedby", searchHint.id);
-    filters.append(searchRow, searchHint, legend, element2("p", "alg-tier-hint", "目录用于组织知识和保存说明，不设难度。难度筛选只匹配具体算法与知识点，并保留其上级目录。模板、常用、低频是独立属性。"));
-    const workspace = element2("div", "alg-workspace");
-    const sidebar = element2("aside", "alg-sidebar");
-    const treeHeading = element2("div", "alg-tree-heading");
-    const treeStatus = element2("span", "alg-tree-status");
-    treeHeading.append(element2("strong", "", "知识目录"), treeStatus);
-    const treeScroller = element2("div", "alg-tree-scroll");
-    const tree = element2("div", "alg-tree");
+    filters.append(searchRow, searchHint, legend, element3("p", "alg-tier-hint", "目录用于组织知识，不设难度。难度筛选只匹配具体算法与知识点，并保留其上级目录。模板、常用、低频是独立属性。"));
+    const workspace = element3("div", "alg-workspace");
+    const sidebar = element3("aside", "alg-sidebar");
+    const treeHeading = element3("div", "alg-tree-heading");
+    const treeStatus = element3("span", "alg-tree-status");
+    treeHeading.append(element3("strong", "", "知识目录"), treeStatus);
+    const treeScroller = element3("div", "alg-tree-scroll");
+    const tree = element3("div", "alg-tree");
     tree.setAttribute("role", "tree");
     tree.setAttribute("aria-label", "算法知识目录");
     tree.setAttribute("aria-describedby", `${uid}-tree-help`);
     treeScroller.append(tree);
-    const treeHelp = element2("p", "alg-tree-help", "↑ ↓ 移动 · ← → 折叠 / 展开 · Enter 查看");
+    const treeHelp = element3("p", "alg-tree-help", "↑ ↓ 移动 · ← → 折叠 / 展开 · Enter 查看");
     treeHelp.id = `${uid}-tree-help`;
     sidebar.append(treeHeading, treeScroller, treeHelp);
-    const pane = element2("section", "alg-pane");
+    const pane = element3("section", "alg-pane");
     pane.setAttribute("aria-label", "算法与笔记详情");
     pane.tabIndex = -1;
-    const live = element2("span", "alg-sr-only");
+    const live = element3("span", "alg-sr-only");
     live.setAttribute("role", "status");
     live.setAttribute("aria-live", "polite");
     workspace.append(sidebar, pane);
@@ -7418,7 +7686,7 @@ ${data.trick.trim()}` : ""].filter(Boolean).join("\n\n") : data.body;
     let focusedId = state3.selectedNode;
     let disposed = false, expandedReader = null;
     const treeItems = /* @__PURE__ */ new Map();
-    const tooltip = element2("div", "alg-tooltip");
+    const tooltip = element3("div", "alg-tooltip");
     tooltip.id = `${uid}-tooltip`;
     tooltip.setAttribute("role", "tooltip");
     tooltip.hidden = true;
@@ -7475,7 +7743,7 @@ ${data.trick.trim()}` : ""].filter(Boolean).join("\n\n") : data.body;
     window.addEventListener("resize", hideTooltip, { passive: true, signal: tooltipEvents.signal });
     window.addEventListener("blur", hideTooltip, { signal: tooltipEvents.signal });
     function detailPath() {
-      const reading = state3.reading && notes.find((note) => noteKey(note) === state3.reading);
+      const reading = state3.reading && notes.find((note) => noteKey2(note) === state3.reading);
       const entries = [];
       let entry2 = byId.get(reading?.nodeId || state3.selectedNode);
       while (entry2) {
@@ -7498,21 +7766,21 @@ ${data.trick.trim()}` : ""].filter(Boolean).join("\n\n") : data.body;
     let filtering = false;
     function badge(node4) {
       if (isDirectory(node4)) {
-        const directory = element2("span", "alg-node-kind", "目录");
-        directory.dataset.algTooltip = "目录可保存说明和笔记，具体算法在子节点中分级";
+        const directory = element3("span", "alg-node-kind", "目录");
+        directory.dataset.algTooltip = "目录用于组织知识，请选择算法叶子阅读笔记";
         return directory;
       }
       const level = levelOf(node4);
-      const el3 = element2("span", `alg-badge alg-tone-${level ? level.tone : "neutral"}`, level ? level.label : node4.color === "parent" ? "目录" : "未分级");
+      const el5 = element3("span", `alg-badge alg-tone-${level ? level.tone : "neutral"}`, level ? level.label : node4.color === "parent" ? "目录" : "未分级");
       const origin = node4.difficultySource?.kind === "user-md" ? "用户颜色文档" : node4.rating?.type === "category" ? "分类基础门槛" : node4.rating?.type === "entry" ? "入口或任务形式" : "本项目逐项定稿";
       const range = node4.rating?.range;
       const coverage2 = range && node4.children?.length ? `；覆盖 D${range.min}–D${range.max}` : "";
-      el3.dataset.algTooltip = level ? `学习难度：${level.label}；依据：${origin}${coverage2}${node4.scope ? `。学习范围：${node4.scope}` : ""}${node4.rationale ? `。${node4.rationale}` : ""}` : node4.color === "parent" ? "目录" : "未指定难度";
-      return el3;
+      el5.dataset.algTooltip = level ? `学习难度：${level.label}；依据：${origin}${coverage2}${node4.scope ? `。学习范围：${node4.scope}` : ""}${node4.rationale ? `。${node4.rationale}` : ""}` : node4.color === "parent" ? "目录" : "未指定难度";
+      return el5;
     }
     function attributeBadge(node4) {
       const names = attributesOf(node4).map((key) => ATTRIBUTES[key]);
-      return names.length ? element2("span", "alg-attribute-badge", names.join(" · ")) : null;
+      return names.length ? element3("span", "alg-attribute-badge", names.join(" · ")) : null;
     }
     function pathOf(id) {
       return byId.get(id)?.path.join(" / ") || "未关联目录";
@@ -7526,7 +7794,7 @@ ${data.trick.trim()}` : ""].filter(Boolean).join("\n\n") : data.body;
     function computeResults() {
       const q = state3.search.trim();
       topicScores.clear();
-      filtering = Boolean(q || state3.level || state3.attribute);
+      filtering = Boolean(q || state3.level || state3.attribute || state3.hasNotes);
       matchingNotes = sortedNotes.filter((note) => {
         const entry2 = byId.get(note.nodeId);
         if ((state3.level || state3.attribute) && (!entry2 || !matchesFacets(entry2.node))) return false;
@@ -7542,7 +7810,7 @@ ${data.trick.trim()}` : ""].filter(Boolean).join("\n\n") : data.body;
       all.forEach((entry2) => {
         const score2 = relevance.topicScore(entry2.node, entry2.path, q);
         topicScores.set(entry2.node.id, score2);
-        if (!filtering || matchesFacets(entry2.node) && (score2 > 0 || noteNodes.has(entry2.node.id))) matched.add(entry2.node.id);
+        if (!filtering || matchesFacets(entry2.node) && (!state3.hasNotes || isAlgorithmLeaf(entry2.node) && (counts.get(entry2.node.id) || 0) > 0) && (score2 > 0 || noteNodes.has(entry2.node.id))) matched.add(entry2.node.id);
       });
       matched.forEach((id) => {
         let entry2 = byId.get(id);
@@ -7553,7 +7821,9 @@ ${data.trick.trim()}` : ""].filter(Boolean).join("\n\n") : data.body;
       });
     }
     function selectNode(id, focusPane) {
-      if (!byId.has(id)) return;
+      const target = byId.get(id);
+      if (!target) return;
+      id = target.node.id;
       expandedReader?.close();
       hideTooltip();
       const previous = state3.selectedNode;
@@ -7615,28 +7885,28 @@ ${data.trick.trim()}` : ""].filter(Boolean).join("\n\n") : data.body;
       visible = [];
       const hasResults = included.size > 0;
       if (!hasResults) {
-        tree.append(element2("p", "alg-tree-empty", "没有匹配的目录或笔记。试试更短的关键词，或清除筛选。"));
+        tree.append(element3("p", "alg-tree-empty", "没有匹配的目录或笔记。试试更短的关键词，或清除筛选。"));
       } else {
         let walk2 = function(entry2, group, position, size) {
           if (!included.has(entry2.node.id)) return;
           const kids = (entry2.node.children || []).filter((child) => included.has(child.id));
-          const item = element2("div", "alg-tree-item");
+          const item = element3("div", "alg-tree-item");
           item.setAttribute("role", "treeitem");
           item.dataset.nodeId = entry2.node.id;
           treeItems.set(entry2.node.id, item);
           item.dataset.depth = String(entry2.depth);
-          item.dataset.kind = entry2.node.color === "parent" ? "directory" : "topic";
+          item.dataset.kind = isDirectory(entry2.node) ? "directory" : "topic";
           item.setAttribute("aria-level", String(entry2.depth + 1));
           item.setAttribute("aria-posinset", String(position));
           item.setAttribute("aria-setsize", String(size));
           item.setAttribute("aria-selected", String(state3.selectedNode === entry2.node.id));
-          item.setAttribute("aria-label", `${entry2.node.label}，${levelOf(entry2.node)?.label || (entry2.node.color === "parent" ? "目录" : "未分级")}${attributesOf(entry2.node).length ? `，${attributesOf(entry2.node).map((key) => ATTRIBUTES[key]).join("、")}` : ""}，${counts.get(entry2.node.id)} 篇笔记`);
+          item.setAttribute("aria-label", `${entry2.node.label}，${levelOf(entry2.node)?.label || (isDirectory(entry2.node) ? "目录" : "未分级")}${attributesOf(entry2.node).length ? `，${attributesOf(entry2.node).map((key) => ATTRIBUTES[key]).join("、")}` : ""}，${counts.get(entry2.node.id)} 篇笔记`);
           item.tabIndex = -1;
           if (kids.length) item.setAttribute("aria-expanded", String(isExpanded(entry2.node.id)));
-          const row2 = element2("div", "alg-tree-row");
+          const row2 = element3("div", "alg-tree-row");
           row2.style.setProperty("--alg-depth", String(entry2.depth));
           if (kids.length) {
-            const disclosure = button5(isExpanded(entry2.node.id) ? "▾" : "▸", "alg-disclosure", (event) => {
+            const disclosure = button6(isExpanded(entry2.node.id) ? "▾" : "▸", "alg-disclosure", (event) => {
               event.stopPropagation();
               toggle(entry2.node.id, !isExpanded(entry2.node.id));
             });
@@ -7644,25 +7914,25 @@ ${data.trick.trim()}` : ""].filter(Boolean).join("\n\n") : data.body;
             disclosure.setAttribute("aria-label", `${isExpanded(entry2.node.id) ? "折叠" : "展开"} ${entry2.node.label}`);
             row2.append(disclosure);
           } else {
-            const spacer = element2("span", "alg-disclosure alg-leaf", "·");
+            const spacer = element3("span", "alg-disclosure alg-leaf", "·");
             spacer.setAttribute("aria-hidden", "true");
             row2.append(spacer);
           }
-          const copy = element2("span", "alg-tree-copy");
-          copy.append(element2("span", "alg-tree-label", entry2.node.label));
-          const metadata2 = element2("span", "alg-tree-meta");
+          const copy = element3("span", "alg-tree-copy");
+          copy.append(element3("span", "alg-tree-label", entry2.node.label));
+          const metadata2 = element3("span", "alg-tree-meta");
           metadata2.append(badge(entry2.node));
           const attr = attributeBadge(entry2.node);
           if (attr) metadata2.append(attr);
           copy.append(metadata2);
           row2.append(copy);
-          const count3 = element2("span", "alg-node-count", counts.get(entry2.node.id));
+          const count3 = element3("span", "alg-node-count", counts.get(entry2.node.id));
           count3.title = "当前范围内含子目录的笔记总数";
           row2.append(count3);
           row2.dataset.algTooltip = `${entry2.path.join(" / ")}${entry2.node.fullLabel && entry2.node.fullLabel !== entry2.node.label ? `
 ${entry2.node.fullLabel}` : ""}`;
           if (opts.canManage && typeof opts.onAddTopic === "function") {
-            const add = button5("＋", "alg-add-topic", (event) => {
+            const add = button6("＋", "alg-add-topic", (event) => {
               event.stopPropagation();
               opts.onAddTopic(entry2.node.id);
             });
@@ -7683,7 +7953,7 @@ ${entry2.node.fullLabel}` : ""}`;
           group.append(item);
           visible.push(entry2);
           if (kids.length && isExpanded(entry2.node.id)) {
-            const childGroup = element2("div", "alg-tree-group");
+            const childGroup = element3("div", "alg-tree-group");
             childGroup.setAttribute("role", "group");
             item.append(childGroup);
             kids.forEach((child, i) => walk2(byId.get(child.id), childGroup, i + 1, kids.length));
@@ -7727,7 +7997,7 @@ ${entry2.node.fullLabel}` : ""}`;
       if (next != null) focusRow(next);
     });
     function breadcrumbs(id) {
-      const nav = element2("nav", "alg-breadcrumbs");
+      const nav = element3("nav", "alg-breadcrumbs");
       nav.setAttribute("aria-label", "当前算法路径");
       const ancestors = [];
       let entry2 = byId.get(id);
@@ -7737,61 +8007,61 @@ ${entry2.node.fullLabel}` : ""}`;
       }
       ancestors.forEach((ancestor, i) => {
         if (i) {
-          const separator = element2("span", "alg-crumb-separator", "/");
+          const separator = element3("span", "alg-crumb-separator", "/");
           separator.setAttribute("aria-hidden", "true");
           nav.append(separator);
         }
-        const crumb = button5(ancestor.node.label, "alg-crumb", () => selectNode(ancestor.node.id));
+        const crumb = button6(ancestor.node.label, "alg-crumb", () => selectNode(ancestor.node.id));
         if (i === ancestors.length - 1) crumb.setAttribute("aria-current", "page");
         nav.append(crumb);
       });
       return nav;
     }
     function noteMetadata(note) {
-      const meta = element2("div", "alg-note-meta");
-      if (note.featured) meta.append(element2("span", "alg-featured", "精选"));
-      meta.append(element2("span", "alg-note-author", nameOf(note.author)));
+      const meta = element3("div", "alg-note-meta");
+      if (note.featured) meta.append(element3("span", "alg-featured", "精选"));
+      meta.append(element3("span", "alg-note-author", nameOf(note.author)));
       const date = dateOf(note.updatedAt || note.createdAt);
-      if (date) meta.append(element2("span", "", date));
+      if (date) meta.append(element3("span", "", date));
       return meta;
     }
     function noteTags(note) {
-      const tags = element2("div", "alg-note-tags");
-      tagsOf(note).forEach((tag) => tags.append(element2("span", "alg-tag", tag)));
+      const tags = element3("div", "alg-note-tags");
+      tagsOf(note).forEach((tag) => tags.append(element3("span", "alg-tag", tag)));
       return tags;
     }
     function openNote(note) {
       state3.listScroll = pane.scrollTop;
-      state3.reading = noteKey(note);
+      state3.reading = noteKey2(note);
       state3.paneScroll = 0;
       renderPane();
       pane.scrollTop = 0;
       pane.querySelector(".alg-reading-title")?.focus({ preventScroll: true });
     }
     function noteCard(note, globalResult) {
-      const card = button5("", `alg-note-card${note.featured ? " alg-note-featured" : ""}`, () => openNote(note));
-      card.append(noteMetadata(note), element2("h4", "alg-note-title", note.title || "未命名笔记"));
+      const card = button6("", `alg-note-card${note.featured ? " alg-note-featured" : ""}`, () => openNote(note));
+      card.append(noteMetadata(note), element3("h4", "alg-note-title", note.title || "未命名笔记"));
       const preview = excerpt(note.body);
-      if (preview) card.append(element2("p", "alg-note-excerpt", preview));
+      if (preview) card.append(element3("p", "alg-note-excerpt", preview));
       card.append(noteTags(note));
-      if (globalResult) card.append(element2("span", "alg-note-path", pathOf(note.nodeId)));
+      if (globalResult) card.append(element3("span", "alg-note-path", pathOf(note.nodeId)));
       return card;
     }
     function heading(title, count3) {
-      const row2 = element2("div", "alg-section-heading");
-      row2.append(element2("h3", "", title));
-      if (count3 !== void 0) row2.append(element2("span", "alg-section-count", count3));
+      const row2 = element3("div", "alg-section-heading");
+      row2.append(element3("h3", "", title));
+      if (count3 !== void 0) row2.append(element3("span", "alg-section-count", count3));
       return row2;
     }
     function topicCard(entry2) {
-      const card = button5("", "alg-topic-card", () => selectNode(entry2.node.id));
-      const name = element2("div", "alg-topic-name");
-      name.append(element2("strong", "", entry2.node.label), element2("span", "alg-card-arrow", "↗"));
-      const meta = element2("div", "alg-topic-meta");
+      const card = button6("", "alg-topic-card", () => selectNode(entry2.node.id));
+      const name = element3("div", "alg-topic-name");
+      name.append(element3("strong", "", entry2.node.label), element3("span", "alg-card-arrow", "↗"));
+      const meta = element3("div", "alg-topic-meta");
       meta.append(badge(entry2.node));
       const attr = attributeBadge(entry2.node);
       if (attr) meta.append(attr);
-      card.append(name, meta, element2("span", "alg-topic-count", `${entry2.descendants} 个子节点 · ${counts.get(entry2.node.id)} 篇笔记`));
+      card.append(name, meta, element3("span", "alg-topic-count", `${entry2.descendants} 个子节点 · ${counts.get(entry2.node.id)} 篇笔记`));
       return card;
     }
     function renderPane() {
@@ -7799,155 +8069,101 @@ ${entry2.node.fullLabel}` : ""}`;
       expandedReader?.setPath(detailPath());
       pane.replaceChildren();
       const selected2 = byId.get(state3.selectedNode);
-      const reading = state3.reading && notes.find((note) => noteKey(note) === state3.reading);
+      const reading = state3.reading && notes.find((note) => noteKey2(note) === state3.reading);
       if (reading) {
-        const back = button5("← 返回目录与笔记", "alg-text-button alg-reader-back", () => {
+        const back = button6("← 返回目录与笔记", "alg-text-button alg-reader-back", () => {
           state3.reading = null;
           renderPane();
           pane.scrollTop = state3.listScroll;
           pane.querySelector(".alg-detail-title")?.focus({ preventScroll: true });
         });
-        const actions = element2("div", "reading-detail-actions");
-        actions.append(back, button5("打开详情 ↗", "alg-button reading-detail-trigger alg-open-detail", openDetail));
+        const actions = element3("div", "reading-detail-actions");
+        actions.append(back, button6("打开详情 ↗", "alg-button reading-detail-trigger alg-open-detail", openDetail));
+        const favorite = noteFavoriteControl({ note: reading, isFavorite: opts.isFavorite, onToggleFavorite: opts.onToggleFavorite });
+        if (favorite) actions.append(favorite);
         pane.append(actions, breadcrumbs(reading.nodeId));
-        const article = element2("article", "alg-reading");
-        const title2 = element2("h2", "alg-reading-title", reading.title || "未命名笔记");
+        const article = element3("article", "alg-reading");
+        const title2 = element3("h2", "alg-reading-title", reading.title || "未命名笔记");
         title2.tabIndex = -1;
         article.append(title2, noteMetadata(reading), noteTags(reading));
-        const body = element2("div", "alg-markdown markdown-body");
+        const body = element3("div", "alg-markdown markdown-body");
         if (typeof opts.renderMarkdown === "function") opts.renderMarkdown(body, String(reading.body || ""));
         else body.textContent = String(reading.body || "");
         article.append(body);
-        if (byId.has(reading.nodeId)) article.append(button5(`在目录中查看：${byId.get(reading.nodeId).node.label}`, "alg-text-button alg-note-location", () => selectNode(reading.nodeId)));
+        if (byId.has(reading.nodeId)) article.append(button6(`在目录中查看：${byId.get(reading.nodeId).node.label}`, "alg-text-button alg-note-location", () => selectNode(reading.nodeId)));
         pane.append(article);
         return;
       }
       pane.append(breadcrumbs(selected2.node.id));
-      const detail = element2("header", "alg-detail-heading");
-      const detailBar = element2("div", "alg-detail-toolbar");
-      detailBar.append(element2("span", "alg-eyebrow", selected2.node.id === root2.id ? "知识目录" : "知识节点"), button5("打开详情 ↗", "alg-button reading-detail-trigger alg-open-detail", openDetail));
+      const detail = element3("header", "alg-detail-heading");
+      const detailBar = element3("div", "alg-detail-toolbar");
+      detailBar.append(element3("span", "alg-eyebrow", isDirectory(selected2.node) ? "知识目录" : "算法知识点"), button6("打开详情 ↗", "alg-button reading-detail-trigger alg-open-detail", openDetail));
       detail.append(detailBar);
-      const titleRow = element2("div", "alg-detail-title-row");
-      const title = element2("h2", "alg-detail-title", selected2.node.fullLabel || selected2.node.label);
+      const titleRow = element3("div", "alg-detail-title-row");
+      const title = element3("h2", "alg-detail-title", selected2.node.fullLabel || selected2.node.label);
       title.tabIndex = -1;
       titleRow.append(title, badge(selected2.node));
       const attr = attributeBadge(selected2.node);
       if (attr) titleRow.append(attr);
-      detail.append(titleRow, element2("p", "alg-detail-stats", `${selected2.descendants} 个子节点 · ${counts.get(selected2.node.id)} 篇笔记（含子目录）`));
-      const information = element2("section", "alg-node-information");
-      if (selected2.node.id === root2.id) information.append(element2("p", "alg-intro", "从一条知识主线出发，逐步建立你的算法体系。展开左侧目录，或选择下方分类；每个节点都可以阅读和积累学习笔记。"));
-      if (isDirectory(selected2.node)) information.append(element2("p", "alg-intro", selected2.node.scope || "此目录用于分类、专题说明和学习笔记，具体算法及难度请查看子节点。"));
-      if (levelOf(selected2.node) && selected2.node.difficultySource) {
-        const origin = selected2.node.difficultySource.kind === "user-md" ? "难度依据：用户颜色文档" : selected2.node.rating?.type === "category" ? "难度依据：分类基础学习门槛" : selected2.node.rating?.type === "entry" ? "难度依据：入口或任务形式的使用门槛" : "难度依据：本项目逐项定稿";
-        const range = selected2.node.rating?.range;
-        information.append(element2("p", "alg-intro", `${origin}${range && selected2.node.children?.length ? `；覆盖 D${range.min}–D${range.max}` : ""}${selected2.node.rationale ? `。${selected2.node.rationale}` : ""}${selected2.node.scope ? ` 学习范围：${selected2.node.scope}` : ""}`));
-      }
-      const utilities = element2("footer", "alg-detail-utilities");
-      if (opts.canManage && typeof opts.onAddTopic === "function") utilities.append(button5("＋ 添加算法", "alg-text-button alg-add-topic-detail", () => {
+      detail.append(titleRow);
+      pane.append(detail);
+      uploadWrap.hidden = !isAlgorithmLeaf(selected2.node);
+      const utilities = element3("footer", "alg-detail-utilities");
+      if (opts.canManage && typeof opts.onAddTopic === "function") utilities.append(button6("＋ 添加算法", "alg-text-button alg-add-topic-detail", () => {
         expandedReader?.close();
         opts.onAddTopic(selected2.node.id);
       }));
-      if (typeof opts.onLearningPath === "function") utilities.append(button5("在学习路线中查看 →", "alg-text-button alg-add-topic-detail", () => {
+      if (typeof opts.onLearningPath === "function") utilities.append(button6("在学习路线中查看 →", "alg-text-button alg-add-topic-detail", () => {
         expandedReader?.close();
         opts.onLearningPath(selected2.node.id);
       }));
-      function appendInformation() {
-        if (information.childNodes.length) pane.append(information);
-        if (utilities.childNodes.length) pane.append(utilities);
-      }
-      pane.append(detail);
-      if (filtering) {
-        if (selected2.node.id !== root2.id) {
-          const selectedChildren = (selected2.node.children || []).filter((child) => matched.has(child.id));
-          const selectedNotes = matchingNotes.filter((note) => note.nodeId === selected2.node.id);
-          pane.append(heading("当前节点的笔记", selectedNotes.length));
-          if (selectedNotes.length) {
-            const selectedList = element2("div", "alg-note-list alg-selected-note-list");
-            selectedNotes.forEach((note) => selectedList.append(noteCard(note, false)));
-            pane.append(selectedList);
-          } else pane.append(element2("p", "alg-inline-empty", "当前节点尚无笔记；下方保留所有全局匹配结果。"));
-          if (selectedChildren.length) {
-            pane.append(heading("当前节点 · 继续探索", selectedChildren.length));
-            const childrenGrid = element2("div", "alg-topic-grid");
-            selectedChildren.forEach((child) => childrenGrid.append(topicCard(byId.get(child.id))));
-            pane.append(childrenGrid);
-          }
-        }
-        const resultSummary = element2("div", "alg-result-summary");
-        resultSummary.append(element2("strong", "", "全局筛选结果"), element2("span", "", `${matched.size} 个节点 · ${matchingNotes.length} 篇笔记`));
-        pane.append(resultSummary);
-        const topicMatches = all.filter((entry2) => matched.has(entry2.node.id)).sort((a, b) => (topicScores.get(b.node.id) || 0) - (topicScores.get(a.node.id) || 0));
-        if (topicMatches.length) {
-          pane.append(heading("匹配的知识节点", topicMatches.length));
-          const resultTopics = element2("div", "alg-result-topics");
-          topicMatches.forEach((entry2) => {
-            const row2 = button5("", "alg-result-topic", () => selectNode(entry2.node.id));
-            row2.append(element2("span", "alg-result-topic-name", entry2.node.label), badge(entry2.node), element2("span", "alg-result-topic-path", entry2.path.join(" / ")));
-            const attributeTag = attributeBadge(entry2.node);
-            if (attributeTag) row2.append(attributeTag);
-            resultTopics.append(row2);
-          });
-          pane.append(resultTopics);
-        }
-        pane.append(heading("匹配的笔记", matchingNotes.length));
-        if (matchingNotes.length) {
-          const list = element2("div", "alg-note-list");
-          matchingNotes.forEach((note) => list.append(noteCard(note, true)));
-          pane.append(list);
-        } else pane.append(element2("p", "alg-inline-empty", "当前范围内没有匹配的笔记。可以尝试算法名称、笔记标题、作者或标签。"));
-        if (!topicMatches.length && !matchingNotes.length) pane.append(button5("清除全部筛选", "alg-button", () => clear.click()));
-        appendInformation();
-        return;
-      }
-      const children = selected2.node.children || [];
-      const direct = sortedNotes.filter((note) => note.nodeId === selected2.node.id);
-      const featured = direct.filter((note) => note.featured), ordinary = direct.filter((note) => !note.featured);
-      const notesHeading = () => heading(state3.scope === "personal" ? "我的节点笔记" : "节点笔记", ordinary.length);
-      if (featured.length) {
-        const section = element2("section", "alg-featured-section");
-        section.append(heading("精选笔记", featured.length));
-        const list = element2("div", "alg-note-list");
-        featured.forEach((note) => list.append(noteCard(note, false)));
-        section.append(list);
-        pane.append(section);
-      }
-      if (ordinary.length) {
-        pane.append(notesHeading());
-        const list = element2("div", "alg-note-list");
-        ordinary.forEach((note) => list.append(noteCard(note, false)));
-        pane.append(list);
-      }
-      if (children.length) {
-        pane.append(heading(selected2.node.id === root2.id ? "选择知识主线" : "继续探索", children.length));
-        const grid = element2("div", "alg-topic-grid");
+      if (isAlgorithmLeaf(selected2.node)) {
+        const storedContent = opts.nodeContents?.find((item) => resolveAlgorithmLeaf(root2, item.nodeId)?.id === selected2.node.id);
+        const content = storedContent && storedContent.nodeId !== selected2.node.id ? { ...storedContent, nodeId: selected2.node.id, storageNodeId: storedContent.storageNodeId || storedContent.nodeId } : storedContent;
+        pane.append(renderLeafReading({
+          node: selected2.node,
+          content,
+          notes: sortedNotes.filter((note) => note.nodeId === selected2.node.id),
+          canManage: Boolean(opts.canManage),
+          onSave: opts.onSaveNodeContent ? async (input2) => {
+            const saved = await opts.onSaveNodeContent(input2);
+            opts.nodeContents = [...(opts.nodeContents || []).filter((item) => resolveAlgorithmLeaf(root2, item.nodeId)?.id !== selected2.node.id), saved];
+            return saved;
+          } : void 0,
+          renderMarkdown: opts.renderMarkdown,
+          onRead: openNote,
+          onUpload: upload.disabled ? void 0 : () => upload.click(),
+          authorName: nameOf,
+          formatDate: dateOf
+        }));
+      } else {
+        const children = (selected2.node.children || []).filter((child) => !filtering || included.has(child.id));
+        pane.append(heading(selected2.node.id === root2.id ? "选择知识主线" : "目录内容", children.length));
+        const grid = element3("div", "alg-topic-grid");
         children.forEach((child) => grid.append(topicCard(byId.get(child.id))));
         pane.append(grid);
       }
-      if (!direct.length) {
-        pane.append(notesHeading());
-        const empty = element2("div", "alg-empty");
-        empty.append(
-          element2("span", "alg-empty-symbol", "≡"),
-          element2("strong", "", "这里的学习笔记，等待积累"),
-          element2("p", "", state3.scope === "personal" ? "此节点还没有你的个人笔记。选择一个主题，记录思路、模板和复盘。" : "此节点还没有公开笔记。继续浏览子目录，或为这个主题补充一篇笔记。")
-        );
-        if (upload.disabled) empty.append(element2("span", "alg-empty-hint", opts.account ? "上传笔记需要仓库写入权限。" : "登录具有写入权限的账户后，即可上传算法笔记。"));
-        else empty.append(button5("＋ 为此节点上传笔记", "alg-button", () => upload.click()));
-        pane.append(empty);
-      }
-      appendInformation();
+      if (utilities.childNodes.length) pane.append(utilities);
     }
-    function refresh() {
+    function refresh({ reset = false, newQuery = false } = {}) {
       if (disposed) return;
       const oldScroll = treeScroller.scrollTop;
-      state3.expanded.forEach((key) => {
+      if (reset) {
+        state3.expanded = /* @__PURE__ */ new Set([root2.id]);
+        state3.selectedNode = root2.id;
+        focusedId = root2.id;
+        state3.reading = null;
+        state3.treeScroll = 0;
+      }
+      if (newQuery) state3.expanded.forEach((key) => {
         if (String(key).startsWith("collapsed-filter:")) state3.expanded.delete(key);
       });
       computeResults();
       updateDraftControls();
       clear.hidden = !filtering;
+      hasNotes.setAttribute("aria-pressed", String(state3.hasNotes));
       renderTree();
-      treeScroller.scrollTop = oldScroll;
+      treeScroller.scrollTop = reset ? 0 : oldScroll;
       renderPane();
       pane.scrollTop = 0;
       live.textContent = filtering ? `找到 ${matched.size} 个知识节点、${matchingNotes.length} 篇笔记` : `${all.length} 个知识节点、${notes.length} 篇笔记`;
@@ -7965,7 +8181,7 @@ ${entry2.node.fullLabel}` : ""}`;
       state3.attribute = state3.draftAttribute;
       state3.reading = null;
       state3.listScroll = 0;
-      refresh();
+      refresh({ reset: !(state3.search.trim() || state3.level || state3.attribute || state3.hasNotes), newQuery: true });
     }
     search.addEventListener("input", () => {
       state3.draftSearch = search.value;
@@ -7999,14 +8215,15 @@ ${entry2.node.fullLabel}` : ""}`;
         state3.draftSearch = "";
         state3.draftLevel = "";
         state3.draftAttribute = "";
+        state3.hasNotes = false;
         search.value = "";
         attribute.value = "";
         selectNode(id);
-        refresh();
+        refresh({ newQuery: true });
       },
       getState: snapshot,
       openNote(note, { fullscreen = false } = {}) {
-        const found = notes.find((item) => noteKey(item) === noteKey(note));
+        const found = notes.find((item) => noteKey2(item) === noteKey2(note));
         if (!found) return;
         openNote(found);
         if (fullscreen) openDetail();
@@ -8030,19 +8247,30 @@ ${entry2.node.fullLabel}` : ""}`;
   var AlgorithmBrowser = Object.freeze({ render: render4 });
 
   // src/renderer/algorithms/roadmap.ts
+  function roadmapIntroduction(node4) {
+    return [node4.detail[0], node4.detail[1], node4.detail[2].map((text3) => `- ${text3}`).join("\n")].filter(Boolean).join("\n\n");
+  }
+  function roadmapLeaves(tree, node4) {
+    const leaves = /* @__PURE__ */ new Map();
+    for (const id of node4.topicIds || []) {
+      const leaf = resolveAlgorithmLeaf(tree, id);
+      if (leaf) leaves.set(leaf.id, leaf);
+    }
+    return [...leaves.values()];
+  }
   var WIDTH = 1500;
   var HEIGHT = 1240;
   var BAND_STARTS = [16, 324, 646, 986];
   var BAND_HEIGHTS = [250, 304, 310, 180];
   var serial = 0;
-  function element3(tag, className, text3) {
+  function element4(tag, className, text3) {
     const node4 = document.createElement(tag);
     node4.className = className;
     if (text3 !== void 0) node4.textContent = text3;
     return node4;
   }
-  function button6(label, className, run) {
-    const node4 = element3("button", `arm-button ${className}`, label);
+  function button7(label, className, run) {
+    const node4 = element4("button", `arm-button ${className}`, label);
     node4.type = "button";
     node4.addEventListener("click", run);
     return node4;
@@ -8141,22 +8369,22 @@ ${entry2.node.fullLabel}` : ""}`;
     let position = typeof options.progress?.roadmapFocus === "string" ? options.progress.roadmapFocus : null;
     let autoFit = true, zoom = 1, listMode = false, highlight = true, destroyed = false, pending2 = false, frame = 0;
     let detailNode = null, previousFocus = null;
-    const root2 = element3("section", "arm");
+    const root2 = element4("section", "arm");
     root2.setAttribute("aria-label", "学习路线");
     root2.dataset.view = "graph";
-    const header = element3("header", "arm-header");
-    const heading = element3("div", "arm-heading");
-    heading.append(element3("span", "arm-eyebrow", "C++ · ALGORITHM ROADMAP"), element3("h2", "arm-title", "由广入深，看清知识怎样连接。"), element3("p", "arm-subtitle", "初窥、入门、基础、进阶，沿知识联系逐步展开。点击节点查看范围，按问题跳学与回补。"));
-    const readingHint = element3("aside", "arm-reading-hint");
-    readingHint.append(element3("strong", "", "读图方式"), element3("p", "", "纵向看层次，横向看分支。悬停看关联，点击看知识范围。"));
+    const header = element4("header", "arm-header");
+    const heading = element4("div", "arm-heading");
+    heading.append(element4("span", "arm-eyebrow", "C++ · ALGORITHM ROADMAP"), element4("h2", "arm-title", "由广入深，看清知识怎样连接。"), element4("p", "arm-subtitle", "初窥、入门、基础、进阶，沿知识联系逐步展开。点击节点查看范围，按问题跳学与回补。"));
+    const readingHint = element4("aside", "arm-reading-hint");
+    readingHint.append(element4("strong", "", "读图方式"), element4("p", "", "纵向看层次，横向看分支。悬停看关联，点击看知识范围。"));
     header.append(heading, readingHint);
     root2.append(header);
-    const top = element3("section", "arm-top-stages");
+    const top = element4("section", "arm-top-stages");
     top.setAttribute("aria-label", "四个知识阶段");
-    const navigation = element3("nav", "arm-stage-nav");
+    const navigation = element4("nav", "arm-stage-nav");
     navigation.setAttribute("aria-label", "阶段定位");
     data.rows.forEach((row2, index) => {
-      const card = button6("", "arm-stage-button", () => {
+      const card = button7("", "arm-stage-button", () => {
         stage = stage === index ? null : index;
         selected2 = null;
         hovered = null;
@@ -8166,15 +8394,15 @@ ${entry2.node.fullLabel}` : ""}`;
       card.dataset.stage = String(index);
       card.style.setProperty("--arm-stage", row2.color);
       card.style.setProperty("--arm-stage-soft", row2.bg);
-      card.append(element3("span", "arm-stage-number", `阶段 ${index + 1}`), element3("strong", "", row2.name), element3("p", "", data.goals[index] || ""));
+      card.append(element4("span", "arm-stage-number", `阶段 ${index + 1}`), element4("strong", "", row2.name), element4("p", "", data.goals[index] || ""));
       card.setAttribute("aria-pressed", "false");
       navigation.append(card);
       stageButtons.push(card);
     });
-    top.append(navigation, element3("p", "arm-color-note", "绿 · 蓝 · 金 · 红表示内容由浅入深。同一阶段可以有多条并行分支；虚线节点可在遇到时补学。"));
+    top.append(navigation, element4("p", "arm-color-note", "绿 · 蓝 · 金 · 红表示内容由浅入深。同一阶段可以有多条并行分支；虚线节点可在遇到时补学。"));
     root2.append(top);
-    const controls = element3("div", "arm-controls"), controlLeft = element3("div", "arm-control-left"), controlRight = element3("div", "arm-control-right");
-    const search = element3("input", "arm-search");
+    const controls = element4("div", "arm-controls"), controlLeft = element4("div", "arm-control-left"), controlRight = element4("div", "arm-control-right");
+    const search = element4("input", "arm-search");
     search.type = "search";
     search.placeholder = "找知识，例如：线性基、STL、BFS";
     search.setAttribute("aria-label", "搜索知识节点");
@@ -8185,7 +8413,7 @@ ${entry2.node.fullLabel}` : ""}`;
       hovered = null;
       paint();
     });
-    const reset = button6("显示全图", "arm-reset-button", () => {
+    const reset = button7("显示全图", "arm-reset-button", () => {
       query = "";
       search.value = "";
       stage = null;
@@ -8193,7 +8421,7 @@ ${entry2.node.fullLabel}` : ""}`;
       hovered = null;
       paint();
     });
-    const listButton = button6("列表视图", "arm-list-button", () => {
+    const listButton = button7("列表视图", "arm-list-button", () => {
       listMode = !listMode;
       root2.dataset.view = listMode ? "list" : "graph";
       scroll.hidden = listMode;
@@ -8203,48 +8431,48 @@ ${entry2.node.fullLabel}` : ""}`;
       if (!listMode) scheduleFit();
     });
     listButton.setAttribute("aria-pressed", "false");
-    const highlightButton = button6("关联高亮：开", "arm-highlight-button", () => {
+    const highlightButton = button7("关联高亮：开", "arm-highlight-button", () => {
       highlight = !highlight;
       highlightButton.textContent = `关联高亮：${highlight ? "开" : "关"}`;
       highlightButton.setAttribute("aria-pressed", String(highlight));
       paint();
     });
     highlightButton.setAttribute("aria-pressed", "true");
-    const fitButton = button6("适应窗口", "arm-fit-button", () => {
+    const fitButton = button7("适应窗口", "arm-fit-button", () => {
       autoFit = true;
       resize();
       scroll.scrollLeft = 0;
     });
-    const actualButton = button6("100%", "arm-actual-button", () => {
+    const actualButton = button7("100%", "arm-actual-button", () => {
       autoFit = false;
       zoom = 1;
       resize();
     });
-    const zoomControls = element3("div", "arm-zoom");
-    const zoomOut = button6("−", "arm-zoom-out", () => {
+    const zoomControls = element4("div", "arm-zoom");
+    const zoomOut = button7("−", "arm-zoom-out", () => {
       autoFit = false;
       zoom = Math.max(0.2, Math.round((zoom - 0.1) * 100) / 100);
       resize();
     });
     zoomOut.setAttribute("aria-label", "缩小");
-    const zoomIn = button6("＋", "arm-zoom-in", () => {
+    const zoomIn = button7("＋", "arm-zoom-in", () => {
       autoFit = false;
       zoom = Math.min(2, Math.round((zoom + 0.1) * 100) / 100);
       resize();
     });
     zoomIn.setAttribute("aria-label", "放大");
-    const zoomValue = element3("output", "arm-zoom-value", "100%");
+    const zoomValue = element4("output", "arm-zoom-value", "100%");
     zoomValue.setAttribute("aria-label", "路线图缩放比例");
     zoomControls.append(zoomOut, zoomValue, zoomIn);
     controlLeft.append(search, reset);
     controlRight.append(listButton, highlightButton, fitButton, actualButton, zoomControls);
     controls.append(controlLeft, controlRight);
     root2.append(controls);
-    const panel = element3("div", "arm-graph-panel"), captionRow = element3("div", "arm-caption-row"), caption = element3("strong", "arm-caption");
-    captionRow.append(caption, element3("span", "arm-legend", "实线：学习联系　虚线：相关基础　双向：对照理解"));
-    const scroll = element3("div", "arm-graph-scroll");
+    const panel = element4("div", "arm-graph-panel"), captionRow = element4("div", "arm-caption-row"), caption = element4("strong", "arm-caption");
+    captionRow.append(caption, element4("span", "arm-legend", "实线：学习联系　虚线：相关基础　双向：对照理解"));
+    const scroll = element4("div", "arm-graph-scroll");
     scroll.setAttribute("aria-label", "知识关系图");
-    const space = element3("div", "arm-canvas-space"), canvas = element3("div", "arm-canvas");
+    const space = element4("div", "arm-canvas-space"), canvas = element4("div", "arm-canvas");
     const svg = svgElement2("svg", { class: "arm-edges", width: String(WIDTH), height: String(HEIGHT), viewBox: `0 0 ${WIDTH} ${HEIGHT}`, "aria-hidden": "true" });
     const defs = svgElement2("defs", {});
     for (const [name, color2] of [["arrow", "#92a4bf"], ["arrow-lit", "#4778be"], ["arrow-compare", "#ad7755"]]) {
@@ -8254,13 +8482,13 @@ ${entry2.node.fullLabel}` : ""}`;
     }
     svg.append(defs);
     const bands = data.rows.map((row2, index) => {
-      const band = element3("div", "arm-band");
+      const band = element4("div", "arm-band");
       band.dataset.stage = String(index);
       band.style.top = `${BAND_STARTS[index]}px`;
       band.style.height = `${BAND_HEIGHTS[index]}px`;
       band.style.setProperty("--arm-stage", row2.color);
       band.style.setProperty("--arm-stage-soft", row2.bg);
-      band.append(element3("span", "arm-band-label", `0${index + 1} / ${row2.name}`));
+      band.append(element4("span", "arm-band-label", `0${index + 1} / ${row2.name}`));
       canvas.append(band);
       return band;
     });
@@ -8275,7 +8503,7 @@ ${entry2.node.fullLabel}` : ""}`;
     }
     canvas.append(svg);
     function nodeCard(node4, graph) {
-      const card = button6("", graph ? `arm-node arm-kind-${node4.kind}${node4.contextual ? " arm-contextual" : ""}` : "arm-list-node", () => open2(node4.id));
+      const card = button7("", graph ? `arm-node arm-kind-${node4.kind}${node4.contextual ? " arm-contextual" : ""}` : "arm-list-node", () => open2(node4.id));
       card.dataset.node = node4.id;
       card.dataset.stage = String(node4.row);
       const row2 = data.rows[node4.row];
@@ -8283,11 +8511,11 @@ ${entry2.node.fullLabel}` : ""}`;
       card.style.setProperty("--arm-stage-soft", row2?.bg || "#edf4ff");
       card.setAttribute("aria-label", `${row2?.name || "专题"}：${node4.label}，打开详情`);
       card.setAttribute("aria-haspopup", "dialog");
-      card.append(element3("strong", "", node4.label));
+      card.append(element4("strong", "", node4.label));
       const sub = node4.sub || (node4.id === "g" ? "表达与实现" : node4.id === "ds" ? "容器与常用接口" : node4.id === "ssr" ? "状态与转移" : "");
-      if (!graph || sub) card.append(element3("small", "", graph ? sub : node4.detail[0]));
-      if (graph && node4.contextual) card.append(element3("span", "arm-context-badge", "遇到再学"));
-      if (graph) card.append(element3("span", "arm-open-icon", "↗"));
+      if (!graph || sub) card.append(element4("small", "", graph ? sub : node4.detail[0]));
+      if (graph && node4.contextual) card.append(element4("span", "arm-context-badge", "遇到再学"));
+      if (graph) card.append(element4("span", "arm-open-icon", "↗"));
       card.addEventListener("pointerenter", () => {
         hovered = node4.id;
         paint();
@@ -8317,46 +8545,46 @@ ${entry2.node.fullLabel}` : ""}`;
     }
     space.append(canvas);
     scroll.append(space);
-    const list = element3("div", "arm-list");
+    const list = element4("div", "arm-list");
     list.hidden = true;
     data.rows.forEach((row2, index) => {
-      const section = element3("section", "arm-list-stage");
+      const section = element4("section", "arm-list-stage");
       section.dataset.stage = String(index);
       section.style.setProperty("--arm-stage", row2.color);
-      section.append(element3("h3", "", row2.name), element3("p", "", data.goals[index] || ""));
-      const group = element3("div", "arm-list-nodes");
+      section.append(element4("h3", "", row2.name), element4("p", "", data.goals[index] || ""));
+      const group = element4("div", "arm-list-nodes");
       data.nodes.filter((node4) => node4.row === index).forEach((node4) => group.append(nodeCard(node4, false)));
       section.append(group);
       list.append(section);
     });
-    const empty = element3("p", "arm-empty", "没有找到对应知识，试试其他名称或关键词。");
+    const empty = element4("p", "arm-empty", "没有找到对应知识，试试其他名称或关键词。");
     empty.hidden = true;
     empty.setAttribute("role", "status");
     panel.append(captionRow, scroll, list, empty);
     root2.append(panel);
-    const insight = element3("div", "arm-insight");
-    const insightCopy = element3("p", "arm-insight-copy", "选一个节点，查看它的知识范围与前后联系。");
-    const insightOpen = button6("查看节点详情", "arm-insight-open", () => {
+    const insight = element4("div", "arm-insight");
+    const insightCopy = element4("p", "arm-insight-copy", "选一个节点，查看它的知识范围与前后联系。");
+    const insightOpen = button7("查看节点详情", "arm-insight-open", () => {
       if (selected2) open2(selected2);
     });
     insightOpen.hidden = true;
     insight.append(insightCopy, insightOpen);
     root2.append(insight);
     for (const entry2 of data.indexEntries) {
-      const index = element3("section", "arm-topic-index"), text3 = element3("div", "");
-      text3.append(element3("strong", "", entry2.label), element3("p", "", "CDQ 分治、整体二分、莫队与特殊题型，按需要查阅专项索引。"));
-      const action2 = button6("查看专项索引 →", "arm-index-button", () => open2(entry2.id));
-      action2.dataset.node = entry2.id;
-      index.append(text3, action2);
+      const index = element4("section", "arm-topic-index"), text3 = element4("div", "");
+      text3.append(element4("strong", "", entry2.label), element4("p", "", "CDQ 分治、整体二分、莫队与特殊题型，按需要查阅专项索引。"));
+      const action3 = button7("查看专项索引 →", "arm-index-button", () => open2(entry2.id));
+      action3.dataset.node = entry2.id;
+      index.append(text3, action3);
       root2.append(index);
     }
-    const dialog3 = element3("dialog", "arm-detail-dialog");
+    const dialog3 = element4("dialog", "arm-detail-dialog");
     dialog3.setAttribute("aria-labelledby", `${uid}-detail-title`);
-    const dialogHeader = element3("div", "arm-dialog-header"), breadcrumb = element3("span", "arm-breadcrumb");
-    const close = button6("关闭 ×", "arm-close-button", () => dialog3.close());
+    const dialogHeader = element4("div", "arm-dialog-header"), breadcrumb = element4("span", "arm-breadcrumb");
+    const close = button7("关闭 ×", "arm-close-button", () => dialog3.close());
     close.setAttribute("aria-label", "关闭节点详情");
     dialogHeader.append(breadcrumb, close);
-    const detailBody = element3("div", "arm-detail-body");
+    const detailBody = element4("div", "arm-detail-body");
     dialog3.append(dialogHeader, detailBody);
     root2.append(dialog3);
     dialog3.addEventListener("close", () => {
@@ -8407,69 +8635,93 @@ ${entry2.node.fullLabel}` : ""}`;
       insightCopy.textContent = current ? `${current.label} · ${current.detail[0]}` : bookmark ? `当前关注：${bookmark.label}。可以随时沿相关基础回补，或选择其他分支。` : "选一个节点，查看它的知识范围与前后联系。";
       insightOpen.hidden = !current;
     }
-    function detailSection(title, entries) {
-      const section = element3("section", "arm-detail-section");
-      section.append(element3("h3", "", title));
-      const list2 = element3("ul", "");
-      entries.forEach((text3) => list2.append(element3("li", "", text3)));
-      section.append(list2);
-      return section;
-    }
-    function relationGroup(title, ids, parent) {
-      if (!ids.length) return;
-      const group = element3("div", "arm-relation-group");
-      group.append(element3("p", "", title));
-      for (const id of ids) {
-        const node4 = byId.get(id);
-        if (!node4) continue;
-        const action2 = button6(node4.label, "arm-relation-button", () => open2(id));
-        action2.dataset.node = id;
-        group.append(action2);
-      }
-      parent.append(group);
-    }
+    const introductions = /* @__PURE__ */ new Map();
     function renderDetail(node4) {
       detailBody.replaceChildren();
       const row2 = data.rows[node4.row];
-      breadcrumb.textContent = `四层大纲 / ${row2?.name || "专项索引"} / ${node4.label}`;
-      const pill = element3("span", "arm-stage-pill", row2?.name || "专项索引");
-      pill.style.setProperty("--arm-stage", row2?.color || "#4778be");
-      const title = element3("h2", "arm-detail-title", node4.label);
+      breadcrumb.textContent = `四层大纲 / ${row2?.name || "专项索引"} / 目录`;
+      const title = element4("h2", "arm-detail-title", node4.label);
       title.id = `${uid}-detail-title`;
-      detailBody.append(pill, title, element3("p", "arm-detail-tagline", node4.detail[0]), element3("p", "arm-dialog-intro", node4.detail[1]));
-      const layout = element3("div", "arm-detail-layout"), left = element3("div", ""), right = element3("aside", "");
-      left.append(detailSection("重点知识范围", node4.detail[2]), detailSection("理解时注意", node4.detail[3]));
-      const relations = element3("section", "arm-detail-section");
-      relations.append(element3("h3", "", "在框架中的联系"));
-      relationGroup("相关基础", data.edges.filter((edge) => edge.to === node4.id && !edge.bidir).map((edge) => edge.from), relations);
-      relationGroup("可以延伸到", data.edges.filter((edge) => edge.from === node4.id && !edge.bidir).map((edge) => edge.to), relations);
-      relationGroup("适合对照理解", data.edges.filter((edge) => edge.bidir && (edge.from === node4.id || edge.to === node4.id)).map((edge) => edge.from === node4.id ? edge.to : edge.from), relations);
-      if (!relations.querySelector(".arm-relation-group")) relations.append(element3("p", "arm-fine-print", "按当前问题需要查阅，相关方法可结合各分支理解。"));
-      const practice = element3("section", "arm-practice-box");
-      practice.append(element3("h3", "", "可选应用 / 混练建议"), element3("p", "", node4.detail[4]));
-      right.append(relations, practice);
-      layout.append(left, right);
-      detailBody.append(layout);
-      const extra = element3("details", "arm-detail-extra");
-      extra.append(element3("summary", "", "怎样使用这个节点定位自己？"), element3("p", "", "阶段表示内容展开的大致层次。可以在不同分支处于不同位置；看到题目有需要或有兴趣时，也可以先进入，再从相关基础回补。"));
-      detailBody.append(extra);
-      const actions = element3("div", "arm-detail-actions");
-      const focusButton = button6(position === node4.id ? "取消当前关注" : "标记当前关注", "arm-focus-button", () => {
-        void saveFocus(node4);
-      });
-      focusButton.setAttribute("aria-pressed", String(position === node4.id));
-      focusButton.disabled = pending2 || !options.onFocus;
-      const resources = button6("查看相关笔记与题单", "arm-resources-button", () => {
+      detailBody.append(title);
+      const introduction = element4("section", "arm-directory-introduction");
+      const heading2 = element4("div", "arm-directory-heading");
+      heading2.append(element4("h3", "", "简介"));
+      const markdown = introductions.get(node4.id) ?? options.getIntroduction?.(node4) ?? roadmapIntroduction(node4);
+      const body = element4("div", "markdown-body arm-directory-markdown");
+      if (options.renderMarkdown) options.renderMarkdown(body, markdown);
+      else body.textContent = markdown;
+      introduction.append(heading2, body);
+      detailBody.append(introduction);
+      if (options.canManage && options.onSaveIntroduction) heading2.append(button7("编辑简介", "arm-edit-introduction", () => {
+        const form = element4("form", "arm-introduction-form"), input2 = element4("textarea", "arm-introduction-input");
+        input2.name = "introduction";
+        input2.rows = 12;
+        input2.value = markdown;
+        input2.setAttribute("aria-label", "目录简介（Markdown）");
+        const error2 = element4("p", "arm-focus-error");
+        error2.hidden = true;
+        error2.setAttribute("role", "alert");
+        const actions2 = element4("div", "arm-resource-actions");
+        const cancel = button7("取消", "", () => renderDetail(node4)), save = element4("button", "arm-button", "保存简介");
+        save.type = "submit";
+        actions2.append(cancel, save);
+        form.append(input2, error2, actions2);
+        introduction.replaceChildren(form);
+        form.addEventListener("submit", async (event) => {
+          event.preventDefault();
+          if (save.disabled) return;
+          if (!input2.value.trim() || input2.value.length > 6e3) {
+            error2.textContent = "简介须为1–6000字。";
+            error2.hidden = false;
+            return;
+          }
+          input2.disabled = cancel.disabled = save.disabled = true;
+          const isCurrentEditor = () => !destroyed && dialog3.open && detailNode?.id === node4.id && form.isConnected;
+          try {
+            await options.onSaveIntroduction(node4.id, input2.value);
+            introductions.set(node4.id, input2.value);
+            if (isCurrentEditor()) renderDetail(node4);
+          } catch (cause) {
+            if (isCurrentEditor()) {
+              error2.textContent = cause instanceof Error ? cause.message : "简介保存失败，请重试。";
+              error2.hidden = false;
+              input2.disabled = cancel.disabled = save.disabled = false;
+            }
+          }
+        });
+        input2.focus();
+      }));
+      const choices = element4("section", "arm-leaf-choices");
+      choices.append(element4("h3", "", "知识点"));
+      const links = element4("div", "arm-resource-links");
+      for (const leaf of options.tree ? roadmapLeaves(options.tree, node4) : []) {
+        const action3 = button7(leaf.label, "arm-leaf-link", () => {
+          dialog3.close();
+          options.onOpenLeaf?.(leaf.id);
+        });
+        action3.dataset.topicId = leaf.id;
+        links.append(action3);
+      }
+      if (links.childElementCount) choices.append(links);
+      else choices.append(element4("p", "arm-fine-print", "暂无可浏览的知识点。"));
+      detailBody.append(choices);
+      const actions = element4("div", "arm-detail-actions");
+      if (options.onOpenResources) actions.append(button7("浏览知识点", "arm-resources-button", () => {
         dialog3.close();
         options.onOpenResources?.(node4);
-      });
-      resources.disabled = !options.onOpenResources;
-      actions.append(focusButton, resources);
-      detailBody.append(actions);
-      const error = element3("p", "arm-focus-error");
-      error.setAttribute("role", "alert");
+      }));
+      if (options.onFocus) {
+        const focus = button7(position === node4.id ? "取消当前关注" : "设为当前关注", "arm-focus-button", () => {
+          void saveFocus(node4);
+        });
+        focus.disabled = pending2;
+        focus.setAttribute("aria-pressed", String(position === node4.id));
+        actions.append(focus);
+      }
+      const error = element4("p", "arm-focus-error");
       error.hidden = true;
-      detailBody.append(error);
+      error.setAttribute("role", "alert");
+      detailBody.append(actions, error);
     }
     async function saveFocus(node4) {
       if (pending2 || destroyed || !options.onFocus) return;
@@ -8486,19 +8738,19 @@ ${entry2.node.fullLabel}` : ""}`;
           position = before;
           paint();
           if (detailNode) renderDetail(detailNode);
-          const message2 = error instanceof Error ? error.message : "当前关注保存失败，请重试。";
+          const message = error instanceof Error ? error.message : "当前关注保存失败，请重试。";
           const errorNode = detailBody.querySelector(".arm-focus-error");
           if (errorNode) {
-            errorNode.textContent = message2;
+            errorNode.textContent = message;
             errorNode.hidden = false;
           }
-          options.toast?.(message2);
+          options.toast?.(message);
         }
       } finally {
         pending2 = false;
         if (!destroyed) {
-          const action2 = detailBody.querySelector(".arm-focus-button");
-          if (action2) action2.disabled = !options.onFocus;
+          const action3 = detailBody.querySelector(".arm-focus-button");
+          if (action3) action3.disabled = !options.onFocus;
         }
       }
     }
@@ -8544,7 +8796,8 @@ ${entry2.node.fullLabel}` : ""}`;
         return node4 ? open2(node4.id) : false;
       },
       selectTopic(id) {
-        const node4 = [...data.nodes, ...data.indexEntries].find((entry2) => entry2.topicIds?.includes(id));
+        const leafId = options.tree ? resolveAlgorithmLeaf(options.tree, id)?.id : void 0;
+        const node4 = [...data.nodes, ...data.indexEntries].find((entry2) => entry2.topicIds?.includes(id) || leafId && options.tree && roadmapLeaves(options.tree, entry2).some((leaf) => leaf.id === leafId));
         return node4 ? open2(node4.id) : false;
       },
       destroy() {
@@ -10169,58 +10422,33 @@ ${entry2.node.fullLabel}` : ""}`;
     if (text3 !== void 0) n.textContent = text3;
     return n;
   }
-  function button7(text3, cls, action2) {
+  function button8(text3, cls, action3) {
     const b = el2("button", text3, `arm-button ${cls}`);
     b.type = "button";
-    b.addEventListener("click", action2);
+    b.addEventListener("click", action3);
     return b;
   }
-  function fields(value) {
-    return value && typeof value === "object" && !Array.isArray(value) ? value : {};
-  }
-  function safeUrl(value) {
-    if (typeof value !== "string" || value.length > 2e3 || /[\u0000-\u0020\u007f\\]/u.test(value)) return "";
-    try {
-      const url = new URL(value);
-      return ["http:", "https:"].includes(url.protocol) && !url.username && !url.password ? url.href : "";
-    } catch {
-      return "";
-    }
-  }
-  function message(error) {
-    return error instanceof Error ? error.message : "保存失败，请重试";
+  function directoryTree(node4) {
+    return { ...node4, label: node4.label || node4.id, color: node4.color || "parent", children: (node4.children || []).map(directoryTree) };
   }
   function openRoadmapResources(options) {
-    const { host, node: node4 } = options, previous = document.activeElement;
-    const all = (options.curriculum.stages || []).flatMap((s) => s.gates || []), ids = new Set(node4.gateIds || []);
-    const gates = all.filter((g) => ids.has(g.id));
-    const contents = new Map(options.contents.map((c) => [c.gateId, c]));
-    const topics = /* @__PURE__ */ new Map();
-    function walk(n) {
-      topics.set(n.id, n);
-      for (const id of n.legacyIds || []) topics.set(id, n);
-      (n.children || []).forEach(walk);
-    }
-    walk(options.tree);
+    const { host, node: node4 } = options, previous = document.activeElement, tree = directoryTree(options.tree);
+    const allGates = (options.curriculum.stages || []).flatMap((stage) => stage.gates || []);
+    let introduction = options.getIntroduction?.(node4) ?? options.nodeContents?.find((content) => content.nodeId === `roadmap:${node4.id}`)?.introduction ?? roadmapIntroduction(node4);
+    let selected2 = options.topicId ? resolveAlgorithmLeaf(tree, options.topicId) : null;
+    let scope2 = options.scope === "personal" ? "personal" : "public", destroyed = false, busy2 = false;
     const dialog3 = el2("dialog", void 0, "arm-detail-dialog arm-resource-dialog");
-    dialog3.setAttribute("aria-label", `${node4.label}相关资料`);
-    const heading = el2("header", void 0, "arm-dialog-header"), title = el2("h2", `${node4.label} · 相关资料`, "arm-detail-title");
-    const close = button7("×", "arm-resource-close", () => {
+    const heading = el2("header", void 0, "arm-dialog-header"), title = el2("h2", "", "arm-detail-title");
+    const close = button8("关闭 ×", "arm-resource-close", () => {
       if (!busy2) destroy();
     });
-    close.setAttribute("aria-label", "关闭相关资料");
+    close.setAttribute("aria-label", "关闭知识点浏览");
     heading.append(title, close);
     const body = el2("div", void 0, "arm-dialog-body");
     dialog3.append(heading, body);
-    let destroyed = false, busy2 = false;
-    const children = /* @__PURE__ */ new Set();
     function destroy() {
       if (destroyed) return;
       destroyed = true;
-      for (const child of children) {
-        if (child.open) child.close();
-        child.remove();
-      }
       if (dialog3.open) dialog3.close();
       dialog3.remove();
       if (previous instanceof HTMLElement && previous.isConnected) previous.focus({ preventScroll: true });
@@ -10229,194 +10457,132 @@ ${entry2.node.fullLabel}` : ""}`;
       event.preventDefault();
       if (!busy2) destroy();
     });
-    function external2(url) {
-      void options.onExternal(url).catch((error) => {
-        if (!destroyed) {
-          const note = el2("p", message(error), "arm-focus-error");
-          note.setAttribute("role", "alert");
-          body.prepend(note);
-        }
-      });
+    function renderMarkdown(target, markdown) {
+      if (options.renderMarkdown) options.renderMarkdown(target, markdown);
+      else target.textContent = markdown;
     }
-    function openForm(gate, personal) {
-      if (busy2 || !personal && !options.canManage) return;
-      const child = el2("dialog", void 0, `arm-detail-dialog ${personal ? "arm-personal-dialog" : "arm-resource-edit-dialog"}`);
-      child.setAttribute("aria-label", personal ? "我的题单" : "编辑公共资料");
-      const form = el2("form", void 0, personal ? "arm-personal-form" : "arm-resource-form");
-      form.noValidate = true;
-      const formHead = el2("header", void 0, "arm-dialog-header");
-      formHead.append(el2("h2", personal ? "我的题单" : "编辑公共资料", "arm-detail-title"));
-      const cancel = button7("取消", "", () => {
-        if (!busy2) {
-          child.close();
-          child.remove();
-          children.delete(child);
-        }
-      });
-      const formBody = el2("div", void 0, "arm-dialog-body"), error = el2("p", void 0, "arm-focus-error");
-      error.setAttribute("role", "alert");
-      error.hidden = true;
-      const inputs = /* @__PURE__ */ new Map();
-      const content = contents.get(gate.id), record2 = fields(options.progress.gates?.[gate.id]);
-      function field3(name, label, value, area = false) {
-        const wrap = el2("label", void 0, "arm-resource-field"), input2 = area ? el2("textarea") : el2("input");
-        input2.name = name;
-        input2.value = value;
-        if (input2 instanceof HTMLTextAreaElement) {
-          input2.rows = name === "goals" ? 4 : 5;
-          input2.maxLength = 6e3;
-        } else input2.maxLength = name === "practiceTitle" ? 120 : 2e3;
-        wrap.append(el2("span", label), input2);
-        inputs.set(name, input2);
-        formBody.append(wrap);
-      }
-      if (!personal) {
-        field3("description", "相关介绍", content?.description || gate.learningDescription || gate.description || "", true);
-        field3("goals", "核心目标（每行一条）", (content?.goals || gate.goals || []).join("\n"), true);
-        field3("practiceTitle", "官方精选题单名称", content?.practiceList?.title || "");
-      }
-      field3("practiceUrl", personal ? "我的题单链接" : "官方精选题单链接", personal ? String(record2.practiceUrl || "") : content?.practiceList?.url || "");
-      const save = el2("button", personal ? "保存我的题单" : "保存公共资料", "arm-button");
-      save.type = "submit";
-      const actions = el2("div", void 0, "arm-resource-actions");
-      actions.append(cancel, save);
-      formBody.append(error, actions);
-      form.append(formHead, formBody);
-      child.append(form);
-      children.add(child);
-      host.append(child);
-      child.addEventListener("cancel", (event) => {
-        event.preventDefault();
-        if (!busy2) {
-          child.close();
-          child.remove();
-          children.delete(child);
-        }
-      });
-      form.addEventListener("submit", async (event) => {
-        event.preventDefault();
-        if (busy2) return;
-        const value = (name) => inputs.get(name).value.trim();
-        const rawUrl = value("practiceUrl"), url = safeUrl(rawUrl);
+    function renderIntroduction() {
+      const section = el2("section", void 0, "arm-directory-introduction"), row2 = el2("div", void 0, "arm-directory-heading");
+      row2.append(el2("h3", "简介"));
+      const markdown = el2("div", void 0, "markdown-body arm-directory-markdown");
+      renderMarkdown(markdown, introduction);
+      section.append(row2, markdown);
+      if (options.canManage && options.onSaveIntroduction) row2.append(button8("编辑简介", "arm-edit-introduction", () => {
+        const form = el2("form", void 0, "arm-introduction-form"), input2 = el2("textarea", void 0, "arm-introduction-input");
+        input2.name = "introduction";
+        input2.rows = 12;
+        input2.value = introduction;
+        input2.setAttribute("aria-label", "目录简介（Markdown）");
+        const error = el2("p", "", "arm-focus-error");
         error.hidden = true;
-        if (rawUrl && !url) {
-          error.textContent = "请填写有效的 HTTP 或 HTTPS 链接，不能包含凭据。";
-          error.hidden = false;
-          return;
-        }
-        let description = "", goals = [], practiceTitle = "";
-        if (!personal) {
-          description = value("description");
-          goals = value("goals").split(/\r?\n/u).map((x) => x.trim()).filter(Boolean);
-          practiceTitle = value("practiceTitle");
-          if (!description || description.length > 6e3 || !goals.length || goals.length > 20 || goals.some((x) => x.length > 500) || goals.join("\n").length > 6e3) {
-            error.textContent = "介绍须为1–6000字；目标须为1–20条，每条最多500字，总计最多6000字。";
+        error.setAttribute("role", "alert");
+        const cancel = button8("取消", "", render6), save = el2("button", "保存简介", "arm-button");
+        save.type = "submit";
+        const actions = el2("div", void 0, "arm-resource-actions");
+        actions.append(cancel, save);
+        form.append(input2, error, actions);
+        section.replaceChildren(form);
+        input2.focus();
+        form.addEventListener("submit", async (event) => {
+          event.preventDefault();
+          if (busy2) return;
+          if (!input2.value.trim() || input2.value.length > 6e3) {
+            error.textContent = "简介须为1–6000字。";
             error.hidden = false;
             return;
           }
-          if (Boolean(practiceTitle) !== Boolean(url) || practiceTitle.length > 120) {
-            error.textContent = "官方题单名称和链接须同时填写或同时留空，名称最多120字。";
+          busy2 = true;
+          input2.disabled = cancel.disabled = save.disabled = true;
+          try {
+            await options.onSaveIntroduction(node4.id, input2.value);
+            introduction = input2.value;
+            if (!destroyed) render6();
+          } catch (cause) {
+            error.textContent = cause instanceof Error ? cause.message : "简介保存失败，请重试";
             error.hidden = false;
-            return;
+          } finally {
+            busy2 = false;
+            input2.disabled = cancel.disabled = save.disabled = false;
           }
-        }
-        busy2 = true;
-        form.querySelectorAll("input,textarea,button").forEach((n) => {
-          n.disabled = true;
         });
-        try {
-          if (personal) {
-            await options.onPersonal(gate.id, url);
-            options.progress.gates = { ...options.progress.gates || {}, [gate.id]: { ...record2, practiceUrl: url } };
-          } else {
-            const saved = await options.onSaveGate({ gateId: gate.id, description, goals, practiceList: url ? { title: practiceTitle, url } : null, sha: content?.sha || null });
-            contents.set(gate.id, saved);
-          }
-          if (!destroyed) {
-            child.close();
-            child.remove();
-            children.delete(child);
-            render6();
-          }
-        } catch (cause) {
-          if (!destroyed) {
-            error.textContent = message(cause);
-            error.hidden = false;
-          }
-        } finally {
-          busy2 = false;
-          if (!destroyed) form.querySelectorAll("input,textarea,button").forEach((n) => {
-            n.disabled = false;
-          });
-        }
-      });
-      child.showModal();
-      inputs.values().next().value?.focus();
+      }));
+      return section;
     }
     function render6() {
       body.replaceChildren();
-      body.append(el2("p", "围绕这个知识范围查阅笔记和练习；资料来源与个人题单分别保存。", "arm-resource-hint"));
-      if (!gates.length) body.append(el2("p", "当前公共课程中暂无对应资料条目，可先从相关知识点查阅。", "arm-resource-hint"));
-      for (const gate of gates) {
-        const content = contents.get(gate.id), card = el2("section", void 0, "arm-resource-card");
-        card.dataset.gateId = gate.id;
-        card.append(el2("h3", (gate.title || "相关内容").replace(/^混练验收[：:]/u, "练习：")));
-        if (content) {
-          card.append(el2("p", content.description));
-          const goals = el2("ul");
-          content.goals.forEach((goal) => goals.append(el2("li", goal)));
-          card.append(goals);
-        }
-        const links = el2("div", void 0, "arm-resource-links");
-        for (const topicId of gate.topicIds || []) {
-          const topic = topics.get(topicId);
-          if (!topic) continue;
-          const b = button7(topic.label || topic.id, "arm-topic-link", () => {
-            destroy();
-            options.onTopic(topic.id);
-          });
-          b.dataset.topicId = topic.id;
-          links.append(b);
-        }
-        card.append(links);
-        const gateTopics = new Set((gate.topicIds || []).map((id) => topics.get(id)?.id || id));
-        const notes = options.notes.filter((note) => note.noteScope === "public" && gateTopics.has(topics.get(note.nodeId)?.id || note.nodeId)).slice().sort((a, b) => Number(Boolean(b.featured)) - Number(Boolean(a.featured)));
-        for (const note of notes) {
-          const b = button7(note.title || "未命名笔记", `arm-note${note.featured ? " arm-note-featured" : ""}`, () => {
-            destroy();
-            options.onNote(note, gate.id);
-          });
-          b.dataset.noteId = typeof note.id === "string" ? note.id : "";
-          card.append(b);
-        }
-        const official = content?.practiceList || (content ? null : (gate.practiceLists || [])[0]);
-        const officialUrl = safeUrl(official?.url);
-        if (official && officialUrl) card.append(button7(`官方精选题单 · ${official.title} ↗`, "arm-official-list", () => external2(officialUrl)));
-        const record2 = fields(options.progress.gates?.[gate.id]), personalUrl = safeUrl(record2.practiceUrl);
-        if (personalUrl) card.append(button7("我的题单 ↗", "arm-personal-link", () => external2(personalUrl)));
-        const actions = el2("div", void 0, "arm-resource-actions");
-        actions.append(button7(personalUrl ? "编辑我的题单" : "＋ 添加我的题单", "arm-personal-button", () => openForm(gate, true)));
-        if (options.canManage) actions.append(button7("编辑介绍、目标与官方题单", "arm-resource-edit", () => openForm(gate, false)));
-        card.append(actions);
-        body.append(card);
-      }
-      const covered = new Set(gates.flatMap((g) => g.topicIds || []));
-      const extraTopics = (node4.topicIds || []).filter((id) => !covered.has(id));
-      if (extraTopics.length) {
-        const links = el2("div", void 0, "arm-resource-links");
-        extraTopics.forEach((id) => {
-          const topic = topics.get(id);
-          if (topic) {
-            const b = button7(topic.label || topic.id, "arm-topic-link", () => {
-              destroy();
-              options.onTopic(topic.id);
-            });
-            b.dataset.topicId = topic.id;
-            links.append(b);
-          }
+      title.textContent = selected2 ? selected2.label : `${node4.label} · 目录`;
+      dialog3.setAttribute("aria-label", selected2 ? `${selected2.label}知识点` : `${node4.label}目录`);
+      const scopes = el2("nav", void 0, "arm-note-scope");
+      scopes.setAttribute("aria-label", "笔记范围");
+      for (const value of ["public", "personal"]) {
+        const control = button8(value === "public" ? "公开笔记" : "我的笔记", "arm-scope-button", () => {
+          scope2 = value;
+          render6();
         });
-        body.append(links);
+        control.dataset.scope = value;
+        control.setAttribute("aria-pressed", String(value === scope2));
+        scopes.append(control);
       }
+      body.append(scopes);
+      if (!selected2) {
+        body.append(renderIntroduction());
+        const choices = el2("section", void 0, "arm-leaf-choices");
+        choices.append(el2("h3", "知识点"));
+        const links = el2("div", void 0, "arm-resource-links");
+        for (const leaf2 of roadmapLeaves(tree, node4)) {
+          const action3 = button8(leaf2.label, "arm-leaf-link", () => {
+            selected2 = leaf2;
+            dialog3.scrollTop = 0;
+            render6();
+          });
+          action3.dataset.topicId = leaf2.id;
+          links.append(action3);
+        }
+        if (links.childElementCount) choices.append(links);
+        else choices.append(el2("p", "暂无可浏览的知识点。", "arm-fine-print"));
+        body.append(choices);
+        return;
+      }
+      const leaf = selected2;
+      body.append(button8("返回目录", "arm-back-directory", () => {
+        selected2 = null;
+        render6();
+      }));
+      const originals = /* @__PURE__ */ new Map();
+      const notes = options.notes.filter((note) => scope2 === "public" ? note.noteScope === "public" : note.noteScope === "personal" && options.account?.id != null && String(note.authorId) === String(options.account.id)).flatMap((note) => {
+        if (resolveAlgorithmLeaf(tree, note.nodeId)?.id !== leaf.id) return [];
+        const canonical = { ...note, nodeId: leaf.id };
+        originals.set(canonical, note);
+        return [canonical];
+      });
+      const rawContent = options.nodeContents?.find((content2) => content2.nodeId === leaf.id) || options.nodeContents?.find((content2) => resolveAlgorithmLeaf(tree, content2.nodeId)?.id === leaf.id);
+      const content = rawContent ? { ...rawContent, storageNodeId: rawContent.storageNodeId || rawContent.nodeId, nodeId: leaf.id } : null;
+      const gateId = allGates.find((gate) => (gate.topicIds || []).some((id) => resolveAlgorithmLeaf(tree, id)?.id === leaf.id))?.id || "";
+      const reading = renderLeafReading({
+        node: leaf,
+        content,
+        notes,
+        canManage: options.canManage,
+        onSave: options.onSaveNodeContent ? async (input2) => {
+          const saved = await options.onSaveNodeContent(input2);
+          options.nodeContents = [...(options.nodeContents || []).filter((entry2) => resolveAlgorithmLeaf(tree, entry2.nodeId)?.id !== leaf.id), saved];
+          return saved;
+        } : void 0,
+        renderMarkdown: options.renderMarkdown,
+        onRead: (note) => {
+          const original = originals.get(note);
+          if (original) {
+            destroy();
+            options.onNote({ ...original, nodeId: leaf.id }, gateId);
+          }
+        },
+        onUpload: options.onUploadLeaf ? () => {
+          destroy();
+          options.onUploadLeaf(leaf.id);
+        } : void 0
+      });
+      reading.id = `topic-${leaf.id}`;
+      body.append(reading);
     }
     render6();
     host.append(dialog3);
@@ -10471,9 +10637,9 @@ ${entry2.node.fullLabel}` : ""}`;
   // src/renderer/algorithms/workspace.ts
   function createAlgorithmWorkspace(options) {
     const global2 = window;
-    const { getAlgorithmNotes, setAlgorithmNotes, getAlgorithmTopics, setAlgorithmTopics, getAlgorithmTree, setAlgorithmTree, getAccount, getPermissions, getLocal, getBusy, getReadingDetail, accountId, repo, uuid, setBusy, persistLocal, call, render: render6, renderMarkdown, authorName, date, tags, toast, errorMessage } = options;
+    const { getAlgorithmNotes, setAlgorithmNotes, getAlgorithmTopics, setAlgorithmTopics, getAlgorithmTree, setAlgorithmTree, getAccount, getPermissions, getLocal, getBusy, getReadingDetail, accountId, repo, uuid, setBusy, persistLocal, call, render: render6, renderMarkdown, authorName: authorName2, date, tags, toast, errorMessage } = options;
     const $ = (selector) => document.querySelector(selector);
-    function element4(tag, className, text3) {
+    function element5(tag, className, text3) {
       const node4 = document.createElement(tag);
       if (className) node4.className = className;
       if (text3 !== void 0) node4.textContent = String(text3);
@@ -10483,10 +10649,10 @@ ${entry2.node.fullLabel}` : ""}`;
       children.filter(Boolean).forEach((child) => parent.append(child));
       return parent;
     }
-    function button8(label, className, action2) {
-      const node4 = element4("button", className, label);
+    function button10(label, className, action3) {
+      const node4 = element5("button", className, label);
       node4.type = "button";
-      node4.addEventListener("click", action2);
+      node4.addEventListener("click", action3);
       return node4;
     }
     let algorithmSelectedNode = "root";
@@ -10497,6 +10663,27 @@ ${entry2.node.fullLabel}` : ""}`;
     }
     function algorithmNodes() {
       return flattenTree(getAlgorithmTree());
+    }
+    async function saveNodeContent(input2) {
+      if (getBusy()) throw new Error("请等待当前操作完成");
+      if (!getAccount() || getPermissions().admin !== true) throw new Error("只有管理员可以修改简介与精选");
+      const source = options.repoSource(), owner = accountId();
+      setBusy(true);
+      try {
+        const saved = await options.saveAlgorithmNodeContent({ ...input2, repo: repo() });
+        if (source !== options.repoSource() || owner !== accountId()) throw new Error("账号或资料来源已改变，请重新同步");
+        options.setAlgorithmNodeContents([...options.getAlgorithmNodeContents().filter((content) => content.nodeId !== saved.nodeId), saved]);
+        return saved;
+      } finally {
+        setBusy(false);
+      }
+    }
+    async function saveRouteIntroduction(nodeId, introduction) {
+      if (getBusy()) throw new Error("请等待当前操作完成");
+      if (!getAccount() || getPermissions().admin !== true) throw new Error("只有管理员可以修改简介");
+      const target = `roadmap:${nodeId}`;
+      const current = options.getAlgorithmNodeContents().find((item) => item.nodeId === target);
+      await saveNodeContent({ nodeId: target, introduction, featuredNotePaths: [], sha: current?.sha || null });
     }
     let algorithmMode = "tree";
     let algorithmPendingTopic = null;
@@ -10568,19 +10755,54 @@ ${entry2.node.fullLabel}` : ""}`;
       learningController?.destroy();
       learningController = null;
       panel.replaceChildren();
-      const modes = element4("div", "algorithm-view-modes");
+      const modes = element5("div", "algorithm-view-modes");
       modes.setAttribute("role", "group");
       modes.setAttribute("aria-label", "算法学习方式");
       for (const [mode, title] of [["tree", "知识树"], ["path", "学习路线"]]) {
-        const control = button8(title, "button secondary", () => setAlgorithmMode(mode));
+        const control = button10(title, "button secondary", () => setAlgorithmMode(mode));
         control.dataset.mode = mode;
         control.setAttribute("aria-pressed", String(algorithmMode === mode));
         modes.append(control);
       }
       panel.append(modes);
-      const host = element4("div", "algorithm-view-content");
+      const host = element5("div", "algorithm-view-content");
       panel.append(host);
       if (algorithmMode === "path") {
+        let openLeaf2 = function(topicId) {
+          const node4 = [...mapped.nodes, ...mapped.indexEntries].find((item) => (item.topicIds || []).some((id) => resolveAlgorithmLeaf(getAlgorithmTree(), id)?.id === topicId));
+          if (!node4 || !curriculum) return;
+          resources?.destroy();
+          resources = openRoadmapResources({
+            host: host.querySelector(".arm") || host,
+            node: node4,
+            topicId,
+            curriculum,
+            tree: getAlgorithmTree(),
+            notes: getAlgorithmNotes(),
+            contents: options.getLearningGateContents(),
+            progress: structuredClone(learningProgress()),
+            canManage: Boolean(getAccount() && getPermissions().admin === true),
+            nodeContents: options.getAlgorithmNodeContents(),
+            onSaveNodeContent: saveNodeContent,
+            renderMarkdown,
+            scope: panel.dataset.scope === "personal" ? "personal" : "public",
+            account: getAccount(),
+            onSaveGate: async () => {
+              throw new Error("请通过简介编辑入口保存");
+            },
+            onPersonal: async () => {
+            },
+            onTopic: openLearningTopic,
+            onNote: (note, gateId) => openAlgorithmNoteDetail(note, { gateId }),
+            onExternal: options.openExternal,
+            onUploadLeaf: getAccount() && getPermissions().push ? (id) => {
+              algorithmSelectedNode = id;
+              openAlgorithmNoteEditor();
+            } : void 0,
+            onSaveIntroduction: saveRouteIntroduction
+          });
+        };
+        var openLeaf = openLeaf2;
         const curriculum = effectiveCurriculum();
         const mapped = { ...roadmapData, nodes: roadmapData.nodes.map((node4) => ({ ...node4 })), indexEntries: roadmapData.indexEntries.map((node4) => ({ ...node4 })) };
         const allGates = (curriculum?.stages || []).flatMap((stage) => stage.gates || []);
@@ -10588,11 +10810,19 @@ ${entry2.node.fullLabel}` : ""}`;
           const known2 = new Set(node4.topicIds || []);
           const added = allGates.filter((gate) => gate.id.startsWith("custom-") && (gate.topicIds || []).some((id) => known2.has(id)));
           node4.gateIds = [.../* @__PURE__ */ new Set([...node4.gateIds || [], ...added.map((gate) => gate.id)])];
+          node4.topicIds = [.../* @__PURE__ */ new Set([...node4.topicIds || [], ...added.flatMap((gate) => gate.topicIds || [])])];
         }
         learningController = LearningRoadmap.render({
           host,
           data: mapped,
           progress: learningProgress(),
+          tree: getAlgorithmTree(),
+          nodeContents: options.getAlgorithmNodeContents(),
+          renderMarkdown,
+          canManage: Boolean(getAccount() && getPermissions().admin === true),
+          onSaveIntroduction: saveRouteIntroduction,
+          getIntroduction: (node4) => options.getAlgorithmNodeContents().find((item) => item.nodeId === `roadmap:${node4.id}`)?.introduction,
+          onOpenLeaf: openLeaf2,
           onFocus: async (id) => {
             await saveRoadmapProgress({ ...learningProgress(), roadmapFocus: id });
           },
@@ -10609,6 +10839,16 @@ ${entry2.node.fullLabel}` : ""}`;
               progress: structuredClone(learningProgress()),
               contents: options.getLearningGateContents(),
               canManage: Boolean(getAccount() && getPermissions().admin === true),
+              nodeContents: options.getAlgorithmNodeContents(),
+              onSaveNodeContent: saveNodeContent,
+              renderMarkdown,
+              scope: panel.dataset.scope === "personal" ? "personal" : "public",
+              account: getAccount(),
+              onUploadLeaf: getAccount() && getPermissions().push ? (id) => {
+                algorithmSelectedNode = id;
+                openAlgorithmNoteEditor();
+              } : void 0,
+              onSaveIntroduction: saveRouteIntroduction,
               onSaveGate: async (input2) => {
                 if (getBusy()) throw new Error("请等待当前操作完成");
                 if (!getAccount() || getPermissions().admin !== true) throw new Error("只有管理员可以修改公共资料");
@@ -10625,8 +10865,8 @@ ${entry2.node.fullLabel}` : ""}`;
               },
               onPersonal: async (gateId, url) => {
                 const previous = learningProgress(), record2 = previous.gates?.[gateId];
-                const fields2 = record2 && typeof record2 === "object" && !Array.isArray(record2) ? record2 : {};
-                await saveRoadmapProgress({ ...previous, gates: { ...previous.gates || {}, [gateId]: { ...fields2, practiceUrl: url } } });
+                const fields = record2 && typeof record2 === "object" && !Array.isArray(record2) ? record2 : {};
+                await saveRoadmapProgress({ ...previous, gates: { ...previous.gates || {}, [gateId]: { ...fields, practiceUrl: url } } });
               },
               onTopic: openLearningTopic,
               onNote: (note, gateId) => openAlgorithmNoteDetail(note, { gateId }),
@@ -10640,6 +10880,8 @@ ${entry2.node.fullLabel}` : ""}`;
         host,
         tree: getAlgorithmTree(),
         notes: getAlgorithmNotes(),
+        nodeContents: options.getAlgorithmNodeContents(),
+        onSaveNodeContent: saveNodeContent,
         onLearningPath(id) {
           setAlgorithmMode("path");
           learningController?.selectTopic?.(id);
@@ -10665,8 +10907,10 @@ ${entry2.node.fullLabel}` : ""}`;
           openAlgorithmNoteEditor();
         },
         renderMarkdown,
-        authorName,
-        formatDate: date
+        authorName: authorName2,
+        formatDate: date,
+        isFavorite: options.isFavorite,
+        onToggleFavorite: options.onToggleFavorite
       });
       if (algorithmPendingTopic) {
         const id = algorithmPendingTopic;
@@ -10692,7 +10936,7 @@ ${entry2.node.fullLabel}` : ""}`;
       form.elements.parentId.value = parent.id;
       $("#algorithm-topic-parent").textContent = parent.fullLabel || parent.label;
       updateAlgorithmTopicKind();
-      $("#algorithm-topic-kind-hint").textContent = parent.kind === "algorithm" ? "添加子项后，此节点将保留为目录，原算法及难度移入同名子项。目录也可以上传笔记。" : "算法需要选择难度；目录不设置难度，也可以上传笔记。";
+      $("#algorithm-topic-kind-hint").textContent = parent.kind === "algorithm" ? "添加子项后，此节点将保留为目录，原算法及难度移入同名叶子，笔记保存在具体知识点。" : "算法需要选择难度；目录只组织子节点，不保存笔记。";
       $("#algorithm-topic-error").hidden = true;
       algorithmTopicRequest = uuid();
       $("#algorithm-topic-dialog").showModal();
@@ -10724,15 +10968,22 @@ ${entry2.node.fullLabel}` : ""}`;
       return accountId() !== null && String(note.authorId || "") === accountId();
     }
     function openAlgorithmNoteDetail(note, { gateId } = {}) {
-      const holder = element4("div", "alg-browser"), pane = element4("div", "alg-pane");
+      const holder = element5("div", "alg-browser"), pane = element5("div", "alg-pane");
       holder.hidden = true;
-      const article = element4("article", "alg-reading"), title = element4("h2", "alg-reading-title", note.title || "未命名笔记");
-      const meta = element4("div", "alg-note-meta");
-      if (note.featured) meta.append(element4("span", "alg-featured", "精选"));
-      append(meta, element4("span", "alg-note-author", authorName(note.author)), element4("span", "", date(note.updatedAt)));
-      const body = element4("div", "markdown-body alg-markdown");
+      const article = element5("article", "alg-reading"), title = element5("h2", "alg-reading-title", note.title || "未命名笔记");
+      const meta = element5("div", "alg-note-meta");
+      if (note.featured) meta.append(element5("span", "alg-featured", "精选"));
+      append(meta, element5("span", "alg-note-author", authorName2(note.author)), element5("span", "", date(note.updatedAt)));
+      const body = element5("div", "markdown-body alg-markdown");
       renderMarkdown(body, note.body);
-      append(article, title, meta, tags(note), body);
+      append(article, title, meta, tags(note));
+      const favorite = noteFavoriteControl({ note, isFavorite: options.isFavorite, onToggleFavorite: options.onToggleFavorite, onError: (cause) => toast(errorMessage(cause)) });
+      if (favorite) {
+        const actions = element5("div", "reading-detail-actions");
+        actions.append(favorite);
+        article.append(actions);
+      }
+      article.append(body);
       pane.append(article);
       holder.append(pane);
       $("#algorithm-panel").append(holder);
@@ -10762,12 +11013,13 @@ ${entry2.node.fullLabel}` : ""}`;
       const form = $("#algorithm-note-form");
       form.reset();
       const node4 = form.elements.nodeId;
-      node4.replaceChildren(...algorithmNodes().map((n) => {
-        const o = element4("option", "", n.label);
+      node4.replaceChildren(...algorithmNodes().filter(isAlgorithmLeaf).map((n) => {
+        const o = element5("option", "", n.label);
         o.value = n.id;
         return o;
       }));
-      node4.value = algorithmSelectedNode;
+      const selectedLeaf = resolveAlgorithmLeaf(getAlgorithmTree(), algorithmSelectedNode);
+      if (selectedLeaf) node4.value = selectedLeaf.id;
       form.elements.noteScope.value = getPermissions().admin ? "public" : "personal";
       form.elements.noteScope.disabled = !getPermissions().admin;
       $("#algorithm-note-error").hidden = true;
@@ -10800,6 +11052,7 @@ ${entry2.node.fullLabel}` : ""}`;
       setAlgorithmNotes([]);
       options.setLearningGateContents([]);
       options.setLearningCurriculum(null);
+      options.setAlgorithmNodeContents([]);
       setAlgorithmTopics([]);
       setAlgorithmTree(AlgorithmDirectory.hydrate(global2.QMX_ALGORITHM_TREE, []));
     }
@@ -10814,6 +11067,562 @@ ${entry2.node.fullLabel}` : ""}`;
     }, get algorithmTopicRequest() {
       return algorithmTopicRequest;
     }, setSelectedNode, algorithmNodes, learningProgressKey, setAlgorithmMode, openLearningTopic, saveLearningProgress, renderAlgorithmNotes, updateAlgorithmTopicKind, openAlgorithmTopicEditor, isMineNote, openAlgorithmNoteDetail, openAlgorithmNoteEditor, resetRepository };
+  }
+
+  // src/renderer/tricks/workspace.ts
+  function el3(tag, cls = "", text3) {
+    const node4 = document.createElement(tag);
+    node4.className = cls;
+    if (text3 !== void 0) node4.textContent = text3;
+    return node4;
+  }
+  function action2(label, cls, run) {
+    const node4 = el3("button", cls, label);
+    node4.type = "button";
+    node4.addEventListener("click", run);
+    return node4;
+  }
+  function authorName(item) {
+    return item.author.name || item.author.login || "匿名作者";
+  }
+  function sameContext(a, b) {
+    return a.sourceKey === b.sourceKey && a.accountId === b.accountId;
+  }
+  var bytes = (value) => new TextEncoder().encode(value).length;
+  function draftKey(context, path = "new") {
+    return `qmx.trick-draft.v1:${JSON.stringify([context.sourceKey, context.accountId, path])}`;
+  }
+  function readDraft(key) {
+    try {
+      const value = JSON.parse(localStorage.getItem(key) || "null");
+      if (!value || typeof value !== "object") return null;
+      const row2 = value;
+      if (typeof row2.clientId !== "string" || !/^[0-9a-f-]{36}$/i.test(row2.clientId) || typeof row2.baseSha !== "string" || typeof row2.title !== "string" || typeof row2.introduction !== "string" || typeof row2.body !== "string" || bytes(row2.title) > 1e3 || bytes(row2.introduction) > 1e4 || bytes(row2.body) > 1e6) return null;
+      return { clientId: row2.clientId, baseSha: row2.baseSha, title: row2.title, introduction: row2.introduction, body: row2.body };
+    } catch {
+      return null;
+    }
+  }
+  function createTrickWorkspace(options) {
+    const host = options.host;
+    host.classList.remove("section-placeholder");
+    host.classList.add("tricks-workspace");
+    host.setAttribute("aria-label", "Trick 集");
+    let scope2 = "", query = "", selected2 = null, listScroll = 0;
+    let editor2 = null;
+    let list = null;
+    let search = null;
+    function items() {
+      const source = options.getContext().sourceKey;
+      return options.getItems().filter((item) => item.sourceKey === source).slice().sort((a, b) => b.updatedAt.localeCompare(a.updatedAt) || a.path.localeCompare(b.path));
+    }
+    function canEdit(item) {
+      const context = options.getContext();
+      return context.canCreate && (context.admin || String(item.authorId) === context.accountId);
+    }
+    function author(item) {
+      const row2 = el3("span", "trick-author");
+      row2.append(el3("span", "trick-avatar", authorName(item).slice(0, 1)), el3("span", "", authorName(item)));
+      return row2;
+    }
+    function reset() {
+      scope2 = "";
+      query = "";
+      selected2 = null;
+      listScroll = 0;
+    }
+    function closeDetail() {
+      const previous = selected2;
+      selected2 = null;
+      render6();
+      const target = Array.from(host.querySelectorAll(".trick-row")).find((row2) => row2.dataset.path === previous);
+      target?.focus({ preventScroll: true });
+      window.scrollTo({ top: listScroll });
+    }
+    function open2(item) {
+      listScroll = window.scrollY;
+      selected2 = item.path;
+      render6();
+      host.querySelector(".trick-back")?.focus({ preventScroll: true });
+      host.scrollIntoView({ block: "start" });
+    }
+    function showDelete(item) {
+      if (!canEdit(item) || options.getBusy()) return;
+      const context = options.getContext(), dialog3 = el3("dialog", "trick-delete-dialog");
+      dialog3.setAttribute("aria-label", "删除 Trick");
+      const heading = el3("h2", "", "删除 Trick？");
+      const message = el3("p", "", `将从 ${context.repo} 删除「${item.title}」，同步后队员也将不再看到它。`);
+      const error = el3("p", "form-error");
+      error.hidden = true;
+      error.setAttribute("role", "alert");
+      let saving = false;
+      const close = () => {
+        if (!saving) {
+          dialog3.close();
+          dialog3.remove();
+          host.querySelector(".trick-delete")?.focus();
+        }
+      };
+      const controls = el3("div", "trick-form-actions");
+      controls.append(action2("取消", "button secondary", close));
+      const confirm = action2("确认删除", "button danger", () => {
+        void (async () => {
+          if (saving || options.getBusy()) return;
+          if (!sameContext(context, options.getContext()) || !canEdit(item)) {
+            error.textContent = "账号或资料库已变化，请关闭后重试。";
+            error.hidden = false;
+            return;
+          }
+          saving = true;
+          options.setBusy(true);
+          error.hidden = true;
+          controls.querySelectorAll("button").forEach((node4) => {
+            node4.disabled = true;
+          });
+          try {
+            await options.remove({ repo: context.repo, sourceKey: context.sourceKey, path: item.path, sha: item.sha });
+            if (sameContext(context, options.getContext())) {
+              options.setItems(options.getItems().filter((row2) => row2.path !== item.path));
+              selected2 = null;
+            }
+            saving = false;
+            close();
+            render6();
+            options.toast("Trick 已删除");
+          } catch (cause) {
+            error.textContent = options.errorMessage(cause);
+            error.hidden = false;
+          } finally {
+            saving = false;
+            options.setBusy(false);
+            controls.querySelectorAll("button").forEach((node4) => {
+              node4.disabled = false;
+            });
+          }
+        })();
+      });
+      controls.append(confirm);
+      dialog3.append(heading, message, error, controls);
+      document.body.append(dialog3);
+      dialog3.addEventListener("cancel", (event) => {
+        event.preventDefault();
+        close();
+      });
+      dialog3.showModal();
+    }
+    function edit(item) {
+      const context = options.getContext();
+      if (options.getBusy() || editor2?.open || !context.canCreate || item && !canEdit(item)) return;
+      const previousFocus = document.activeElement, dialog3 = el3("dialog", "trick-editor");
+      editor2 = dialog3;
+      const key = draftKey(context, item?.path), draft = readDraft(key);
+      const clientId = item?.clientId || draft?.clientId || crypto.randomUUID();
+      let baseSha = draft?.baseSha ?? item?.sha ?? "";
+      const staleDraft = !!item && !!draft && draft.baseSha !== item.sha;
+      dialog3.setAttribute("aria-label", item ? "编辑 Trick" : "新增 Trick");
+      const form = el3("form", "trick-form");
+      form.noValidate = true;
+      const heading = el3("div", "trick-editor-heading");
+      heading.append(el3("h2", "", item ? "编辑 Trick" : "新增 Trick"));
+      let saving = false;
+      const close = (keepDraft = true) => {
+        if (saving) return;
+        if (keepDraft && !storeDraft()) return;
+        dialog3.close();
+        dialog3.remove();
+        editor2 = null;
+        if (previousFocus instanceof HTMLElement && previousFocus.isConnected) previousFocus.focus({ preventScroll: true });
+      };
+      heading.append(action2("×", "icon-button", () => close()));
+      heading.lastElementChild?.setAttribute("aria-label", "关闭编辑");
+      const destination = el3("p", "trick-editor-destination", `共享到 ${context.repo} · 作者：${item ? authorName(item) : context.displayName}`);
+      function field3(label, control) {
+        const row2 = el3("label", "field");
+        row2.append(el3("span", "", label), control);
+        return row2;
+      }
+      const title = el3("input");
+      title.name = "title";
+      title.maxLength = 180;
+      title.required = true;
+      title.value = draft?.title ?? item?.title ?? "";
+      title.placeholder = "用一句话说清这个技巧";
+      const intro = el3("textarea");
+      intro.name = "introduction";
+      intro.rows = 2;
+      intro.maxLength = 2e3;
+      intro.required = true;
+      intro.value = draft?.introduction ?? item?.introduction ?? "";
+      intro.placeholder = "列表里展示的简短说明";
+      const body = el3("textarea");
+      body.name = "body";
+      body.rows = 14;
+      body.required = true;
+      body.value = draft?.body ?? item?.body ?? "";
+      body.placeholder = "支持 Markdown、代码块和公式。写下关键观察、适用条件与示例。";
+      const bodyHeading = el3("div", "trick-body-heading");
+      bodyHeading.append(el3("span", "", "具体内容 · Markdown"));
+      const previewToggle = action2("预览", "button subtle", () => {
+        preview.hidden = !preview.hidden;
+        body.hidden = !preview.hidden;
+        previewToggle.textContent = preview.hidden ? "预览" : "继续编辑";
+        if (!preview.hidden) options.renderMarkdown(preview, body.value);
+      });
+      bodyHeading.append(previewToggle);
+      const preview = el3("div", "markdown-body trick-editor-preview");
+      preview.hidden = true;
+      const bodyField = el3("section", "trick-body-field");
+      body.setAttribute("aria-label", "具体内容");
+      bodyField.append(bodyHeading, body, preview);
+      const error = el3("p", "form-error");
+      error.hidden = true;
+      error.setAttribute("role", "alert");
+      const draftNotice = el3("section", "trick-draft-notice");
+      draftNotice.hidden = !draft;
+      draftNotice.append(el3("p", "", staleDraft ? "已恢复本机草稿，但远端版本已更新。请先对照最新内容，再确认使用草稿保存。" : "已恢复本机草稿。关闭编辑会保留输入，仅在发布成功或主动丢弃后清除。"));
+      const acceptLatest = el3("input");
+      acceptLatest.type = "checkbox";
+      acceptLatest.setAttribute("aria-label", "已核对最新远端，使用草稿保存");
+      if (staleDraft && item) {
+        const compare = el3("details"), summary = el3("summary", "", "查看最新远端内容"), latest = el3("pre", "trick-conflict-latest", `${item.title}
+
+${item.introduction}
+
+${item.body}`);
+        compare.append(summary, latest);
+        const consent = el3("label", "checkbox-field");
+        consent.append(acceptLatest, el3("span", "", "已核对最新远端，使用草稿保存"));
+        draftNotice.append(compare, consent);
+      }
+      const controls = el3("div", "trick-form-actions"), cancel = action2("保存草稿并关闭", "button secondary", () => close()), submit = el3("button", "button primary", item ? "保存修改" : "发布 Trick");
+      submit.type = "submit";
+      controls.append(action2("丢弃草稿", "button subtle", () => {
+        try {
+          localStorage.removeItem(key);
+        } catch {
+        }
+        close(false);
+      }), cancel, submit);
+      function storeDraft() {
+        if (bytes(title.value) > 1e3 || bytes(intro.value) > 1e4 || bytes(body.value) > 1e6) {
+          error.textContent = "内容超过草稿保存上限，请先缩短或复制到其他位置。当前编辑仍保留，不能直接保存草稿关闭。";
+          error.hidden = false;
+          return false;
+        }
+        try {
+          localStorage.setItem(key, JSON.stringify({ clientId, baseSha, title: title.value, introduction: intro.value, body: body.value }));
+          return true;
+        } catch {
+          error.textContent = "本机草稿存储不可用，请复制内容后再丢弃关闭。";
+          error.hidden = false;
+          return false;
+        }
+      }
+      form.addEventListener("input", storeDraft);
+      form.append(heading, destination, draftNotice, field3("标题", title), field3("简介", intro), bodyField, error, controls);
+      dialog3.append(form);
+      document.body.append(dialog3);
+      dialog3.addEventListener("cancel", (event) => {
+        event.preventDefault();
+        close();
+      });
+      form.addEventListener("submit", (event) => {
+        event.preventDefault();
+        void (async () => {
+          if (saving || options.getBusy()) return;
+          const input2 = { title: title.value.trim(), introduction: intro.value.trim(), body: body.value };
+          let problem = "";
+          if (!sameContext(context, options.getContext()) || !options.getContext().canCreate) problem = "账号或资料库已变化，草稿仍保留，请复制后重新打开。";
+          else if (staleDraft && !acceptLatest.checked) problem = "远端版本已变化，请先核对最新内容并勾选确认。";
+          else if (!input2.title || !input2.introduction || !input2.body.trim()) problem = "请填写标题、简介和具体内容。";
+          else if (bytes(input2.title) > 600 || bytes(input2.introduction) > 6e3) problem = "标题最多 600 字节，简介最多 6000 字节。";
+          else if (bytes(input2.body) > 1e6) problem = "具体内容最多 1000000 字节。";
+          if (problem) {
+            error.textContent = problem;
+            error.hidden = false;
+            return;
+          }
+          if (staleDraft && acceptLatest.checked && item) baseSha = item.sha;
+          if (!storeDraft()) return;
+          saving = true;
+          options.setBusy(true);
+          error.hidden = true;
+          form.querySelectorAll("input,textarea,button").forEach((node4) => {
+            node4.disabled = true;
+          });
+          try {
+            const saved = await options.save({ ...input2, clientId, repo: context.repo, sourceKey: context.sourceKey, ...item ? { path: item.path, sha: baseSha } : {} });
+            if (sameContext(context, options.getContext())) {
+              options.setItems([saved, ...options.getItems().filter((row2) => row2.path !== saved.path)]);
+              selected2 = saved.path;
+            }
+            try {
+              localStorage.removeItem(key);
+            } catch {
+            }
+            saving = false;
+            close(false);
+            render6();
+            options.toast(item ? "Trick 已更新" : "Trick 已发布");
+          } catch (cause) {
+            error.textContent = options.errorMessage(cause);
+            error.hidden = false;
+          } finally {
+            saving = false;
+            options.setBusy(false);
+            form.querySelectorAll("input,textarea,button").forEach((node4) => {
+              node4.disabled = false;
+            });
+          }
+        })();
+      });
+      dialog3.showModal();
+      title.focus();
+    }
+    function renderRows() {
+      if (!list) return;
+      list.replaceChildren();
+      const value = query.trim().toLocaleLowerCase();
+      const all = items(), visible = all.filter((item) => `${item.title} ${authorName(item)} ${item.introduction}`.toLocaleLowerCase().includes(value));
+      const count3 = host.querySelector(".tricks-count");
+      if (count3) count3.textContent = value ? `${visible.length} / ${all.length} 条` : `${all.length} 条`;
+      if (!visible.length) {
+        const empty = el3("div", "tricks-empty");
+        empty.append(el3("h3", "", value ? "没有匹配的 Trick" : "还没有 Trick"), el3("p", "", value ? "试试其他标题、作者或简介关键词。" : "把解题时的一个小观察，整理成队友也能读懂的技巧。"));
+        if (!value && !options.getContext().canCreate) empty.append(el3("p", "", "同步当前资料库，或使用有写入权限的 GitHub 账号发布。"));
+        list.append(empty);
+        return;
+      }
+      const head = el3("div", "tricks-columns");
+      head.setAttribute("aria-hidden", "true");
+      ["#", "标题", "作者", "简介", ""].forEach((label) => head.append(el3("span", "", label)));
+      list.append(head);
+      const rows = el3("ul", "tricks-directory");
+      visible.forEach((item, index) => {
+        const li = el3("li"), row2 = action2("", "trick-row", () => open2(item));
+        row2.dataset.path = item.path;
+        row2.setAttribute("aria-label", `打开 ${item.title}，作者 ${authorName(item)}`);
+        const title = el3("span", "trick-row-title", item.title);
+        title.title = item.title;
+        const intro = el3("span", "trick-row-intro", item.introduction);
+        intro.title = item.introduction;
+        row2.append(el3("span", "trick-row-number", String(index + 1).padStart(2, "0")), title, author(item), intro, el3("span", "trick-row-arrow", "↗"));
+        li.append(row2);
+        rows.append(li);
+      });
+      list.append(rows);
+    }
+    function render6() {
+      const context = options.getContext(), identity2 = `${context.sourceKey}|${context.accountId || ""}`;
+      if (scope2 !== identity2) {
+        scope2 = identity2;
+        query = "";
+        selected2 = null;
+      }
+      host.replaceChildren();
+      list = null;
+      search = null;
+      const item = selected2 ? items().find((row2) => row2.path === selected2) : void 0;
+      if (item) {
+        const reader = el3("article", "trick-reader"), top = el3("div", "trick-reader-top");
+        top.append(action2("← 返回 Trick 集", "button subtle trick-back", closeDetail));
+        if (options.isFavorite && options.onToggleFavorite) {
+          const star = action2(options.isFavorite(item) ? "★ 已收藏" : "☆ 收藏", "button secondary trick-favorite", () => {
+            if (options.getBusy()) return;
+            void options.onToggleFavorite(item).then(() => {
+              star.textContent = options.isFavorite(item) ? "★ 已收藏" : "☆ 收藏";
+              star.setAttribute("aria-pressed", String(options.isFavorite(item)));
+            }).catch((cause) => options.toast(options.errorMessage(cause)));
+          });
+          star.setAttribute("aria-pressed", String(options.isFavorite(item)));
+          top.append(star);
+        }
+        if (canEdit(item)) {
+          const controls = el3("div", "trick-reader-actions");
+          controls.append(action2("编辑", "button secondary trick-edit", () => edit(item)), action2("删除", "button subtle trick-delete", () => showDelete(item)));
+          top.append(controls);
+        }
+        const intro = el3("p", "trick-reader-intro", item.introduction), body = el3("div", "markdown-body trick-content");
+        options.renderMarkdown(body, item.body);
+        reader.append(top, el3("h2", "trick-reader-title", item.title), author(item), intro, body);
+        host.append(reader);
+        return;
+      }
+      selected2 = null;
+      const toolbar = el3("div", "tricks-toolbar");
+      const label = el3("label", "tricks-search");
+      label.append(el3("span", "", "⌕"));
+      search = el3("input");
+      search.type = "search";
+      search.placeholder = "搜索标题、作者或简介";
+      search.setAttribute("aria-label", "搜索 Trick");
+      search.value = query;
+      search.addEventListener("input", () => {
+        query = search?.value || "";
+        renderRows();
+      });
+      label.append(search);
+      toolbar.append(label, el3("span", "tricks-count"));
+      if (context.canCreate) toolbar.append(action2("＋ 新增 Trick", "button primary trick-create", () => edit()));
+      host.append(toolbar);
+      list = el3("div", "tricks-list");
+      host.append(list);
+      renderRows();
+    }
+    return { render: render6, reset, openEditor: () => edit(), isReading: () => selected2 !== null, closeDetail, focusSearch: () => search?.focus(), hasEditor: () => editor2?.open === true };
+  }
+
+  // src/renderer/favorites/workspace.ts
+  var labels = { solution: "题解", trick: "Trick", algorithm: "算法笔记" };
+  function el4(tag, cls = "", text3) {
+    const n = document.createElement(tag);
+    n.className = cls;
+    if (text3 !== void 0) n.textContent = text3;
+    return n;
+  }
+  function button9(label, cls, run) {
+    const n = el4("button", cls, label);
+    n.type = "button";
+    n.addEventListener("click", run);
+    return n;
+  }
+  function createFavoritesWorkspace(options) {
+    const host = options.host;
+    let context = "", query = "", type = "all", selected2 = null, scroll = 0;
+    function reset() {
+      query = "";
+      type = "all";
+      selected2 = null;
+      context = "";
+    }
+    function back() {
+      const previous = selected2;
+      selected2 = null;
+      render6();
+      Array.from(host.querySelectorAll(".favorite-open")).find((n) => n.dataset.key === previous)?.focus({ preventScroll: true });
+      window.scrollTo({ top: scroll });
+    }
+    function open2(entry2) {
+      scroll = window.scrollY;
+      selected2 = entry2.key;
+      render6();
+      host.querySelector(".favorite-back")?.focus({ preventScroll: true });
+      host.scrollIntoView({ block: "start" });
+    }
+    function render6() {
+      const current = options.getContext();
+      if (context !== current) {
+        context = current;
+        selected2 = null;
+        query = "";
+        type = "all";
+      }
+      host.replaceChildren();
+      const entries = options.getEntries();
+      const entry2 = selected2 ? entries.find((e) => e.key === selected2) : void 0;
+      if (entry2) {
+        const article = el4("article", "favorite-reader"), top = el4("div", "favorite-reader-top");
+        top.append(button9("← 返回个人收藏", "button secondary favorite-back", back));
+        article.append(top);
+        host.append(article);
+        if (entry2.type === "solution") {
+          const mount = el4("section", "favorite-solution-reader");
+          article.append(mount);
+          options.renderSolution(entry2.record, mount);
+          return;
+        }
+        const star = button9("★ 已收藏", "button secondary favorite-toggle", () => {
+          void options.toggle(entry2.record).then(() => {
+            star.textContent = options.isFavorite(entry2.record) ? "★ 已收藏" : "☆ 收藏";
+            star.setAttribute("aria-pressed", String(options.isFavorite(entry2.record)));
+          }).catch((e) => options.toast(options.errorMessage(e)));
+        });
+        star.setAttribute("aria-pressed", "true");
+        top.append(star);
+        article.append(el4("span", "favorite-kind", labels[entry2.type]), el4("h2", "favorite-reader-title", entry2.record.title || "未命名内容"), el4("p", "favorite-reader-meta", `${options.authorName(entry2.record.author)} · ${options.date(entry2.record.updatedAt)}`));
+        if (typeof entry2.record.introduction === "string") article.append(el4("p", "favorite-reader-intro", entry2.record.introduction));
+        const body = el4("div", "markdown-body favorite-body");
+        options.renderMarkdown(body, entry2.record.body);
+        article.append(body);
+        return;
+      }
+      selected2 = null;
+      const tools = el4("div", "favorites-tools"), search = el4("input", "favorites-search");
+      search.type = "search";
+      search.placeholder = "搜索标题、作者、标签或简介";
+      search.setAttribute("aria-label", "搜索个人收藏");
+      search.value = query;
+      const tabs = el4("div", "favorites-types");
+      tabs.setAttribute("role", "group");
+      tabs.setAttribute("aria-label", "收藏类型");
+      const counts = /* @__PURE__ */ new Map([["all", entries.length]]);
+      for (const e of entries) counts.set(e.type, (counts.get(e.type) || 0) + 1);
+      for (const [key, label] of [["all", "全部"], ...Object.entries(labels)]) {
+        const control = button9(`${label} ${counts.get(key) || 0}`, "favorite-type", () => {
+          type = key;
+          render6();
+        });
+        control.dataset.type = key;
+        control.setAttribute("aria-pressed", String(type === key));
+        tabs.append(control);
+      }
+      tools.append(search, tabs);
+      host.append(tools);
+      const list = el4("div", "favorites-list");
+      host.append(list);
+      function rows() {
+        list.replaceChildren();
+        const needle = query.toLocaleLowerCase().trim();
+        const visible = entries.filter((e) => (type === "all" || e.type === type) && `${e.record.title || ""} ${options.authorName(e.record.author)} ${(e.record.tags || []).join(" ")} ${String(e.record.introduction || "")}`.toLocaleLowerCase().includes(needle));
+        const count3 = el4("div", "favorites-result-count", `${visible.length} 条收藏`);
+        list.append(count3);
+        if (!visible.length) {
+          const empty = el4("div", "favorites-empty");
+          empty.append(el4("h3", "", entries.length ? "没有匹配的收藏" : "收藏值得再读的内容"), el4("p", "", entries.length ? "换一个关键词或内容类型试试。" : "在题解、Trick 或算法笔记阅读页点击「收藏」，便可在这里统一查看。"));
+          list.append(empty);
+          return;
+        }
+        const heading = el4("div", "favorites-columns");
+        ["类型", "标题", "作者", "更新"].forEach((t) => heading.append(el4("span", "", t)));
+        heading.setAttribute("aria-hidden", "true");
+        list.append(heading);
+        const ul = el4("ul", "favorites-directory");
+        for (const e of visible) {
+          const li = el4("li", "favorite-row"), read = button9("", "favorite-open", () => open2(e));
+          read.dataset.key = e.key;
+          read.append(el4("span", "favorite-kind", labels[e.type]), el4("span", "favorite-title", e.record.title || "未命名内容"), el4("span", "favorite-author", options.authorName(e.record.author)), el4("time", "favorite-updated", options.date(e.record.updatedAt)));
+          const remove = button9("★", "favorite-remove", () => {
+            void options.toggle(e.record).then(render6).catch((error) => options.toast(options.errorMessage(error)));
+          });
+          remove.title = "取消收藏";
+          remove.setAttribute("aria-label", `取消收藏 ${e.record.title || "未命名内容"}`);
+          li.append(read, remove);
+          ul.append(li);
+        }
+        list.append(ul);
+      }
+      search.addEventListener("input", () => {
+        query = search.value;
+        rows();
+      });
+      rows();
+    }
+    return { render: render6, reset, back, isReading: () => selected2 !== null, focusSearch: () => host.querySelector(".favorites-search")?.focus() };
+  }
+
+  // src/renderer/favorites/model.ts
+  var PREFIX = "qmx-favorite:v1:";
+  function favoriteKey(account, source, type, identity2) {
+    return PREFIX + JSON.stringify([account, source, type, identity2]);
+  }
+  function contentType(record2) {
+    return record2.kind === "trick" ? "trick" : record2.kind === "algorithm-note" ? "algorithm" : "solution";
+  }
+  function contentIdentity(record2) {
+    return String(record2.path || record2.id || record2.clientId || "");
+  }
+  function legacyFavorite(values, identity2) {
+    return values.some((value) => (typeof value === "string" || typeof value === "number") && !String(value).startsWith(PREFIX) && String(value) === identity2);
   }
 
   // src/renderer/app/app.ts
@@ -10855,7 +11664,7 @@ ${entry2.node.fullLabel}` : ""}`;
     } });
     let toastTimer;
     let draftTimer;
-    function element4(tag, className, text3) {
+    function element5(tag, className, text3) {
       const node4 = document.createElement(tag);
       if (className) node4.className = className;
       if (text3 !== void 0) node4.textContent = String(text3);
@@ -10865,14 +11674,14 @@ ${entry2.node.fullLabel}` : ""}`;
       children.filter(Boolean).forEach((child) => parent.append(child));
       return parent;
     }
-    function button8(label, className, action2) {
-      const node4 = element4("button", className, label);
+    function button10(label, className, action3) {
+      const node4 = element5("button", className, label);
       node4.type = "button";
-      node4.addEventListener("click", action2);
+      node4.addEventListener("click", action3);
       return node4;
     }
-    function toast(message2) {
-      $("#toast").textContent = message2;
+    function toast(message) {
+      $("#toast").textContent = message;
       $("#toast").hidden = false;
       clearTimeout(toastTimer);
       toastTimer = setTimeout(() => {
@@ -10880,8 +11689,8 @@ ${entry2.node.fullLabel}` : ""}`;
       }, 3400);
     }
     function errorMessage(error) {
-      const message2 = typeof error === "string" ? error : error?.message || "操作未完成，请稍后重试";
-      return message2.replace(/^Error invoking remote method '[^']+':\s*(?:Error:\s*)?/, "");
+      const message = typeof error === "string" ? error : error?.message || "操作未完成，请稍后重试";
+      return message.replace(/^Error invoking remote method '[^']+':\s*(?:Error:\s*)?/, "");
     }
     function key(record2) {
       const id = String(record2.id ?? record2.number ?? `${record2.platform}:${record2.pid}:${record2.url}`);
@@ -10931,8 +11740,40 @@ ${entry2.node.fullLabel}` : ""}`;
     function canEditRemote(record2) {
       return record2?.kind === "document" && isMine(record2) && sameRepo(record2) && s.permissions.push === true;
     }
+    function favoriteId(record2) {
+      return favoriteKey(accountId(), record2.kind === "local" ? "device" : record2.sourceKey || repoSource(record2.repo, record2.serverUrl), contentType(record2), contentIdentity(record2));
+    }
     function favorite(record2) {
-      return reader.favorite(record2);
+      return s.local.favorites.includes(favoriteId(record2)) || ["local", "document", "issue"].includes(record2.kind || "") && legacyFavorite(s.local.favorites, key(record2));
+    }
+    function visibleAlgorithmNotes() {
+      return s.algorithmNotes.filter((note) => sameRepo(note) && (note.noteScope === "public" || note.noteScope === "personal" && repoSource().startsWith("https://api.github.com|") && accountId() !== null && String(note.authorId) === accountId()));
+    }
+    function favoriteEntries() {
+      const candidates = [...records().filter((record2) => record2.kind !== "issue"), ...visibleAlgorithmNotes(), ...(s.tricks || []).filter((item) => item.sourceKey === repoSource()).map((item) => ({ ...item }))];
+      const seen = /* @__PURE__ */ new Set();
+      return candidates.filter((item) => favorite(item)).flatMap((record2) => {
+        const id = favoriteId(record2);
+        if (seen.has(id)) return [];
+        seen.add(id);
+        return [{ key: id, type: contentType(record2), record: record2, source: record2.kind === "local" ? "device" : repoSource() }];
+      });
+    }
+    async function toggleFavorite(record2) {
+      if (s.busy) throw new Error("请等待当前操作完成");
+      const before = s.local.favorites.slice(), id = favoriteId(record2), removing = favorite(record2), legacy = key(record2);
+      setBusy(true);
+      s.local.favorites = removing ? before.filter((value) => value !== id && !legacyFavorite([value], legacy)) : [...before, id];
+      try {
+        await persistLocal();
+        updateNavigationCounts();
+      } catch (error) {
+        s.local.favorites = before;
+        updateNavigationCounts();
+        throw error;
+      } finally {
+        setBusy(false);
+      }
     }
     function mastery(record2) {
       return reader.mastery(record2);
@@ -10940,7 +11781,7 @@ ${entry2.node.fullLabel}` : ""}`;
     function tags(record2) {
       return reader.tags(record2);
     }
-    function authorName(author) {
+    function authorName2(author) {
       return typeof author === "string" ? author : author?.name || author?.login || "匿名学习者";
     }
     function date(value) {
@@ -10990,8 +11831,10 @@ ${entry2.node.fullLabel}` : ""}`;
       if (payload.updateCapability) s.updateCapability = payload.updateCapability;
       updates.renderUpdate();
       s.records = (Array.isArray(payload.records) ? payload.records : []).filter((record2) => record2.kind === "document");
+      s.tricks = Array.isArray(payload.tricks) ? payload.tricks : [];
       s.algorithmNotes = (Array.isArray(payload.algorithmNotes) ? payload.algorithmNotes : []).filter((record2) => record2.kind === "algorithm-note");
       s.algorithmTopics = Array.isArray(payload.algorithmTopics) ? payload.algorithmTopics : [];
+      s.algorithmNodeContents = Array.isArray(payload.algorithmNodeContents) ? payload.algorithmNodeContents : [];
       s.learningGateContents = Array.isArray(payload.learningGateContents) ? payload.learningGateContents : [];
       s.learningCurriculum = payload.learningCurriculum || null;
       s.algorithmTree = AlgorithmDirectory.hydrate(window.QMX_ALGORITHM_TREE, s.algorithmTopics);
@@ -11063,7 +11906,7 @@ ${entry2.node.fullLabel}` : ""}`;
         const quota = quotaBlocked();
         if (!demo && !offline && (reauth || quota)) {
           banner.append(document.createTextNode(reauth ? " 请重新登录 GitHub 以恢复同步。" : " 登录 GitHub 后，同步额度可由每小时 60 次提升至 5000 次。"));
-          const login = button8(reauth ? "重新登录 GitHub" : "使用 GitHub 登录", "button secondary", startLoginFromBanner);
+          const login = button10(reauth ? "重新登录 GitHub" : "使用 GitHub 登录", "button secondary", startLoginFromBanner);
           login.id = "banner-login-button";
           login.disabled = s.busy;
           banner.append(login);
@@ -11076,7 +11919,7 @@ ${entry2.node.fullLabel}` : ""}`;
       for (const avatar of $$(".account-avatar")) {
         avatar.replaceChildren();
         if (/^data:image\/(?:png|jpeg|gif|webp);base64,/i.test(account?.avatarData || "")) {
-          const image = element4("img");
+          const image = element5("img");
           image.src = account.avatarData;
           image.alt = "";
           avatar.append(image);
@@ -11093,7 +11936,7 @@ ${entry2.node.fullLabel}` : ""}`;
       const select = $("#request-tag-category");
       select.replaceChildren();
       (s.tagCatalog?.categories || []).forEach((c) => {
-        const option2 = element4("option", "", c.name);
+        const option2 = element5("option", "", c.name);
         option2.value = c.id;
         select.append(option2);
       });
@@ -11108,10 +11951,10 @@ ${entry2.node.fullLabel}` : ""}`;
         const list = $("#tag-review-list");
         list.replaceChildren();
         (result.requests || []).forEach((request) => {
-          const row2 = element4("article", "tag-request-row");
-          append(row2, element4("strong", "", `${request.category} / ${request.name}`), element4("p", "facet-help", `#${request.number} · ${authorName(request.author)} · ${request.state || "open"}`));
-          if (request.url) row2.append(button8("查看申请 ↗", "button subtle", () => openExternal(request.url)));
-          ["approve", "reject"].forEach((decision) => row2.append(button8(decision === "approve" ? "批准" : "拒绝", "button secondary", async () => {
+          const row2 = element5("article", "tag-request-row");
+          append(row2, element5("strong", "", `${request.category} / ${request.name}`), element5("p", "facet-help", `#${request.number} · ${authorName2(request.author)} · ${request.state || "open"}`));
+          if (request.url) row2.append(button10("查看申请 ↗", "button subtle", () => openExternal(request.url)));
+          ["approve", "reject"].forEach((decision) => row2.append(button10(decision === "approve" ? "批准" : "拒绝", "button secondary", async () => {
             if (s.busy || !s.tagReview?.canReview || demo) return;
             setBusy(true);
             try {
@@ -11132,7 +11975,7 @@ ${entry2.node.fullLabel}` : ""}`;
           })));
           list.append(row2);
         });
-        if (!list.children.length) list.append(element4("p", "facet-help", "暂无待审核申请"));
+        if (!list.children.length) list.append(element5("p", "facet-help", "暂无待审核申请"));
       } catch (error) {
         toast(errorMessage(error));
       }
@@ -11140,15 +11983,17 @@ ${entry2.node.fullLabel}` : ""}`;
     function platformCode(value) {
       return Search.normalizePlatform(value);
     }
-    const reader = createLibraryReader({ demo, stateLabels, getLocal: () => s.local, setLocal: (value) => {
+    const reader = createLibraryReader({ demo, stateLabels, isFavorite: favorite, toggleFavorite, getLocal: () => s.local, setLocal: (value) => {
       s.local = value;
     }, getAccount: () => s.account, getPermissions: () => s.permissions, getView: () => s.view, getLibraryScope: () => s.libraryScope, getSelected: () => s.selected, setSelected: (value) => {
       s.selected = value;
-    }, getComments: () => s.comments, getBusy: () => s.busy, setBusy, getLoading: () => s.loading, getError: () => s.error, getRecords: records, key, isLocal, visibleLocal, canEditRemote, sameRepo, platformCode, authorName, date, quotaBlocked, renderMarkdown, persistLocal, call, render: render6, clearFilters, openSubmit: (record2) => editor2.openSubmit(record2), openLocalSolution: (record2) => editor2.openLocalSolution(record2), deleteRecord: (record2) => editor2.deleteRecord(record2), deleteDiscussion: (record2) => editor2.deleteDiscussion(record2), openExternal, toast, errorMessage });
+    }, getComments: () => s.comments, getBusy: () => s.busy, setBusy, getLoading: () => s.loading, getError: () => s.error, getRecords: records, key, isLocal, visibleLocal, canEditRemote, sameRepo, platformCode, authorName: authorName2, date, quotaBlocked, renderMarkdown, persistLocal, call, render: render6, clearFilters, openSubmit: (record2) => editor2.openSubmit(record2), openLocalSolution: (record2) => editor2.openLocalSolution(record2), deleteRecord: (record2) => editor2.deleteRecord(record2), deleteDiscussion: (record2) => editor2.deleteDiscussion(record2), openExternal, toast, errorMessage });
     const { openDetail, closeDetail, renderDetail, loadComments, changeLocal } = reader;
     function navigate(view) {
       if (!views[view]) return;
       reader.resetDetail();
+      tricks.reset();
+      favorites.reset();
       s.view = view;
       clearFilters();
       if (view === "home") refreshVisibleContests();
@@ -11162,12 +12007,12 @@ ${entry2.node.fullLabel}` : ""}`;
       const overview = $("#platform-overview");
       overview.remove();
       panel.replaceChildren();
-      const toolbar = element4("div", "home-toolbar");
-      const intro = element4("div", "home-intro");
-      append(intro, element4("span", "home-date", (/* @__PURE__ */ new Date()).toLocaleDateString("zh-CN", { month: "long", day: "numeric", weekday: "long" })), element4("h2", "", "今天，继续向前。"));
+      const toolbar = element5("div", "home-toolbar");
+      const intro = element5("div", "home-intro");
+      append(intro, element5("span", "home-date", (/* @__PURE__ */ new Date()).toLocaleDateString("zh-CN", { month: "long", day: "numeric", weekday: "long" })), element5("h2", "", "今天，继续向前。"));
       append(toolbar, intro);
-      const board = element4("div", "home-board");
-      const planner = element4("section", "home-planner");
+      const board = element5("div", "home-board");
+      const planner = element5("section", "home-planner");
       planner.id = "home-planner";
       planner.setAttribute("aria-label", "题单与学习任务");
       append(board, planner);
@@ -11188,11 +12033,25 @@ ${entry2.node.fullLabel}` : ""}`;
       updateContestStatus();
       renderContestCards();
     }
+    function updateNavigationCounts() {
+      const all = records();
+      const counts = {
+        public: all.filter((record2) => record2.kind === "document").length,
+        favorites: favoriteEntries().length,
+        tricks: (s.tricks || []).filter((item) => item.sourceKey === repoSource()).length,
+        algorithms: s.algorithmNotes.filter((note) => sameRepo(note) && (note.noteScope === "public" || note.noteScope === "personal" && repoSource().startsWith("https://api.github.com|") && accountId() !== null && String(note.authorId) === accountId())).length
+      };
+      for (const [view, count3] of Object.entries(counts)) {
+        $$(`.nav-item[data-view="${view}"] .nav-count, .rail-nav-item[data-view="${view}"] .nav-count`).forEach((badge) => {
+          badge.textContent = String(count3);
+        });
+      }
+    }
     function render6() {
       updateStateFacet();
       document.body.dataset.view = s.view;
       const [title, description, eyebrow] = views[s.view];
-      $("#page-title").replaceChildren(document.createTextNode(title), element4("span", "heading-dot", "."));
+      $("#page-title").replaceChildren(document.createTextNode(title), element5("span", "heading-dot", "."));
       $("#breadcrumb-view").textContent = title;
       $("#page-description").textContent = description;
       $("#page-eyebrow").textContent = eyebrow;
@@ -11201,16 +12060,24 @@ ${entry2.node.fullLabel}` : ""}`;
         if (node4.dataset.view === s.view) node4.setAttribute("aria-current", "page");
         else node4.removeAttribute("aria-current");
       });
+      updateNavigationCounts();
       const all = records();
-      $("#count-public").textContent = all.filter((record2) => record2.kind === "document").length;
-      $("#count-favorites").textContent = all.filter(favorite).length;
       $("#home-panel").hidden = s.view !== "home";
       $("#platform-overview").hidden = s.view !== "home";
       $("#algorithm-panel").hidden = s.view !== "algorithms";
-      const placeholder = ["tricks"].includes(s.view);
-      $("#section-placeholder").hidden = !placeholder;
-      $("#library-panel").hidden = s.view === "home" || placeholder || s.view === "algorithms";
+      const isTricks = s.view === "tricks", isFavorites = s.view === "favorites";
+      $("#section-placeholder").hidden = !isTricks;
+      document.getElementById("favorites-panel").hidden = !isFavorites;
+      $("#library-panel").hidden = s.view === "home" || isTricks || isFavorites || s.view === "algorithms";
       updateStatus();
+      if (isTricks) {
+        tricks.render();
+        return;
+      }
+      if (isFavorites) {
+        favorites.render();
+        return;
+      }
       if (s.view === "home") {
         renderHome();
         return;
@@ -11230,8 +12097,23 @@ ${entry2.node.fullLabel}` : ""}`;
       reader.renderLibrary(items);
     }
     const { highlightCodeBlock, decorateCodeBlocks, codeBlockClick } = CodeBlocks.create({ toast, errorMessage });
-    const algorithms = createAlgorithmWorkspace({ getAlgorithmNotes: () => s.algorithmNotes, setAlgorithmNotes: (value) => {
+    function algorithmFavoriteRecord(note) {
+      return visibleAlgorithmNotes().find((item) => note.path ? item.path === note.path : item.id === note.id);
+    }
+    const algorithms = createAlgorithmWorkspace({ isFavorite: (note) => {
+      const item = algorithmFavoriteRecord(note);
+      return !!item && favorite(item);
+    }, onToggleFavorite: async (note) => {
+      const item = algorithmFavoriteRecord(note);
+      if (!item) throw new Error("笔记已不可见，请同步后重试");
+      await toggleFavorite(item);
+    }, getAlgorithmNotes: () => s.algorithmNotes, setAlgorithmNotes: (value) => {
       s.algorithmNotes = value;
+    }, getAlgorithmNodeContents: () => s.algorithmNodeContents || [], setAlgorithmNodeContents: (value) => {
+      s.algorithmNodeContents = value;
+    }, saveAlgorithmNodeContent: (input2) => {
+      if (!bridge3) throw new Error("请在桌面客户端登录管理员账户后编辑简介与精选");
+      return bridge3.saveAlgorithmNodeContent(input2);
     }, getLearningCurriculum: () => s.learningCurriculum || null, setLearningCurriculum: (value) => {
       s.learningCurriculum = value;
     }, saveLearningCurriculum: (input2) => {
@@ -11246,8 +12128,38 @@ ${entry2.node.fullLabel}` : ""}`;
       s.algorithmTopics = value;
     }, getAlgorithmTree: () => s.algorithmTree, setAlgorithmTree: (value) => {
       s.algorithmTree = value;
-    }, getAccount: () => s.account, getPermissions: () => s.permissions, getLocal: () => s.local, getBusy: () => s.busy, getReadingDetail: () => ReadingDetail, accountId, repo, repoSource, uuid, setBusy, persistLocal, call, openExternal, render: render6, renderMarkdown, authorName, date, tags, toast, errorMessage });
+    }, getAccount: () => s.account, getPermissions: () => s.permissions, getLocal: () => s.local, getBusy: () => s.busy, getReadingDetail: () => ReadingDetail, accountId, repo, repoSource, uuid, setBusy, persistLocal, call, openExternal, render: render6, renderMarkdown, authorName: authorName2, date, tags, toast, errorMessage });
     const { renderAlgorithmNotes } = algorithms;
+    const favoriteHost = element5("section", "favorites-workspace");
+    favoriteHost.id = "favorites-panel";
+    favoriteHost.hidden = true;
+    favoriteHost.setAttribute("aria-label", "统一个人收藏");
+    $("#library-panel").before(favoriteHost);
+    const favorites = createFavoritesWorkspace({ host: favoriteHost, getEntries: favoriteEntries, getContext: () => JSON.stringify([repoSource(), accountId()]), isFavorite: favorite, toggle: toggleFavorite, renderMarkdown, renderSolution: (record2, host) => reader.renderDetail(record2, host), authorName: authorName2, date, errorMessage, toast });
+    const tricks = createTrickWorkspace({
+      host: $("#section-placeholder"),
+      getItems: () => s.tricks || [],
+      setItems: (value) => {
+        s.tricks = value;
+        updateNavigationCounts();
+      },
+      getContext: () => ({ sourceKey: repoSource(), repo: repo(), accountId: accountId(), displayName: authorName2(s.account), canCreate: !demo && !!s.account && (s.permissions.push === true || s.permissions.admin === true) && repoSource().startsWith("https://api.github.com|"), admin: s.permissions.admin === true }),
+      getBusy: () => s.busy,
+      setBusy,
+      save: async (input2) => {
+        if (!bridge3) throw new Error("请在桌面客户端登录后发布 Trick");
+        return bridge3.saveTrick(input2);
+      },
+      remove: async (input2) => {
+        if (!bridge3) throw new Error("请在桌面客户端登录后删除 Trick");
+        return bridge3.deleteTrick(input2);
+      },
+      renderMarkdown,
+      toast,
+      errorMessage,
+      isFavorite: (item) => favorite({ ...item }),
+      onToggleFavorite: (item) => toggleFavorite({ ...item })
+    });
     function renderMarkdown(container, body) {
       const source = String(body || "还没有题解内容。可以从记录错因开始。");
       if (window.marked && window.DOMPurify) {
@@ -11339,9 +12251,9 @@ ${entry2.node.fullLabel}` : ""}`;
     }, getComments: () => s.comments, getSelected: () => s.selected, setSelected: (value) => {
       s.selected = value;
     }, getBusy: () => s.busy, setBusy, getAccount: () => s.account, getPermissions: () => s.permissions, accountId, repo, key, uuid, isLocal, visibleLocal, canEditRemote, sameRepo, records, platformCode, colorRatingInput, renderEditorTags, cancelDraftSave: () => clearTimeout(draftTimer), persistLocal, call, refreshFilters, navigate, render: render6, openDetail, toast, errorMessage });
-    const { formDraft, fillForm, renderEditorDifficulty, setEditorPlatform, draftKey, editorError, openLocalSolution, openSubmit, saveDraft, saveRecord, deleteDiscussion, deleteRecord } = editor2;
+    const { formDraft, fillForm, renderEditorDifficulty, setEditorPlatform, draftKey: draftKey2, editorError, openLocalSolution, openSubmit, saveDraft, saveRecord, deleteDiscussion, deleteRecord } = editor2;
     async function sync() {
-      if (s.busy || $("#submit-dialog").open) {
+      if (s.busy || $("#submit-dialog").open || tricks.hasEditor()) {
         toast("请先完成或关闭当前编辑");
         return;
       }
@@ -11365,7 +12277,9 @@ ${entry2.node.fullLabel}` : ""}`;
                 s.records = data.records.map((r) => ({ ...r, repo: currentRepo, serverUrl: currentServer, sourceKey: repoSource(currentRepo, currentServer) }));
                 s.issues = (Array.isArray(data.issues) ? data.issues : []).map((r) => ({ ...r, repo: currentRepo, serverUrl: currentServer, sourceKey: repoSource(currentRepo, currentServer) }));
                 s.algorithmNotes = Array.isArray(data.algorithmNotes) ? data.algorithmNotes : [];
+                s.tricks = Array.isArray(data.tricks) ? data.tricks : [];
                 s.algorithmTopics = Array.isArray(data.algorithmTopics) ? data.algorithmTopics : [];
+                s.algorithmNodeContents = Array.isArray(data.algorithmNodeContents) ? data.algorithmNodeContents : [];
                 s.learningGateContents = Array.isArray(data.learningGateContents) ? data.learningGateContents : [];
                 s.learningCurriculum = data.learningCurriculum || null;
                 s.algorithmTree = AlgorithmDirectory.hydrate(window.QMX_ALGORITHM_TREE, s.algorithmTopics);
@@ -11395,15 +12309,15 @@ ${entry2.node.fullLabel}` : ""}`;
         render6();
         toast("学习空间已同步");
       } catch (error) {
-        const message2 = errorMessage(error);
+        const message = errorMessage(error);
         try {
           applyPayload(await call("bootstrap"));
         } catch (_) {
         }
-        s.error = message2;
+        s.error = message;
         refreshFilters();
         render6();
-        toast(`同步失败：${message2}`);
+        toast(`同步失败：${message}`);
       } finally {
         setBusy(false);
       }
@@ -11435,7 +12349,7 @@ ${entry2.node.fullLabel}` : ""}`;
       closeTagPicker(false);
     });
     $("#request-tag-open").addEventListener("click", openTagDialog);
-    const tagEntry = button8("＋ 添加标签", "button subtle", openTagDialog);
+    const tagEntry = button10("＋ 添加标签", "button subtle", openTagDialog);
     tagEntry.id = "tag-manager-button";
     $(".topbar-actions").insertBefore(tagEntry, $("#sync-button"));
     $("#tag-request-form").addEventListener("submit", async (event) => {
@@ -11467,16 +12381,16 @@ ${entry2.node.fullLabel}` : ""}`;
       clearFilters();
     });
     const stateSelect = $("#state-filter");
-    const stateFacet = element4("details", "facet state-facet");
+    const stateFacet = element5("details", "facet state-facet");
     stateFacet.id = "state-facet";
-    const stateSummary = element4("summary");
-    const stateLabel = element4("span");
-    append(stateSummary, stateLabel, element4("span", "facet-chevron", "⌄"));
-    const stateOptions = element4("div", "facet-popover");
+    const stateSummary = element5("summary");
+    const stateLabel = element5("span");
+    append(stateSummary, stateLabel, element5("span", "facet-chevron", "⌄"));
+    const stateOptions = element5("div", "facet-popover");
     stateOptions.setAttribute("aria-label", "状态筛选");
     [...stateSelect.options].forEach((option2) => {
-      const label = element4("label", "facet-option");
-      const input2 = element4("input");
+      const label = element5("label", "facet-option");
+      const input2 = element5("input");
       input2.type = "radio";
       input2.name = "state-choice";
       input2.value = option2.value;
@@ -11485,7 +12399,7 @@ ${entry2.node.fullLabel}` : ""}`;
         stateFacet.open = false;
         render6();
       });
-      append(label, input2, element4("span", "", option2.textContent));
+      append(label, input2, element5("span", "", option2.textContent));
       stateOptions.append(label);
     });
     append(stateFacet, stateSummary, stateOptions);
@@ -11509,11 +12423,11 @@ ${entry2.node.fullLabel}` : ""}`;
     $("#clear-filters").addEventListener("click", clearFilters);
     for (const id of ["luogu-min", "luogu-max"]) {
       const select = $("#" + id);
-      const option2 = element4("option", "", "不限");
+      const option2 = element5("option", "", "不限");
       option2.value = "";
       select.append(option2);
       luoguLevels4.forEach((name, i) => {
-        const o = element4("option", `tone-${luoguTones[i]}`, name);
+        const o = element5("option", `tone-${luoguTones[i]}`, name);
         o.value = String(i + 1);
         select.append(o);
       });
@@ -11602,8 +12516,11 @@ ${entry2.node.fullLabel}` : ""}`;
     }, getLocal: () => s.local, repo, repoSource, quotaBlocked, reauthNeeded, call, applyPayload, resetRepositoryData: () => {
       s.records = [];
       s.issues = [];
+      s.tricks = [];
+      tricks.reset();
       s.algorithmNotes = [];
       s.algorithmTopics = [];
+      s.algorithmNodeContents = [];
       s.learningGateContents = [];
       s.learningCurriculum = null;
       s.lastSync = null;
@@ -11612,6 +12529,7 @@ ${entry2.node.fullLabel}` : ""}`;
       s.comments.clear();
       s.selected = null;
       reader.resetDetail();
+      tricks.reset();
     }, clearComments: () => s.comments.clear(), refreshFilters, render: render6, renderUpdate: () => updates.renderUpdate(), updateStatus, sync, writeDemo, toast, errorMessage });
     const { readTheme, readPalette, applyTheme, applyPalette, applyAppearance, applyCodeSettings, renderRepoSelector, renderSettingsRepoList, renderAccount, startLoginFromBanner, accountAction, cancelLogin } = settingsUI;
     $("#sidebar-toggle").addEventListener("click", (event) => {
@@ -11700,7 +12618,7 @@ ${entry2.node.fullLabel}` : ""}`;
       s.update = update;
     }, getUpdateCapability: () => s.updateCapability, getBusy: () => s.busy, setBusy, call, cancelDraftSave: () => clearTimeout(draftTimer), getLocalWrite: () => localWrite, resetLocalWrite: () => {
       localWrite = Promise.resolve();
-    }, hasEditor: () => !!s.editor, saveDraft, persistLocal, renderAccount, toast, errorMessage });
+    }, hasEditor: () => !!s.editor || tricks.hasEditor(), saveDraft, persistLocal, renderAccount, toast, errorMessage });
     $("#submit-form").elements.url.addEventListener("blur", (event) => {
       try {
         const url = new URL(event.target.value);
@@ -11725,11 +12643,29 @@ ${entry2.node.fullLabel}` : ""}`;
     window.addEventListener("online", updateStatus);
     window.addEventListener("offline", updateStatus);
     document.addEventListener("keydown", (event) => {
+      if (event.key === "Escape" && s.view === "favorites" && favorites.isReading() && !document.querySelector("dialog[open]")) {
+        event.preventDefault();
+        favorites.back();
+        return;
+      }
+      if (event.key === "Escape" && s.view === "tricks" && tricks.isReading() && !document.querySelector("dialog[open]")) {
+        event.preventDefault();
+        tricks.closeDetail();
+        return;
+      }
       if (event.key === "/" && !event.ctrlKey && !event.metaKey && !["INPUT", "TEXTAREA", "SELECT"].includes(document.activeElement?.tagName) && !document.querySelector("dialog[open]")) {
         event.preventDefault();
-        if (["home", "tricks", "algorithms"].includes(s.view)) {
-          navigate("public");
+        if (s.view === "favorites") {
+          if (favorites.isReading()) favorites.back();
+          favorites.focusSearch();
+          return;
         }
+        if (s.view === "tricks") {
+          if (tricks.isReading()) tricks.closeDetail();
+          tricks.focusSearch();
+          return;
+        }
+        if (["home", "algorithms"].includes(s.view)) navigate("public");
         $("#search-input").focus();
       }
     });

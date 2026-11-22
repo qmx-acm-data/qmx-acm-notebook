@@ -39,6 +39,8 @@
   <link rel="stylesheet" href="difficulty-backfill.css">
   <link rel="stylesheet" href="clist-shared-cache.css">
   <link rel="stylesheet" href="clist-bulk.css">
+  <link rel="stylesheet" href="tricks.css">
+  <link rel="stylesheet" href="favorites.css">
   <script defer src="app.js"></script>
 </head>
 <body data-theme="light" data-palette="porcelain">
@@ -53,9 +55,9 @@
       <div class="workspace-label">我的学习空间 <span class="tiny-dot" aria-hidden="true"></span></div>
       <nav aria-label="主导航">
         <button class="nav-item active" type="button" data-view="home" aria-label="主页" aria-current="page"><span class="nav-icon"><svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="m3 10 9-7 9 7M5 9v12h5v-7h4v7h5V9"/></svg></span><span class="nav-label">主页</span></button>
-        <button class="nav-item" type="button" data-view="tricks" aria-label="tricks"><span class="nav-icon"><svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M9 18h6M9 21h6M8.5 15.5a6 6 0 1 1 7 0L15 18H9ZM12 2v2M3 10H1M23 10h-2M4 3l2 2M20 3l-2 2"/></svg></span><span class="nav-label">tricks</span></button>
+        <button class="nav-item" type="button" data-view="tricks" aria-label="tricks"><span class="nav-icon"><svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M9 18h6M9 21h6M8.5 15.5a6 6 0 1 1 7 0L15 18H9ZM12 2v2M3 10H1M23 10h-2M4 3l2 2M20 3l-2 2"/></svg></span><span class="nav-label">tricks</span><span class="nav-count" id="count-tricks">0</span></button>
         <button class="nav-item" type="button" data-view="public" aria-label="公共题库"><span class="nav-icon"><svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M3 4h5v16H3ZM8 4h5v16H8ZM15 5l4-1 4 15-4 1ZM3 16h10M16.5 10l4-1"/></svg></span><span class="nav-label">公共题库</span><span class="nav-count" id="count-public">0</span></button>
-        <button class="nav-item" type="button" data-view="algorithms" aria-label="算法笔记"><span class="nav-icon"><svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M6 3h14v18H6ZM3 7h5M3 12h5M3 17h5M11 8h5M11 12h5M11 16h3"/></svg></span><span class="nav-label">算法笔记</span></button>
+        <button class="nav-item" type="button" data-view="algorithms" aria-label="算法笔记"><span class="nav-icon"><svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M6 3h14v18H6ZM3 7h5M3 12h5M3 17h5M11 8h5M11 12h5M11 16h3"/></svg></span><span class="nav-label">算法笔记</span><span class="nav-count" id="count-algorithms">0</span></button>
         <button class="nav-item" type="button" data-view="favorites" aria-label="个人收藏"><span class="nav-icon"><svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="m12 3 2.8 5.7 6.2.9-4.5 4.4 1.1 6.2-5.6-3-5.6 3 1.1-6.2L3 9.6l6.2-.9Z"/></svg></span><span class="nav-label">个人收藏</span><span class="nav-count" id="count-favorites">0</span></button>
       </nav>
       <div class="sidebar-note"><span class="eyebrow">KEEP THINKING</span><p>把每一次卡住，<br>变成下一次的直觉。</p><span class="note-line"></span><small>记录 · 理解 · 再出发</small></div>

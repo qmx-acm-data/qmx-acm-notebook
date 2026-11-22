@@ -18,6 +18,10 @@ import { createEditor } from '../library/editor.js';
 import { createLibraryReader } from '../library/reader.js';
 import { createSettings } from '../account/settings.js';
 import { createAlgorithmWorkspace } from '../algorithms/workspace.js';
+import { createTrickWorkspace } from '../tricks/workspace.js';
+import { createFavoritesWorkspace } from '../favorites/workspace.js';
+import { favoriteKey, contentType, contentIdentity, legacyFavorite } from '../favorites/model.js';
+import type { FavoriteEntry } from '../favorites/model.js';
 (() => {
   type AppError = import('../../../types/app').AppError;
   type AppAuthor = import('../../../types/app').AppAuthor;
@@ -112,7 +116,23 @@ import { createAlgorithmWorkspace } from '../algorithms/workspace.js';
     return record.kind === 'document' && sameRepo(record) && repoSource().startsWith('https://api.github.com|') && isMine(record);
   }
   function canEditRemote(record: AppRecord | null | undefined) { return record?.kind === 'document' && isMine(record) && sameRepo(record) && s.permissions.push === true; }
-  function favorite(record: AppRecord) { return reader.favorite(record); }
+  function favoriteId(record: AppRecord) { return favoriteKey(accountId(), record.kind === 'local' ? 'device' : record.sourceKey || repoSource(record.repo, record.serverUrl), contentType(record), contentIdentity(record)); }
+  function favorite(record: AppRecord) { return s.local.favorites.includes(favoriteId(record)) || (['local','document','issue'].includes(record.kind || '') && legacyFavorite(s.local.favorites, key(record))); }
+  function visibleAlgorithmNotes() { return s.algorithmNotes.filter(note => sameRepo(note) && (note.noteScope === 'public' || note.noteScope === 'personal' && repoSource().startsWith('https://api.github.com|') && accountId() !== null && String(note.authorId) === accountId())); }
+  function favoriteEntries(): FavoriteEntry[] {
+    const candidates = [...records().filter(record => record.kind !== 'issue'), ...visibleAlgorithmNotes(), ...(s.tricks || []).filter(item => item.sourceKey === repoSource()).map(item => ({ ...item }))];
+    const seen = new Set<string>();
+    return candidates.filter(item => favorite(item)).flatMap(record => { const id = favoriteId(record); if (seen.has(id)) return []; seen.add(id); return [{ key: id, type: contentType(record), record, source: record.kind === 'local' ? 'device' : repoSource() }]; });
+  }
+  async function toggleFavorite(record: AppRecord): Promise<void> {
+    if (s.busy) throw new Error('请等待当前操作完成');
+    const before = s.local.favorites.slice(), id = favoriteId(record), removing = favorite(record), legacy = key(record);
+    setBusy(true);
+    s.local.favorites = removing ? before.filter(value => value !== id && !legacyFavorite([value], legacy)) : [...before, id];
+    try { await persistLocal(); updateNavigationCounts(); }
+    catch (error) { s.local.favorites = before; updateNavigationCounts(); throw error; }
+    finally { setBusy(false); }
+  }
   function mastery(record: AppRecord) { return reader.mastery(record); }
   function tags(record: AppRecord) { return reader.tags(record); }
   function authorName(author: unknown) { return typeof author === 'string' ? author : (author as AppAuthor | null | undefined)?.name || (author as AppAuthor | null | undefined)?.login || '匿名学习者'; }
@@ -138,8 +158,10 @@ import { createAlgorithmWorkspace } from '../algorithms/workspace.js';
     if ((payload as AppPayload).updateCapability) s.updateCapability = (payload as AppPayload).updateCapability;
     updates.renderUpdate();
     s.records = (Array.isArray((payload as AppPayload).records) ? (payload as AppPayload).records! : []).filter(record => record.kind === 'document');
+    s.tricks = Array.isArray((payload as AppPayload).tricks) ? (payload as AppPayload).tricks : [];
     s.algorithmNotes = (Array.isArray((payload as AppPayload).algorithmNotes) ? (payload as AppPayload).algorithmNotes! : []).filter(record => record.kind === 'algorithm-note');
     s.algorithmTopics = Array.isArray((payload as AppPayload).algorithmTopics) ? (payload as AppPayload).algorithmTopics : [];
+    s.algorithmNodeContents = Array.isArray((payload as AppPayload).algorithmNodeContents) ? (payload as AppPayload).algorithmNodeContents : [];
     s.learningGateContents = Array.isArray((payload as AppPayload).learningGateContents) ? (payload as AppPayload).learningGateContents : [];
     s.learningCurriculum = (payload as AppPayload).learningCurriculum || null;
     s.algorithmTree = AlgorithmDirectory.hydrate(window.QMX_ALGORITHM_TREE, s.algorithmTopics);
@@ -223,11 +245,11 @@ import { createAlgorithmWorkspace } from '../algorithms/workspace.js';
     } catch(error) { toast(errorMessage(error)); }
   }
   function platformCode(value: unknown) { return Search.normalizePlatform(value); }
-  const reader = createLibraryReader({ demo, stateLabels, getLocal: () => s.local, setLocal: value => { s.local = value; }, getAccount: () => s.account, getPermissions: () => s.permissions, getView: () => s.view, getLibraryScope: () => s.libraryScope, getSelected: () => s.selected, setSelected: value => { s.selected = value; }, getComments: () => s.comments, getBusy: () => s.busy, setBusy, getLoading: () => s.loading, getError: () => s.error, getRecords: records, key, isLocal, visibleLocal, canEditRemote, sameRepo, platformCode, authorName, date, quotaBlocked, renderMarkdown, persistLocal, call, render, clearFilters, openSubmit: record => editor.openSubmit(record), openLocalSolution: record => editor.openLocalSolution(record), deleteRecord: record => editor.deleteRecord(record), deleteDiscussion: record => editor.deleteDiscussion(record), openExternal, toast, errorMessage });
+  const reader = createLibraryReader({ demo, stateLabels, isFavorite: favorite, toggleFavorite, getLocal: () => s.local, setLocal: value => { s.local = value; }, getAccount: () => s.account, getPermissions: () => s.permissions, getView: () => s.view, getLibraryScope: () => s.libraryScope, getSelected: () => s.selected, setSelected: value => { s.selected = value; }, getComments: () => s.comments, getBusy: () => s.busy, setBusy, getLoading: () => s.loading, getError: () => s.error, getRecords: records, key, isLocal, visibleLocal, canEditRemote, sameRepo, platformCode, authorName, date, quotaBlocked, renderMarkdown, persistLocal, call, render, clearFilters, openSubmit: record => editor.openSubmit(record), openLocalSolution: record => editor.openLocalSolution(record), deleteRecord: record => editor.deleteRecord(record), deleteDiscussion: record => editor.deleteDiscussion(record), openExternal, toast, errorMessage });
   const { openDetail, closeDetail, renderDetail, loadComments, changeLocal } = reader;
   function navigate(view: string | undefined) {
     if (!views[view!]) return;
-    reader.resetDetail(); s.view = view!; clearFilters();
+    reader.resetDetail(); tricks.reset(); favorites.reset(); s.view = view!; clearFilters();
     if (view === 'home') refreshVisibleContests();
   }
   const contests = HomeContests.create({ demo, getSettings: () => s.settings, setSettings: value => { s.settings = value; }, getView: () => s.view, getLoading: () => s.loading, canRefresh: () => typeof bridge?.getContests === 'function', call, writeDemo, toast, errorMessage, openExternal });
@@ -253,18 +275,34 @@ import { createAlgorithmWorkspace } from '../algorithms/workspace.js';
     Planner?.render(s.planner);
     updateContestStatus(); renderContestCards();
   }
+  function updateNavigationCounts() {
+    const all = records();
+    const counts: Record<string, number> = {
+      public: all.filter(record => record.kind === 'document').length,
+      favorites: favoriteEntries().length,
+      tricks: (s.tricks || []).filter(item => item.sourceKey === repoSource()).length,
+      algorithms: s.algorithmNotes.filter(note => sameRepo(note) && (note.noteScope === 'public' || note.noteScope === 'personal' && repoSource().startsWith('https://api.github.com|') && accountId() !== null && String(note.authorId) === accountId())).length
+    };
+    for (const [view, count] of Object.entries(counts)) {
+      $$(`.nav-item[data-view="${view}"] .nav-count, .rail-nav-item[data-view="${view}"] .nav-count`).forEach(badge => { badge.textContent = String(count); });
+    }
+  }
   function render() {
     updateStateFacet();
     document.body.dataset.view = s.view;
     const [title, description, eyebrow] = views[s.view]; $('#page-title')!.replaceChildren(document.createTextNode(title), element('span', 'heading-dot', '.')); $('#breadcrumb-view')!.textContent = title; $('#page-description')!.textContent = description; $('#page-eyebrow')!.textContent = eyebrow;
     $$('.nav-item,.rail-nav-item').forEach(node => { node.classList.toggle('active', node.dataset.view === s.view); if (node.dataset.view === s.view) node.setAttribute('aria-current', 'page'); else node.removeAttribute('aria-current'); });
-    const all = records(); $('#count-public')!.textContent = (all.filter(record => record.kind === 'document').length) as unknown as string; $('#count-favorites')!.textContent = (all.filter(favorite).length) as unknown as string;
+    updateNavigationCounts();
+    const all = records();
     $('#home-panel')!.hidden = s.view !== 'home';
     $('#platform-overview')!.hidden = s.view !== 'home';
     $('#algorithm-panel')!.hidden = s.view !== 'algorithms';
-    const placeholder = ['tricks'].includes(s.view);
-    $('#section-placeholder')!.hidden = !placeholder;
-    $('#library-panel')!.hidden = s.view === 'home' || placeholder || s.view === 'algorithms'; updateStatus();
+    const isTricks = s.view === 'tricks', isFavorites = s.view === 'favorites';
+    $('#section-placeholder')!.hidden = !isTricks;
+    document.getElementById('favorites-panel')!.hidden = !isFavorites;
+    $('#library-panel')!.hidden = s.view === 'home' || isTricks || isFavorites || s.view === 'algorithms'; updateStatus();
+    if (isTricks) { tricks.render(); return; }
+    if (isFavorites) { favorites.render(); return; }
     if (s.view === 'home') { renderHome(); return; }
     if (s.view === 'algorithms') { renderAlgorithmNotes(); return; }
     if (reader.renderFocusedDetail()) return;
@@ -277,8 +315,20 @@ import { createAlgorithmWorkspace } from '../algorithms/workspace.js';
     reader.renderLibrary(items);
   }
   const { highlightCodeBlock, decorateCodeBlocks, codeBlockClick } = CodeBlocks.create({ toast, errorMessage });
-  const algorithms = createAlgorithmWorkspace({ getAlgorithmNotes: () => s.algorithmNotes, setAlgorithmNotes: value => { s.algorithmNotes = value; }, getLearningCurriculum: () => s.learningCurriculum || null, setLearningCurriculum: value => { s.learningCurriculum = value; }, saveLearningCurriculum: input => { if (!bridge) throw new Error('请在桌面客户端登录管理员账户后编排课程'); return bridge.saveLearningCurriculum(input); }, getLearningGateContents: () => s.learningGateContents || [], setLearningGateContents: value => { s.learningGateContents = value; }, saveLearningGate: input => { if (!bridge) throw new Error('请在桌面客户端登录管理员账户后修改公共关卡'); return bridge.saveLearningGate(input); }, getAlgorithmTopics: () => s.algorithmTopics, setAlgorithmTopics: value => { s.algorithmTopics = value; }, getAlgorithmTree: () => s.algorithmTree, setAlgorithmTree: value => { s.algorithmTree = value; }, getAccount: () => s.account, getPermissions: () => s.permissions, getLocal: () => s.local, getBusy: () => s.busy, getReadingDetail: () => ReadingDetail, accountId, repo, repoSource, uuid, setBusy, persistLocal, call, openExternal, render, renderMarkdown, authorName, date, tags, toast, errorMessage });
+  function algorithmFavoriteRecord(note: import('../../../types/algorithm-browser').AlgorithmBrowserNote): AppRecord | undefined { return visibleAlgorithmNotes().find(item => note.path ? item.path === note.path : item.id === note.id); }
+  const algorithms = createAlgorithmWorkspace({ isFavorite: note => { const item = algorithmFavoriteRecord(note); return !!item && favorite(item); }, onToggleFavorite: async note => { const item = algorithmFavoriteRecord(note); if (!item) throw new Error('笔记已不可见，请同步后重试'); await toggleFavorite(item); }, getAlgorithmNotes: () => s.algorithmNotes, setAlgorithmNotes: value => { s.algorithmNotes = value; }, getAlgorithmNodeContents: () => s.algorithmNodeContents || [], setAlgorithmNodeContents: value => { s.algorithmNodeContents = value; }, saveAlgorithmNodeContent: input => { if (!bridge) throw new Error('请在桌面客户端登录管理员账户后编辑简介与精选'); return bridge.saveAlgorithmNodeContent(input); }, getLearningCurriculum: () => s.learningCurriculum || null, setLearningCurriculum: value => { s.learningCurriculum = value; }, saveLearningCurriculum: input => { if (!bridge) throw new Error('请在桌面客户端登录管理员账户后编排课程'); return bridge.saveLearningCurriculum(input); }, getLearningGateContents: () => s.learningGateContents || [], setLearningGateContents: value => { s.learningGateContents = value; }, saveLearningGate: input => { if (!bridge) throw new Error('请在桌面客户端登录管理员账户后修改公共关卡'); return bridge.saveLearningGate(input); }, getAlgorithmTopics: () => s.algorithmTopics, setAlgorithmTopics: value => { s.algorithmTopics = value; }, getAlgorithmTree: () => s.algorithmTree, setAlgorithmTree: value => { s.algorithmTree = value; }, getAccount: () => s.account, getPermissions: () => s.permissions, getLocal: () => s.local, getBusy: () => s.busy, getReadingDetail: () => ReadingDetail, accountId, repo, repoSource, uuid, setBusy, persistLocal, call, openExternal, render, renderMarkdown, authorName, date, tags, toast, errorMessage });
   const { renderAlgorithmNotes } = algorithms;
+  const favoriteHost = element('section', 'favorites-workspace'); favoriteHost.id = 'favorites-panel'; favoriteHost.hidden = true; favoriteHost.setAttribute('aria-label', '统一个人收藏'); $('#library-panel')!.before(favoriteHost);
+  const favorites = createFavoritesWorkspace({ host: favoriteHost, getEntries: favoriteEntries, getContext: () => JSON.stringify([repoSource(), accountId()]), isFavorite: favorite, toggle: toggleFavorite, renderMarkdown, renderSolution: (record, host) => reader.renderDetail(record, host), authorName, date, errorMessage, toast });
+  const tricks = createTrickWorkspace({
+    host: $('#section-placeholder')!, getItems: () => s.tricks || [], setItems: value => { s.tricks = value; updateNavigationCounts(); },
+    getContext: () => ({ sourceKey: repoSource(), repo: repo(), accountId: accountId(), displayName: authorName(s.account), canCreate: !demo && !!s.account && (s.permissions.push === true || s.permissions.admin === true) && repoSource().startsWith('https://api.github.com|'), admin: s.permissions.admin === true }),
+    getBusy: () => s.busy, setBusy,
+    save: async input => { if (!bridge) throw new Error('请在桌面客户端登录后发布 Trick'); return bridge.saveTrick(input); },
+    remove: async input => { if (!bridge) throw new Error('请在桌面客户端登录后删除 Trick'); return bridge.deleteTrick(input); },
+    renderMarkdown, toast, errorMessage,
+    isFavorite: item => favorite({ ...item }), onToggleFavorite: item => toggleFavorite({ ...item })
+  });
   function renderMarkdown(container: HTMLElement, body: unknown) {
     const source = String(body || '还没有题解内容。可以从记录错因开始。');
     if ((window as AppWindowAccess).marked! && (window as AppWindowAccess).DOMPurify!) {
@@ -324,7 +374,7 @@ import { createAlgorithmWorkspace } from '../algorithms/workspace.js';
   const editor = createEditor({ demo, getEditor: () => s.editor, setEditor: value => { s.editor = value; }, getLocal: () => s.local, setLocal: value => { s.local = value; }, getRecords: () => s.records, setRecords: value => { s.records = value; }, getIssues: () => s.issues, setIssues: value => { s.issues = value; }, getComments: () => s.comments, getSelected: () => s.selected, setSelected: value => { s.selected = value; }, getBusy: () => s.busy, setBusy, getAccount: () => s.account, getPermissions: () => s.permissions, accountId, repo, key, uuid, isLocal, visibleLocal, canEditRemote, sameRepo, records, platformCode, colorRatingInput, renderEditorTags, cancelDraftSave: () => clearTimeout(draftTimer), persistLocal, call, refreshFilters, navigate, render, openDetail, toast, errorMessage });
   const { formDraft, fillForm, renderEditorDifficulty, setEditorPlatform, draftKey, editorError, openLocalSolution, openSubmit, saveDraft, saveRecord, deleteDiscussion, deleteRecord } = editor;
   async function sync() {
-    if (s.busy || $('#submit-dialog')!.open) { toast('请先完成或关闭当前编辑'); return; }
+    if (s.busy || $('#submit-dialog')!.open || tricks.hasEditor()) { toast('请先完成或关闭当前编辑'); return; }
     setBusy(true);
     try {
       if (demo && !webPreview) { toast('演示模式：本地记录已保留，未连接公共题库'); return; }
@@ -345,7 +395,9 @@ import { createAlgorithmWorkspace } from '../algorithms/workspace.js';
               s.records = data.records.map((r: AppRecord) => ({ ...r, repo: currentRepo, serverUrl: currentServer, sourceKey: repoSource(currentRepo, currentServer) }));
               s.issues = (Array.isArray(data.issues) ? data.issues : []).map((r: AppRecord) => ({ ...r, repo: currentRepo, serverUrl: currentServer, sourceKey: repoSource(currentRepo, currentServer) }));
               s.algorithmNotes = Array.isArray(data.algorithmNotes) ? data.algorithmNotes : [];
+              s.tricks = Array.isArray(data.tricks) ? data.tricks : [];
               s.algorithmTopics = Array.isArray(data.algorithmTopics) ? data.algorithmTopics : [];
+              s.algorithmNodeContents = Array.isArray(data.algorithmNodeContents) ? data.algorithmNodeContents : [];
               s.learningGateContents = Array.isArray(data.learningGateContents) ? data.learningGateContents : [];
               s.learningCurriculum = data.learningCurriculum || null;
               s.algorithmTree = AlgorithmDirectory.hydrate(window.QMX_ALGORITHM_TREE, s.algorithmTopics);
@@ -430,7 +482,7 @@ import { createAlgorithmWorkspace } from '../algorithms/workspace.js';
   $('#submit-form')!.addEventListener('input', () => { clearTimeout(draftTimer); draftTimer = setTimeout(saveDraft, 650); });
   $('#submit-form')!.elements.platform.addEventListener('change', () => { const form = $('#submit-form')!; form.elements.rating.value = ''; form.elements.difficulty.value = ''; setEditorPlatform(form.elements.platform.value, false); });
   $('#save-local-button')!.addEventListener('click', () => saveRecord(false)); $('#submit-form')!.addEventListener('submit', event => { event.preventDefault(); saveRecord(true); });
-  const settingsUI = createSettings({ demo, bridge, themeStorage: THEME_STORAGE, paletteStorage: PALETTE_STORAGE, getBusy: () => s.busy, setBusy, getSettings: () => s.settings, setSettings: value => { s.settings = value; }, getAccount: () => s.account, getAuthStatus: () => s.authStatus, getPermissions: () => s.permissions, setPermissionsRepo: value => { s.permissions.repo = value; }, getError: () => s.error, setError: value => { s.error = value; }, getLocal: () => s.local, repo, repoSource, quotaBlocked, reauthNeeded, call, applyPayload, resetRepositoryData: () => { s.records = []; s.issues = []; s.algorithmNotes = []; s.algorithmTopics = []; s.learningGateContents = []; s.learningCurriculum = null; s.lastSync = null; s.algorithmTree = AlgorithmDirectory.hydrate(window.QMX_ALGORITHM_TREE, []); }, resetSourceView: () => { s.comments.clear(); s.selected = null; reader.resetDetail(); }, clearComments: () => s.comments.clear(), refreshFilters, render, renderUpdate: () => updates.renderUpdate(), updateStatus, sync, writeDemo, toast, errorMessage });
+  const settingsUI = createSettings({ demo, bridge, themeStorage: THEME_STORAGE, paletteStorage: PALETTE_STORAGE, getBusy: () => s.busy, setBusy, getSettings: () => s.settings, setSettings: value => { s.settings = value; }, getAccount: () => s.account, getAuthStatus: () => s.authStatus, getPermissions: () => s.permissions, setPermissionsRepo: value => { s.permissions.repo = value; }, getError: () => s.error, setError: value => { s.error = value; }, getLocal: () => s.local, repo, repoSource, quotaBlocked, reauthNeeded, call, applyPayload, resetRepositoryData: () => { s.records = []; s.issues = []; s.tricks = []; tricks.reset(); s.algorithmNotes = []; s.algorithmTopics = []; s.algorithmNodeContents = []; s.learningGateContents = []; s.learningCurriculum = null; s.lastSync = null; s.algorithmTree = AlgorithmDirectory.hydrate(window.QMX_ALGORITHM_TREE, []); }, resetSourceView: () => { s.comments.clear(); s.selected = null; reader.resetDetail(); tricks.reset(); }, clearComments: () => s.comments.clear(), refreshFilters, render, renderUpdate: () => updates.renderUpdate(), updateStatus, sync, writeDemo, toast, errorMessage });
   const { readTheme, readPalette, applyTheme, applyPalette, applyAppearance, applyCodeSettings, renderRepoSelector, renderSettingsRepoList, renderAccount, startLoginFromBanner, accountAction, cancelLogin } = settingsUI;
   $('#sidebar-toggle')!.addEventListener('click', event => {
     const wasPinned = sidebarPinned; applySidebar(!wasPinned);
@@ -470,7 +522,7 @@ import { createAlgorithmWorkspace } from '../algorithms/workspace.js';
   });
   sidebar.addEventListener('focusout', () => { queueMicrotask(() => { if (!sidebar.contains(document.activeElement)) { sidebarFocused = false; updateSidebar(); } }); });
   document.addEventListener('keydown', event => { if (event.key === 'Escape' && !sidebarPinned && !document.querySelector('dialog[open]')) { clearSidebarTimers(); sidebarHovered = false; sidebarFocused = false; if (sidebar.contains(document.activeElement)) (document.activeElement as HTMLElement).blur(); updateSidebar(); } });
-  const updates = Updates.create({ demo, bridge, getAppVersion: () => s.appVersion!, getUpdate: () => s.update, setUpdate: update => { s.update = update; }, getUpdateCapability: () => s.updateCapability, getBusy: () => s.busy, setBusy, call, cancelDraftSave: () => clearTimeout(draftTimer), getLocalWrite: () => localWrite, resetLocalWrite: () => { localWrite = Promise.resolve(); }, hasEditor: () => !!s.editor, saveDraft, persistLocal, renderAccount, toast, errorMessage });
+  const updates = Updates.create({ demo, bridge, getAppVersion: () => s.appVersion!, getUpdate: () => s.update, setUpdate: update => { s.update = update; }, getUpdateCapability: () => s.updateCapability, getBusy: () => s.busy, setBusy, call, cancelDraftSave: () => clearTimeout(draftTimer), getLocalWrite: () => localWrite, resetLocalWrite: () => { localWrite = Promise.resolve(); }, hasEditor: () => !!s.editor || tricks.hasEditor(), saveDraft, persistLocal, renderAccount, toast, errorMessage });
   $('#submit-form')!.elements.url.addEventListener('blur', event => {
     try { const url = new URL((event.target as AppControl).value); const form = $('#submit-form')!; let match;
       if (url.hostname.endsWith('codeforces.com') && (match = url.pathname.match(/(?:problemset\/problem\/(\d+)\/([A-Za-z0-9]+)|contest\/(\d+)\/problem\/([A-Za-z0-9]+))/))) { setEditorPlatform('CF'); form.elements.pid.value = `CF${match[1] || match[3]}${(match[2] || match[4]).toUpperCase()}`; }
@@ -480,7 +532,14 @@ import { createAlgorithmWorkspace } from '../algorithms/workspace.js';
     } catch (_) { /* Validation is shown when saving. */ }
   });
   window.addEventListener('online', updateStatus); window.addEventListener('offline', updateStatus);
-  document.addEventListener('keydown', event => { if (event.key === '/' && !event.ctrlKey && !event.metaKey && !['INPUT', 'TEXTAREA', 'SELECT'].includes(document.activeElement?.tagName as string) && !document.querySelector('dialog[open]')) { event.preventDefault(); if (['home', 'tricks', 'algorithms'].includes(s.view)) { navigate('public'); } $('#search-input')!.focus(); } });
+  document.addEventListener('keydown', event => {
+    if (event.key === 'Escape' && s.view === 'favorites' && favorites.isReading() && !document.querySelector('dialog[open]')) { event.preventDefault(); favorites.back(); return; }
+    if (event.key === 'Escape' && s.view === 'tricks' && tricks.isReading() && !document.querySelector('dialog[open]')) { event.preventDefault(); tricks.closeDetail(); return; }
+    if (event.key === '/' && !event.ctrlKey && !event.metaKey && !['INPUT', 'TEXTAREA', 'SELECT'].includes(document.activeElement?.tagName as string) && !document.querySelector('dialog[open]')) {
+      event.preventDefault(); if (s.view === 'favorites') { if (favorites.isReading()) favorites.back(); favorites.focusSearch(); return; } if (s.view === 'tricks') { if (tricks.isReading()) tricks.closeDetail(); tricks.focusSearch(); return; }
+      if (['home', 'algorithms'].includes(s.view)) navigate('public'); $('#search-input')!.focus();
+    }
+  });
   async function bootstrap() {
     const initialTheme = readTheme(), initialPalette = readPalette();
     applyTheme(initialTheme); applyPalette(initialPalette); applySidebar(readSidebar()); render();

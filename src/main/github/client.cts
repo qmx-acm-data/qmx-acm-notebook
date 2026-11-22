@@ -1,8 +1,11 @@
 import * as YAML from 'yaml';
+import { createHash } from 'node:crypto';
+import type { AlgorithmNodeContent } from '../../shared/models/algorithm-node-content.js';
+const { ROADMAP_DIRECTORY_IDS } = require('./algorithm-node-content-model.cjs') as typeof import('../../shared/models/algorithm-node-content.js');
 import type { LearningGateContent, LearningPracticeList } from '../../shared/models/learning-content.js';
 import type { CurriculumGateLayout, CurriculumLayout, LearningCurriculumDocument } from '../../shared/models/learning-curriculum.js';
 import type { AlgorithmDirectoryNode } from '../../shared/models/algorithm-directory.js';
-import type { AlgorithmTopic } from '../algorithms/contracts.js';
+import type { AlgorithmTopic, TopicIndexEntry } from '../algorithms/contracts.js';
 import { Buffer } from 'node:buffer';
 import type { AlgorithmTopicsModule, ContentFields, ErrorFields, Fetcher, Fields, GitHubOptions, GraphQLDataFields, GraphQLFields, IssueFields, PermissionFields, RepositoryFields, RequestOptions, RequestResult, SyncInput, TagsModule, TreeEntry, TreeFields, UserFields, WriteFields } from './contracts.js';
 const { Tags } = require('./tags.cjs') as TagsModule;
@@ -18,6 +21,66 @@ const customGateId = /^custom-[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0
 export const LEARNING_CURRICULUM_PATH = 'algorithms/learning-path/curriculum.json';
 const builtinTopics = require('../ui/algorithm-tree.js') as AlgorithmDirectoryNode;
 const { builtinIndex: curriculumTopicIndex } = require('./algorithm-topics.cjs') as typeof import('../algorithms/topics.cjs');
+export const ALGORITHM_NODE_CONTENT_PREFIX = 'algorithms/node-content/';
+const roadmapContentIds = new Set<string>(ROADMAP_DIRECTORY_IDS.map(id => `roadmap:${id}`));
+/** Public introduction targets include approved roadmap directories; note targets remain leaf-only. */
+export function algorithmContentTargetId(value: unknown, topics: readonly AlgorithmTopic[] = []): string | null {
+  return typeof value === 'string' && roadmapContentIds.has(value) ? value : canonicalAlgorithmLeafId(value, topics);
+}
+function contentTargetFromIndex(value: unknown, index: ReadonlyMap<string, TopicIndexEntry>): string | null {
+  return typeof value === 'string' && roadmapContentIds.has(value) ? value : leafIdFromIndex(value, index);
+}
+export function algorithmNodeContentPath(nodeId: string): string {
+  return `${ALGORITHM_NODE_CONTENT_PREFIX}${createHash('sha256').update(nodeId, 'utf8').digest('hex')}.json`;
+}
+/** Resolve historic aliases and split algorithms, but never treat a physical branch as a leaf. */
+export function canonicalAlgorithmLeafId(value: unknown, topics: readonly AlgorithmTopic[] = []): string | null {
+  return leafIdFromIndex(value, curriculumTopicIndex(builtinTopics, [...topics]));
+}
+function leafIdFromIndex(value: unknown, index: ReadonlyMap<string, TopicIndexEntry>): string | null {
+  if (typeof value !== 'string') return null;
+  let node = index.get(value); const seen = new Set<string>();
+  while (node && !seen.has(node.id)) {
+    seen.add(node.id);
+    if (!node.children.length && node.kind === 'algorithm') return node.id;
+    node = index.get(`algorithm-content-${node.id}`);
+  }
+  return null;
+}
+function algorithmNodeContentFields(value: unknown) {
+  const fields = learningFields(value);
+  const nodeId = learningText(fields.nodeId, '算法叶节点标识', 1000);
+  if (typeof fields.introduction !== 'string' || Buffer.byteLength(fields.introduction, 'utf8') > 100000 || /[\u0000-\u0008\u000b\u000c\u000e-\u001f\u007f]/.test(fields.introduction)) throw new Error('算法介绍必须是100000字节以内的Markdown文本');
+  if (!Array.isArray(fields.featuredNotePaths) || fields.featuredNotePaths.length > 100) throw new Error('精选笔记须为0-100项');
+  const featuredNotePaths = fields.featuredNotePaths.map(path => {
+    validatePath(path);
+    if (typeof path !== 'string' || !/^algorithms\/notes\/(?:public\/|personal\/[1-9]\d*\/)[^/]+\.md$/.test(path)) throw new Error('精选笔记路径无效');
+    return path;
+  });
+  if (new Set(featuredNotePaths).size !== featuredNotePaths.length) throw new Error('精选笔记路径不能重复');
+  if (nodeId.startsWith('roadmap:') && (!roadmapContentIds.has(nodeId) || featuredNotePaths.length)) throw new Error('路线目录只能保存介绍，不能关联笔记');
+  return { nodeId, introduction: fields.introduction, featuredNotePaths };
+}
+export function parseAlgorithmNodeContent(value: unknown, sha: unknown): AlgorithmNodeContent {
+  const fields = learningFields(value), clean = algorithmNodeContentFields(fields), author = learningFields(fields.author);
+  if (fields.schema !== 1) throw new Error('算法节点内容版本不受支持');
+  if (typeof sha !== 'string' || !/^[A-Za-z0-9_-]{1,200}$/.test(sha)) throw new Error('算法节点内容缺少有效SHA');
+  if (!Number.isSafeInteger(author.id) || (author.id as number) < 1) throw new Error('算法节点内容缺少可信作者');
+  if (typeof fields.updatedAt !== 'string' || !Number.isFinite(Date.parse(fields.updatedAt))) throw new Error('算法节点内容缺少有效更新时间');
+  for (const path of clean.featuredNotePaths) {
+    const owner = /^algorithms\/notes\/personal\/([1-9]\d*)\//.exec(path)?.[1];
+    if (owner && owner !== String(author.id)) throw new Error('算法节点内容不能引用作者以外账号的个人笔记');
+  }
+  const storageNodeId = fields.storageNodeId === undefined ? undefined : learningText(fields.storageNodeId, '算法内容存储标识', 1000);
+  const result = { ...clean, ...(storageNodeId === undefined ? {} : { storageNodeId }), sha, updatedAt: fields.updatedAt, author: { id: author.id as number, login: learningText(author.login, '作者', 100) } };
+  if (Buffer.byteLength(JSON.stringify(result), 'utf8') > 1000000) throw new Error('算法节点内容文件过大');
+  return result;
+}
+export function parseAlgorithmNodeContentText(text: unknown, sha: unknown): AlgorithmNodeContent {
+  if (typeof text !== 'string' || Buffer.byteLength(text, 'utf8') > 1000000) throw new Error('算法节点内容文件过大');
+  let value: unknown; try { value = JSON.parse(text); } catch { throw new Error('算法节点内容JSON无法解析'); }
+  return parseAlgorithmNodeContent(value, sha);
+}
 export function learningCurriculumGateIds(document: LearningCurriculumDocument | null): Set<string> {
   return document ? new Set(document.layout.stages.flatMap(stage => stage.gates.map(gate => gate.id))) : new Set(learningGateIds);
 }
@@ -139,6 +202,44 @@ export function repoParts(repo: string) {
 
 const { identify, frontmatter, authorId, parseDocument, issueRecord, issueBody, documentContent, validatePath, parseAlgorithmNote, samePayload } = require('./record-parser.cjs') as typeof import('../records/parser.cjs');
 
+const TRICK_PATH = /^tricks\/([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})\.md$/;
+type Trick = import('../../shared/models/trick.js').Trick;
+function trickText(value: unknown, label: string, maxBytes: number, required = false): string {
+  if (typeof value !== 'string' || Buffer.byteLength(value, 'utf8') > maxBytes || /[\u0000-\u0008\u000b\u000c\u000e-\u001f\u007f]/.test(value) || required && !value.trim()) throw new Error(`${label}格式不正确或超过${maxBytes}字节`);
+  return value;
+}
+export function validateTrickPath(value: unknown): string {
+  if (typeof value !== 'string' || !TRICK_PATH.test(value)) throw new Error('Trick路径必须为 tricks/<UUID>.md');
+  return value;
+}
+/** Strictly parses repository bytes and cached records; never falls back to a solution document. */
+export function parseTrick(path: unknown, text: unknown, sha: unknown, scope: import('../../shared/models/bootstrap.js').SourceScope): Trick {
+  const safePath = validateTrickPath(path);
+  if (typeof sha !== 'string' || !/^[A-Za-z0-9_-]{1,200}$/.test(sha)) throw new Error('Trick缺少有效SHA');
+  const { meta, body } = frontmatter(text, true);
+  if (meta.schema !== 1 || meta.kind !== 'trick') throw new Error('Trick元数据schema/kind无效');
+  const owner = authorId(meta.authorId);
+  if (!owner || typeof meta.author !== 'string' || !/^[A-Za-z0-9](?:[A-Za-z0-9-]{0,38})$/.test(meta.author)) throw new Error('Trick作者无效');
+  if (typeof meta.updatedAt !== 'string' || !/^\d{4}-\d{2}-\d{2}T/.test(meta.updatedAt) || !Number.isFinite(Date.parse(meta.updatedAt))) throw new Error('Trick更新时间无效');
+  const title = trickText(meta.title, 'Trick标题', 600, true).trim();
+  const introduction = trickText(meta.introduction, 'Trick简介', 6000, true);
+  trickText(body, 'Trick正文', 1000000, true);
+  const clientId = TRICK_PATH.exec(safePath)![1];
+  return { id: `trick:${safePath}`, kind: 'trick', clientId, path: safePath, sha, title, introduction, body, authorId: owner, author: { id: owner, login: meta.author }, updatedAt: meta.updatedAt, ...scope };
+}
+export function cachedTrick(value: unknown, scope: import('../../shared/models/bootstrap.js').SourceScope): Trick | null {
+  if (!value || typeof value !== 'object' || Array.isArray(value)) return null;
+  const item = value as Fields;
+  if (item.repo !== scope.repo || item.sourceKey !== scope.sourceKey || item.serverUrl !== scope.serverUrl || item.kind !== 'trick') return null;
+  const author = item.author && typeof item.author === 'object' && !Array.isArray(item.author) ? item.author as Fields : null;
+  if (!author || author.id !== item.authorId) return null;
+  try {
+    const text = `---\n${YAML.stringify({ schema: 1, kind: 'trick', title: item.title, introduction: item.introduction, authorId: item.authorId, author: author.login, updatedAt: item.updatedAt })}---\n${typeof item.body === 'string' ? item.body : ''}`;
+    const parsed = parseTrick(item.path, text, item.sha, scope);
+    return item.id === parsed.id && item.clientId === parsed.clientId ? parsed : null;
+  } catch { return null; }
+}
+
 export class GitHub {
   declare repo: string;
   declare serverUrl: string;
@@ -247,7 +348,7 @@ export class GitHub {
     const info = infoData as RepositoryFields;
     if (!(info.permissions as PermissionFields | null | undefined)?.push && !(info.permissions as PermissionFields | null | undefined)?.admin) throw new Error('当前账号没有该仓库的写入权限（push），请联系仓库管理员授权');
     if (!info.default_branch) throw new Error('仓库尚无默认分支，请先初始化仓库');
-    return { user, branch: info.default_branch };
+    return { user, branch: info.default_branch, admin: (info.permissions as PermissionFields | null | undefined)?.admin === true, writable: (info.permissions as PermissionFields | null | undefined)?.push === true || (info.permissions as PermissionFields | null | undefined)?.admin === true };
   }
 
   contentEndpoint(path: string) {
@@ -354,6 +455,48 @@ export class GitHub {
     return new AlgorithmTopics(this).save(record);
   }
 
+  async saveAlgorithmNodeContent(input: unknown): Promise<AlgorithmNodeContent> {
+    const fields = learningFields(input);
+    if (typeof fields.repo !== 'string') throw new Error('算法节点内容必须指定当前仓库');
+    this.checkScope(fields);
+    const clean = algorithmNodeContentFields(fields);
+    const requestedStorageId = fields.storageNodeId === undefined ? undefined : learningText(fields.storageNodeId, '算法内容存储标识', 1000);
+    if (fields.sha !== null && (typeof fields.sha !== 'string' || !/^[A-Za-z0-9_-]{1,200}$/.test(fields.sha))) throw new Error('请显式提供新增null或编辑SHA');
+    const { user, branch } = await this.writeContext();
+    const { data: repository } = await this.request(`/repos/${this.repo}`);
+    if (((repository as RepositoryFields).permissions as PermissionFields | null | undefined)?.admin !== true) throw new Error('只有仓库管理员（admin）可以修改算法介绍和精选笔记');
+    if (!Number.isSafeInteger(user.id) || (user.id as number) < 1 || typeof user.login !== 'string') throw new Error('无法确认GitHub登录用户身份');
+    const additions = await this.currentDocument(TOPICS_PATH, branch);
+    const topics = additions ? parseTopics(additions.text) : [];
+    const leafIndex = curriculumTopicIndex(builtinTopics, topics);
+    const nodeId = contentTargetFromIndex(clean.nodeId, leafIndex);
+    if (!nodeId) throw new Error('算法介绍和笔记只能属于真实算法叶节点或批准的路线介绍目录');
+    const storageNodeId = requestedStorageId ?? nodeId;
+    if (contentTargetFromIndex(storageNodeId, leafIndex) !== nodeId) throw new Error('算法内容存储标识与当前节点不匹配');
+    clean.nodeId = storageNodeId;
+    for (const notePath of clean.featuredNotePaths) {
+      const personal = /^algorithms\/notes\/personal\/([1-9]\d*)\//.exec(notePath);
+      if (personal && personal[1] !== String(user.id)) throw new Error('不能公开引用其他账号的个人笔记');
+      const noteFile = await this.currentDocument(notePath, branch);
+      if (!noteFile) throw new Error('精选笔记不存在，请先同步');
+      const note = parseAlgorithmNote(notePath, noteFile.text);
+      if (personal ? note.noteScope !== 'personal' || note.authorId !== user.id : note.noteScope !== 'public') throw new Error('精选笔记路径与所有权元数据不匹配');
+      if (leafIdFromIndex(note.nodeId, leafIndex) !== nodeId) throw new Error('精选笔记必须属于同一个算法叶节点');
+    }
+    if (fields.sha === null && storageNodeId !== nodeId) throw new Error('历史存储标识只能用于编辑已有算法内容，请先同步');
+    const path = algorithmNodeContentPath(storageNodeId), current = await this.currentDocument(path, branch);
+    if (fields.sha === null ? current !== null : !current || current.sha !== fields.sha) throw new Error('算法节点内容SHA冲突，请先同步后重新编辑');
+    if (current && parseAlgorithmNodeContentText(current.text, current.sha).nodeId !== storageNodeId) throw new Error('算法节点内容文件与存储标识不匹配');
+    const payload = { schema: 1, ...clean, updatedAt: new Date().toISOString(), author: { id: user.id as number, login: user.login } };
+    const provisional = parseAlgorithmNodeContent(payload, fields.sha || 'pending');
+    const text = JSON.stringify(payload, null, 2) + '\n';
+    if (Buffer.byteLength(text, 'utf8') > 1000000) throw new Error('算法节点内容文件过大');
+    const { data } = await this.request(this.contentEndpoint(path), { method: 'PUT', body: JSON.stringify({ message: `更新算法介绍和精选笔记：${nodeId}`, content: Buffer.from(text).toString('base64'), branch, ...(fields.sha === null ? {} : { sha: fields.sha }) }) });
+    const sha = ((data as WriteFields).content as ContentFields | null | undefined)?.sha;
+    if (typeof sha !== 'string' || !/^[A-Za-z0-9_-]{1,200}$/.test(sha)) throw new Error('算法节点内容写入结果未知，请先同步核实');
+    return { ...provisional, nodeId, ...(storageNodeId === nodeId ? {} : { storageNodeId }), sha, repo: this.repo, serverUrl: this.serverUrl, sourceKey: repositoryKey(this.repo, this.serverUrl) };
+  }
+
   async saveAlgorithmNote(input: unknown) {
     const record = input as Fields;
     this.checkScope(record);
@@ -370,21 +513,79 @@ export class GitHub {
     const current = await this.currentDocument(path, branch);
     if (record.path && !current) throw new Error('算法笔记已被删除，请先同步');
     if (current && record.path && current.sha !== record.sha) throw new Error('算法笔记 SHA 冲突，请先同步');
-    if (current && record.path) {
-      const existing = frontmatter(current.text, true).meta;
-      if (existing.note_scope === 'public') { if (!admin) throw new Error('只有管理员可以编辑公共算法笔记'); }
-      else this.checkOwner(current.text, user);
+    if (!/^algorithms\/notes\/(?:public\/|personal\/[1-9]\d*\/)[^/]+\.md$/.test(path)) throw new Error('算法笔记路径无效');
+    const personalOwner = /^algorithms\/notes\/personal\/([1-9]\d*)\//.exec(path)?.[1];
+    if (personalOwner ? personalOwner !== String(user.id) || scope !== 'personal' : scope !== 'public') throw new Error('不能改变算法笔记路径的范围或账号归属');
+    const existing = current ? frontmatter(current.text, true).meta : {};
+    if (current) {
+      if (existing.note_scope === 'public') { if (!admin || personalOwner) throw new Error('只有管理员可以编辑公共算法笔记'); }
+      else { if (!personalOwner) throw new Error('算法笔记路径与范围不匹配'); this.checkOwner(current.text, user); }
+      if (!record.path && existing.client_id !== clientId.toLowerCase()) throw new Error('算法笔记目标路径已存在且clientId不匹配，请同步');
     }
     const supplied = frontmatter(record.body, true);
+    const additions = await this.currentDocument(TOPICS_PATH, branch);
+    const topics = additions ? parseTopics(additions.text) : [];
+    const nodeId = canonicalAlgorithmLeafId(record.nodeId || supplied.meta.node_id || existing.node_id, topics);
+    if (!nodeId) throw new Error('算法笔记只能保存到真实算法叶节点，不能保存到目录');
     const tags = Array.isArray(record.tags) ? record.tags.map(String) : Array.isArray(supplied.meta.tags) ? supplied.meta.tags.map(String) : [];
-    const meta = { schema: 3, note_scope: scope, node_id: String(record.nodeId || supplied.meta.node_id || 'root'), featured: admin && record.featured === true, author_id: user.id, author: user.login, title: String(record.title || supplied.meta.title || '未命名算法笔记'), tags, client_id: clientId.toLowerCase(), updated_at: new Date().toISOString() };
+    const meta = { schema: 3, note_scope: scope, node_id: nodeId, featured: admin ? record.featured === true : existing.featured === true, author_id: user.id, author: user.login, title: String(record.title || supplied.meta.title || '未命名算法笔记'), tags, client_id: clientId.toLowerCase(), updated_at: new Date().toISOString() };
     const text = `---\n${YAML.stringify(meta)}---\n${supplied.body}`;
     if (text.length > 1000000) throw new Error('算法笔记内容过长');
-    if (admin && meta.featured) await this.clearFeaturedAlgorithmNotes(branch, path);
     if (current && samePayload(current.text, text)) return this.recordResult(path, current.text, current.sha, branch);
     const { data } = await this.request(this.contentEndpoint(path), { method: 'PUT', body: JSON.stringify({ message: `${current ? '更新' : '新增'}算法笔记：${meta.title}`, content: Buffer.from(text).toString('base64'), branch, ...(current ? { sha: current.sha } : {}) }) });
     if (!((data as WriteFields).content as ContentFields | null | undefined)?.sha) throw new Error('算法笔记写入结果未知，请先同步核实');
     return this.recordResult(path, text, ((data as WriteFields).content as ContentFields).sha, branch);
+  }
+
+  async saveTrick(input: unknown): Promise<Trick> {
+    if (!input || typeof input !== 'object' || Array.isArray(input)) throw new Error('Trick输入格式无效');
+    const record = input as Fields;
+    this.checkScope(record);
+    if (record.sourceKey !== undefined && record.sourceKey !== repositoryKey(this.repo, this.serverUrl)) throw new Error('Trick所属来源与当前仓库不一致，请重新同步');
+    const title = trickText(record.title, 'Trick标题', 600, true).trim();
+    const introduction = trickText(record.introduction, 'Trick简介', 6000, true);
+    const body = trickText(record.body, 'Trick正文', 1000000, true);
+    if (record.path !== undefined) validateTrickPath(record.path);
+    if (record.path !== undefined && (typeof record.sha !== 'string' || !record.sha.trim())) throw new Error('更新Trick必须提供当前SHA，请先同步');
+    const clientId = record.clientId === undefined ? (require('node:crypto') as typeof import('node:crypto')).randomUUID() : record.clientId;
+    if (typeof clientId !== 'string' || !UUID.test(clientId)) throw new Error('Trick clientId必须为UUID');
+    const path = record.path === undefined ? `tricks/${clientId.toLowerCase()}.md` : validateTrickPath(record.path);
+    const { user, branch, admin, writable } = await this.writeContext();
+    if (!writable) throw new Error('当前账号没有有效仓库写入权限');
+    const current = await this.currentDocument(path, branch);
+    if (record.path !== undefined && !current) throw new Error('Trick已被删除，请先同步');
+    const scope = { repo: this.repo, serverUrl: this.serverUrl, sourceKey: repositoryKey(this.repo, this.serverUrl) };
+    const existing = current ? parseTrick(path, current.text, current.sha, scope) : null;
+    if (existing && existing.authorId !== user.id && !admin) throw new Error('只能维护本人Trick，或由仓库管理员管理');
+    if (record.path !== undefined && current!.sha !== record.sha) throw new Error('Trick SHA冲突，请先同步后再编辑');
+    const meta = { schema: 1, kind: 'trick', title, introduction, authorId: existing?.authorId ?? user.id, author: existing?.author.login ?? user.login, updatedAt: new Date().toISOString() };
+    const text = `---\n${YAML.stringify(meta)}---\n${body}`;
+    const provisional = parseTrick(path, text, current?.sha ?? 'pending', scope);
+    if (existing && existing.title === title && existing.introduction === introduction && existing.body === body) return existing;
+    if (record.path === undefined && current) throw new Error('同一clientId的Trick已存在但内容不同，请同步后使用路径和SHA编辑');
+    const { data } = await this.request(this.contentEndpoint(path), { method: 'PUT', body: JSON.stringify({ message: `${current ? '更新' : '新增'}Trick：${title}`, content: Buffer.from(text).toString('base64'), branch, ...(current ? { sha: current.sha } : {}) }) });
+    const savedSha = ((data as WriteFields).content as ContentFields | null | undefined)?.sha;
+    if (typeof savedSha !== 'string' || !/^[A-Za-z0-9_-]{1,200}$/.test(savedSha)) throw new Error('Trick写入结果未知，请先同步确认，不要重复创建');
+    return { ...provisional, sha: savedSha };
+  }
+
+  async deleteTrick(input: unknown): Promise<import('../../shared/models/trick.js').DeletedTrick> {
+    if (!input || typeof input !== 'object' || Array.isArray(input)) throw new Error('Trick输入格式无效');
+    const record = input as Fields;
+    this.checkScope(record);
+    if (record.sourceKey !== undefined && record.sourceKey !== repositoryKey(this.repo, this.serverUrl)) throw new Error('Trick所属来源与当前仓库不一致，请重新同步');
+    const path = validateTrickPath(record.path);
+    if (typeof record.sha !== 'string' || !record.sha.trim()) throw new Error('删除Trick必须提供当前SHA，请先同步');
+    const { user, branch, admin, writable } = await this.writeContext();
+    if (!writable) throw new Error('当前账号没有有效仓库写入权限');
+    const current = await this.currentDocument(path, branch);
+    if (!current) throw new Error('Trick已不存在，请先同步');
+    const scope = { repo: this.repo, serverUrl: this.serverUrl, sourceKey: repositoryKey(this.repo, this.serverUrl) };
+    const existing = parseTrick(path, current.text, current.sha, scope);
+    if (existing.authorId !== user.id && !admin) throw new Error('只能删除本人Trick，或由仓库管理员管理');
+    if (current.sha !== record.sha) throw new Error('Trick SHA冲突，请先同步后再删除');
+    await this.request(this.contentEndpoint(path), { method: 'DELETE', body: JSON.stringify({ message: `删除Trick：${existing.title}`, sha: current.sha, branch }) });
+    return { id: existing.id, path, deleted: true, ...scope };
   }
 
   async saveDocument(input: unknown) {
@@ -557,6 +758,17 @@ export class GitHub {
       }
       return text;
     };
+    const trickFiles = (tree.tree as TreeEntry[]).filter(item => item.type === 'blob' && typeof item.path === 'string' && TRICK_PATH.test(item.path));
+    if (trickFiles.length > 10000) throw new Error('公共Trick文件数量超过同步上限');
+    const tricks: Trick[] = [], seenTricks = new Set<string>();
+    for (let start = 0; start < trickFiles.length; start += 4) {
+      const batch = await Promise.all(trickFiles.slice(start, start + 4).map(async item => parseTrick(item.path, await readPublicBlob(item), item.sha, scope)));
+      for (const trick of batch) {
+        if (seenTricks.has(trick.id)) throw new Error('公共Trick标识重复');
+        seenTricks.add(trick.id); tricks.push(trick);
+      }
+    }
+    tricks.sort((a, b) => b.updatedAt.localeCompare(a.updatedAt) || a.path.localeCompare(b.path));
     const additions = (tree.tree as TreeEntry[]).find(item => item.type === 'blob' && item.path === TOPICS_PATH);
     const algorithmTopics = additions ? parseTopics(await readPublicBlob(additions)).map(topic => ({ ...topic, ...scope })) : [];
     const curriculumFile = (tree.tree as TreeEntry[]).find(item => item.type === 'blob' && item.path === LEARNING_CURRICULUM_PATH);
@@ -582,12 +794,24 @@ export class GitHub {
       // Revalidate cached bytes too; disk cache is not a trusted input boundary.
       learningGateContents.push({ ...parseLearningGateText(text, gateId, sha), ...scope });
     }
+    const leafIndex = curriculumTopicIndex(builtinTopics, algorithmTopics);
+    const nodeContentFiles = (tree.tree as TreeEntry[]).filter(item => item.type === 'blob' && typeof item.path === 'string' && item.path.startsWith(ALGORITHM_NODE_CONTENT_PREFIX) && item.path.endsWith('.json'));
+    if (nodeContentFiles.length > 10000) throw new Error('算法节点内容文件过多');
+    const algorithmNodeContents: AlgorithmNodeContent[] = [], seenNodes = new Set<string>();
+    for (const item of nodeContentFiles) {
+      const content = parseAlgorithmNodeContentText(await readPublicBlob(item), item.sha);
+      if (content.storageNodeId !== undefined || item.path !== algorithmNodeContentPath(content.nodeId)) throw new Error('算法节点内容文件名与标识不匹配');
+      const storageNodeId = content.nodeId, nodeId = contentTargetFromIndex(storageNodeId, leafIndex);
+      if (!nodeId) continue; // Deleted identities are ordinary absence; split identities retain their original file.
+      if (seenNodes.has(nodeId)) throw new Error('算法节点内容标识重复');
+      seenNodes.add(nodeId); algorithmNodeContents.push({ ...content, nodeId, ...(storageNodeId === nodeId ? {} : { storageNodeId }), ...scope });
+    }
     return {
-      algorithmTopics, learningGateContents, learningCurriculum: curriculum,
+      tricks, algorithmTopics, algorithmNodeContents, learningGateContents, learningCurriculum: curriculum,
       records: records.filter(r => r.kind === 'document'),
-      algorithmNotes: records.filter(r => r.kind === 'algorithm-note'),
+      algorithmNotes: records.filter(r => r.kind === 'algorithm-note').map(note => 'nodeId' in note ? { ...note, nodeId: leafIdFromIndex(note.nodeId, leafIndex) || note.nodeId } : note),
       issues: issues.filter(x => !x.pull_request && !/<!--\s*qmx-tag-request\s+[\s\S]*?-->/i.test(String(x.body || ''))).map(x => ({ ...issueRecord(x as Parameters<typeof issueRecord>[0]), ...scope })),
-      blobs: Object.fromEntries([...docs, ...gateFiles, ...(curriculumFile ? [curriculumFile] : []), ...(additions ? [additions] : [])].map(d => [d.sha, blobs[d.sha as string]])), branch, lastSync: new Date().toISOString(),
+      blobs: Object.fromEntries([...docs, ...trickFiles, ...gateFiles, ...nodeContentFiles, ...(curriculumFile ? [curriculumFile] : []), ...(additions ? [additions] : [])].map(d => [d.sha, blobs[d.sha as string]])), branch, lastSync: new Date().toISOString(),
     };
   }
 

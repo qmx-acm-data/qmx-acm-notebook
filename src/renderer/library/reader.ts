@@ -16,7 +16,7 @@ export function createLibraryReader(options: Options): Controller {
   function element<K extends keyof HTMLElementTagNameMap>(tag: K, className?: string, text?: unknown): HTMLElementTagNameMap[K] { const node = document.createElement(tag); if (className) node.className = className; if (text !== undefined) node.textContent = String(text); return node; }
   function append<T extends HTMLElement>(parent: T, ...children: (Node | null | undefined | false)[]): T { children.filter(Boolean).forEach(child => parent.append(child as Node)); return parent; }
   function button(label: string, className: string, action: (event: MouseEvent) => unknown) { const node = element('button', className, label); node.type = 'button'; node.addEventListener('click', action); return node; }
-  function favorite(record: AppRecord) { return getLocal().favorites.some(value => String(value) === key(record)); }
+  function favorite(record: AppRecord) { return options.isFavorite ? options.isFavorite(record) : getLocal().favorites.some(value => String(value) === key(record)); }
   function mastery(record: AppRecord) { return stateLabels[getLocal().mastery[key(record)]] ? getLocal().mastery[key(record)] : 'unreviewed'; }
   function badge(record: AppRecord) { return element('span', `badge ${isLocal(record) ? 'local' : 'shared'}`, isLocal(record) ? record.proposalUrl ? '旧版已投稿副本' : '仅本地 · 未上传' : record.kind === 'document' ? '正式题解' : '讨论 Issue'); }
   function platformLabel(record: AppRecord) { const code = platformCode(record.platform); const names: Record<string, string> = { CF: 'Codeforces', AT: 'AtCoder', LG: '洛谷', NC: '牛客', LC: 'LeetCode' }; const label = element('span', 'platform-label', names[code] || record.platform || '其他平台'); label.dataset.platform = ['CF', 'AT', 'LG', 'NC', 'LC'].includes(code) ? code : 'Oth'; return label; }
@@ -109,10 +109,16 @@ export function createLibraryReader(options: Options): Controller {
     }
   }
   async function changeLocal(change: () => void) { if (getBusy()) return; setBusy(true); const before = structuredClone(getLocal()); change(); render(); try { await persistLocal(); } catch (error) { setLocal(before); render(); toast(`未能保存：${errorMessage(error)}`); } finally { setBusy(false); } }
-  function renderDetail(record: AppRecord) {
-    const panel = $('#detail-panel')!; const scroll = panel.scrollTop; panel.replaceChildren();
-    if (focusedDetail) { const back = button('← 返回题目列表', 'button secondary detail-back', closeDetail); back.id = 'detail-back-button'; panel.append(back); } else { const open = button('打开详情 ↗', 'button primary detail-open', () => openDetail(record)); open.id = 'open-detail-button'; panel.append(open); }
-    const actions = append(element('div', 'detail-actions'), button(favorite(record) ? '★ 已收藏' : '☆ 收藏', 'button secondary', () => changeLocal(() => { getLocal().favorites = favorite(record) ? getLocal().favorites.filter(value => String(value) !== key(record)) : [...getLocal().favorites, key(record)]; })), button('原题 ↗', 'button subtle', () => openExternal(record.problemUrl || record.url)));
+  function renderDetail(record: AppRecord, destination?: HTMLElement) {
+    const panel = destination || $('#detail-panel')!; const scroll = panel.scrollTop; panel.replaceChildren();
+    if (!destination && focusedDetail) { const back = button('← 返回题目列表', 'button secondary detail-back', closeDetail); back.id = 'detail-back-button'; panel.append(back); } else if (!destination) { const open = button('打开详情 ↗', 'button primary detail-open', () => openDetail(record)); open.id = 'open-detail-button'; panel.append(open); }
+    const favoriteButton = button(favorite(record) ? '★ 已收藏' : '☆ 收藏', 'button secondary', () => {
+      if (getBusy()) return;
+      if (options.toggleFavorite) { void options.toggleFavorite(record).then(() => { favoriteButton.textContent = favorite(record) ? '★ 已收藏' : '☆ 收藏'; favoriteButton.setAttribute('aria-pressed', String(favorite(record))); }).catch(error => toast(errorMessage(error))); }
+      else void changeLocal(() => { getLocal().favorites = favorite(record) ? getLocal().favorites.filter(value => String(value) !== key(record)) : [...getLocal().favorites, key(record)]; });
+    });
+    favoriteButton.setAttribute('aria-pressed', String(favorite(record)));
+    const actions = append(element('div', 'detail-actions'), favoriteButton, button('原题 ↗', 'button subtle', () => openExternal(record.problemUrl || record.url)));
     if (record.kind === 'document') {
       const localSolution = button('＋ 本地题解', 'button subtle public-local-solution', () => openLocalSolution(record));
       localSolution.id = 'local-solution-button'; localSolution.title = '为这道题写自己的本地题解；已有本地记录时继续编辑';
