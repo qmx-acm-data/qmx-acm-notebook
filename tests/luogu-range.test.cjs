@@ -7,6 +7,7 @@ const ts = require('typescript');
 
 // Load current sources so this regression can run before the coordinated build.
 const sourceFiles = new Map([
+  ['./luogu-native.cjs', path.resolve(__dirname, '../src/main/library/luogu-native.cts')],
   ['./luogu-difficulty.js', path.resolve(__dirname, '../src/shared/luogu-difficulty.ts')],
   ['./library-normalize.cjs', path.resolve(__dirname, '../src/main/library/normalize.cts')],
   ['./nowcoder-daily.cjs', path.resolve(__dirname, '../src/main/contests/nowcoder-daily.cts')],
@@ -116,25 +117,44 @@ test('reversed, unassessed and invalid bounds fail before fetch, CLIST or sampli
   assert.deepEqual([networkCalls, clistCalls, randomCalls], [0, 0, 0]);
 });
 
-test('legacy exact level aliases match official native values and preserve raw parser mapping', async () => {
+test('legacy exact level aliases match canonical official numeric bands', async () => {
   const parsed = parseLuoguProblemList(JSON.stringify({ data: { problems: { count: 3, result: [
     { pid: 'P1001', name: 'Native third band', difficulty: 3, tags: [] },
     { pid: 'P1002', name: 'Native fifth band', difficulty: 5, tags: [] },
     { pid: 'P1003', name: 'Unassessed', difficulty: 0, tags: [] }
   ] } } }));
-  assert.equal(parsed.problems[0].luoguDifficulty, '普及/提高−');
-  assert.equal(parsed.problems[0].officialDifficulty, '普及/提高−');
-  assert.equal(parsed.problems[1].luoguDifficulty, '提高+/省选−', 'official numeric difficulty 5 retains its historical mapping');
+  assert.equal(parsed.problems[0].luoguDifficulty, '普及');
+  assert.equal(parsed.problems[0].officialDifficulty, '普及');
+  // Official /_lfe/config ProblemDifficulty (cached in .cache/luogu-config.json)
+  // gives Senior/id 5 as 提高; the former 提高+/省选− assertion was one band too high.
+  assert.equal(parsed.problems[1].luoguDifficulty, '提高', 'official numeric difficulty 5 is Senior/提高');
+  assert.equal(parsed.problems[1].estimatedCfRating, 1800);
   const library = libraryFor(parsed.problems);
   for (const filter of [{ luoguDifficulty: '普及' }, { difficulty: '普及' }, { luoguDifficulty: '普及/提高-' }]) {
     const result = await dailyDraw({ platform: 'LG', ...filter }, [], offline, () => 0, undefined, library);
     assert.equal(result.problem.id, 'LG:P1001');
-    assert.equal(result.problem.luoguDifficulty, '普及/提高−');
-    assert.equal(result.problem.officialDifficulty, '普及/提高−');
+    assert.equal(result.problem.luoguDifficulty, '普及');
+    assert.equal(result.problem.officialDifficulty, '普及');
   }
   assert.equal((await dailyDraw({ platform: 'LG', luoguDifficulty: '暂无评定' }, [], offline, () => 0, undefined, library)).problem.id, 'LG:P1003');
-  assert.equal((await dailyDraw({ platform: 'LG', luoguDifficulty: '提高+/省选-' }, [], offline, () => 0, undefined, library)).problem.id, 'LG:P1002');
-  await assert.rejects(dailyDraw({ platform: 'LG', ...range, excludedIds: ['LG:P1001'] }, [], offline, () => 0, undefined, library), /没有其他符合条件/);
+  assert.equal((await dailyDraw({ platform: 'LG', luoguDifficulty: '提高' }, [], offline, () => 0, undefined, library)).problem.id, 'LG:P1002');
+  assert.equal((await dailyDraw({ platform: 'LG', ...range, excludedIds: ['LG:P1001'] }, [], offline, () => 0, undefined, library)).problem.id, 'LG:P1002', 'the corrected rank 5 is the inclusive maximum');
+  await assert.rejects(dailyDraw({ platform: 'LG', ...range, excludedIds: ['LG:P1001', 'LG:P1002'] }, [], offline, () => 0, undefined, library), /没有其他符合条件/);
+});
+
+test('official numeric bands 5, 6, 7 and 8 match their own exact rank and inclusive bounds', async () => {
+  const labels = ['提高', '提高+/省选−', '省选/NOI−', 'NOI/NOI+/CTS'];
+  const ratings = [1800, 2100, 2400, 2800];
+  const parsed = parseLuoguProblemList(JSON.stringify({ data: { problems: { count: 4, result: labels.map((_, index) => ({ pid: `P${12000 + index}`, name: `Official band ${index + 5}`, difficulty: index + 5, tags: [] })) } } }));
+  const library = libraryFor(parsed.problems);
+  for (let index = 0; index < labels.length; index += 1) {
+    const drawn = await dailyDraw({ platform: 'LG', luoguDifficulty: labels[index], luoguDifficultyMin: labels[index], luoguDifficultyMax: labels[index], ratingMin: ratings[index], ratingMax: ratings[index] }, [], offline, () => 0, undefined, library);
+    assert.equal(drawn.problem.id, `LG:P${12000 + index}`);
+    assert.equal(drawn.problem.luoguDifficultyCode, index + 5);
+    assert.equal(drawn.problem.luoguDifficulty, labels[index]);
+    assert.equal(drawn.problem.estimatedCfRating, ratings[index]);
+    assert.equal(drawn.diagnostics.candidateCount, 1);
+  }
 });
 
 test('native unassessed falls back to stored or CLIST estimates and remains available without bounds', async () => {

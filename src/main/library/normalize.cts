@@ -9,6 +9,7 @@ export interface LibraryRow {
   rating: number | null;
   estimatedCfRating: number | null;
   luoguDifficulty: string | null;
+  luoguDifficultyCode?: number;
   estimatedLuoguDifficulty: string | null;
   communityDifficulty: number | null;
   clistRating?: number | null;
@@ -31,6 +32,7 @@ export interface RawProblem {
   clistRating?: unknown;
   estimatedCfRating?: unknown;
   luoguDifficulty?: unknown;
+  luoguDifficultyCode?: unknown;
   estimatedLuoguDifficulty?: unknown;
   communityDifficulty?: unknown;
   tags?: unknown;
@@ -46,6 +48,8 @@ export interface Normalizer {
 }
 
 type Fields = Record<string, unknown>;
+const { luoguNativeDifficultyLabel } = require('./luogu-difficulty.js') as typeof import('../../shared/luogu-difficulty.js');
+const { estimateNativeLuoguCfRating } = require('./luogu-native.cjs') as typeof import('./luogu-native.cjs');
 const presets = require('../ui/tag-presets.js') as unknown as { categories?: { tags?: { name?: unknown }[] }[] };
 
 const canonical = new Map<string, string>();
@@ -204,7 +208,10 @@ export function normalizeOfficialMetadata(row: RawProblem, platform: string, tag
     ? normalizeSourceAlgorithmTags(row.officialTags, platform)
     : row.tagsKnown === false || platform === 'AT' ? [] : [...tags];
   let officialDifficulty: string | null;
-  if (row.officialDifficulty === null || typeof row.officialDifficulty === 'string') {
+  const nativeLuoguLevel = platform === 'LG' ? luoguNativeDifficultyLabel(row.luoguDifficultyCode) : null;
+  if (nativeLuoguLevel !== null) {
+    officialDifficulty = row.luoguDifficultyCode === 0 ? null : nativeLuoguLevel;
+  } else if (row.officialDifficulty === null || typeof row.officialDifficulty === 'string') {
     officialDifficulty = text(row.officialDifficulty);
   } else if (platform === 'CF') {
     const rating = positive(row.rating);
@@ -235,8 +242,12 @@ export function createNormalizer(estimateLuoguDifficulty: (rating: number | null
       if (parsed.protocol !== 'https:' || parsed.username || parsed.password) return null;
       const normalizedId = /^codeforces:/i.test(id) ? `CF:${id.slice('codeforces:'.length)}` : id;
       const rating = positive(row.rating);
-      const estimatedCfRating = positive(row.estimatedCfRating) ?? rating;
-      const nativeLevel = text(row.luoguDifficulty);
+      const nativeCodeLevel = platform === 'LG' ? luoguNativeDifficultyLabel(row.luoguDifficultyCode) : null;
+      const nativeCode = nativeCodeLevel !== null && typeof row.luoguDifficultyCode === 'number' ? row.luoguDifficultyCode : undefined;
+      const hasClistRating = typeof row.clistRating === 'number' && Number.isFinite(row.clistRating) && row.clistRating > 0;
+      const estimatedCfRating = nativeCodeLevel !== null && !hasClistRating
+        ? estimateNativeLuoguCfRating(nativeCodeLevel) : positive(row.estimatedCfRating) ?? rating;
+      const nativeLevel = nativeCodeLevel ?? text(row.luoguDifficulty);
       const storedLevel = text(row.estimatedLuoguDifficulty);
       const { tags, rawTags } = normalizeTags(row.tags, platform);
       return {
@@ -247,7 +258,8 @@ export function createNormalizer(estimateLuoguDifficulty: (rating: number | null
         rating,
         estimatedCfRating,
         luoguDifficulty: nativeLevel,
-        estimatedLuoguDifficulty: storedLevel ?? (platform === 'LG' && nativeLevel ? null : estimateLuoguDifficulty(estimatedCfRating)),
+        ...(nativeCode !== undefined ? { luoguDifficultyCode: nativeCode } : {}),
+        estimatedLuoguDifficulty: nativeCode !== undefined && !hasClistRating ? null : storedLevel ?? (platform === 'LG' && nativeLevel ? null : estimateLuoguDifficulty(estimatedCfRating)),
         communityDifficulty: typeof row.communityDifficulty === 'number' && Number.isFinite(row.communityDifficulty) ? row.communityDifficulty : null,
         clistRating: typeof row.clistRating === 'number' && Number.isFinite(row.clistRating) && row.clistRating >= 0 ? row.clistRating : null,
         tags,
@@ -266,7 +278,8 @@ export function toDrawProblem(row: LibraryRow): DailyDrawProblem | null {
   return {
     id: row.id, title: row.title, source: row.platform, origin: 'library',
     rating: row.rating, estimatedCfRating: row.estimatedCfRating,
-    luoguDifficulty: row.luoguDifficulty ?? '',
+    luoguDifficulty: row.platform === 'LG' ? luoguNativeDifficultyLabel(row.luoguDifficultyCode) ?? row.luoguDifficulty ?? '' : row.luoguDifficulty ?? '',
+    ...(row.platform === 'LG' && row.luoguDifficultyCode !== undefined && luoguNativeDifficultyLabel(row.luoguDifficultyCode) !== null ? { luoguDifficultyCode: row.luoguDifficultyCode } : {}),
     estimatedLuoguDifficulty: row.estimatedLuoguDifficulty,
     communityDifficulty: row.communityDifficulty, clistRating: row.clistRating,
     ratingEstimateReason: row.estimateReason ?? undefined,

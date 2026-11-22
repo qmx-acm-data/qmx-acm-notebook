@@ -1,9 +1,19 @@
 // Generated from src/shared/luogu-difficulty.ts; run pnpm modules:build.
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.luoguDifficultyLevels = void 0;
+exports.luoguDifficultyLevels = exports.luoguNativeDifficultyLabels = void 0;
+exports.luoguNativeDifficultyLabel = luoguNativeDifficultyLabel;
 exports.luoguDifficultyRank = luoguDifficultyRank;
 exports.luoguDifficultyLabel = luoguDifficultyLabel;
+/** Luogu's official ProblemDifficulty IDs and names (including its Unicode minus). */
+exports.luoguNativeDifficultyLabels = {
+    0: '暂无评定', 1: '入门', 2: '普及−', 3: '普及', 4: '普及+/提高−',
+    5: '提高', 6: '提高+/省选−', 7: '省选/NOI−', 8: 'NOI/NOI+/CTS'
+};
+function luoguNativeDifficultyLabel(code) {
+    return typeof code === 'number' && Number.isInteger(code) && code >= 0 && code <= 8
+        ? exports.luoguNativeDifficultyLabels[code] : null;
+}
 /** Application labels, with historical Luogu names resolved to the same level. */
 exports.luoguDifficultyLevels = ['入门', '普及-', '普及', '普及+/提高-', '提高', '提高+/省选-', '省选/NOI-', 'NOI/NOI+/CTS'];
 const aliases = {

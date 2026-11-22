@@ -78,6 +78,9 @@ test('manual suggest sends only selected metadata and confirmed statement, with 
   assert.deepEqual(body.response_format, { type: 'json_object' });
   assert.deepEqual(Object.keys(body).sort(), ['messages', 'model', 'response_format', 'stream']);
   assert.equal(body.messages.length, 2); assert.match(body.messages[0].content, /不可信/); assert.match(body.messages[0].content, /不得使用工具/);
+  const allowedLuogu = /luoguDifficulty 仅可为 (\[[^\n]+\]) 中之一。/.exec(body.messages[0].content);
+  assert.ok(allowedLuogu, 'the prompt explicitly constrains native Luogu levels');
+  assert.deepEqual(JSON.parse(allowedLuogu[1]), ['暂无评定', '入门', '普及−', '普及', '普及+/提高−', '提高', '提高+/省选−', '省选/NOI−', 'NOI/NOI+/CTS']);
   const user = JSON.parse(body.messages[1].content);
   assert.deepEqual(Object.keys(user).sort(), ['platform', 'requestedFields', 'statementText', 'title', 'url']);
   assert.equal(options.body.includes('PRIVATE-'), false); assert.equal(options.body.includes(dummyKey), false);
@@ -124,6 +127,15 @@ test('accepts strict JSON or one JSON fence, valid difficulty boundaries and ded
     const result = await configured({ fetcher: async () => response(content) }).service.suggest(view, 'statement');
     assert.deepEqual(result.tags, ['dp']); assert.equal(result.model, 'test-model');
   }
+});
+test('accepts all nine canonical native difficulties and preserves historical provider labels', async () => {
+  for (const luoguDifficulty of ['暂无评定', '入门', '普及−', '普及', '普及+/提高−', '提高', '提高+/省选−', '省选/NOI−', 'NOI/NOI+/CTS', '普及/提高−', '普及+/提高', 'NOI/NOI+/CTSC']) {
+    const result = await configured({ fetcher: async () => response({ tags: ['dp'], luoguDifficulty, reason: 'analysis' }) }).service.suggest(view, 'statement');
+    assert.equal(result.luoguDifficulty, luoguDifficulty, 'native level 8 and historical labels must retain their exact approved values');
+  }
+  const advanced = await configured({ fetcher: async () => response({ luoguDifficulty: '提高', reason: 'analysis' }) }).service.suggest(view, 'statement');
+  assert.equal(advanced.luoguDifficulty, '提高', 'the standalone native level 5 is a meaningful suggestion');
+  await assert.rejects(configured({ fetcher: async () => response({ luoguDifficulty: '暂无评定', reason: 'analysis' }) }).service.suggest(view, 'statement'), generic);
 });
 test('oversized response aborts and cancels streamed body with and without content-length', async () => {
   for (const length of [undefined, '262145']) {

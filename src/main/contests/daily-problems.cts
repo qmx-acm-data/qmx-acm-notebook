@@ -1,7 +1,7 @@
 import type { DailyDrawFilters, DailyDrawProblem, DailyDrawResult } from '../../shared/models/daily-problem.js';
 import type { ClistPageResult } from '../clist/service.cts';
 import type { DailyLibrary } from '../library/index.cts';
-const { luoguDifficultyRank } = require('./luogu-difficulty.js') as typeof import('../../shared/luogu-difficulty.js');
+const { luoguDifficultyRank, luoguNativeDifficultyLabel } = require('./luogu-difficulty.js') as typeof import('../../shared/luogu-difficulty.js');
 
 export interface DailyClistService {
   fetchProblems(filter?: { resource?: string; minRating?: number; maxRating?: number }): Promise<ClistPageResult>;
@@ -72,10 +72,6 @@ export function estimateCfRating(communityDifficulty: number | null): number | n
   if (communityDifficulty === null || !Number.isFinite(communityDifficulty)) return null;
   return Math.max(800, Math.min(3500, Math.round((communityDifficulty + 800) / 100) * 100));
 }
-const luoguDifficultyNames: Readonly<Record<number, string>> = {
-  0: '暂无评定', 1: '入门', 2: '普及−', 3: '普及/提高−', 4: '普及+/提高',
-  5: '提高+/省选−', 6: '省选/NOI−', 7: 'NOI/NOI+/CTSC'
-};
 // Types come from Luogu's own taxonomy: Algorithm only, never Origin/Time/
 // Region/SpecialProblem/Others even when a non-algorithm label looks technical.
 const luoguTagCatalog = require('../ui/luogu-tags.json') as { tags: { id: number; name: string; type: number }[]; types: { id: number; type: string }[] };
@@ -99,7 +95,54 @@ const luoguCfRatings: Readonly<Record<string, number>> = {
   '提高+/省选-': 2100, '省选/NOI-': 2400, 'NOI/NOI+/CTSC': 2800, 'NOI/NOI+/CTS': 2800
 };
 function luoguLevelKey(value: string): string { return value.trim().replace(/−/g, '-'); }
-function estimateLuoguCfRating(level: string): number | null { return luoguCfRatings[luoguLevelKey(level)] ?? null; }
+function estimateLuoguCfRating(level: string): number | null {
+  const rank = luoguDifficultyRank(level);
+  return luoguCfRatings[luoguLevelKey(level)] ?? (rank === null || rank < 1 ? null : [900, 1100, 1300, 1600, 1800, 2100, 2400, 2800][rank - 1] ?? null);
+}
+
+/** Native metadata is shared only by recognized official routes, never by a PID alone. */
+function nativeProblemKey(problem: DailyDrawProblem): string | null {
+  if (problem.source !== 'CF' && problem.source !== 'LG') return null;
+  if (!/^https:\/\//i.test(problem.url) || /[\s\\]/.test(problem.url)) return null;
+  let url: URL;
+  try { url = new URL(problem.url); } catch { return null; }
+  if (url.username || url.password || url.port) return null;
+  const route = url.pathname.replace(/\/+$/, '');
+  if (problem.source === 'CF' && ['codeforces.com', 'www.codeforces.com', 'contest.codeforces.com'].includes(url.hostname)) {
+    const match = /^\/(?:problemset\/problem\/(\d+)\/([A-Za-z0-9]+)|contest\/(\d+)\/problem\/([A-Za-z0-9]+)|gym\/(\d+)\/problem\/([A-Za-z0-9]+))$/.exec(route);
+    if (match) return match[5] ? `CF:https://codeforces.com/gym/${match[5]}/problem/${match[6].toUpperCase()}` : `CF:https://codeforces.com/problemset/problem/${match[1] ?? match[3]}/${(match[2] ?? match[4]).toUpperCase()}`;
+  }
+  if (problem.source === 'LG' && ['luogu.com.cn', 'www.luogu.com.cn', 'luogu.com', 'www.luogu.com'].includes(url.hostname)) {
+    const match = /^\/problem\/([A-Za-z0-9_-]+)$/.exec(route);
+    if (match) return `LG:https://www.luogu.com.cn/problem/${match[1].toUpperCase()}`;
+  }
+  return null;
+}
+function assessedLuoguLevel(value: string | null | undefined): string | null {
+  return typeof value === 'string' && (luoguDifficultyRank(value) ?? 0) > 0 ? value.trim() : null;
+}
+/** Restore missing native difficulty without replacing account-scoped identity or references. */
+export function mergeNativeProblemDifficulty(problem: DailyDrawProblem, indexed: DailyDrawProblem): DailyDrawProblem {
+  const key = nativeProblemKey(problem);
+  if (key === null || key !== nativeProblemKey(indexed)) return problem;
+  const hasReference = problem.supplementInfo?.difficulty === true || problem.difficultyReference?.basis === 'clist'
+    || typeof problem.clistRating === 'number' && Number.isFinite(problem.clistRating) && problem.clistRating > 0;
+  if (problem.source === 'LG') {
+    if (assessedLuoguLevel(problem.luoguDifficulty)) return problem;
+    const level = assessedLuoguLevel(problem.officialDifficulty) ?? assessedLuoguLevel(indexed.luoguDifficulty) ?? assessedLuoguLevel(indexed.officialDifficulty);
+    if (!level) return problem;
+    const estimatedCfRating = estimateLuoguCfRating(level);
+    const code = luoguNativeDifficultyLabel(problem.luoguDifficultyCode) === level ? problem.luoguDifficultyCode
+      : luoguNativeDifficultyLabel(indexed.luoguDifficultyCode) === level ? indexed.luoguDifficultyCode : undefined;
+    return { ...problem, luoguDifficulty: level, ...(code !== undefined ? { luoguDifficultyCode: code } : {}), officialDifficulty: level, estimatedLuoguDifficulty: null,
+      ...(!hasReference ? { estimatedCfRating, ratingEstimateReason: undefined } : {}) };
+  }
+  if (typeof problem.rating === 'number' && Number.isFinite(problem.rating) && problem.rating > 0) return problem;
+  const rating = indexed.rating;
+  if (typeof rating !== 'number' || !Number.isFinite(rating) || rating <= 0) return problem;
+  return { ...problem, rating, officialDifficulty: String(rating),
+    ...(!hasReference ? { estimatedCfRating: null, estimatedLuoguDifficulty: estimateLuoguDifficulty(rating), ratingEstimateReason: undefined } : {}) };
+}
 
 export function parseLuoguProblemList(text: unknown): { problems: DailyDrawProblem[]; count: number } {
   if (typeof text !== 'string') throw new Error('洛谷题库响应不是文本');
@@ -113,10 +156,11 @@ export function parseLuoguProblemList(text: unknown): { problems: DailyDrawProbl
   const problems = data.result.flatMap((value: unknown): DailyDrawProblem[] => {
     const row = object(value);
     if (!row || typeof row.pid !== 'string' || !/^[A-Z][A-Z0-9]*$/.test(row.pid) || typeof row.name !== 'string' || !row.name.trim()) return [];
-    const level = typeof row.difficulty === 'number' && Number.isInteger(row.difficulty) ? luoguDifficultyNames[row.difficulty] : undefined;
+    const level = luoguNativeDifficultyLabel(row.difficulty);
+    const luoguDifficultyCode = level !== null && typeof row.difficulty === 'number' ? row.difficulty : undefined;
     const tagIds = Array.isArray(row.tags) ? row.tags.filter((tag: unknown): tag is number => typeof tag === 'number' && Number.isSafeInteger(tag)) : [];
     const tags = [...new Set(tagIds.flatMap(id => luoguTagNames[id] ? [luoguTagNames[id]] : []))];
-    return [{ id: `LG:${row.pid}`, title: row.name.trim(), source: 'LG', origin: 'public', estimatedCfRating: level ? estimateLuoguCfRating(level) : null, estimatedLuoguDifficulty: null, url: `https://www.luogu.com.cn/problem/${row.pid}`, rating: null, luoguDifficulty: level ?? '', officialTags: tags, officialDifficulty: row.difficulty === 0 ? null : level ?? null, tags }];
+    return [{ id: `LG:${row.pid}`, title: row.name.trim(), source: 'LG', origin: 'public', estimatedCfRating: level ? estimateLuoguCfRating(level) : null, estimatedLuoguDifficulty: null, url: `https://www.luogu.com.cn/problem/${row.pid}`, rating: null, luoguDifficulty: level ?? '', ...(luoguDifficultyCode !== undefined ? { luoguDifficultyCode } : {}), officialTags: tags, officialDifficulty: luoguDifficultyCode === 0 ? null : level, tags }];
   });
   return { problems, count: data.count };
 }
@@ -336,7 +380,10 @@ function normalizeRecord(value: unknown): DailyDrawProblem | null {
   const id = typeof row.pid === 'string' && row.pid.trim() ? `${source}:${row.pid.trim().replace(/^CF/i, '').toUpperCase()}` : url.href;
   const rating = typeof row.rating === 'number' && Number.isFinite(row.rating) && row.rating > 0 ? row.rating : null;
   const tags = Array.isArray(row.tags) ? row.tags.filter((tag: unknown): tag is string => typeof tag === 'string').map((tag: string) => tag.trim()).filter(Boolean) : [];
-  const luoguDifficulty = typeof row.luoguDifficulty === 'string' ? row.luoguDifficulty : source === 'LG' && typeof row.difficulty === 'string' ? row.difficulty : '';
+  const nativeLevel = source === 'LG' ? luoguNativeDifficultyLabel(row.luoguDifficultyCode) : null;
+  const luoguDifficultyCode = nativeLevel !== null && typeof row.luoguDifficultyCode === 'number' ? row.luoguDifficultyCode : undefined;
+  let luoguDifficulty = nativeLevel ?? (typeof row.luoguDifficulty === 'string' ? row.luoguDifficulty : source === 'LG' && typeof row.difficulty === 'string' ? row.difficulty : '');
+  if (source === 'LG' && luoguDifficultyCode === undefined && !assessedLuoguLevel(luoguDifficulty) && typeof row.officialDifficulty === 'string') luoguDifficulty = assessedLuoguLevel(row.officialDifficulty) ?? luoguDifficulty;
   const origin = row.kind === 'local' ? 'local' : 'public';
   const communityDifficulty = typeof row.communityDifficulty === 'number' && Number.isFinite(row.communityDifficulty) ? row.communityDifficulty : null;
   const storedEstimatedCfRating = typeof row.estimatedCfRating === 'number' && Number.isFinite(row.estimatedCfRating) && row.estimatedCfRating > 0 ? row.estimatedCfRating : null;
@@ -351,8 +398,8 @@ function normalizeRecord(value: unknown): DailyDrawProblem | null {
     ? null
     : storedEstimatedLuoguDifficulty ?? estimateLuoguDifficulty(rating ?? estimatedCfRating);
   const { normalizeOfficialMetadata } = require('./library-normalize.cjs') as typeof import('../library/normalize.cjs');
-  const official = normalizeOfficialMetadata({ ...row, luoguDifficulty, officialDifficulty: typeof row.officialDifficulty === 'string' || row.officialDifficulty === null ? row.officialDifficulty : typeof row.difficulty === 'string' && row.difficulty.trim() ? row.difficulty : undefined }, source, tags);
-  return { id, title: row.title.trim(), source, origin, communityDifficulty, estimatedCfRating, estimatedLuoguDifficulty, ratingEstimateReason: storedRatingEstimateReason, url: url.href, rating, luoguDifficulty, tags, ...official };
+  const official = normalizeOfficialMetadata({ ...row, luoguDifficulty, officialDifficulty: luoguDifficultyCode === 0 ? null : nativeLevel ?? (typeof row.officialDifficulty === 'string' || row.officialDifficulty === null ? row.officialDifficulty : typeof row.difficulty === 'string' && row.difficulty.trim() ? row.difficulty : undefined) }, source, tags);
+  return { id, title: row.title.trim(), source, origin, communityDifficulty, estimatedCfRating, estimatedLuoguDifficulty, ratingEstimateReason: storedRatingEstimateReason, url: url.href, rating, luoguDifficulty, ...(luoguDifficultyCode !== undefined ? { luoguDifficultyCode } : {}), tags, ...official };
 }
 interface DailySourceResult { problems: DailyDrawProblem[]; errors: string[] }
 interface DailySourceSnapshot { at: number; result?: DailySourceResult; pending?: Promise<DailySourceResult> }
@@ -452,9 +499,18 @@ export async function dailyDraw(input: unknown, records: readonly unknown[], fet
   const excludedInput = filter.excludedIds;
   if (excludedInput !== undefined && (!Array.isArray(excludedInput) || excludedInput.length > 100 || excludedInput.some(id => typeof id !== 'string' || !id.trim() || id.length > 2048))) throw new Error('排除题目格式不正确');
   const excluded = new Set<string>(Array.isArray(excludedInput) ? excludedInput.map((id: string) => id.trim()) : []);
-  const candidates = records.map(normalizeRecord).filter((p): p is DailyDrawProblem => p !== null);
   const errors: string[] = [];
   const libraryRecords = Array.isArray(library?.records) ? library.records : [];
+  const nativeIndex = new Map<string, DailyDrawProblem>();
+  for (const problem of libraryRecords) {
+    const key = nativeProblemKey(problem);
+    if (key !== null) nativeIndex.set(key, problem);
+  }
+  const candidates = records.map(normalizeRecord).filter((p): p is DailyDrawProblem => p !== null).map(problem => {
+    const key = nativeProblemKey(problem);
+    const indexed = key === null ? undefined : nativeIndex.get(key);
+    return indexed ? mergeNativeProblemDifficulty(problem, indexed) : problem;
+  });
   // Each indexed platform stays offline; missing shards can still use public sources.
   const indexedPlatforms = new Set(libraryRecords.map(problem => problem.source));
   if (source === 'all') candidates.push(...libraryRecords.map(problem => ({ ...problem })));

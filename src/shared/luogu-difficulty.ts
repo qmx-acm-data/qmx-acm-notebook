@@ -1,3 +1,13 @@
+/** Luogu's official ProblemDifficulty IDs and names (including its Unicode minus). */
+export const luoguNativeDifficultyLabels: Readonly<Record<number, string>> = {
+  0: '暂无评定', 1: '入门', 2: '普及−', 3: '普及', 4: '普及+/提高−',
+  5: '提高', 6: '提高+/省选−', 7: '省选/NOI−', 8: 'NOI/NOI+/CTS'
+};
+export function luoguNativeDifficultyLabel(code: unknown): string | null {
+  return typeof code === 'number' && Number.isInteger(code) && code >= 0 && code <= 8
+    ? luoguNativeDifficultyLabels[code] : null;
+}
+
 /** Application labels, with historical Luogu names resolved to the same level. */
 export const luoguDifficultyLevels = ['入门', '普及-', '普及', '普及+/提高-', '提高', '提高+/省选-', '省选/NOI-', 'NOI/NOI+/CTS'] as const;
 const aliases: Readonly<Record<string, number>> = {

@@ -13,7 +13,13 @@ const originalLoad = Module._load;
 let normalizerExports;
 let luoguDifficultyExports;
 Module._load = function(request, parent, isMain) {
-  if (request === './luogu-difficulty.js' && parent?.filename === filename) {
+  if (request === './luogu-native.cjs' && parent?.filename === normalizerFilename) {
+    const sourcePath = path.resolve(__dirname, '../src/main/library/luogu-native.cts');
+    const dependency = new Module(sourcePath, module); dependency.filename = sourcePath;
+    const output = ts.transpileModule(fs.readFileSync(sourcePath, 'utf8'), { compilerOptions: { module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2022 } });
+    dependency._compile(output.outputText, sourcePath); return dependency.exports;
+  }
+  if (request === './luogu-difficulty.js' && parent?.filename?.startsWith(path.resolve(__dirname, '../src'))) {
     if (luoguDifficultyExports) return luoguDifficultyExports;
     const dependencyPath = path.resolve(__dirname, '../src/shared/luogu-difficulty.ts');
     const dependency = new Module(dependencyPath, module);
@@ -81,6 +87,55 @@ test('parses Luogu public list with native levels and complete tag preset names'
   const completeCatalog = parseLuoguProblemList(`<script id="lentille-context" type="application/json">${JSON.stringify({ data: { problems: { count: 1, result: [{ pid: 'P1001', name: 'Catalog tag', difficulty: 2, tags: [presetTagId] }] } } })}</script>`);
   assert.deepEqual(completeCatalog.problems[0].tags, ['背包 DP']);
   assert.throws(() => parseLuoguProblemList('<html></html>'), /缺少公开数据/);
+});
+
+// Luogu's /_lfe/config ProblemDifficulty snapshot (.cache/luogu-config.json):
+// numeric IDs 0..8 are current official bands, rather than the old shifted 5..7 map.
+test('parses every official Luogu code with canonical labels and preserves unknown metadata', () => {
+  const labels = ['暂无评定', '入门', '普及−', '普及', '普及+/提高−', '提高', '提高+/省选−', '省选/NOI−', 'NOI/NOI+/CTS'];
+  const ratings = [null, 900, 1100, 1300, 1600, 1800, 2100, 2400, 2800];
+  const codes = [...labels.keys(), 9, 5.5, -1, '8', null];
+  const parsed = parseLuoguProblemList(JSON.stringify({ data: { problems: { count: codes.length, result: codes.map((difficulty, index) => ({ pid: `P${11000 + index}`, name: `Difficulty ${index}`, difficulty, tags: [] })) } } }));
+  const { luoguNativeDifficultyLabels, luoguNativeDifficultyLabel, luoguDifficultyRank } = luoguDifficultyExports;
+  assert.deepEqual(labels.map((_, code) => luoguNativeDifficultyLabels[code]), labels);
+  for (let code = 0; code <= 8; code += 1) {
+    const problem = parsed.problems[code];
+    assert.equal(luoguNativeDifficultyLabel(code), labels[code]);
+    assert.equal(luoguDifficultyRank(labels[code]), code);
+    assert.equal(problem.luoguDifficultyCode, code);
+    assert.equal(problem.luoguDifficulty, labels[code]);
+    assert.equal(problem.officialDifficulty, code === 0 ? null : labels[code]);
+    assert.equal(problem.estimatedCfRating, ratings[code]);
+    assert.equal(problem.estimatedLuoguDifficulty, null);
+    assert.equal(problem.rating, null);
+    assert.equal(problem.clistRating, undefined);
+  }
+  for (const code of [9, 5.5, -1, '8', null, undefined, NaN, Infinity, {}, true]) assert.equal(luoguNativeDifficultyLabel(code), null);
+  for (const problem of parsed.problems.slice(9)) {
+    assert.equal(Object.hasOwn(problem, 'luoguDifficultyCode'), false);
+    assert.equal(problem.luoguDifficulty, '', 'unknown codes must not become official code 0');
+    assert.equal(problem.officialDifficulty, null);
+    assert.equal(problem.estimatedCfRating, null);
+  }
+});
+
+test('draws P11834 and P3756 as official code 8 with a 2800 native estimate without CLIST', async () => {
+  const result = [{ pid: 'P11834', name: 'Code 8 regression P11834', difficulty: 8, tags: [] }, { pid: 'P3756', name: 'Code 8 regression P3756', difficulty: 8, tags: [] }];
+  const fetcher = async () => ({ ok: true, text: async () => JSON.stringify({ data: { problems: { count: 2, result } } }) });
+  for (const pick of [0, 0.999]) {
+    const drawn = await dailyDraw({ source: 'LG', luoguDifficulty: 'NOI/NOI+/CTS', ratingMin: 2800, ratingMax: 2800 }, [], fetcher, () => pick);
+    assert.equal(drawn.problem.id, pick === 0 ? 'LG:P11834' : 'LG:P3756');
+    assert.equal(drawn.problem.luoguDifficultyCode, 8);
+    assert.equal(drawn.problem.luoguDifficulty, 'NOI/NOI+/CTS');
+    assert.equal(drawn.problem.officialDifficulty, 'NOI/NOI+/CTS');
+    assert.equal(drawn.problem.estimatedCfRating, 2800);
+    assert.equal(drawn.problem.estimatedLuoguDifficulty, null);
+    assert.equal(drawn.problem.rating, null);
+    assert.equal(drawn.problem.clistRating, undefined);
+    assert.equal(drawn.problem.difficultyReference, undefined);
+    assert.match(drawn.problem.ratingEstimateReason, /洛谷原生难度 NOI\/NOI\+\/CTS.*2800/);
+    assert.doesNotMatch(drawn.problem.luoguDifficulty, /暂无评定|待评/);
+  }
 });
 
 test('parses anonymous LeetCode list, real numeric IDs, free-only and estimated difficulty', () => {
@@ -211,6 +266,84 @@ test('draws from the local library without any network access', async () => {
   assert.equal((await dailyDraw({ platform: 'LG', ratingMin: 900, ratingMax: 900 }, [], offline, () => 0, undefined, library)).problem.id, 'LG:P1000');
   await assert.rejects(dailyDraw({ platform: 'CF', ratingMin: 3000 }, [], offline, () => 0, undefined, library), /没有符合条件/);
   await assert.rejects(dailyDraw({ platform: 'LG', luoguDifficulty: '省选/NOI-' }, [], offline, () => 0, undefined, library), /没有符合条件/);
+});
+
+test('restores P9234 native difficulty before a document copy hides its library row', async () => {
+  const indexed = { id: 'LG:P9234', title: 'Indexed title', source: 'LG', origin: 'library', url: 'https://www.luogu.com.cn/problem/P9234', rating: null, estimatedCfRating: 1600, estimatedLuoguDifficulty: null, luoguDifficulty: '普及+/提高', officialDifficulty: '普及+/提高', tags: ['图论'], officialTags: ['图论'] };
+  const library = { builtAt: null, records: [indexed] };
+  const offline = async () => { assert.fail('native metadata recovery must stay offline'); };
+  for (const kind of ['document', 'local']) {
+    const record = { kind, platform: 'LG', pid: 'P9234', title: 'Repository title', problemUrl: 'https://www.luogu.com.cn/problem/P9234', difficulty: '', tags: ['动态规划'], officialTags: [] };
+    const snapshot = structuredClone({ record, indexed });
+    for (const source of kind === 'local' ? ['all', 'local', 'public'] : ['all', 'public']) {
+      for (const bounds of [{}, { luoguDifficulty: '普及+/提高' }, { ratingMin: 1600, ratingMax: 1600 }, { luoguDifficultyMin: '普及+/提高-', luoguDifficultyMax: '普及+/提高-', ratingMin: 1600, ratingMax: 1600 }]) {
+        const result = await dailyDraw({ source, platform: 'LG', tags: ['动态规划'], ...bounds }, [record], offline, () => 0, undefined, library);
+        assert.equal(result.problem.id, 'LG:P9234');
+        assert.equal(result.problem.title, 'Repository title');
+        assert.equal(result.problem.origin, kind === 'local' ? 'local' : 'public');
+        assert.equal(result.problem.url, record.problemUrl);
+        assert.deepEqual(result.problem.tags, ['动态规划 DP']);
+        assert.deepEqual(result.problem.officialTags, []);
+        assert.equal(result.problem.luoguDifficulty, '普及+/提高');
+        assert.equal(result.problem.officialDifficulty, '普及+/提高');
+        assert.equal(result.problem.estimatedCfRating, 1600);
+        assert.equal(result.problem.estimatedLuoguDifficulty, null);
+        assert.equal(result.problem.rating, null);
+        assert.equal(result.diagnostics.candidateCount, 1);
+        assert.match(result.problem.ratingEstimateReason, /洛谷原生难度.*非官方等价/);
+      }
+    }
+    const unfiltered = await dailyDraw({ source: 'all', platform: 'LG' }, [record], offline, () => 0, undefined, library);
+    assert.equal(unfiltered.problem.title, 'Repository title');
+    assert.equal(unfiltered.problem.luoguDifficulty, '普及+/提高');
+    assert.equal(unfiltered.problem.estimatedCfRating, 1600);
+    assert.equal(unfiltered.diagnostics.candidateCount, 1, 'the repository copy survives ordinary URL deduplication');
+    assert.deepEqual({ record, indexed }, snapshot, 'neither repository rows nor shared index may be mutated');
+    if (kind === 'document') await assert.rejects(dailyDraw({ source: 'local', platform: 'LG' }, [record], offline, () => 0, undefined, library), /没有符合条件/);
+  }
+});
+
+test('scoped Luogu records recover a validated official level even without an index', async () => {
+  const record = { kind: 'document', platform: 'LG', pid: 'P9234', title: 'Official only', problemUrl: 'https://www.luogu.com.cn/problem/P9234', luoguDifficulty: '', difficulty: '', officialDifficulty: '普及加/提高' };
+  const offline = async () => { assert.fail('official fallback must stay offline'); };
+  const result = await dailyDraw({ source: 'public', platform: 'LG', luoguDifficulty: '普及+/提高-', ratingMin: 1600, ratingMax: 1600 }, [record], offline, () => 0);
+  assert.equal(result.problem.luoguDifficulty, '普及加/提高');
+  assert.equal(result.problem.officialDifficulty, '普及加/提高');
+  assert.equal(result.problem.estimatedCfRating, 1600);
+  assert.equal(result.problem.estimatedLuoguDifficulty, null);
+  for (const officialDifficulty of ['暂无评定', '1600', 'unknown', '普及加/提高;process.exit()']) {
+    const unknown = await dailyDraw({ source: 'public', platform: 'LG' }, [{ ...record, officialDifficulty }], offline, () => 0);
+    assert.equal(unknown.problem.luoguDifficulty, '');
+    assert.equal(unknown.problem.estimatedCfRating, null);
+  }
+});
+
+test('scoped CF records recover an indexed native rating through a contest URL alias', async () => {
+  const record = { kind: 'local', platform: 'CF', pid: '92101', title: 'Repository CF', problemUrl: 'https://codeforces.com/contest/921/problem/01/?locale=en', tags: ['数学'] };
+  const indexed = { id: 'CF:92101', title: 'Indexed CF', source: 'CF', origin: 'library', url: 'https://codeforces.com/problemset/problem/921/01', rating: 1800, estimatedCfRating: null, estimatedLuoguDifficulty: '提高', luoguDifficulty: '', tags: ['图论'] };
+  const offline = async () => { assert.fail('scoped CF native recovery must stay offline'); };
+  const result = await dailyDraw({ source: 'local', platform: 'CF', ratingMin: 1800, ratingMax: 1800, tags: ['数学'] }, [record], offline, () => 0, undefined, { builtAt: null, records: [indexed] });
+  assert.equal(result.problem.title, 'Repository CF');
+  assert.equal(result.problem.origin, 'local');
+  assert.equal(result.problem.url, record.problemUrl);
+  assert.equal(result.problem.rating, 1800);
+  assert.equal(result.problem.officialDifficulty, '1800');
+  assert.deepEqual(result.problem.tags, ['数学']);
+  const ownNative = await dailyDraw({ source: 'local', platform: 'CF', ratingMin: 1200, ratingMax: 1200 }, [{ ...record, rating: 1200 }], offline, () => 0, undefined, { builtAt: null, records: [indexed] });
+  assert.equal(ownNative.problem.rating, 1200);
+});
+
+test('native recovery keeps existing record values and never joins a different problem or source', async () => {
+  const indexed = { id: 'LG:P9234', title: 'Indexed', source: 'LG', origin: 'library', url: 'https://www.luogu.com.cn/problem/P9234', rating: null, estimatedCfRating: 1600, estimatedLuoguDifficulty: null, luoguDifficulty: '普及+/提高', tags: [] };
+  const record = { kind: 'local', platform: 'LG', pid: 'P9234', title: 'Own native', problemUrl: indexed.url, luoguDifficulty: '入门' };
+  const offline = async () => { assert.fail('scoped recovery must not fetch'); };
+  const draw = (row, native = indexed) => dailyDraw({ source: 'local', platform: row.platform }, [row], offline, () => 0, undefined, { builtAt: null, records: [native] });
+  assert.equal((await draw(record)).problem.luoguDifficulty, '入门');
+  for (const native of [{ ...indexed, url: 'https://www.luogu.com.cn/problem/P9235' }, { ...indexed, source: 'CF', rating: 1600 }, { ...indexed, luoguDifficulty: '暂无评定', officialDifficulty: null }, { ...indexed, luoguDifficulty: '', officialDifficulty: 'not a native level', estimatedCfRating: 1600 }]) {
+    const result = await draw({ ...record, luoguDifficulty: '' }, native);
+    assert.equal(result.problem.luoguDifficulty, '');
+    assert.equal(result.problem.estimatedCfRating, null);
+  }
 });
 
 test('draws from scoped records and reports remote fallback', async () => {

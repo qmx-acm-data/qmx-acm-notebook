@@ -2,6 +2,17 @@
 "use strict";
 (() => {
   // src/shared/luogu-difficulty.ts
+  var luoguNativeDifficultyLabels = {
+    0: "暂无评定",
+    1: "入门",
+    2: "普及−",
+    3: "普及",
+    4: "普及+/提高−",
+    5: "提高",
+    6: "提高+/省选−",
+    7: "省选/NOI−",
+    8: "NOI/NOI+/CTS"
+  };
   var luoguDifficultyLevels = ["入门", "普及-", "普及", "普及+/提高-", "提高", "提高+/省选-", "省选/NOI-", "NOI/NOI+/CTS"];
   var aliases = {
     "暂无评定": 0,
@@ -2275,7 +2286,11 @@
   }
 
   // src/renderer/home/problem-enrichment.ts
-  var luoguLevels2 = ["暂无评定", "入门", "普及−", "普及/提高−", "普及+/提高", "提高+/省选−", "省选/NOI−", "NOI/NOI+/CTSC"];
+  var luoguLevels2 = Object.values(luoguNativeDifficultyLabels);
+  function luoguOptionValue(value) {
+    const rank = luoguDifficultyRank(value);
+    return rank === null ? "" : luoguNativeDifficultyLabels[rank];
+  }
   var activeDialog = null;
   function node2(tag, className = "", text3) {
     const element5 = document.createElement(tag);
@@ -2496,7 +2511,7 @@
       else current.append(node2("p", "enrichment-hint", "当前没有补充信息。只允许补充官方缺失的字段。"));
       tags.value = view.canSupplementTags ? (view.supplement?.tags ?? []).join(", ") : view.officialTags.join(", ");
       cf.value = view.canSupplementDifficulty && view.supplement?.cfRating != null ? String(view.supplement.cfRating) : "";
-      lg.value = view.canSupplementDifficulty ? view.supplement?.luoguDifficulty ?? "" : "";
+      lg.value = view.canSupplementDifficulty ? luoguOptionValue(view.supplement?.luoguDifficulty ?? "") : "";
       reason.value = view.supplement?.reason ?? "";
       tagHint.textContent = view.canSupplementTags ? "官方未提供算法标签，可以补充。" : "官方已有算法标签，不能补充或覆盖。";
       difficultyHint.textContent = view.canSupplementDifficulty ? "官方未提供难度，可以补充 CF 和洛谷参考难度。参考值不是官方评分。" : `官方已有难度（${view.officialDifficulty}），不能补充或覆盖参考难度。`;
@@ -2946,7 +2961,20 @@
       refresh.textContent = "更新中…";
       error.hidden = true;
       try {
+        const revision = resultRevision, url = cachedResult?.problem.url;
         const report = await updateLibrary();
+        if (generation !== contextGeneration) return;
+        if (url && typeof window.notebook?.getProblemEnrichment === "function") {
+          try {
+            const view = await window.notebook.getProblemEnrichment(url);
+            if (generation === contextGeneration && resultRevision === revision && cachedResult?.problem.url === url && view.problem) {
+              cachedResult = { ...cachedResult, problem: view.problem };
+              resultRevision += 1;
+              notifyMount();
+            }
+          } catch {
+          }
+        }
         const entries = Object.entries(report?.platforms ?? {});
         const added = entries.reduce((sum, [, item]) => sum + (typeof item?.added === "number" ? item.added : 0), 0);
         const failed = entries.filter(([, item]) => item?.status === "failed").map(([name]) => name);

@@ -147,6 +147,7 @@ const { chromium } = require('playwright');
     assert.equal(await page.locator('.daily-problem-result').getAttribute('aria-busy'), 'false');
     await page.evaluate(() => {
       window.libraryUpdates = [];
+      window.notebook.getProblemEnrichment = async url => ({ problem: { id: 'LG:P9234', title: '已缓存原生难度', url, source: 'LG', rating: null, estimatedCfRating: 1600, luoguDifficulty: '普及+/提高', estimatedLuoguDifficulty: null, tags: [] } });
       window.notebook.updateLibrary = async () => {
         window.libraryUpdates.push(1);
         return { total: 42, platforms: { LG: { status: 'updated', added: 7 }, CF: { status: 'skipped', added: 0 } } };
@@ -156,6 +157,9 @@ const { chromium } = require('playwright');
     await page.waitForFunction(() => document.querySelector('.daily-refresh')?.textContent.includes('已更新 7 题'));
     assert.equal(await page.evaluate(() => window.libraryUpdates.length), 1);
     assert.equal(await page.locator('.daily-refresh').isEnabled(), true);
+    assert.equal(await page.locator('.daily-luogu').innerText(), '洛谷难度：普及+/提高-');
+    assert.equal(await page.locator('.daily-cf').innerText(), 'CF 参考 1600');
+    assert.equal(await page.locator('.daily-problem-title').innerText(), '已缓存原生难度', 'refresh library also updates metadata on the displayed problem');
     await page.evaluate(() => { window.notebook.updateLibrary = async () => { throw new Error('题库更新失败样例'); }; });
     await page.locator('.daily-refresh').click();
     await page.waitForFunction(() => document.querySelector('.daily-problem-error')?.textContent === '题库更新失败样例');

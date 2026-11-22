@@ -1,6 +1,7 @@
 import { Buffer } from 'node:buffer';
 import type { AuthSafeStorage } from '../auth/auth.cjs';
 import type { ProblemAIConfigInput, ProblemAIStatus, ProblemEnrichmentView, ProblemSupplementFields } from '../../shared/models/problem-enrichment.js';
+const { luoguNativeDifficultyLabels } = require('./luogu-difficulty.js') as typeof import('../../shared/luogu-difficulty.js');
 
 export interface ProblemAIOptions {
   safeStorage: AuthSafeStorage;
@@ -18,7 +19,9 @@ interface Config { endpoint: string; model: string; apiKey: string }
 type JsonObject = Record<string, unknown>;
 const MAX_RESPONSE_BYTES = 256 * 1024;
 const TIMEOUT_MS = 45_000;
-const levels = ['暂无评定', '入门', '普及−', '普及/提高−', '普及+/提高', '提高+/省选−', '省选/NOI−', 'NOI/NOI+/CTSC'];
+const levels = Object.values(luoguNativeDifficultyLabels);
+// Existing providers may still return these previously requested labels.
+const acceptedLevels = new Set([...levels, '普及/提高−', '普及+/提高', 'NOI/NOI+/CTSC']);
 const emptyStatus = (): ProblemAIStatus => ({ configured: false, endpoint: null, model: null });
 function object(value: unknown): value is JsonObject { return value !== null && typeof value === 'object' && !Array.isArray(value); }
 function text(value: unknown, max: number): string {
@@ -74,7 +77,7 @@ function fields(content: string, allowTags: boolean, allowDifficulty: boolean): 
   }
   if (Object.hasOwn(value, 'luoguDifficulty')) {
     const level = text(value.luoguDifficulty, 40);
-    if (!levels.includes(level)) throw new Error('AI 洛谷参考难度无效');
+    if (!acceptedLevels.has(level)) throw new Error('AI 洛谷参考难度无效');
     result.luoguDifficulty = level;
   }
   if (!result.tags?.length && result.cfRating === undefined && (!result.luoguDifficulty || result.luoguDifficulty === '暂无评定')) throw new Error('AI 未返回可用建议');

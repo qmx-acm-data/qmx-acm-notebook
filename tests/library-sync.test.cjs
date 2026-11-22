@@ -156,6 +156,20 @@ test('Nowcoder ACM list preserves native scores without treating them as CF or p
   assert.equal(rows[4].estimateReason, null);
 });
 
+test('Luogu full sync persists all native difficulty codes including ungraded and highest', async () => {
+  const dir = makeIndex(existingRows);
+  const upstream = Array.from({ length: 10 }, (_, difficulty) => ({ pid: `P${difficulty + 100}`, name: `Native ${difficulty}`, difficulty, tags: [] }));
+  const report = await createSync({ directory: dir, fs, path, fetcher: async () => textResponse(luoguHtml(upstream.length, upstream)), platforms: ['LG'], full: true, now: () => 1000 }).run();
+  assert.equal(report.platforms.LG.status, 'rebuilt');
+  const rows = fs.readFileSync(path.join(dir, 'lg.ndjson'), 'utf8').trim().split('\n').map(line => JSON.parse(line));
+  assert.deepEqual(rows.slice(0, 9).map(row => row.luoguDifficultyCode), [0, 1, 2, 3, 4, 5, 6, 7, 8]);
+  assert.deepEqual(rows.slice(5, 9).map(row => row.estimatedCfRating), [1800, 2100, 2400, 2800]);
+  assert.equal(rows[0].officialDifficulty, null);
+  assert.equal(rows[8].officialDifficulty, 'NOI/NOI+/CTS');
+  assert.equal(rows[9].luoguDifficultyCode, undefined);
+  assert.equal(rows[9].officialDifficulty, null);
+});
+
 test('a full sync replaces the shard and records lastFullSync', async () => {
   const dir = makeIndex(existingRows);
   const fetcher = async url => {

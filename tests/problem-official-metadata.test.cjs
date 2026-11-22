@@ -8,6 +8,8 @@ const ts = require('typescript');
 
 // Keep this source regression independent of generated application artifacts.
 const sources = new Map([
+  ['./luogu-difficulty.js', 'src/shared/luogu-difficulty.ts'],
+  ['./luogu-native.cjs', 'src/main/library/luogu-native.cts'],
   ['./library-normalize.cjs', 'src/main/library/normalize.cts'],
   ['./library-index.cjs', 'src/main/library/index.cts'],
   ['./library-sync.cjs', 'src/main/library/sync.cts'],

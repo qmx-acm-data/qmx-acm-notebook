@@ -5,6 +5,8 @@ exports.toLibraryProblem = toLibraryProblem;
 exports.buildDailyTagCatalog = buildDailyTagCatalog;
 exports.createLibraryLoader = createLibraryLoader;
 const { normalizeSourceAlgorithmTags, normalizeOfficialMetadata } = require('./library-normalize.cjs');
+const { parseLuoguNativeBaseline, recoverLuoguNativeRow } = require('./luogu-native.cjs');
+const { luoguNativeDifficultyLabel } = require('./luogu-difficulty.js');
 const supported = new Set(['CF', 'AT', 'LG', 'NC', 'LC', 'LOJ']);
 function object(value) {
     return value !== null && typeof value === 'object' && !Array.isArray(value) ? value : null;
@@ -17,7 +19,7 @@ function positive(value) {
 }
 /** Index rows are already normalised, so only shape and allowlist checks apply. */
 function toLibraryProblem(value) {
-    const row = object(value);
+    const row = object(recoverLuoguNativeRow(value, null));
     if (!row)
         return null;
     const id = text(row.id), title = text(row.title), url = text(row.url), source = text(row.platform);
@@ -47,6 +49,7 @@ function toLibraryProblem(value) {
         estimatedCfRating: positive(row.estimatedCfRating),
         estimatedLuoguDifficulty: text(row.estimatedLuoguDifficulty),
         luoguDifficulty: text(row.luoguDifficulty) ?? '',
+        ...(source === 'LG' && typeof row.luoguDifficultyCode === 'number' && luoguNativeDifficultyLabel(row.luoguDifficultyCode) !== null ? { luoguDifficultyCode: row.luoguDifficultyCode } : {}),
         communityDifficulty: typeof row.communityDifficulty === 'number' && Number.isFinite(row.communityDifficulty) ? row.communityDifficulty : null,
         ratingEstimateReason: text(row.estimateReason) ?? undefined,
         tags,
@@ -91,7 +94,20 @@ function buildDailyTagCatalog(snapshot) {
         .map(topic => ({ name: topic.name, sources: [...topic.sources].sort() }));
     return { tags, platforms, builtAt: snapshot.builtAt, total: snapshot.records.length };
 }
-function createLibraryLoader(directory, fs, path) {
+function createLibraryLoader(directory, fs, path, options = {}) {
+    let baseline = null;
+    if (options.luoguNativeFile) {
+        let body = null;
+        try {
+            body = fs.readFileSync(options.luoguNativeFile, 'utf8');
+        }
+        catch (error) {
+            if (object(error)?.code !== 'ENOENT')
+                throw error;
+        }
+        if (body !== null)
+            baseline = parseLuoguNativeBaseline(JSON.parse(body));
+    }
     const cache = new Map();
     const metaPath = path.join(directory, 'meta.json');
     return {
@@ -145,7 +161,7 @@ function createLibraryLoader(directory, fs, path) {
                     catch {
                         continue;
                     }
-                    const problem = toLibraryProblem(value);
+                    const problem = toLibraryProblem(recoverLuoguNativeRow(value, baseline));
                     if (!problem)
                         continue;
                     records.push(problem);
