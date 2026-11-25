@@ -11097,6 +11097,20 @@ ${entry2.node.fullLabel}` : ""}`;
     }, setSelectedNode, algorithmNodes, learningProgressKey, setAlgorithmMode, openLearningTopic, saveLearningProgress, renderAlgorithmNotes, updateAlgorithmTopicKind, openAlgorithmTopicEditor, isMineNote, openAlgorithmNoteDetail, openAlgorithmNoteEditor, resetRepository };
   }
 
+  // src/shared/models/trick.ts
+  var trickTiers = ["S", "A", "B", "C", "D", "E"];
+  var trickTierGuide = {
+    S: { label: "优先掌握", description: "满足前置后，在多类题中常用，或能显著降低复杂度、代码量与出错风险。" },
+    A: { label: "推荐掌握", description: "适用的一类题较明确，遇到时通常值得优先考虑。" },
+    B: { label: "按需查阅", description: "有清晰的使用信号，遇到对应题型时再学即可。" },
+    C: { label: "专题补充", description: "主要用于某个专题或解法变体，掌握常规做法后再补充。" },
+    D: { label: "少见场景", description: "只在少数题型或严格的附加条件下有明显收益。" },
+    E: { label: "备查参考", description: "适合作为例题、替代写法或经验记录保留，无需专门练习。" }
+  };
+  function isTrickTier(value) {
+    return trickTiers.some((tier) => tier === value);
+  }
+
   // src/renderer/tricks/workspace.ts
   function el3(tag, cls = "", text3) {
     const node4 = document.createElement(tag);
@@ -11117,6 +11131,22 @@ ${entry2.node.fullLabel}` : ""}`;
     return a.sourceKey === b.sourceKey && a.accountId === b.accountId;
   }
   var bytes = (value) => new TextEncoder().encode(value).length;
+  var maxPrerequisites = 8;
+  var maxReasonBytes = 600;
+  var maxDraftReasonBytes = 2400;
+  function readDraftRecommendation(value) {
+    if (value === null) return null;
+    if (typeof value !== "object" || !value) return void 0;
+    const row2 = value;
+    const ids = row2.prerequisiteIds;
+    if (!isTrickTier(row2.tier) || typeof row2.reason !== "string" || bytes(row2.reason) > maxDraftReasonBytes || !Array.isArray(ids) || ids.length > maxPrerequisites) return void 0;
+    const prerequisiteIds = [];
+    for (const id of ids) {
+      if (typeof id !== "string" || !/^[\p{L}\p{N}._:-]{1,1000}$/u.test(id) || prerequisiteIds.includes(id)) return void 0;
+      prerequisiteIds.push(id);
+    }
+    return { tier: row2.tier, reason: row2.reason, prerequisiteIds };
+  }
   function draftKey(context, path = "new") {
     return `qmx.trick-draft.v1:${JSON.stringify([context.sourceKey, context.accountId, path])}`;
   }
@@ -11126,10 +11156,145 @@ ${entry2.node.fullLabel}` : ""}`;
       if (!value || typeof value !== "object") return null;
       const row2 = value;
       if (typeof row2.clientId !== "string" || !/^[0-9a-f-]{36}$/i.test(row2.clientId) || typeof row2.baseSha !== "string" || typeof row2.title !== "string" || typeof row2.introduction !== "string" || typeof row2.body !== "string" || bytes(row2.title) > 1e3 || bytes(row2.introduction) > 1e4 || bytes(row2.body) > 1e6) return null;
-      return { clientId: row2.clientId, baseSha: row2.baseSha, title: row2.title, introduction: row2.introduction, body: row2.body };
+      const recommendation = readDraftRecommendation(row2.recommendation);
+      return { clientId: row2.clientId, baseSha: row2.baseSha, title: row2.title, introduction: row2.introduction, body: row2.body, ...recommendation !== void 0 ? { recommendation } : {} };
     } catch {
       return null;
     }
+  }
+  function algorithmCatalog(options) {
+    const canonical = new Map(options.map((option2) => [option2.id, option2]));
+    const lookup = new Map(canonical);
+    for (const option2 of canonical.values()) {
+      for (const id of option2.legacyIds || []) if (!lookup.has(id)) lookup.set(id, option2);
+    }
+    return { options: Array.from(canonical.values()), lookup };
+  }
+  function algorithmLabel(id, catalog) {
+    return catalog.lookup.get(id)?.label || `未识别算法：${id}`;
+  }
+  function algorithmTags(values = []) {
+    if (!values.length) return null;
+    const tags = el3("span", "trick-algorithm-tags");
+    for (const tag of values) tags.append(el3("span", `tag ${tagColorClass(tag)}`, tag));
+    return tags;
+  }
+  function canonicalPrerequisites(ids, catalog) {
+    return Array.from(new Set(ids.map((id) => catalog.lookup.get(id)?.id ?? id)));
+  }
+  function algorithmPicker(config) {
+    const { catalog, selected: selected2, max } = config;
+    const group = el3("div", `trick-algorithm-picker ${config.className}`);
+    group.setAttribute("role", "group");
+    group.setAttribute("aria-label", config.label);
+    const input2 = el3("input", "trick-algorithm-search");
+    input2.type = "search";
+    input2.value = config.query || "";
+    input2.setAttribute("aria-label", `搜索${config.label}`);
+    input2.placeholder = "搜索算法名称、别名或标签";
+    const header = el3("div", "trick-algorithm-heading"), count3 = el3("span", "trick-algorithm-count");
+    count3.setAttribute("aria-live", "polite");
+    header.append(el3("span", "", config.label), count3);
+    const chips = el3("div", "trick-algorithm-chips"), choices = el3("div", "trick-algorithm-options");
+    const entries = catalog.options.map((option2) => ({ option: option2, terms: [option2.label, option2.id, ...option2.aliases || [], ...option2.legacyIds || [], ...option2.tags || []].join(" ").toLocaleLowerCase() }));
+    function renderChoices() {
+      const scroll = choices.scrollTop;
+      const needle = input2.value.trim().toLocaleLowerCase();
+      const matching = entries.filter(({ terms }) => terms.includes(needle));
+      choices.replaceChildren();
+      if (!matching.length) choices.append(el3("p", "trick-algorithm-empty", entries.length ? "没有匹配的算法" : "暂无可选算法"));
+      for (const { option: option2 } of matching) {
+        const label = el3("label", "trick-algorithm-choice");
+        const check = el3("input", "trick-algorithm-option");
+        check.type = "checkbox";
+        check.dataset.algorithmId = option2.id;
+        check.checked = selected2.has(option2.id);
+        check.disabled = !check.checked && max !== void 0 && selected2.size >= max;
+        check.addEventListener("change", () => {
+          if (check.checked) selected2.add(option2.id);
+          else selected2.delete(option2.id);
+          renderSelection();
+          for (const node4 of choices.querySelectorAll(".trick-algorithm-option")) node4.disabled = !node4.checked && max !== void 0 && selected2.size >= max;
+          config.onChange();
+        });
+        const title = el3("span", "trick-algorithm-choice-title", option2.label);
+        const tags = algorithmTags(option2?.tags);
+        if (tags) title.append(tags);
+        label.append(check, title);
+        choices.append(label);
+      }
+      choices.scrollTop = scroll;
+    }
+    function renderSelection() {
+      count3.textContent = max === void 0 ? `已选 ${selected2.size} 项` : `${selected2.size} / ${max}`;
+      chips.replaceChildren();
+      for (const id of selected2) {
+        const label = algorithmLabel(id, catalog);
+        const chip = action2("", "trick-algorithm-remove", () => {
+          selected2.delete(id);
+          refresh();
+          input2.focus();
+          config.onChange();
+        });
+        chip.dataset.algorithmId = id;
+        chip.setAttribute("aria-label", `移除${label}`);
+        if (!catalog.lookup.has(id)) chip.classList.add("trick-prerequisite-unrecognized");
+        const icon = el3("span", "", "×");
+        icon.setAttribute("aria-hidden", "true");
+        chip.append(el3("span", "", label), icon);
+        chips.append(chip);
+      }
+    }
+    function refresh() {
+      renderSelection();
+      renderChoices();
+    }
+    function showChoices(focused) {
+      choices.hidden = !focused && !input2.value.trim();
+    }
+    input2.addEventListener("input", () => {
+      config.onSearch?.(input2.value);
+      choices.scrollTop = 0;
+      renderChoices();
+      showChoices(true);
+    });
+    input2.addEventListener("keydown", (event) => {
+      if (event.key === "Enter") event.preventDefault();
+    });
+    choices.tabIndex = -1;
+    group.addEventListener("focusin", () => showChoices(true));
+    group.addEventListener("focusout", (event) => showChoices(event.relatedTarget instanceof Node && group.contains(event.relatedTarget)));
+    group.append(header, chips, input2, choices);
+    refresh();
+    showChoices(false);
+    return { group, refresh, clearSearch: () => {
+      input2.value = "";
+      showChoices(group.contains(document.activeElement));
+    } };
+  }
+  function tierLabel(tier) {
+    return `${tier} 级 · ${trickTierGuide[tier].label}`;
+  }
+  function tierBadge(tier) {
+    const badge = el3("span", "trick-tier-badge", `${tier} 级`);
+    badge.dataset.tier = tier;
+    badge.title = `${tierLabel(tier)}：${trickTierGuide[tier].description}`;
+    return badge;
+  }
+  function renderTierGuide() {
+    const guide = el3("details", "trick-tier-guide");
+    guide.append(el3("summary", "", "等级说明"));
+    const definitions = el3("dl", "trick-tier-definitions");
+    for (const tier of trickTiers) {
+      const definition = el3("div", "trick-tier-definition");
+      definition.append(el3("dt", "", tierLabel(tier)), el3("dd", "", trickTierGuide[tier].description));
+      definitions.append(definition);
+    }
+    const unrated = el3("div", "trick-tier-definition");
+    unrated.append(el3("dt", "", "未评级"), el3("dd", "", "尚无维护者评级，不属于 S–E 中的任何一档。"));
+    definitions.append(unrated);
+    guide.append(el3("p", "", "等级表示满足前置后的学习优先级，不是算法难度。"), definitions);
+    return guide;
   }
   function createTrickWorkspace(options) {
     const host = options.host;
@@ -11137,9 +11302,14 @@ ${entry2.node.fullLabel}` : ""}`;
     host.classList.add("tricks-workspace");
     host.setAttribute("aria-label", "Trick 集");
     let scope2 = "", query = "", selected2 = null, listScroll = 0;
+    let view = "latest", learnedQuery = "", readyOnly = false, showTierGuide = false;
+    const learned = /* @__PURE__ */ new Set();
     let editor2 = null;
     let list = null;
     let search = null;
+    function getCatalog() {
+      return algorithmCatalog(options.getAlgorithms?.() || []);
+    }
     function items() {
       const source = options.getContext().sourceKey;
       return options.getItems().filter((item) => item.sourceKey === source).slice().sort((a, b) => b.updatedAt.localeCompare(a.updatedAt) || a.path.localeCompare(b.path));
@@ -11158,6 +11328,11 @@ ${entry2.node.fullLabel}` : ""}`;
       query = "";
       selected2 = null;
       listScroll = 0;
+      view = "latest";
+      learnedQuery = "";
+      readyOnly = false;
+      showTierGuide = false;
+      learned.clear();
     }
     function closeDetail() {
       const previous = selected2;
@@ -11305,6 +11480,93 @@ ${entry2.node.fullLabel}` : ""}`;
       const error = el3("p", "form-error");
       error.hidden = true;
       error.setAttribute("role", "alert");
+      const review = context.admin ? recommendationEditor() : null;
+      function recommendationEditor() {
+        const catalog = getCatalog(), initial = draft?.recommendation === void 0 ? item?.recommendation : draft.recommendation;
+        let touched = draft?.recommendation !== void 0;
+        let clearRequested = draft?.recommendation === null;
+        const prerequisites = new Set(canonicalPrerequisites(initial?.prerequisiteIds || [], catalog));
+        const section = el3("fieldset", "trick-recommendation-editor");
+        section.append(el3("legend", "", "维护者推荐"));
+        const tier = el3("select");
+        tier.name = "recommendationTier";
+        for (const value of ["", ...trickTiers]) {
+          const choice = el3("option", "", value ? tierLabel(value) : "未评级");
+          choice.value = value;
+          tier.append(choice);
+        }
+        tier.value = initial?.tier || "";
+        const tierHint = el3("p", "trick-tier-hint");
+        tierHint.id = "trick-editor-tier-hint";
+        tier.setAttribute("aria-describedby", tierHint.id);
+        const tierField = el3("label", "field");
+        tierField.append(el3("span", "", "推荐等级"), tier);
+        const clear = action2("清除推荐", "button subtle trick-recommendation-clear", () => {
+          tier.value = "";
+          clearRequested = true;
+          updateTier();
+          tier.focus();
+        });
+        const top = el3("div", "trick-recommendation-editor-top");
+        top.append(tierField, clear);
+        const controls2 = el3("div", "trick-recommendation-fields");
+        const reason = el3("input");
+        reason.name = "recommendationReason";
+        reason.type = "text";
+        reason.maxLength = maxReasonBytes;
+        reason.value = initial?.reason || "";
+        reason.required = true;
+        const reasonCount = el3("span", "trick-recommendation-reason-count");
+        const reasonField = field3("推荐理由", reason);
+        reasonField.append(reasonCount);
+        function renderReasonCount() {
+          reasonCount.textContent = `${bytes(reason.value.trim())} / ${maxReasonBytes} 字节`;
+        }
+        reason.addEventListener("input", () => {
+          touched = true;
+          renderReasonCount();
+          storeDraft();
+        });
+        const picker = algorithmPicker({ className: "trick-prerequisite-picker", label: "前置算法", catalog, selected: prerequisites, max: maxPrerequisites, onChange: () => {
+          touched = true;
+          storeDraft();
+        } });
+        function renderTier() {
+          controls2.hidden = !tier.value;
+          clear.hidden = !item && !tier.value;
+          clear.disabled = clearRequested && !tier.value;
+          tierHint.textContent = isTrickTier(tier.value) ? trickTierGuide[tier.value].description : clearRequested ? "保存后将清除已有推荐。" : "未评级不等同于 E 级。";
+        }
+        function updateTier() {
+          touched = true;
+          if (!tier.value) {
+            prerequisites.clear();
+            picker.clearSearch();
+            picker.refresh();
+            reason.value = "";
+            renderReasonCount();
+          }
+          renderTier();
+          storeDraft();
+        }
+        function recommendation() {
+          if (!touched) return void 0;
+          if (!isTrickTier(tier.value)) return item?.recommendation || clearRequested ? null : void 0;
+          return { tier: tier.value, prerequisiteIds: Array.from(prerequisites), reason: reason.value };
+        }
+        function validate(value) {
+          if (!value.reason || bytes(value.reason) > maxReasonBytes || /[\u0000-\u001f\u007f-\u009f\u2028\u2029]/.test(value.reason)) return "请填写单行推荐理由，最多 600 字节。";
+          if (value.prerequisiteIds.length > maxPrerequisites) return "最多选择 8 项前置算法。";
+          if (value.prerequisiteIds.some((id) => !getCatalog().lookup.has(id))) return "请移除未识别的前置算法后再保存推荐。";
+          return "";
+        }
+        tier.addEventListener("change", updateTier);
+        renderTier();
+        renderReasonCount();
+        controls2.append(picker.group, reasonField);
+        section.append(top, tierHint, controls2);
+        return { section, recommendation, validate };
+      }
       const draftNotice = el3("section", "trick-draft-notice");
       draftNotice.hidden = !draft;
       draftNotice.append(el3("p", "", staleDraft ? "已恢复本机草稿，但远端版本已更新。请先对照最新内容，再确认使用草稿保存。" : "已恢复本机草稿。关闭编辑会保留输入，仅在发布成功或主动丢弃后清除。"));
@@ -11317,9 +11579,11 @@ ${entry2.node.fullLabel}` : ""}`;
 ${item.introduction}
 
 ${item.body}`);
-        compare.append(summary, latest);
+        compare.append(summary);
+        if (review) compare.append(renderRecommendation(item.recommendation));
         const consent = el3("label", "checkbox-field");
         consent.append(acceptLatest, el3("span", "", "已核对最新远端，使用草稿保存"));
+        compare.append(latest);
         draftNotice.append(compare, consent);
       }
       const controls = el3("div", "trick-form-actions"), cancel = action2("保存草稿并关闭", "button secondary", () => close()), submit = el3("button", "button primary", item ? "保存修改" : "发布 Trick");
@@ -11332,13 +11596,14 @@ ${item.body}`);
         close(false);
       }), cancel, submit);
       function storeDraft() {
-        if (bytes(title.value) > 1e3 || bytes(intro.value) > 1e4 || bytes(body.value) > 1e6) {
+        const recommendation = review ? review.recommendation() : draft?.recommendation;
+        if (bytes(title.value) > 1e3 || bytes(intro.value) > 1e4 || bytes(body.value) > 1e6 || recommendation && bytes(recommendation.reason) > maxDraftReasonBytes) {
           error.textContent = "内容超过草稿保存上限，请先缩短或复制到其他位置。当前编辑仍保留，不能直接保存草稿关闭。";
           error.hidden = false;
           return false;
         }
         try {
-          localStorage.setItem(key, JSON.stringify({ clientId, baseSha, title: title.value, introduction: intro.value, body: body.value }));
+          localStorage.setItem(key, JSON.stringify({ clientId, baseSha, title: title.value, introduction: intro.value, body: body.value, recommendation }));
           return true;
         } catch {
           error.textContent = "本机草稿存储不可用，请复制内容后再丢弃关闭。";
@@ -11346,8 +11611,10 @@ ${item.body}`);
           return false;
         }
       }
-      form.addEventListener("input", storeDraft);
-      form.append(heading, destination, draftNotice, field3("标题", title), field3("简介", intro), bodyField, error, controls);
+      [title, intro, body].forEach((control) => control.addEventListener("input", storeDraft));
+      form.append(heading, destination, draftNotice, field3("标题", title), field3("简介", intro));
+      if (review) form.append(review.section);
+      form.append(bodyField, error, controls);
       dialog3.append(form);
       document.body.append(dialog3);
       dialog3.addEventListener("cancel", (event) => {
@@ -11358,13 +11625,18 @@ ${item.body}`);
         event.preventDefault();
         void (async () => {
           if (saving || options.getBusy()) return;
+          const currentContext = options.getContext();
           const input2 = { title: title.value.trim(), introduction: intro.value.trim(), body: body.value };
+          const draftRecommendation = review?.recommendation();
+          const recommendation = draftRecommendation ? { ...draftRecommendation, prerequisiteIds: canonicalPrerequisites(draftRecommendation.prerequisiteIds, getCatalog()), reason: draftRecommendation.reason.trim() } : draftRecommendation;
           let problem = "";
-          if (!sameContext(context, options.getContext()) || !options.getContext().canCreate) problem = "账号或资料库已变化，草稿仍保留，请复制后重新打开。";
+          if (!sameContext(context, currentContext) || !currentContext.canCreate || item && !canEdit(item)) problem = "账号、资料库或编辑权限已变化，草稿仍保留，请重新打开。";
+          else if (recommendation !== void 0 && !currentContext.admin) problem = "推荐编辑权限已变化，草稿仍保留，请重新打开。";
           else if (staleDraft && !acceptLatest.checked) problem = "远端版本已变化，请先核对最新内容并勾选确认。";
           else if (!input2.title || !input2.introduction || !input2.body.trim()) problem = "请填写标题、简介和具体内容。";
           else if (bytes(input2.title) > 600 || bytes(input2.introduction) > 6e3) problem = "标题最多 600 字节，简介最多 6000 字节。";
           else if (bytes(input2.body) > 1e6) problem = "具体内容最多 1000000 字节。";
+          else if (review && recommendation) problem = review.validate(recommendation);
           if (problem) {
             error.textContent = problem;
             error.hidden = false;
@@ -11375,11 +11647,12 @@ ${item.body}`);
           saving = true;
           options.setBusy(true);
           error.hidden = true;
-          form.querySelectorAll("input,textarea,button").forEach((node4) => {
+          const enabled = form.querySelectorAll("input:enabled,textarea:enabled,button:enabled,select:enabled");
+          enabled.forEach((node4) => {
             node4.disabled = true;
           });
           try {
-            const saved = await options.save({ ...input2, clientId, repo: context.repo, sourceKey: context.sourceKey, ...item ? { path: item.path, sha: baseSha } : {} });
+            const saved = await options.save({ ...input2, clientId, repo: context.repo, sourceKey: context.sourceKey, ...item ? { path: item.path, sha: baseSha } : {}, ...recommendation !== void 0 ? { recommendation } : {} });
             if (sameContext(context, options.getContext())) {
               options.setItems([saved, ...options.getItems().filter((row2) => row2.path !== saved.path)]);
               selected2 = saved.path;
@@ -11398,7 +11671,7 @@ ${item.body}`);
           } finally {
             saving = false;
             options.setBusy(false);
-            form.querySelectorAll("input,textarea,button").forEach((node4) => {
+            enabled.forEach((node4) => {
               node4.disabled = false;
             });
           }
@@ -11407,45 +11680,227 @@ ${item.body}`);
       dialog3.showModal();
       title.focus();
     }
+    function dependencyGraph(item, ids, catalog) {
+      const graph = el3("div", "trick-dependency-graph");
+      const sources2 = el3("ul", "trick-dependency-sources");
+      sources2.setAttribute("aria-label", "前置算法");
+      const target = el3("div", "trick-dependency-target");
+      const counter = el3("span", "trick-dependency-counter");
+      counter.setAttribute("role", "status");
+      const progress = el3("progress", "trick-dependency-progress");
+      progress.max = ids.length;
+      progress.setAttribute("aria-label", "已满足的前置算法");
+      target.append(el3("span", "trick-dependency-target-label", "当前 Trick"), el3("strong", "trick-dependency-title", item.title), counter, progress);
+      function updateProgress() {
+        const met = ids.filter((id) => learned.has(id) && catalog.lookup.has(id)).length;
+        counter.textContent = met === ids.length ? `前置已满足 ${met} / ${ids.length}` : `已满足 ${met} / ${ids.length}`;
+        progress.value = met;
+        target.dataset.ready = String(met === ids.length);
+      }
+      for (const id of ids) {
+        const option2 = catalog.lookup.get(id);
+        const row2 = el3("li", "trick-dependency-source");
+        const node4 = option2 ? el3("label", "trick-dependency-node") : el3("div", "trick-dependency-node trick-prerequisite-unrecognized");
+        const name = el3("span", "trick-dependency-name", option2?.label ?? `未识别算法：${id}`);
+        const state4 = el3("span", "trick-dependency-state");
+        node4.dataset.algorithmId = id;
+        if (option2) {
+          const check = el3("input");
+          check.type = "checkbox";
+          check.checked = learned.has(id);
+          check.setAttribute("aria-label", `已学：${option2.label}`);
+          const updateNode = () => {
+            row2.dataset.state = check.checked ? "learned" : "pending";
+            state4.textContent = check.checked ? "已学" : "未学";
+          };
+          updateNode();
+          check.addEventListener("change", () => {
+            if (check.checked) learned.add(id);
+            else learned.delete(id);
+            updateNode();
+            updateProgress();
+          });
+          node4.append(check);
+        } else {
+          row2.dataset.state = "unknown";
+          state4.textContent = "目录中未找到";
+        }
+        const description = el3("span", "trick-dependency-description");
+        description.append(name);
+        const tags = algorithmTags(option2?.tags);
+        if (tags) description.append(tags);
+        node4.append(description, state4);
+        const edge = el3("span", "trick-dependency-edge");
+        edge.setAttribute("aria-hidden", "true");
+        row2.append(node4, edge);
+        sources2.append(row2);
+      }
+      const join = el3("span", "trick-dependency-join");
+      join.setAttribute("aria-hidden", "true");
+      graph.append(sources2, join, target);
+      updateProgress();
+      return graph;
+    }
+    function renderRecommendation(recommendation, item) {
+      const block = el3("section", "trick-recommendation");
+      block.setAttribute("aria-label", "维护者推荐");
+      const heading = el3("div", "trick-recommendation-heading");
+      heading.append(el3("strong", "", "维护者推荐"));
+      block.append(heading);
+      if (!recommendation) {
+        heading.append(el3("span", "trick-recommendation-unrated", "未评级"));
+        return block;
+      }
+      heading.append(tierBadge(recommendation.tier), el3("span", "", trickTierGuide[recommendation.tier].label));
+      const catalog = getCatalog(), ids = canonicalPrerequisites(recommendation.prerequisiteIds, catalog);
+      if (item && ids.length) {
+        const prerequisites = el3("section", "trick-dependency");
+        prerequisites.setAttribute("aria-label", "前置算法依赖图");
+        prerequisites.append(el3("h3", "", "前置算法"), dependencyGraph(item, ids, catalog));
+        block.append(prerequisites);
+      } else {
+        const prerequisites = el3("div", "trick-prerequisites");
+        prerequisites.append(el3("strong", "", "前置算法"));
+        if (!ids.length) prerequisites.append(el3("span", "", "无"));
+        for (const id of ids) {
+          const tag = el3("span", "trick-prerequisite", algorithmLabel(id, catalog));
+          tag.dataset.algorithmId = id;
+          if (!catalog.lookup.has(id)) tag.classList.add("trick-prerequisite-unrecognized");
+          prerequisites.append(tag);
+        }
+        block.append(prerequisites);
+      }
+      const reason = el3("p", "trick-recommendation-reason");
+      reason.append(el3("strong", "", "推荐理由"), el3("span", "", recommendation.reason));
+      block.append(reason);
+      return block;
+    }
+    function renderDirectory(visible, numbered) {
+      const rows = el3("ul", "tricks-directory");
+      visible.forEach(({ item, tags }, index) => {
+        const li = el3("li"), row2 = action2("", "trick-row", () => open2(item));
+        row2.dataset.path = item.path;
+        const tier = item.recommendation?.tier;
+        row2.setAttribute("aria-label", `打开 ${item.title}，作者 ${authorName(item)}${tier ? `，${tierLabel(tier)}` : ""}${tags.length ? `，算法标签：${tags.join("、")}` : ""}`);
+        const titleCell = el3("span", "trick-row-title-cell");
+        const title = el3("span", "trick-row-title", item.title);
+        title.title = item.title;
+        titleCell.append(title);
+        if (tier) titleCell.append(tierBadge(tier));
+        const tagCell = el3("span", "trick-row-prerequisites");
+        if (tags.length) {
+          tagCell.title = tags.join("、");
+          const chips = algorithmTags(tags.slice(0, 2));
+          if (chips) {
+            chips.classList.add("trick-row-tags");
+            tagCell.append(chips);
+          }
+          if (tags.length > 2) tagCell.append(el3("span", "trick-row-extra trick-row-extra-wide", `+${tags.length - 2}`));
+          if (tags.length > 1) tagCell.append(el3("span", "trick-row-extra trick-row-extra-narrow", `+${tags.length - 1}`));
+        }
+        const intro = el3("span", "trick-row-intro", item.introduction);
+        intro.title = item.introduction;
+        if (numbered) row2.append(el3("span", "trick-row-number", String(index + 1).padStart(2, "0")));
+        row2.append(titleCell, tagCell, author(item), intro, el3("span", "trick-row-arrow", "↗"));
+        li.append(row2);
+        rows.append(li);
+      });
+      return rows;
+    }
     function renderRows() {
       if (!list) return;
       list.replaceChildren();
-      const value = query.trim().toLocaleLowerCase();
-      const all = items(), visible = all.filter((item) => `${item.title} ${authorName(item)} ${item.introduction}`.toLocaleLowerCase().includes(value));
+      const value = query.trim().toLocaleLowerCase(), filtering = view === "ranking" && readyOnly;
+      const all = items(), catalog = getCatalog();
+      const visible = [];
+      for (const item of all) {
+        const prerequisites = (item.recommendation?.prerequisiteIds ?? []).map((id) => catalog.lookup.get(id));
+        if (filtering && (!item.recommendation || prerequisites.some((option2) => !option2 || !learned.has(option2.id)))) continue;
+        const tags = [...new Set(prerequisites.flatMap((option2) => option2?.tags ?? []))];
+        if (!`${item.title} ${authorName(item)} ${item.introduction} ${tags.join(" ")}`.toLocaleLowerCase().includes(value)) continue;
+        visible.push({ item, tags });
+      }
       const count3 = host.querySelector(".tricks-count");
-      if (count3) count3.textContent = value ? `${visible.length} / ${all.length} 条` : `${all.length} 条`;
+      if (count3) count3.textContent = value || filtering ? `${visible.length} / ${all.length} 条` : `${all.length} 条`;
       if (!visible.length) {
         const empty = el3("div", "tricks-empty");
-        empty.append(el3("h3", "", value ? "没有匹配的 Trick" : "还没有 Trick"), el3("p", "", value ? "试试其他标题、作者或简介关键词。" : "把解题时的一个小观察，整理成队友也能读懂的技巧。"));
-        if (!value && !options.getContext().canCreate) empty.append(el3("p", "", "同步当前资料库，或使用有写入权限的 GitHub 账号发布。"));
+        if (filtering && all.length) empty.append(el3("h3", "", "没有符合已学条件的 Trick"), el3("p", "", "可调整已学算法、搜索词，或关闭按已学筛选。"));
+        else if (value) empty.append(el3("h3", "", "没有匹配的 Trick"), el3("p", "", "试试其他关键词或算法标签。"));
+        else {
+          empty.append(el3("h3", "", "还没有 Trick"), el3("p", "", "把解题时的一个小观察，整理成队友也能读懂的技巧。"));
+          if (!options.getContext().canCreate) empty.append(el3("p", "", "同步当前资料库，或使用有写入权限的 GitHub 账号发布。"));
+        }
         list.append(empty);
         return;
       }
       const head = el3("div", "tricks-columns");
       head.setAttribute("aria-hidden", "true");
-      ["#", "标题", "作者", "简介", ""].forEach((label) => head.append(el3("span", "", label)));
+      if (view === "latest") head.append(el3("span", "trick-column-number", "#"));
+      head.append(el3("span", "trick-column-title", "标题"), el3("span", "trick-column-prerequisites", "前置算法"), el3("span", "trick-column-author", "作者"), el3("span", "trick-column-intro", "简介"), el3("span", "trick-column-arrow"));
       list.append(head);
-      const rows = el3("ul", "tricks-directory");
-      visible.forEach((item, index) => {
-        const li = el3("li"), row2 = action2("", "trick-row", () => open2(item));
-        row2.dataset.path = item.path;
-        row2.setAttribute("aria-label", `打开 ${item.title}，作者 ${authorName(item)}`);
-        const title = el3("span", "trick-row-title", item.title);
-        title.title = item.title;
-        const intro = el3("span", "trick-row-intro", item.introduction);
-        intro.title = item.introduction;
-        row2.append(el3("span", "trick-row-number", String(index + 1).padStart(2, "0")), title, author(item), intro, el3("span", "trick-row-arrow", "↗"));
-        li.append(row2);
-        rows.append(li);
+      if (view === "latest") {
+        list.append(renderDirectory(visible, true));
+        return;
+      }
+      const groups = /* @__PURE__ */ new Map();
+      for (const tier of [...trickTiers, "unrated"]) groups.set(tier, []);
+      for (const entry2 of visible) groups.get(entry2.item.recommendation?.tier || "unrated")?.push(entry2);
+      for (const [tier, rows] of groups) {
+        if (!rows.length) continue;
+        const group = el3("section", "trick-rank-group");
+        group.dataset.tier = tier;
+        const heading = el3("h3", "trick-rank-heading", tier === "unrated" ? "未评级" : tierLabel(tier));
+        group.append(heading, renderDirectory(rows, false));
+        list.append(group);
+      }
+    }
+    function rankFilters() {
+      const filters = el3("div", "tricks-ranking-filters"), controls = el3("div", "tricks-ranking-actions");
+      const catalog = getCatalog();
+      const ids = canonicalPrerequisites(Array.from(learned), catalog);
+      learned.clear();
+      ids.forEach((id) => learned.add(id));
+      const picker = algorithmPicker({ className: "tricks-learned-algorithms", label: "已学算法", catalog, selected: learned, query: learnedQuery, onSearch: (value) => {
+        learnedQuery = value;
+        refreshReset();
+      }, onChange: () => {
+        refreshReset();
+        renderRows();
+      } });
+      const check = el3("input", "tricks-ready-filter");
+      check.type = "checkbox";
+      check.checked = readyOnly;
+      check.addEventListener("change", () => {
+        readyOnly = check.checked;
+        refreshReset();
+        renderRows();
       });
-      list.append(rows);
+      const label = el3("label", "tricks-ready-label");
+      label.append(check, el3("span", "", "按已学筛选"));
+      const clear = action2("重置筛选", "button subtle tricks-filter-reset", () => {
+        learned.clear();
+        learnedQuery = "";
+        readyOnly = false;
+        check.checked = false;
+        picker.clearSearch();
+        picker.refresh();
+        check.focus();
+        refreshReset();
+        renderRows();
+      });
+      function refreshReset() {
+        clear.disabled = !learned.size && !learnedQuery && !readyOnly;
+      }
+      refreshReset();
+      controls.append(label, clear);
+      filters.append(picker.group, controls);
+      return filters;
     }
     function render6() {
-      const context = options.getContext(), identity2 = `${context.sourceKey}|${context.accountId || ""}`;
+      const context = options.getContext(), identity2 = JSON.stringify([context.sourceKey, context.accountId]);
       if (scope2 !== identity2) {
+        reset();
         scope2 = identity2;
-        query = "";
-        selected2 = null;
       }
       host.replaceChildren();
       list = null;
@@ -11472,17 +11927,30 @@ ${item.body}`);
         }
         const intro = el3("p", "trick-reader-intro", item.introduction), body = el3("div", "markdown-body trick-content");
         options.renderMarkdown(body, item.body);
-        reader.append(top, el3("h2", "trick-reader-title", item.title), author(item), intro, body);
+        reader.append(top, el3("h2", "trick-reader-title", item.title), author(item), intro, renderRecommendation(item.recommendation, item), body);
         host.append(reader);
         return;
       }
       selected2 = null;
       const toolbar = el3("div", "tricks-toolbar");
+      const segments = el3("div", "tricks-view-controls");
+      segments.setAttribute("role", "group");
+      segments.setAttribute("aria-label", "Trick 视图");
+      for (const [mode, label2] of [["latest", "最近更新"], ["ranking", "等级排行"]]) {
+        const button10 = action2(label2, `tricks-view-${mode}`, () => {
+          if (mode === view) return;
+          view = mode;
+          render6();
+          host.querySelector(`.tricks-view-${mode}`)?.focus({ preventScroll: true });
+        });
+        button10.setAttribute("aria-pressed", String(mode === view));
+        segments.append(button10);
+      }
       const label = el3("label", "tricks-search");
       label.append(el3("span", "", "⌕"));
       search = el3("input");
       search.type = "search";
-      search.placeholder = "搜索标题、作者或简介";
+      search.placeholder = "搜索标题、作者、简介或标签";
       search.setAttribute("aria-label", "搜索 Trick");
       search.value = query;
       search.addEventListener("input", () => {
@@ -11490,10 +11958,18 @@ ${item.body}`);
         renderRows();
       });
       label.append(search);
-      toolbar.append(label, el3("span", "tricks-count"));
+      toolbar.append(segments, label, el3("span", "tricks-count"));
       if (context.canCreate) toolbar.append(action2("＋ 新增 Trick", "button primary trick-create", () => edit()));
       host.append(toolbar);
-      list = el3("div", "tricks-list");
+      if (view === "ranking") {
+        const guide = renderTierGuide();
+        guide.open = showTierGuide;
+        guide.addEventListener("toggle", () => {
+          if (guide.isConnected) showTierGuide = guide.open;
+        });
+        host.append(rankFilters(), guide);
+      }
+      list = el3("div", `tricks-list tricks-list-${view}`);
       host.append(list);
       renderRows();
     }
@@ -12164,7 +12640,42 @@ ${item.body}`);
     favoriteHost.setAttribute("aria-label", "统一个人收藏");
     $("#library-panel").before(favoriteHost);
     const favorites = createFavoritesWorkspace({ host: favoriteHost, getEntries: favoriteEntries, getContext: () => JSON.stringify([repoSource(), accountId()]), isFavorite: favorite, toggle: toggleFavorite, renderMarkdown, renderSolution: (record2, host) => reader.renderDetail(record2, host), authorName: authorName2, date, errorMessage, toast });
+    let trickAlgorithmTree;
+    let trickTagCatalog;
+    let trickAlgorithmOptions = [];
+    function trickAlgorithms() {
+      if (trickAlgorithmTree === s.algorithmTree && trickTagCatalog === s.tagCatalog) return trickAlgorithmOptions;
+      trickAlgorithmTree = s.algorithmTree;
+      trickTagCatalog = s.tagCatalog;
+      const tagNames = /* @__PURE__ */ new Map();
+      for (const catalog of [window.QMX_TAG_PRESETS, trickTagCatalog]) {
+        for (const category of catalog?.categories ?? []) for (const tag of category.tags ?? []) {
+          if (typeof tag.name === "string" && tag.name.trim()) tagNames.set(AlgorithmDirectory.normalize(tag.name), tag.name.trim());
+        }
+      }
+      const findTag = (labels2) => labels2.map((label) => tagNames.get(AlgorithmDirectory.normalize(label))).find((label) => label !== void 0);
+      const entries = [];
+      function visit(node4, ancestors) {
+        if (isAlgorithmLeaf(node4)) {
+          const parent = ancestors[0];
+          const owner = parent && node4.contentOf === parent.id ? [parent.id, ...parent.legacyIds ?? []] : [];
+          const aliases2 = [node4.fullLabel ?? node4.label, ...node4.aliases ?? []];
+          const ownTag = findTag([node4.label, ...aliases2]);
+          let family;
+          for (const ancestor of ancestors) {
+            family = findTag([ancestor.label, ancestor.fullLabel ?? ancestor.label]) ?? findTag(ancestor.label.split(/[与、／]/u).map((part) => part.trim()).filter((part) => part && node4.label.endsWith(part)));
+            if (family) break;
+          }
+          entries.push({ id: node4.id, label: node4.label, aliases: aliases2, legacyIds: [.../* @__PURE__ */ new Set([...node4.legacyIds ?? [], ...owner])], tags: [...new Set([ownTag, family].filter((tag) => tag !== void 0))] });
+        }
+        for (const child of node4.children ?? []) visit(child, [node4, ...ancestors]);
+      }
+      if (trickAlgorithmTree) visit(trickAlgorithmTree, []);
+      trickAlgorithmOptions = entries;
+      return entries;
+    }
     const tricks = createTrickWorkspace({
+      getAlgorithms: trickAlgorithms,
       host: $("#section-placeholder"),
       getItems: () => s.tricks || [],
       setItems: (value) => {
