@@ -1,21 +1,49 @@
 /* Chosen D layout: compact directory and an explicit full-width reading page. */
 .tricks-workspace{border:1px solid var(--line);border-radius:9px;background:var(--surface);overflow:hidden;min-width:0}
 .tricks-toolbar{display:flex;align-items:center;gap:12px;padding:11px 16px;border-bottom:1px solid var(--line)}
-.tricks-search{display:flex;align-items:center;gap:9px;flex:1;max-width:430px;padding:7px 10px;border:1px solid var(--line);border-radius:7px;background:var(--surface-soft)}
+.tricks-view-controls{display:inline-grid;grid-template-columns:repeat(2,minmax(0,1fr));flex:none;gap:2px;padding:2px;border:1px solid var(--line);border-radius:7px;background:var(--surface-soft)}
+.tricks-view-controls button{min-height:28px;border:1px solid transparent;border-radius:4px;padding:3px 9px;background:transparent;color:var(--muted);font-size:11px;white-space:nowrap}
+.tricks-view-controls button:hover,.tricks-view-controls button[aria-pressed="true"]{color:var(--text)}
+.tricks-view-controls button[aria-pressed="true"]{border-color:var(--line);background:var(--surface);font-weight:650}
+.tricks-search{display:flex;align-items:center;gap:9px;flex:1;max-width:430px;min-width:0;padding:7px 10px;border:1px solid var(--line);border-radius:7px;background:var(--surface-soft)}
 .tricks-search>span{font-size:20px;line-height:1;color:var(--muted)}
 .tricks-search input{background:transparent;color:var(--text);width:100%;min-width:0;outline:none;border:0;font-size:12px}
 .tricks-search:focus-within{border-color:var(--accent)}
 .tricks-search input::placeholder{color:var(--muted)}
 .tricks-count{font-size:11px;color:var(--muted);white-space:nowrap;margin-left:auto;font-variant-numeric:tabular-nums}
 .tricks-toolbar .button{padding:7px 11px;font-size:11px}
-.tricks-columns,.trick-row{display:grid;grid-template-columns:24px minmax(210px,1.15fr) 116px minmax(220px,1.6fr) 18px;align-items:center;gap:13px;padding-left:16px;padding-right:16px;min-width:0}
+.tricks-columns,.trick-row{--trick-title-track:minmax(0,1.15fr);--trick-prerequisites-track:clamp(108px,16%,192px);--trick-author-track:116px;--trick-intro-track:minmax(0,1.6fr);display:grid;grid-template-columns:24px var(--trick-title-track) var(--trick-prerequisites-track) var(--trick-author-track) var(--trick-intro-track) 18px;align-items:center;gap:13px;padding-left:16px;padding-right:16px;min-width:0}
+.tricks-list-ranking :is(.tricks-columns,.trick-row){grid-template-columns:var(--trick-title-track) var(--trick-prerequisites-track) var(--trick-author-track) var(--trick-intro-track) 18px}
 .tricks-columns{background:var(--surface-soft);border-bottom:1px solid var(--line);font-size:10px;color:var(--muted);padding-top:9px;padding-bottom:9px}
 .tricks-directory{margin:0;padding:0;list-style:none}
 .tricks-directory>li+li{border-top:1px solid var(--line)}
 .trick-row{width:100%;background:transparent;border:0;border-radius:0;min-height:62px;text-align:left;padding-top:11px;padding-bottom:11px;color:var(--text)}
 .trick-row:hover,.trick-row:focus-visible{background:var(--surface-soft)}
 body .trick-row:focus-visible{outline:2px solid var(--accent);outline-offset:-2px}
-.trick-row-title{font-size:13px;line-height:1.6;font-weight:600;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;overflow-wrap:anywhere}
+.trick-row-title-cell{display:flex;align-items:center;justify-content:space-between;gap:6px;min-width:0}
+.trick-row-prerequisites{display:flex;align-items:center;gap:4px;min-width:0}
+.trick-row-prerequisites .trick-row-tags{flex-wrap:nowrap;min-width:0}
+.trick-row-prerequisites .tag{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.trick-row-extra{flex:none;color:var(--muted);font-size:10px;font-variant-numeric:tabular-nums}
+.trick-row-extra-narrow{display:none}
+.trick-row-title{min-width:0;font-size:13px;line-height:1.6;font-weight:600;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;overflow-wrap:anywhere}
+.trick-tier-badge{--trick-tier-color:var(--accent);display:inline-grid;place-items:center;flex:none;min-width:31px;min-height:20px;padding:1px 5px;border:1px solid color-mix(in srgb,var(--trick-tier-color) 30%,var(--line));border-radius:4px;background:color-mix(in srgb,var(--trick-tier-color) 9%,var(--surface));color:var(--trick-tier-color);font-size:10px;font-weight:680;line-height:1.35;white-space:nowrap}
+.trick-tier-badge[data-tier="S"],.trick-rank-group[data-tier="S"]{--trick-tier-color:var(--tone-purple,var(--accent))}
+.trick-tier-badge[data-tier="A"],.trick-rank-group[data-tier="A"]{--trick-tier-color:var(--tone-blue,var(--accent))}
+.trick-tier-badge[data-tier="B"],.trick-rank-group[data-tier="B"]{--trick-tier-color:var(--accent)}
+.trick-tier-badge[data-tier="C"],.trick-rank-group[data-tier="C"]{--trick-tier-color:var(--tone-cyan)}
+.trick-tier-badge[data-tier="D"],.trick-rank-group[data-tier="D"]{--trick-tier-color:color-mix(in srgb,var(--tone-orange) 62%,var(--text))}
+.trick-tier-badge[data-tier="E"],.trick-rank-group[data-tier="E"]{--trick-tier-color:var(--muted)}
+.trick-tier-guide{padding:6px 16px;border-bottom:1px solid var(--line);font-size:11px}
+.trick-tier-guide summary{cursor:pointer;min-height:24px;line-height:24px;color:var(--accent)}
+.trick-tier-guide p,.trick-tier-hint{margin:4px 0;color:var(--muted);font-size:11px;line-height:1.6;overflow-wrap:anywhere}
+.trick-tier-guide dl{margin:6px 0 4px}
+.trick-tier-definition{display:grid;grid-template-columns:minmax(0,110px) minmax(0,1fr);gap:8px;padding:3px 0}
+.trick-tier-definition dt{font-weight:650;overflow-wrap:anywhere}
+.trick-tier-definition dd{margin:0;color:var(--muted);overflow-wrap:anywhere}
+.trick-rank-heading{display:flex;align-items:center;gap:7px;margin:0;padding:6px 16px;border-bottom:1px solid var(--line);background:var(--surface-soft);color:var(--trick-tier-color,var(--muted));font-size:11px;font-weight:670}
+.trick-rank-heading::before{content:"";width:5px;height:5px;border-radius:50%;background:currentColor}
+.trick-rank-group+.trick-rank-group{border-top:1px solid var(--line)}
 .trick-row:hover .trick-row-title{color:var(--accent)}
 .trick-row-number{font-size:10px;color:var(--muted);font-variant-numeric:tabular-nums}
 .trick-author{display:flex;align-items:center;gap:6px;font-size:11px;color:var(--muted);min-width:0;font-weight:400}
@@ -23,17 +51,80 @@ body .trick-row:focus-visible{outline:2px solid var(--accent);outline-offset:-2p
 .trick-avatar{flex:none;width:20px;height:20px;display:inline-grid;place-items:center;border-radius:50%;background:var(--accent-soft);color:var(--accent);font-size:10px}
 .trick-row-intro{font-size:11px;line-height:1.8;color:var(--muted);display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;overflow-wrap:anywhere;white-space:pre-line}
 .trick-row-arrow{font-size:14px;color:var(--accent)}
+.tricks-ranking-filters{display:grid;grid-template-columns:minmax(0,430px) auto;column-gap:16px;align-items:start;padding:12px 16px;border-bottom:1px solid var(--line);background:var(--surface-soft)}
+.tricks-ranking-actions{display:flex;align-items:center;justify-content:flex-end;gap:12px;flex-wrap:wrap;min-width:0}
+.tricks-ranking-actions .button{padding:5px 7px;font-size:11px}
+.tricks-ready-label{display:flex;align-items:center;gap:5px;min-height:30px;font-size:12px;cursor:pointer}
+.tricks-ready-label input,.trick-algorithm-choice input{flex:none;accent-color:var(--accent);width:15px;height:15px;margin:0}
+.trick-algorithm-picker{display:grid;gap:6px;min-width:0}
+.trick-algorithm-heading{display:flex;align-items:center;justify-content:space-between;gap:8px;font-size:12px;font-weight:650}
+.trick-algorithm-count,.trick-recommendation-reason-count{color:var(--muted);font-size:11px;font-weight:400;font-variant-numeric:tabular-nums;white-space:nowrap}
+.trick-algorithm-chips{display:flex;flex-wrap:wrap;gap:5px;min-width:0}
+.trick-algorithm-chips:empty{display:none}
+.trick-algorithm-remove{display:inline-flex;align-items:center;gap:5px;min-height:25px;max-width:100%;padding:2px 6px;border:1px solid var(--line);border-radius:4px;background:var(--accent-soft);color:var(--accent);font-size:11px;text-align:left}
+.trick-algorithm-remove:hover{border-color:currentColor}
+.trick-algorithm-remove>span:first-child{min-width:0;overflow-wrap:anywhere}
+.trick-algorithm-remove>span:last-child{flex:none;font-size:15px;line-height:1}
+.trick-algorithm-search,.trick-recommendation-editor select{display:block;width:100%;min-width:0;min-height:34px;padding:6px 8px;border:1px solid var(--line);border-radius:6px;background:var(--surface);color:var(--text);font-size:12px}
+.trick-algorithm-search:focus-visible,.trick-recommendation-editor select:focus-visible{outline:2px solid var(--accent);outline-offset:1px}
+.trick-algorithm-options{max-height:144px;overflow:auto;overscroll-behavior:contain;scrollbar-gutter:stable;padding:3px;border:1px solid var(--line);border-radius:6px;background:var(--surface)}
+.trick-algorithm-choice{display:flex;align-items:center;gap:8px;min-width:0;min-height:29px;padding:3px 6px;border-radius:4px;font-size:12px;cursor:pointer}
+.trick-algorithm-choice:hover,.trick-algorithm-choice:focus-within{background:var(--accent-soft)}
+.trick-algorithm-choice:has(input:disabled){color:var(--muted);cursor:not-allowed}
+.trick-algorithm-choice>span{min-width:0;overflow-wrap:anywhere}
+.trick-algorithm-empty{margin:0;padding:6px;color:var(--muted);font-size:11px}
 .tricks-empty{padding:55px 20px;text-align:center;color:var(--muted);font-size:12px;line-height:1.8}
 .tricks-empty h3{margin:0 0 9px;color:var(--text);font-size:15px;font-weight:550}
 .tricks-empty p{margin:4px 0}
 .trick-reader{max-width:950px;margin:auto;padding:18px clamp(20px,4vw,52px) 34px}
-.trick-reader-top{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:19px}
+.trick-reader-top{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:19px}
 .trick-reader-top .button{font-size:11px;padding:6px 9px}
 .trick-back{padding-left:0!important;color:var(--accent)}
 .trick-reader-actions{display:flex;align-items:center;gap:5px}
 .trick-reader-title{font-size:24px;line-height:1.55;margin:0 0 14px;overflow-wrap:anywhere}
 .trick-reader>.trick-author{margin-bottom:17px;font-size:12px}
-.trick-reader-intro{margin:0 0 23px;padding-bottom:20px;border-bottom:1px solid var(--line);color:var(--muted);font-size:13px;line-height:1.9;white-space:pre-wrap;overflow-wrap:anywhere}
+.trick-reader-intro{margin:0 0 16px;color:var(--muted);font-size:13px;line-height:1.9;white-space:pre-wrap;overflow-wrap:anywhere}
+.trick-recommendation{display:grid;gap:8px;margin:0 0 22px;padding:12px 0;border-top:1px solid var(--line);border-bottom:1px solid var(--line);color:var(--text);font-size:12px;line-height:1.6}
+.trick-recommendation-heading,.trick-prerequisites{display:flex;align-items:center;gap:6px 8px;flex-wrap:wrap;min-width:0}
+.trick-recommendation strong{font-weight:650}
+.trick-recommendation-unrated{color:var(--muted)}
+.trick-prerequisite{max-width:100%;padding:1px 5px;border:1px solid var(--line);border-radius:4px;background:var(--surface-soft);font-size:11px;overflow-wrap:anywhere}
+.trick-prerequisite-unrecognized{border-style:dashed;color:var(--muted)}
+.trick-dependency h3{margin:2px 0 5px;font-size:12px;font-weight:650}
+.trick-dependency-graph{--trick-edge:color-mix(in srgb,var(--muted) 45%,var(--line));--trick-met:color-mix(in srgb,var(--tone-green) 65%,var(--text));display:grid;grid-template-columns:minmax(0,1.1fr) 34px minmax(0,1fr);align-items:center;margin-bottom:4px}
+.trick-dependency-sources{list-style:none;margin:0;padding:0;min-width:0}
+.trick-dependency-source{--trick-branch:var(--trick-edge);display:grid;grid-template-columns:minmax(0,1fr) 21px;position:relative;align-items:center;min-width:0}
+.trick-dependency-source[data-state="learned"]{--trick-branch:var(--trick-met)}
+.trick-dependency-node{display:grid;grid-template-columns:16px minmax(0,1fr) auto;align-items:center;gap:7px;min-width:0;margin:3px 0;padding:7px 9px;border:1px solid var(--line);border-radius:6px;background:var(--surface-soft)}
+label.trick-dependency-node{cursor:pointer}
+label.trick-dependency-node:hover,label.trick-dependency-node:focus-within{border-color:var(--accent)}
+.trick-dependency-node input{width:15px;height:15px;margin:0;accent-color:var(--trick-met)}
+.trick-dependency-description,.trick-algorithm-choice-title{display:flex;align-items:center;flex-wrap:wrap;gap:3px 6px;min-width:0}
+.trick-dependency-name{min-width:0;overflow-wrap:anywhere;font-weight:600}
+.trick-algorithm-tags{display:inline-flex;flex-wrap:wrap;gap:3px;min-width:0;max-width:100%}
+.trick-algorithm-tags .tag{border:1px solid var(--line);border-radius:4px;padding:1px 4px;max-width:100%;font-size:10px;line-height:1.4;overflow-wrap:anywhere;white-space:normal}
+.trick-dependency-state{font-size:10px;color:var(--muted);white-space:nowrap}
+.trick-dependency-source[data-state="learned"] .trick-dependency-state{color:var(--trick-met)}
+.trick-dependency-node.trick-prerequisite-unrecognized{grid-template-columns:minmax(0,1fr) auto}
+.trick-dependency-edge{align-self:stretch;position:relative}
+.trick-dependency-edge::before,.trick-dependency-edge::after{content:"";position:absolute;right:0}
+.trick-dependency-edge::before{left:0;top:50%;border-top:1px solid var(--trick-branch)}
+.trick-dependency-source[data-state="unknown"] .trick-dependency-edge::before{border-top-style:dashed}
+.trick-dependency-edge::after{top:0;bottom:0;border-right:1px solid var(--trick-edge)}
+.trick-dependency-source:first-child .trick-dependency-edge::after{top:50%}
+.trick-dependency-source:last-child .trick-dependency-edge::after{bottom:50%}
+.trick-dependency-source:only-child .trick-dependency-edge::after{display:none}
+.trick-dependency-join{position:relative;height:1px;background:var(--trick-edge)}
+.trick-dependency-join::after{content:"";position:absolute;right:3px;top:-3px;width:6px;height:6px;border:solid var(--trick-edge);border-width:1px 1px 0 0;transform:rotate(45deg)}
+.trick-dependency-graph:has(.trick-dependency-target[data-ready="true"]){--trick-edge:var(--trick-met)}
+.trick-dependency-target{padding:9px 11px;border:1px solid var(--line);border-radius:6px;background:var(--surface-soft);min-width:0;display:grid;gap:2px}
+.trick-dependency-target[data-ready="true"]{border-color:var(--trick-met)}
+.trick-dependency-target-label,.trick-dependency-counter{font-size:11px;color:var(--muted)}
+.trick-dependency-target[data-ready="true"] .trick-dependency-counter{color:var(--trick-met)}
+.trick-dependency-title{overflow-wrap:anywhere}
+.trick-dependency-progress{width:100%;height:5px;margin-top:3px;accent-color:var(--trick-met)}
+.trick-recommendation-reason{display:grid;grid-template-columns:auto minmax(0,1fr);gap:8px;margin:0}
+.trick-recommendation-reason span{overflow-wrap:anywhere}
 .trick-content.markdown-body{font-size:14px;line-height:1.95;min-height:0}
 .trick-content pre{max-width:100%}
 .trick-editor{width:min(820px,calc(100vw - 28px));max-height:90dvh;border:1px solid var(--line);border-radius:12px;padding:23px 27px;background:var(--surface);color:var(--text);overflow:auto}
@@ -46,7 +137,16 @@ body .trick-row:focus-visible{outline:2px solid var(--accent);outline-offset:-2p
 .trick-body-heading .button{padding:4px 8px;font-size:11px}
 .trick-body-field textarea{width:100%;padding:12px;border:1px solid var(--line);border-radius:7px;background:var(--surface-soft);color:var(--text);resize:vertical;font-family:Consolas,'Microsoft YaHei',monospace;font-size:12px;line-height:1.8}
 .trick-editor-preview{border:1px solid var(--line);padding:13px 18px;border-radius:7px;min-height:220px;max-height:46vh;overflow:auto}
-.trick-form-actions{display:flex;justify-content:flex-end;gap:9px;padding-top:17px;margin-top:18px;border-top:1px solid var(--line)}
+.trick-recommendation-editor{min-inline-size:0;margin:0 0 16px;padding:8px 12px 12px;border:1px solid var(--line);border-radius:7px}
+.trick-recommendation-editor legend{padding:0 4px;font-size:12px;font-weight:650}
+.trick-recommendation-editor-top{display:flex;align-items:flex-end;justify-content:space-between;gap:10px;flex-wrap:wrap}
+.trick-recommendation-editor-top .field{flex:1;min-width:90px;max-width:172px;margin:0}
+.trick-recommendation-editor-top .button{min-height:34px;padding:6px 8px;font-size:11px}
+.trick-recommendation-fields{display:grid;gap:12px;margin-top:12px}
+.trick-recommendation-fields .field{margin:0}
+.trick-recommendation-reason-count{justify-self:end}
+.trick-editor .trick-draft-notice .trick-recommendation{margin:7px 0;padding:6px 0}
+.trick-form-actions{display:flex;justify-content:flex-end;gap:9px;flex-wrap:wrap;padding-top:17px;margin-top:18px;border-top:1px solid var(--line)}
 .trick-form .form-error{margin:12px 0 0}
 .trick-draft-notice{padding:11px 13px;border:1px solid var(--line);background:var(--accent-soft);border-radius:7px;font-size:11px;line-height:1.8;margin-bottom:15px}
 .trick-draft-notice p{margin:0 0 6px}.trick-draft-notice summary{cursor:pointer}.trick-draft-notice .checkbox-field{margin-top:10px}.trick-draft-notice .checkbox-field span{font-size:11px}
@@ -56,5 +156,45 @@ body .trick-row:focus-visible{outline:2px solid var(--accent);outline-offset:-2p
 .trick-delete-dialog p{font-size:12px;line-height:1.8;overflow-wrap:anywhere}
 body[data-view="tricks"] .page-heading{margin-bottom:21px}
 body[data-view="tricks"] main{padding-top:28px}
-@media(max-width:1000px){.tricks-columns,.trick-row{grid-template-columns:20px minmax(160px,1fr) 86px minmax(150px,1.1fr) 16px;gap:10px;padding-left:13px;padding-right:13px}.trick-row{min-height:62px}.trick-author{font-size:10px;gap:5px}}
-@media(max-width:650px){.tricks-toolbar{padding:10px;gap:8px;flex-wrap:wrap}.tricks-search{flex-basis:100%;max-width:none}.tricks-count{margin-left:0;margin-right:auto}.tricks-columns{display:none}.trick-row{grid-template-columns:18px minmax(0,1fr) 14px;gap:6px 9px;padding:12px 11px;min-height:0}.trick-row-number{grid-column:1;grid-row:1}.trick-row-title{grid-column:2;grid-row:1;font-size:12px}.trick-row>.trick-author{grid-column:2;grid-row:2}.trick-row-intro{grid-column:2;grid-row:3;font-size:11px;-webkit-line-clamp:2}.trick-row-arrow{grid-column:3;grid-row:1}.trick-avatar{width:18px;height:18px;font-size:9px}.trick-reader{padding:14px 17px 25px}.trick-reader-top{margin-bottom:18px;gap:5px}.trick-reader-title{font-size:21px}.trick-reader-intro{font-size:12px}.trick-content.markdown-body{font-size:13px}.trick-editor{padding:19px 17px}.trick-editor-heading h2{font-size:19px}.trick-form-actions .button{font-size:11px}.trick-reader-actions{gap:0}.trick-reader-actions .button{padding:5px 7px}body[data-view="tricks"] main{padding-top:20px}}
+@media(max-width:1000px){.tricks-columns,.trick-row{--trick-title-track:minmax(0,1fr);--trick-author-track:86px;--trick-intro-track:minmax(0,1.1fr);gap:10px;padding-left:13px;padding-right:13px}.trick-rank-heading{padding-inline:13px}.trick-author{font-size:10px;gap:5px}}
+@media(max-width:650px){
+  .tricks-toolbar{padding:10px;gap:8px;flex-wrap:wrap}
+  .tricks-search{order:1;flex-basis:100%;max-width:none}
+  .tricks-create{flex:none}
+  .tricks-columns,.trick-row{grid-template-columns:18px minmax(0,1fr) minmax(0,27%) 14px;gap:6px 8px;padding-inline:11px}
+  .tricks-list-ranking :is(.tricks-columns,.trick-row){grid-template-columns:minmax(0,1fr) minmax(0,27%) 14px}
+  .tricks-columns{padding-block:6px}
+  .trick-column-number,.trick-column-author,.trick-column-intro,.trick-column-arrow{display:none}
+  .trick-row{padding-block:10px;min-height:0}
+  .trick-row-number{grid-column:1;grid-row:1}
+  .trick-column-title,.trick-row-title-cell{grid-column:-4/-3;grid-row:1}
+  .trick-column-prerequisites,.trick-row-prerequisites{grid-column:-3/-2;grid-row:1}
+  .trick-row-title{font-size:12px}
+  .trick-row-prerequisites .tag:nth-child(n+2),.trick-row-extra-wide{display:none}
+  .trick-row-extra-narrow{display:inline}
+  .trick-row>.trick-author{grid-column:-4/-2;grid-row:2}
+  .trick-row-intro{grid-column:-4/-2;grid-row:3;font-size:11px;-webkit-line-clamp:2}
+  .trick-row-arrow{grid-column:-2/-1;grid-row:1}
+  .trick-avatar{width:18px;height:18px;font-size:9px}
+  .tricks-ranking-filters{grid-template-columns:minmax(0,1fr);gap:7px;padding:10px 11px}
+  .tricks-ranking-actions{justify-content:space-between}
+  .trick-reader{padding:14px 17px 25px}
+  .trick-reader-top{margin-bottom:18px;gap:5px}
+  .trick-reader-title{font-size:21px}
+  .trick-reader-intro{font-size:12px}
+  .trick-dependency-graph{grid-template-columns:minmax(0,1.25fr) 18px minmax(0,1fr)}
+  .trick-dependency-source{grid-template-columns:minmax(0,1fr) 10px}
+  .trick-dependency-node{grid-template-columns:15px minmax(0,1fr);gap:1px 5px;padding:5px 6px}
+  .trick-dependency-node input{grid-row:span 2}
+  .trick-dependency-state{grid-column:2;white-space:normal}
+  .trick-dependency-node.trick-prerequisite-unrecognized{grid-template-columns:minmax(0,1fr)}
+  .trick-prerequisite-unrecognized .trick-dependency-state{grid-column:1}
+  .trick-dependency-target{padding:6px 7px}
+  .trick-content.markdown-body{font-size:13px}
+  .trick-editor{padding:19px 17px}
+  .trick-editor-heading h2{font-size:19px}
+  .trick-form-actions .button{font-size:11px}
+  .trick-reader-actions{gap:0}
+  .trick-reader-actions .button{padding:5px 7px}
+  body[data-view="tricks"] main{padding-top:20px}
+}

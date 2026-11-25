@@ -18,7 +18,8 @@ import { createEditor } from '../library/editor.js';
 import { createLibraryReader } from '../library/reader.js';
 import { createSettings } from '../account/settings.js';
 import { createAlgorithmWorkspace } from '../algorithms/workspace.js';
-import { createTrickWorkspace } from '../tricks/workspace.js';
+import { createTrickWorkspace, type TrickAlgorithmOption } from '../tricks/workspace.js';
+import { isAlgorithmLeaf } from '../../shared/algorithm-leaf.js';
 import { createFavoritesWorkspace } from '../favorites/workspace.js';
 import { favoriteKey, contentType, contentIdentity, legacyFavorite } from '../favorites/model.js';
 import type { FavoriteEntry } from '../favorites/model.js';
@@ -320,7 +321,43 @@ import type { FavoriteEntry } from '../favorites/model.js';
   const { renderAlgorithmNotes } = algorithms;
   const favoriteHost = element('section', 'favorites-workspace'); favoriteHost.id = 'favorites-panel'; favoriteHost.hidden = true; favoriteHost.setAttribute('aria-label', '统一个人收藏'); $('#library-panel')!.before(favoriteHost);
   const favorites = createFavoritesWorkspace({ host: favoriteHost, getEntries: favoriteEntries, getContext: () => JSON.stringify([repoSource(), accountId()]), isFavorite: favorite, toggle: toggleFavorite, renderMarkdown, renderSolution: (record, host) => reader.renderDetail(record, host), authorName, date, errorMessage, toast });
+  let trickAlgorithmTree: typeof s.algorithmTree | undefined;
+  let trickTagCatalog: AppTagCatalog | undefined;
+  let trickAlgorithmOptions: TrickAlgorithmOption[] = [];
+  function trickAlgorithms(): readonly TrickAlgorithmOption[] {
+    if (trickAlgorithmTree === s.algorithmTree && trickTagCatalog === s.tagCatalog) return trickAlgorithmOptions;
+    trickAlgorithmTree = s.algorithmTree;
+    trickTagCatalog = s.tagCatalog;
+    const tagNames = new Map<string, string>();
+    for (const catalog of [window.QMX_TAG_PRESETS, trickTagCatalog]) {
+      for (const category of catalog?.categories ?? []) for (const tag of category.tags ?? []) {
+        if (typeof tag.name === 'string' && tag.name.trim()) tagNames.set(AlgorithmDirectory.normalize(tag.name), tag.name.trim());
+      }
+    }
+    const findTag = (labels: readonly string[]) => labels.map(label => tagNames.get(AlgorithmDirectory.normalize(label))).find(label => label !== undefined);
+    const entries: TrickAlgorithmOption[] = [];
+    function visit(node: AlgorithmDirectoryNode, ancestors: readonly AlgorithmDirectoryNode[]) {
+      if (isAlgorithmLeaf(node)) {
+        const parent = ancestors[0];
+        const owner = parent && node.contentOf === parent.id ? [parent.id, ...(parent.legacyIds ?? [])] : [];
+        const aliases = [node.fullLabel ?? node.label, ...(node.aliases ?? [])];
+        const ownTag = findTag([node.label, ...aliases]);
+        let family: string | undefined;
+        for (const ancestor of ancestors) {
+          // A combined directory such as 前缀和与差分 can name more than one family.
+          family = findTag([ancestor.label, ancestor.fullLabel ?? ancestor.label]) ?? findTag(ancestor.label.split(/[与、／]/u).map(part => part.trim()).filter(part => part && node.label.endsWith(part)));
+          if (family) break;
+        }
+        entries.push({ id: node.id, label: node.label, aliases, legacyIds: [...new Set([...(node.legacyIds ?? []), ...owner])], tags: [...new Set([ownTag, family].filter(tag => tag !== undefined))] });
+      }
+      for (const child of node.children ?? []) visit(child, [node, ...ancestors]);
+    }
+    if (trickAlgorithmTree) visit(trickAlgorithmTree, []);
+    trickAlgorithmOptions = entries;
+    return entries;
+  }
   const tricks = createTrickWorkspace({
+    getAlgorithms: trickAlgorithms,
     host: $('#section-placeholder')!, getItems: () => s.tricks || [], setItems: value => { s.tricks = value; updateNavigationCounts(); },
     getContext: () => ({ sourceKey: repoSource(), repo: repo(), accountId: accountId(), displayName: authorName(s.account), canCreate: !demo && !!s.account && (s.permissions.push === true || s.permissions.admin === true) && repoSource().startsWith('https://api.github.com|'), admin: s.permissions.admin === true }),
     getBusy: () => s.busy, setBusy,

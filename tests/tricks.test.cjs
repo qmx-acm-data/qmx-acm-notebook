@@ -5,8 +5,17 @@ const assert = require('node:assert/strict');
 const fs = require('node:fs'), path = require('node:path');
 const YAML = require('yaml');
 const { GitHub, parseTrick, cachedTrick, validateTrickPath, repositoryKey } = require(appPath('electron/github.cjs'));
+const { TOPICS_PATH } = require(appPath('electron/algorithm-topics.cjs'));
 const UUID = '55c710aa-e083-4b14-94fe-a3a825d17f70', NAME = `tricks/${UUID}.md`;
 const scope = { repo: 'team/notebook', serverUrl: '', sourceKey: 'https://api.github.com|team/notebook' };
+const builtinLeaf = 'algorithm-二分查找', builtinAlias = 'xcpc-dsu-on-tree-1', canonicalAlias = 'xcpc-树的启发式合并-1';
+const customLeaf = 'custom-55c710aa-e083-4b14-94fe-a3a825d17f71', customDirectory = 'custom-55c710aa-e083-4b14-94fe-a3a825d17f72';
+const recommendation = (extra = {}) => ({ tier: 'S', prerequisiteIds: [builtinLeaf, customLeaf], reason: 'Shows the invariant clearly.', ...extra });
+const directory = JSON.stringify({ schema: 1, topics: [
+ { id: customDirectory, parentId: 'root', label: 'Test directory', fullLabel: 'Test directory', kind: 'directory', color: 'parent', createdAt: '2026-11-21T00:00:00Z', createdBy: { id: 42, login: 'alice' } },
+ { id: customLeaf, parentId: customDirectory, label: 'Test algorithm', fullLabel: 'Test algorithm', kind: 'algorithm', color: 'basic', createdAt: '2026-11-21T00:00:00Z', createdBy: { id: 42, login: 'alice' } },
+] });
+const directoryRequests = h => h.calls.filter(call => call.pathname.endsWith(`/contents/${TOPICS_PATH}`));
 const input = (extra = {}) => ({ ...scope, clientId: UUID, title: 'Binary boundary', introduction: 'A short public introduction', body: '# Content\n\n```cpp\nreturn 42;\n```', ...extra });
 const text = (extra = {}, body = '# Original body') => `---\n${YAML.stringify({ schema: 1, kind: 'trick', title: 'Original title', introduction: 'Original intro', authorId: 42, author: 'alice', updatedAt: '2026-11-21T00:00:00Z', ...extra })}---\n${body}`;
 function fixture({ files = {}, userId = 42, login = 'alice', permissions = { push: true, admin: false }, token = 'FAKE_TEST_TOKEN', serverUrl = '', failWrite = 0, noSha = false, networkWrite = false, paginated = false } = {}) {
@@ -64,6 +73,96 @@ test('stable client UUID retry is idempotent and a changed payload cannot overwr
  const h = fixture(); const first = await h.gh.saveTrick(input()); const retry = await h.gh.saveTrick(input());
  assert.deepEqual(retry, first); assert.equal(h.writes.length, 1);
  await assert.rejects(h.gh.saveTrick(input({ body: 'different' })), /已存在但内容不同/); assert.equal(h.writes.length, 1);
+});
+
+test('only freshly confirmed administrators can add, change or remove recommendations', async () => {
+ const added = recommendation({ prerequisiteIds: [] });
+ for (const permissions of [{ push: true, admin: false }, { push: true, admin: 'true' }, { push: true, admin: 1 }]) {
+  const h = fixture({ permissions });
+  await assert.rejects(h.gh.saveTrick(input({ recommendation: added, admin: true, permissions: { admin: true }, authorId: 42 })), /管理员/);
+  assert.equal(h.writes.length, 0); assert.equal(directoryRequests(h).length, 0);
+ }
+ let isAdmin = true;
+ const h = fixture({ permissions: () => ({ push: true, admin: isAdmin }) });
+ const first = await h.gh.saveTrick(input({ recommendation: added }));
+ isAdmin = false;
+ for (const changed of [null, { ...added, tier: 'A' }, { ...added, reason: 'Different reason' }, recommendation()]) {
+  await assert.rejects(h.gh.saveTrick(input({ path: NAME, sha: first.sha, recommendation: changed, admin: true })), /管理员/);
+ }
+ assert.equal(h.writes.length, 1); assert.equal(directoryRequests(h).length, 0);
+ assert.equal(h.calls.filter(call => call.pathname === '/repos/team/notebook').length, 5);
+ const echoed = await h.gh.saveTrick(input({ path: NAME, sha: first.sha, title: 'Content edit', recommendation: added }));
+ assert.deepEqual(echoed.recommendation, added); assert.equal(h.writes.at(-1).sha, first.sha);
+ const plain = await fixture().gh.saveTrick(input({ recommendation: null }));
+ assert.equal(Object.hasOwn(plain, 'recommendation'), false);
+});
+
+test('changed recommendations validate hydrated leaves, canonicalize aliases and store no credentials', async () => {
+ const token = 'SYNTHETIC_TRICK_AUTH_SENTINEL';
+ const h = fixture({ permissions: { admin: true }, token, files: { [TOPICS_PATH]: directory } });
+ const requested = recommendation({ prerequisiteIds: [builtinLeaf, builtinAlias, customLeaf], reason: '  Useful invariant: yes.  ', token, permissions: { admin: true } });
+ const result = await h.gh.saveTrick(input({ recommendation: requested, token, scope }));
+ const expected = recommendation({ prerequisiteIds: [builtinLeaf, canonicalAlias, customLeaf], reason: 'Useful invariant: yes.' });
+ assert.deepEqual(result.recommendation, expected);
+ const committed = h.data.get(NAME).text;
+ const meta = YAML.parse(committed.match(/^---\n([\s\S]*?)\n---/)[1]);
+ assert.deepEqual(meta.recommendation, expected); assert.equal(meta.schema, 1); assert.equal(meta.token, undefined);
+ assert.equal(committed.includes(token), false); assert.equal(JSON.stringify(result).includes(token), false);
+ assert.equal(JSON.stringify(h.writes).includes(token), false);
+ assert.equal(directoryRequests(h).length, 1); assert.equal(new URL(directoryRequests(h)[0].url).searchParams.get('ref'), 'main');
+ assert.ok(h.calls.every(call => call.options.headers.Authorization === `Bearer ${token}`));
+ assert.deepEqual(await h.gh.saveTrick(input({ recommendation: requested })), result, 'alias-form retry finds the canonical payload');
+ assert.equal(h.writes.length, 1);
+ for (const ids of [['missing-leaf'], ['root'], ['roadmap:xh'], [customDirectory], [builtinAlias, canonicalAlias]]) {
+  const bad = fixture({ permissions: { admin: true }, files: { [TOPICS_PATH]: directory } });
+  await assert.rejects(bad.gh.saveTrick(input({ recommendation: recommendation({ prerequisiteIds: ids }) })), /叶节点|重复/);
+  assert.equal(bad.writes.length, 0);
+ }
+ const missing = fixture({ permissions: { admin: true } });
+ await assert.rejects(missing.gh.saveTrick(input({ recommendation: recommendation({ prerequisiteIds: [customLeaf] }) })), /叶节点/);
+ assert.equal(missing.writes.length, 0);
+ assert.deepEqual((await missing.gh.saveTrick(input({ recommendation: recommendation({ prerequisiteIds: [builtinLeaf] }) }))).recommendation.prerequisiteIds, [builtinLeaf]);
+});
+
+test('validates bounded single-line reasons and syntactically unique prerequisite IDs before requesting the directory', async () => {
+ const valid = recommendation({ prerequisiteIds: [], reason: '  ' + '汉'.repeat(200) + '  ' });
+ const h = fixture({ permissions: { admin: true } });
+ for (const invalid of [false, [], {}, { ...valid, tier: 'a' }, { ...valid, tier: 'F' },
+  ...['', '  ', 'x\ny', '\nx', 'x\ry', 'x\ty', 'x\u0085y', 'x\u2028y', 'x\u2029y', '\0', '汉'.repeat(201), 42].map(reason => ({ ...valid, reason })),
+  ...[null, [42], [''], ['a/b'], ['a\\b'], ['a%20b'], ['a b'], ['x\n'], Array(1), ['x'.repeat(1001)], [builtinLeaf, builtinLeaf], Array.from({ length: 9 }, (_, n) => `algorithm-${n}`)].map(prerequisiteIds => ({ ...valid, prerequisiteIds })),
+ ]) await assert.rejects(h.gh.saveTrick(input({ recommendation: invalid })), /推荐/);
+ assert.equal(h.writes.length, 0);
+ const saved = await h.gh.saveTrick(input({ recommendation: valid }));
+ assert.equal(Buffer.byteLength(saved.recommendation.reason), 600); assert.equal(directoryRequests(h).length, 0);
+});
+
+test('omission preserves existing reviews even after an algorithm is deleted; rating changes honor SHA and idempotency', async () => {
+ const firstRating = recommendation();
+ for (const admin of [false, true]) {
+  const h = fixture({ permissions: { push: true, admin }, files: { [NAME]: text({ recommendation: firstRating }), [TOPICS_PATH]: 'broken directory' } });
+  const saved = await h.gh.saveTrick(input({ path: NAME, sha: 'old-sha-0' }));
+  assert.deepEqual(saved.recommendation, firstRating); assert.deepEqual(parseTrick(NAME, h.data.get(NAME).text, saved.sha, scope).recommendation, firstRating);
+  assert.equal(h.writes[0].sha, 'old-sha-0'); assert.equal(directoryRequests(h).length, 0);
+  assert.deepEqual(await h.gh.saveTrick(input({ path: NAME, sha: saved.sha, recommendation: firstRating })), saved);
+  assert.equal(h.writes.length, 1); assert.equal(directoryRequests(h).length, 0);
+ }
+ const h = fixture({ permissions: { admin: true }, files: { [TOPICS_PATH]: directory } });
+ const first = await h.gh.saveTrick(input({ recommendation: firstRating }));
+ assert.deepEqual(await h.gh.saveTrick(input({ recommendation: firstRating })), first);
+ assert.deepEqual(await h.gh.saveTrick(input()), first, 'old client retry omits rating');
+ assert.equal(directoryRequests(h).length, 1);
+ const nextRating = { ...firstRating, tier: 'A' };
+ for (const value of [nextRating, null]) await assert.rejects(h.gh.saveTrick(input({ recommendation: value })), /已存在但内容不同/);
+ await assert.rejects(h.gh.saveTrick(input({ path: NAME, sha: 'stale', recommendation: nextRating })), /SHA冲突/);
+ assert.equal(h.writes.length, 1);
+ const second = await h.gh.saveTrick(input({ path: NAME, sha: first.sha, recommendation: nextRating }));
+ assert.equal(second.recommendation.tier, 'A'); assert.equal(h.writes.at(-1).sha, first.sha);
+ h.data.delete(TOPICS_PATH);
+ const beforeClear = directoryRequests(h).length;
+ const cleared = await h.gh.saveTrick(input({ path: NAME, sha: second.sha, recommendation: null }));
+ assert.equal(Object.hasOwn(cleared, 'recommendation'), false); assert.doesNotMatch(h.data.get(NAME).text, /^recommendation:/m);
+ assert.deepEqual(await h.gh.saveTrick(input({ path: NAME, sha: cleared.sha, recommendation: null })), cleared);
+ assert.equal(h.writes.length, 3); assert.equal(h.writes.at(-1).sha, second.sha); assert.equal(directoryRequests(h).length, beforeClear);
 });
 
 test('owners update/delete; administrators manage others while preserving original authorship', async () => {
@@ -147,8 +246,55 @@ test('cached records are revalidated by source, identity, byte limits and kind',
  for (const record of [null, [], { ...good, sourceKey: 'evil' }, { ...good, serverUrl: 'https://evil' }, { ...good, repo: 'other/repo' }, { ...good, body: 1 }, { ...good, introduction: '汉'.repeat(2001) }, { ...good, title: '汉'.repeat(201) }, { ...good, author: { id: 99, login: 'bob' } }, { ...good, kind: 'document' }, { ...good, id: 'forged' }, { ...good, clientId: 'forged' }, { ...good, sha: '' }]) assert.equal(cachedTrick(record, scope), null);
 });
 
+test('valid recommendations roundtrip through parse, cache, sync, and cached blobs without a directory match', async () => {
+ const review = recommendation({ tier: 'B' });
+ const source = text({ recommendation: review });
+ const parsed = parseTrick(NAME, source, 'old-sha-0', scope);
+ assert.deepEqual(parsed.recommendation, review); assert.deepEqual(cachedTrick(parsed, scope), parsed);
+ assert.equal(Object.hasOwn(cached(), 'recommendation'), false);
+ const files = { [NAME]: source };
+ const h = fixture({ files, token: '' }), snapshot = await h.gh.sync();
+ assert.deepEqual(snapshot.tricks, [parsed]); assert.equal(snapshot.blobs[parsed.sha], source);
+ const unchanged = fixture({ files, token: '' });
+ assert.deepEqual((await unchanged.gh.sync(snapshot)).tricks, [parsed]);
+ assert.ok(unchanged.calls.every(call => !call.pathname.includes('/git/blobs/')));
+});
+
+test('all six recommendation tiers save, sync and roundtrip without treating E as unrated', async () => {
+ for (const tier of ['S', 'A', 'B', 'C', 'D', 'E']) {
+  const review = recommendation({ tier, prerequisiteIds: [] });
+  const h = fixture({ permissions: { admin: true } });
+  const saved = await h.gh.saveTrick(input({ recommendation: review }));
+  assert.deepEqual(saved.recommendation, review); assert.deepEqual(cachedTrick(saved, scope), saved);
+  const snapshot = await fixture({ files: { [NAME]: h.data.get(NAME).text }, token: '' }).gh.sync();
+  assert.deepEqual(snapshot.tricks[0].recommendation, review);
+ }
+});
+
+test('malformed stored reviews fail closed without making the Trick unreadable or silently rewriting bytes', async () => {
+ for (const bad of [null, 42, [], recommendation({ tier: 'F' }), recommendation({ reason: 'x\ny' }), recommendation({ prerequisiteIds: [builtinLeaf, builtinLeaf] })]) {
+  const source = text({ recommendation: bad }, 'Existing content must survive.');
+  const files = { [NAME]: source }, parsed = parseTrick(NAME, source, 'old-sha-0', scope);
+  assert.equal(parsed.body, 'Existing content must survive.'); assert.equal(Object.hasOwn(parsed, 'recommendation'), false);
+  assert.deepEqual(cachedTrick({ ...parsed, recommendation: bad }, scope), parsed);
+  const snapshot = await fixture({ files, token: '' }).gh.sync();
+  assert.deepEqual(snapshot.tricks, [parsed]); assert.equal(snapshot.blobs[parsed.sha], source);
+  const h = fixture({ files });
+  const edit = { path: NAME, sha: parsed.sha };
+  await assert.rejects(h.gh.saveTrick(input(edit)), /推荐格式无效/);
+  await assert.rejects(h.gh.saveTrick(input({ ...edit, recommendation: null })), /管理员/);
+  assert.equal(h.writes.length, 0); assert.deepEqual(h.data.get(NAME), { text: source, sha: parsed.sha });
+  const admin = fixture({ files, permissions: { admin: true } });
+  await assert.rejects(admin.gh.saveTrick(input(edit)), /推荐格式无效/);
+  assert.equal(admin.data.get(NAME).text, source); assert.equal(admin.writes.length, 0);
+  const cleared = await admin.gh.saveTrick(input({ ...edit, recommendation: null }));
+  assert.equal(Object.hasOwn(cleared, 'recommendation'), false); assert.equal(admin.writes[0].sha, parsed.sha);
+  assert.doesNotMatch(admin.data.get(NAME).text, /^recommendation:/m);
+ }
+});
+
 test('main persists successful writes/deletes, restores offline and isolates source caches', async () => {
- const result = cached(); let fail = false;
+ const result = parseTrick(NAME, text({ recommendation: recommendation() }), 'cache-sha', scope); let fail = false;
  const h = mainHarness({ backend: { saveTrick: async () => { if (fail) throw Error('conflict'); return result; }, deleteTrick: async () => ({ ...scope, id: result.id, path: result.path, deleted: true }), sync: async () => ({ records: [], issues: [], tricks: [] }) } });
  assert.deepEqual((await h.invoke('bootstrap')).tricks, []);
  assert.deepEqual(await h.invoke('saveTrick', input()), result); assert.equal((await h.invoke('bootstrap')).tricks.length, 1);

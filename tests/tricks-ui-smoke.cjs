@@ -14,7 +14,7 @@ const fixtureRows = [
   ['整除分块：右端点直接算','唐可','相同的商连成一段，用 n / (n / l) 直接计算右端点。',6],
   ['先离散化，再比较相邻位置','苏晚','离散化保留顺序，不保留距离；别把排名相邻当成数值相邻。',7]
 ].map(([title,name,introduction,authorId],i)=>({kind:'trick',id:`trick:${i}`,clientId:`00000000-0000-4000-8000-00000000000${i}`,path:`tricks/00000000-0000-4000-8000-00000000000${i}.md`,sha:`sha-${i}`,title,introduction,authorId,author:{id:authorId,login:`user${authorId}`,name},updatedAt:`2026-11-${20-i}T10:00:00Z`,repo:'team/notebook',serverUrl:'',sourceKey,body:'# 关键观察\n\n正文独有TOKEN，不应在列表里显示。\n\n**不变量**先于边界。\n\n```cpp\nwhile (l < r) {\n    int mid = l + (r - l + 1) / 2;\n    if (check(mid)) l = mid;\n    else r = mid - 1;\n}\n```\n\n<img src=x onerror="window.trickXss=1"><script>window.trickXss=2</script>\n[bad](javascript:window.trickXss=3)'}));
-async function setup(browser,admin=false){
+async function setup(browser,admin=false,rows=fixtureRows){
  const page=await browser.newPage({viewport:{width:1440,height:940}}); page.setDefaultTimeout(10000); const errors=[];page.on('pageerror',e=>errors.push(e.message));
  await page.addInitScript(({rows,admin,sourceKey})=>{
   window.trickXss=0; window.trickCalls=[];window.failTrickSave=false;
@@ -26,11 +26,143 @@ async function setup(browser,admin=false){
    {kind:'algorithm-note',id:'foreign',repo:'other/repo',sourceKey:'https://api.github.com|other/repo',noteScope:'public',authorId:2}
   ],settings:{repo:'team/notebook',autoSync:false},permissions:{repo:'team/notebook',push:true,admin},account:{id:2,login:'alice',name:'陈一鸣'},local:{records:[],favorites:[],mastery:{},draft:{}}};
   window.notebook={bootstrap:async()=>payload,sync:async()=>payload,updateLocal:async v=>v,
-   saveTrick:async input=>{window.trickCalls.push({method:'save',input});if(window.failTrickSave)throw Error('fixture SHA conflict');const saved={...input,kind:'trick',id:'trick:'+input.clientId,authorId:2,author:{id:2,login:'alice',name:'陈一鸣'},path:input.path||'tricks/'+input.clientId+'.md',sha:'saved-sha',updatedAt:'2026-11-21T11:00:00Z',serverUrl:''};payload.tricks=[saved,...payload.tricks.filter(x=>x.path!==saved.path)];return saved;},
+   saveTrick:async input=>{window.trickCalls.push({method:'save',input});if(window.failTrickSave)throw Error('fixture SHA conflict');const existing=payload.tricks.find(x=>x.path===input.path);const saved={...input,recommendation:input.recommendation===undefined?existing?.recommendation:input.recommendation??undefined,kind:'trick',id:'trick:'+input.clientId,authorId:existing?.authorId??2,author:existing?.author??{id:2,login:'alice',name:'陈一鸣'},path:input.path||'tricks/'+input.clientId+'.md',sha:'saved-sha',updatedAt:'2026-11-21T11:00:00Z',serverUrl:''};payload.tricks=[saved,...payload.tricks.filter(x=>x.path!==saved.path)];return saved;},
    deleteTrick:async input=>{window.trickCalls.push({method:'delete',input});payload.tricks=payload.tricks.filter(x=>x.path!==input.path);return {deleted:true,path:input.path};},openExternal:async()=>{}};
- },{rows:fixtureRows,admin,sourceKey});
+ },{rows,admin,sourceKey});
  await page.goto(pathToFileURL(appPath('ui/index.html')).href);await page.locator('.rail-nav-item[data-view="tricks"]').click();await page.mouse.move(1300,850);await page.waitForFunction(()=>document.querySelector('.sidebar').getBoundingClientRect().width<=73);
  return {page,errors};
+}
+async function checkRanking(browser) {
+  const prefix = 'algorithm-一维前缀和', basic = 'xcpc-基础线段树-1', lazy = 'xcpc-带标记的线段树-1';
+  const withTier = (i, tier, prerequisiteIds, reason) => ({ ...fixtureRows[i], recommendation: { tier, prerequisiteIds, reason } });
+  const ranked = [withTier(0,'A',[],'无需算法前置。'),withTier(1,'S',[basic,lazy],'进阶区间最值。'),withTier(2,'S',[prefix],'统一左边界。'),withTier(3,'B',[basic],'按需查看。'),fixtureRows[4],withTier(5,'B',['retired-algorithm'],'旧前置。'),
+    ...['E','D','C'].map((tier,i)=>({...withTier(0,tier,['retired-algorithm'],'专项验收。'), path:`tricks/00000000-0000-4000-8000-00000000000${i+6}.md`}))];
+  const {page,errors}=await setup(browser,true,ranked);
+  try {
+    assert.equal(await page.locator('.trick-row').first().getAttribute('data-path'),ranked[0].path);
+    const outsideTags=path=>page.locator(`.trick-row[data-path="${path}"] .trick-row-tags .tag`);
+    const assertColumns=async ()=>{
+      const header=page.locator('.trick-column-prerequisites');
+      assert.equal(await header.innerText(),'前置算法');
+      assert.equal(await header.isVisible(),true);
+      const tagColumn=await header.boundingBox();
+      assert.ok(await page.locator('.trick-row').evaluateAll((rows,column)=>rows.every(row=>{
+        const title=row.querySelector('.trick-row-title-cell').getBoundingClientRect();
+        const tags=row.querySelector('.trick-row-prerequisites').getBoundingClientRect();
+        return title.right<=tags.left&&Math.abs(tags.left-column.x)<1&&tags.right<=innerWidth&&row.scrollWidth<=row.clientWidth;
+      }),tagColumn),'the prerequisite header aligns with a separate column to the right of each title');
+    };
+    await assertColumns();
+    assert.deepEqual(await outsideTags(ranked[1].path).allTextContents(),['线段树']);
+    assert.deepEqual(await outsideTags(ranked[2].path).allTextContents(),['前缀和']);
+    for(const i of [0,4,5]) assert.equal(await outsideTags(ranked[i].path).count(),0);
+    const search=page.getByRole('searchbox',{name:'搜索 Trick'});
+    await search.fill('线段树');
+    assert.deepEqual(await page.locator('.trick-row').evaluateAll(nodes=>nodes.map(node=>node.dataset.path)),[ranked[1].path,ranked[3].path]);
+    await search.fill('');
+    await page.locator('.tricks-view-ranking').click();
+    await assertColumns();
+    assert.ok(await page.locator('.trick-row').evaluateAll(rows=>rows.every(row=>row.getBoundingClientRect().height<=76)),'tagged ranking rows remain compact');
+    assert.deepEqual(await outsideTags(ranked[1].path).allTextContents(),['线段树']);
+    assert.deepEqual(await outsideTags(ranked[2].path).allTextContents(),['前缀和']);
+    assert.deepEqual(await page.locator('.trick-rank-group').evaluateAll(nodes=>nodes.map(node=>node.dataset.tier)),['S','A','B','C','D','E','unrated']);
+    assert.equal(await page.locator('.trick-rank-group[data-tier=S] h3').innerText(),'S 级 · 优先掌握');
+    assert.equal(await page.locator('.trick-rank-group[data-tier=E] h3').innerText(),'E 级 · 备查参考');
+    assert.match(await page.locator('.trick-rank-group[data-tier=S] .trick-tier-badge').first().getAttribute('title'),/满足前置后/);
+    const guide=page.locator('.trick-tier-guide');
+    await guide.locator('summary').click();
+    assert.equal(await guide.locator('dt:visible').count(),7);
+    assert.match(await guide.innerText(),/不是算法难度/);
+    await guide.locator('summary').click();
+    assert.deepEqual(await page.locator('.trick-rank-group[data-tier="S"] .trick-row').evaluateAll(nodes=>nodes.map(node=>node.dataset.path)),[ranked[1].path,ranked[2].path]);
+    const picker=page.locator('.tricks-learned-algorithms');
+    const select=async (container,label,id)=>{await container.locator('input[type=search]').fill(label);await container.locator(`input[data-algorithm-id="${id}"]`).check();};
+    await picker.locator('input[type=search]').fill('线段树');
+    for (const id of [basic,lazy]) {
+      const choice=picker.locator('.trick-algorithm-choice').filter({has:page.locator(`input[data-algorithm-id="${id}"]`)});
+      assert.deepEqual(await choice.locator('.trick-algorithm-tags .tag').allTextContents(),['线段树']);
+    }
+    const ready=page.locator('.tricks-ready-filter');
+    await ready.check();assert.equal(await page.locator('.trick-row').count(),1);
+    await select(picker,'一维前缀和',prefix);assert.equal(await page.locator('.trick-row').count(),2);
+    await select(picker,'基础线段树',basic);assert.equal(await page.locator('.trick-row').count(),3,'advanced S needs both prerequisites');
+    await select(picker,'懒标记线段树',lazy);assert.equal(await page.locator('.trick-row').count(),4);
+    await picker.locator(`button[data-algorithm-id="${lazy}"]`).click();assert.equal(await page.locator('.trick-row').count(),3);
+    await page.locator(`.trick-row[data-path="${ranked[2].path}"]`).click();assert.match(await page.locator('.trick-recommendation').innerText(),/一维前缀和.*统一左边界/s);
+    assert.deepEqual(await page.locator('.trick-dependency .trick-algorithm-tags .tag').allTextContents(),['前缀和']);
+    await page.keyboard.press('Escape');assert.equal(await ready.isChecked(),true);assert.equal(await page.locator('.trick-row').count(),3);
+    await page.locator('.tricks-filter-reset').click();assert.equal(await page.locator('.trick-row').count(),ranked.length);
+    await page.locator(`.trick-row[data-path="${ranked[1].path}"]`).click();
+    const graph=page.getByRole('region',{name:'前置算法依赖图'});
+    const checks=graph.getByRole('checkbox');
+    const progress=graph.getByRole('progressbar',{name:'已满足的前置算法'});
+    assert.equal(await checks.count(),2);
+    assert.deepEqual(await graph.locator('.trick-algorithm-tags .tag').allTextContents(),['线段树','线段树']);
+    assert.equal(await progress.getAttribute('max'),'2');
+    assert.equal(await progress.getAttribute('value'),'0');
+    await checks.first().check();
+    assert.equal(await graph.locator('.trick-dependency-source[data-state=learned]').count(),1);
+    assert.equal(await graph.locator('.trick-dependency-target').getAttribute('data-ready'),'false');
+    await checks.last().check();
+    assert.equal(await progress.getAttribute('value'),'2');
+    assert.equal(await graph.locator('.trick-dependency-target').getAttribute('data-ready'),'true');
+    await page.setViewportSize({width:390,height:844});
+    assert.ok(await graph.evaluate(node=>{
+      const frame=node.getBoundingClientRect(), target=node.querySelector('.trick-dependency-target').getBoundingClientRect();
+      return frame.left>=0&&frame.right<=innerWidth&&node.scrollWidth<=node.clientWidth&&Array.from(node.querySelectorAll('.trick-dependency-node')).every(el=>el.getBoundingClientRect().right<target.left&&el.scrollWidth<=el.clientWidth);
+    }),'graph fits on narrow viewports without overlapping labels or columns');
+    await page.setViewportSize({width:1440,height:940});
+    await page.keyboard.press('Escape');await ready.check();
+    assert.equal(await page.locator(`.trick-row[data-path="${ranked[1].path}"]`).count(),1,'detail selections apply to ranking');
+    await page.locator(`.trick-row[data-path="${ranked[1].path}"]`).click();await checks.last().uncheck();
+    assert.equal(await progress.getAttribute('value'),'1');
+    await page.keyboard.press('Escape');assert.equal(await page.locator(`.trick-row[data-path="${ranked[1].path}"]`).count(),0,'removing a prerequisite hides the trick in filtered ranking');
+    await page.locator('.tricks-filter-reset').click();
+    await page.locator(`.trick-row[data-path="${ranked[5].path}"]`).click();assert.match(await page.locator('.trick-prerequisite-unrecognized').innerText(),/retired-algorithm/);
+    assert.equal(await checks.count(),0);assert.equal(await progress.getAttribute('value'),'0');
+    assert.equal(await graph.locator('.trick-algorithm-tags .tag').count(),0);
+    await page.keyboard.press('Escape');
+    await page.locator(`.trick-row[data-path="${ranked[0].path}"]`).click();
+    assert.equal(await graph.count(),0);assert.match(await page.locator('.trick-prerequisites').innerText(),/无/);
+    await page.keyboard.press('Escape');
+    await page.locator(`.trick-row[data-path="${ranked[4].path}"]`).click();await page.locator('.trick-edit').click();
+    const editor=page.locator('.trick-editor');
+    const tier=editor.locator('[name=recommendationTier]');
+    assert.deepEqual(await tier.locator('option').evaluateAll(nodes=>nodes.map(node=>node.value)),['','S','A','B','C','D','E']);
+    await tier.selectOption('E');
+    assert.match(await editor.locator('.trick-tier-hint').innerText(),/无需专门练习/);
+    await page.getByRole('button',{name:'保存修改',exact:true}).click();assert.match(await editor.locator('.form-error').innerText(),/推荐理由/);
+    await editor.locator('[name=recommendationReason]').fill('适合已学前缀和的人使用。');
+    await select(editor.locator('.trick-prerequisite-picker'),'一维前缀和',prefix);
+    await page.getByRole('button',{name:'保存草稿并关闭',exact:true}).click();await page.locator('.trick-edit').click();
+    assert.equal(await editor.locator('[name=recommendationTier]').inputValue(),'E');assert.equal(await editor.locator(`button[data-algorithm-id="${prefix}"]`).count(),1);
+    await page.getByRole('button',{name:'保存修改',exact:true}).click();await editor.waitFor({state:'detached'});
+    assert.deepEqual(await page.evaluate(()=>window.trickCalls.at(-1).input.recommendation),{tier:'E',prerequisiteIds:[prefix],reason:'适合已学前缀和的人使用。'});
+    await page.locator('.trick-edit').click();await editor.locator('.trick-recommendation-clear').click();await page.getByRole('button',{name:'保存修改',exact:true}).click();await editor.waitFor({state:'detached'});
+    assert.equal(await page.evaluate(()=>window.trickCalls.at(-1).input.recommendation),null);
+    await page.locator('.trick-edit').click();
+    assert.equal(await editor.locator('[name=recommendationTier]').inputValue(),'');
+    await editor.locator('.trick-recommendation-clear').click();
+    await page.getByRole('button',{name:'保存草稿并关闭',exact:true}).click();
+    await page.locator('.trick-edit').click();
+    assert.match(await editor.locator('.trick-tier-hint').innerText(),/将清除/);
+    await page.getByRole('button',{name:'保存修改',exact:true}).click();await editor.waitFor({state:'detached'});
+    assert.equal(await page.evaluate(()=>window.trickCalls.at(-1).input.recommendation),null,'maintainer can explicitly clear a legacy malformed rating hidden as unrated');
+    await page.keyboard.press('Escape');await page.setViewportSize({width:390,height:844});assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth));
+    await assertColumns();
+    await page.locator('.tricks-view-latest').click();
+    await assertColumns();
+    assert.deepEqual(errors,[]);
+  } finally {await page.close();}
+  const author=await setup(browser,false,ranked);
+  try {
+    await author.page.locator('.trick-row').first().click();await author.page.locator('.trick-edit').click();
+    assert.equal(await author.page.locator('.trick-recommendation-editor').count(),0);
+    await author.page.locator('.trick-editor [name=introduction]').fill('只更新作者自己的简介');
+    await author.page.getByRole('button',{name:'保存修改',exact:true}).click();await author.page.locator('.trick-editor').waitFor({state:'detached'});
+    assert.equal(await author.page.evaluate(()=>Object.hasOwn(window.trickCalls.at(-1).input,'recommendation')),false);
+    assert.match(await author.page.locator('.trick-recommendation').innerText(),/无需算法前置/);
+  } finally {await author.page.close();}
 }
 (async()=>{const browser=await chromium.launch({channel:'msedge',headless:true});try{
  const {page,errors}=await setup(browser);
@@ -80,5 +212,6 @@ async function setup(browser,admin=false){
  await isolated.page.evaluate(()=>{window.trickFixture.account={id:2,login:'alice'};});await isolated.page.locator('#sync-button').click();await isolated.page.waitForFunction(()=>!document.querySelector('#sync-button').disabled);await isolated.page.locator('.trick-create').click();assert.equal(await isolated.page.locator('.trick-editor [name="title"]').inputValue(),'A账号草稿');
  await isolated.page.locator('.trick-editor [name="body"]').fill('x'.repeat(1000001));await isolated.page.getByRole('button',{name:'保存草稿并关闭',exact:true}).click();assert.equal(await isolated.page.locator('.trick-editor').isVisible(),true);assert.match(await isolated.page.locator('.trick-editor .form-error').innerText(),/超过草稿保存上限/);await isolated.page.locator('.trick-editor [name="body"]').fill('可恢复的正文');await isolated.page.locator('.trick-editor [name="introduction"]').fill('完整简介');
  await isolated.page.evaluate(()=>{Storage.prototype.setItem=()=>{throw Error('fixture quota');};});await isolated.page.getByRole('button',{name:'发布 Trick',exact:true}).click();assert.equal(await isolated.page.evaluate(()=>window.trickCalls.length),0,'storage failure blocks unknown-outcome create');await isolated.page.keyboard.press('Escape');assert.equal(await isolated.page.locator('.trick-editor').isVisible(),true);assert.match(await isolated.page.locator('.trick-editor .form-error').innerText(),/存储不可用/);await isolated.page.getByRole('button',{name:'丢弃草稿',exact:true}).click();await isolated.page.close();
- console.log('PASS tricks: compact directory, lazy Markdown, search/back, author/admin permissions, persistent drafts/reload/clientId, SHA conflict explicit resolution, delete confirmation, account/source isolation, 390px');
+ await checkRanking(browser);
+ console.log('PASS tricks: recommendation ranking and review, compact directory, lazy Markdown, search/back, author/admin permissions, persistent drafts/reload/clientId, SHA conflict explicit resolution, delete confirmation, account/source isolation, 390px');
  }finally{await browser.close()}})().catch(e=>{console.error(e);process.exitCode=1});

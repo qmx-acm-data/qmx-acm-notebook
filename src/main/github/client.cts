@@ -2,6 +2,7 @@ import * as YAML from 'yaml';
 import { createHash } from 'node:crypto';
 import type { AlgorithmNodeContent } from '../../shared/models/algorithm-node-content.js';
 const { ROADMAP_DIRECTORY_IDS } = require('./algorithm-node-content-model.cjs') as typeof import('../../shared/models/algorithm-node-content.js');
+const { isTrickTier, trickTiers } = require('./trick-model.cjs') as typeof import('../../shared/models/trick.js');
 import type { LearningGateContent, LearningPracticeList } from '../../shared/models/learning-content.js';
 import type { CurriculumGateLayout, CurriculumLayout, LearningCurriculumDocument } from '../../shared/models/learning-curriculum.js';
 import type { AlgorithmDirectoryNode } from '../../shared/models/algorithm-directory.js';
@@ -204,6 +205,30 @@ const { identify, frontmatter, authorId, parseDocument, issueRecord, issueBody, 
 
 const TRICK_PATH = /^tricks\/([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})\.md$/;
 type Trick = import('../../shared/models/trick.js').Trick;
+type TrickRecommendation = import('../../shared/models/trick.js').TrickRecommendation;
+const TRICK_PREREQUISITE_ID = /^[\p{L}\p{N}._:-]{1,1000}$/u;
+function validateTrickRecommendation(value: unknown): TrickRecommendation {
+  if (!value || typeof value !== 'object' || Array.isArray(value)) throw new Error('Trick推荐格式无效');
+  const { tier, prerequisiteIds, reason } = value as Fields;
+  if (!isTrickTier(tier)) throw new Error(`Trick推荐等级必须是 ${trickTiers.join('、')} 之一`);
+  if (typeof reason !== 'string' || /[\u0000-\u001f\u007f-\u009f\u2028\u2029]/.test(reason)) throw new Error('Trick推荐理由必须为单行文本');
+  const cleanReason = trickText(reason.trim(), 'Trick推荐理由', 600, true);
+  if (!Array.isArray(prerequisiteIds) || prerequisiteIds.length > 8) throw new Error('Trick推荐前置算法须为0-8项');
+  const ids: string[] = [];
+  for (const id of prerequisiteIds as unknown[]) {
+    if (typeof id !== 'string' || !TRICK_PREREQUISITE_ID.test(id)) throw new Error('Trick推荐前置算法标识无效');
+    ids.push(id);
+  }
+  if (new Set(ids).size !== ids.length) throw new Error('Trick推荐前置算法不能重复');
+  return { tier, prerequisiteIds: ids, reason: cleanReason };
+}
+function readTrickRecommendation(value: unknown): TrickRecommendation | undefined {
+  try { return validateTrickRecommendation(value); } catch { return undefined; }
+}
+function sameTrickRecommendation(a: TrickRecommendation | undefined, b: TrickRecommendation | undefined): boolean {
+  return a === b || !!a && !!b && a.tier === b.tier && a.reason === b.reason &&
+    a.prerequisiteIds.length === b.prerequisiteIds.length && a.prerequisiteIds.every((id, i) => id === b.prerequisiteIds[i]);
+}
 function trickText(value: unknown, label: string, maxBytes: number, required = false): string {
   if (typeof value !== 'string' || Buffer.byteLength(value, 'utf8') > maxBytes || /[\u0000-\u0008\u000b\u000c\u000e-\u001f\u007f]/.test(value) || required && !value.trim()) throw new Error(`${label}格式不正确或超过${maxBytes}字节`);
   return value;
@@ -212,8 +237,7 @@ export function validateTrickPath(value: unknown): string {
   if (typeof value !== 'string' || !TRICK_PATH.test(value)) throw new Error('Trick路径必须为 tricks/<UUID>.md');
   return value;
 }
-/** Strictly parses repository bytes and cached records; never falls back to a solution document. */
-export function parseTrick(path: unknown, text: unknown, sha: unknown, scope: import('../../shared/models/bootstrap.js').SourceScope): Trick {
+function parseTrickFile(path: unknown, text: unknown, sha: unknown, scope: import('../../shared/models/bootstrap.js').SourceScope): { trick: Trick; rawRecommendation: unknown; invalidRecommendation: boolean } {
   const safePath = validateTrickPath(path);
   if (typeof sha !== 'string' || !/^[A-Za-z0-9_-]{1,200}$/.test(sha)) throw new Error('Trick缺少有效SHA');
   const { meta, body } = frontmatter(text, true);
@@ -225,7 +249,17 @@ export function parseTrick(path: unknown, text: unknown, sha: unknown, scope: im
   const introduction = trickText(meta.introduction, 'Trick简介', 6000, true);
   trickText(body, 'Trick正文', 1000000, true);
   const clientId = TRICK_PATH.exec(safePath)![1];
-  return { id: `trick:${safePath}`, kind: 'trick', clientId, path: safePath, sha, title, introduction, body, authorId: owner, author: { id: owner, login: meta.author }, updatedAt: meta.updatedAt, ...scope };
+  const rawRecommendation = meta.recommendation;
+  const recommendation = readTrickRecommendation(rawRecommendation);
+  return {
+    trick: { id: `trick:${safePath}`, kind: 'trick', clientId, path: safePath, sha, title, introduction, body, authorId: owner, author: { id: owner, login: meta.author }, updatedAt: meta.updatedAt, ...scope, ...(recommendation ? { recommendation } : {}) },
+    rawRecommendation,
+    invalidRecommendation: Object.hasOwn(meta, 'recommendation') && !recommendation,
+  };
+}
+/** Invalid optional review metadata does not make the underlying Trick unreadable. */
+export function parseTrick(path: unknown, text: unknown, sha: unknown, scope: import('../../shared/models/bootstrap.js').SourceScope): Trick {
+  return parseTrickFile(path, text, sha, scope).trick;
 }
 export function cachedTrick(value: unknown, scope: import('../../shared/models/bootstrap.js').SourceScope): Trick | null {
   if (!value || typeof value !== 'object' || Array.isArray(value)) return null;
@@ -236,7 +270,9 @@ export function cachedTrick(value: unknown, scope: import('../../shared/models/b
   try {
     const text = `---\n${YAML.stringify({ schema: 1, kind: 'trick', title: item.title, introduction: item.introduction, authorId: item.authorId, author: author.login, updatedAt: item.updatedAt })}---\n${typeof item.body === 'string' ? item.body : ''}`;
     const parsed = parseTrick(item.path, text, item.sha, scope);
-    return item.id === parsed.id && item.clientId === parsed.clientId ? parsed : null;
+    if (item.id !== parsed.id || item.clientId !== parsed.clientId) return null;
+    const recommendation = readTrickRecommendation(item.recommendation);
+    return recommendation ? { ...parsed, recommendation } : parsed;
   } catch { return null; }
 }
 
@@ -555,14 +591,37 @@ export class GitHub {
     const current = await this.currentDocument(path, branch);
     if (record.path !== undefined && !current) throw new Error('Trick已被删除，请先同步');
     const scope = { repo: this.repo, serverUrl: this.serverUrl, sourceKey: repositoryKey(this.repo, this.serverUrl) };
-    const existing = current ? parseTrick(path, current.text, current.sha, scope) : null;
+    const currentFile = current ? parseTrickFile(path, current.text, current.sha, scope) : null;
+    const existing = currentFile?.trick;
     if (existing && existing.authorId !== user.id && !admin) throw new Error('只能维护本人Trick，或由仓库管理员管理');
     if (record.path !== undefined && current!.sha !== record.sha) throw new Error('Trick SHA冲突，请先同步后再编辑');
-    const meta = { schema: 1, kind: 'trick', title, introduction, authorId: existing?.authorId ?? user.id, author: existing?.author.login ?? user.login, updatedAt: new Date().toISOString() };
+    const previous = existing?.recommendation;
+    const supplied = record.recommendation !== undefined;
+    let recommendation = !supplied ? previous : record.recommendation === null ? undefined : validateTrickRecommendation(record.recommendation);
+    let changed = supplied && (currentFile?.invalidRecommendation === true || !sameTrickRecommendation(previous, recommendation));
+    if (changed) {
+      if (!admin) throw new Error('只有仓库管理员（admin）可以修改Trick推荐');
+      if (recommendation?.prerequisiteIds.length) {
+        const additions = await this.currentDocument(TOPICS_PATH, branch);
+        const index = curriculumTopicIndex(builtinTopics, additions ? parseTopics(additions.text) : []);
+        const prerequisiteIds = recommendation.prerequisiteIds.map(id => {
+          const canonical = leafIdFromIndex(id, index);
+          if (!canonical || !TRICK_PREREQUISITE_ID.test(canonical)) throw new Error('Trick推荐前置算法必须是当前目录中的真实算法叶节点');
+          return canonical;
+        });
+        if (new Set(prerequisiteIds).size !== prerequisiteIds.length) throw new Error('Trick推荐前置算法不能重复');
+        recommendation = { ...recommendation, prerequisiteIds };
+        changed = currentFile?.invalidRecommendation === true || !sameTrickRecommendation(previous, recommendation);
+      }
+    }
+    if (existing && !changed && existing.title === title && existing.introduction === introduction && existing.body === body) return existing;
+    if (record.path === undefined && current) throw new Error('同一clientId的Trick已存在但内容不同，请同步后使用路径和SHA编辑');
+    // Do not rewrite an invalid optional section unless an admin explicitly clears or repairs it.
+    if (!supplied && currentFile?.invalidRecommendation) throw new Error('Trick已有推荐格式无效；请由仓库管理员显式修正或清除后再编辑');
+    const storedRecommendation = changed ? recommendation : currentFile?.rawRecommendation;
+    const meta = { schema: 1, kind: 'trick', title, introduction, authorId: existing?.authorId ?? user.id, author: existing?.author.login ?? user.login, updatedAt: new Date().toISOString(), ...(storedRecommendation === undefined ? {} : { recommendation: storedRecommendation }) };
     const text = `---\n${YAML.stringify(meta)}---\n${body}`;
     const provisional = parseTrick(path, text, current?.sha ?? 'pending', scope);
-    if (existing && existing.title === title && existing.introduction === introduction && existing.body === body) return existing;
-    if (record.path === undefined && current) throw new Error('同一clientId的Trick已存在但内容不同，请同步后使用路径和SHA编辑');
     const { data } = await this.request(this.contentEndpoint(path), { method: 'PUT', body: JSON.stringify({ message: `${current ? '更新' : '新增'}Trick：${title}`, content: Buffer.from(text).toString('base64'), branch, ...(current ? { sha: current.sha } : {}) }) });
     const savedSha = ((data as WriteFields).content as ContentFields | null | undefined)?.sha;
     if (typeof savedSha !== 'string' || !/^[A-Za-z0-9_-]{1,200}$/.test(savedSha)) throw new Error('Trick写入结果未知，请先同步确认，不要重复创建');
