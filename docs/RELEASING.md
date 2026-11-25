@@ -21,7 +21,7 @@ git push -u origin main
 
 ## 构建与版本发布
 
-版本说明按版本保存在 [`docs/releases/`](releases/)；当前版本见 [v1.6.0 更新说明与发布证据](releases/v1.6.0.md)，[v1.5.0](releases/v1.5.0.md)、[v1.4.1](releases/v1.4.1.md)、[v1.4.0](releases/v1.4.0.md)、[v1.3.1](releases/v1.3.1.md)、[v1.3.0](releases/v1.3.0.md)及其他历史说明保留。
+版本说明按版本保存在 [`docs/releases/`](releases/)；当前版本见 [v1.6.1 更新说明与发布证据](releases/v1.6.1.md)，[v1.6.0](releases/v1.6.0.md)、[v1.5.0](releases/v1.5.0.md)、[v1.4.1](releases/v1.4.1.md)、[v1.4.0](releases/v1.4.0.md)、[v1.3.1](releases/v1.3.1.md)、[v1.3.0](releases/v1.3.0.md)及其他历史说明保留。
 
 本地安装依赖、检查和构建的完整命令集中在 [CONTRIBUTING](../CONTRIBUTING.md#环境与命令)。发布构建使用 `pnpm dist`，同时生成便携目录与 NSIS 安装程序；仅需便携目录时使用该文档列出的独立打包命令。
 
@@ -65,6 +65,8 @@ Windows 构建作业生成应用包，独立的受信任签名作业生成唯一
 2026-11-04：原生 GitHub Actions 验证运行 41668595665 全部成功，包含 Linux x64/ARM64、Windows x64、macOS Intel/Apple Silicon 构建。Linux 各运行 107 项测试（106 通过，1 项 Windows 专用 Electron helper 测试跳过），并在 Xvfb 中运行真正的打包客户端，验证干净启动、预加载 IPC、默认 OAuth、本地 Markdown 与收藏保存以及关闭重启恢复。执行文件权限、执行文件及 app.asar 哈希在测试前后不变。CI 启动仅对测试进程显式关闭 Chromium 沙箱，不能代替所有发行版默认沙箱环境验收；实际用户 OAuth 和系统钥匙环仍需分别验证。macOS 完成构建与适用测试，未进行交互式桌面验收且未签名公证，更新采用手动安装。
 
 ## 当前已核实状态
+
+2026-11-25 发布 v1.6.1，并由 [PR #71](https://github.com/qmx-acm-data/qmx-acm-notebook/pull/71) 激活应用内更新。五平台签名包与 13 个附件的校验通过。Windows 便携成品实测 Trick 六档、前置图及洛谷旧索引恢复，也验证了真实 v1.6.0 到 v1.6.1 的升级重启。公开更新器选用 284,482 字节差分。详见 [v1.6.1 发布记录](releases/v1.6.1.md)。
 
 2026-11-22：v1.6.0 已正式发布并激活应用内更新。内置 37,200 条真实 CLIST 正分，批量同步改为每页最多 1,000 条并支持暂停续传，新增共享缓存合并、洛谷区间与已选标签管理，同时整合最新 Tricks 与统一个人收藏。合并主线后 863 项本地检查中 862 项通过、1 项跳过，36 组 UI 回归和三平台源码检查通过。五平台签名构建成功，13 附件校验和一致，八种包装内 ASAR 与签名归档逐字节一致；Windows 最终便携包的初始缓存、默认沙箱、保存重启与真实 1.5.0→1.6.0 helper 升级通过。通道 PR #67 经检查合并，公开实际更新器返回 v1.6.0、721,812 字节差分。详细证据见 [v1.6.0 发布记录](releases/v1.6.0.md)。
 
