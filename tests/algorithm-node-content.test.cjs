@@ -135,9 +135,9 @@ test('roadmap introductions have independent approved identities, empty curation
 
 test('ordinary owner edits retain featured fallback and cannot spoof public/personal ownership', async () => {
   const h = fixture({ admin: false, files: { [ownPath]: noteText({ note_scope: 'personal' }) } });
-  const result = await h.gh.saveAlgorithmNote({ nodeId, noteScope: 'personal', clientId: UUID, body: 'new body', path: ownPath, sha: h.data.get(ownPath).sha, featured: false }); assert.equal(result.featured, true);
+  const result = await h.gh.saveAlgorithmNote({ nodeId, repo: 'team/notebook', noteScope: 'personal', clientId: UUID, body: 'new body', path: ownPath, sha: h.data.get(ownPath).sha, featured: false }); assert.equal(result.featured, true);
   const collision = fixture({ files: { [ownPath]: noteText({ note_scope: 'personal', author_id: 99 }) } }); await assert.rejects(collision.gh.saveAlgorithmNote({ nodeId, clientId: UUID, body: 'spoof' }), /自己|归属/); assert.equal(collision.writes.length, 0);
-  const foreign = fixture({ files: { [otherPath]: noteText({ note_scope: 'personal', author_id: 99 }) } }); await assert.rejects(foreign.gh.saveAlgorithmNote({ nodeId, noteScope: 'public', clientId: UUID, body: 'spoof', path: otherPath, sha: foreign.data.get(otherPath).sha }), /归属/); assert.equal(foreign.writes.length, 0);
+  const foreign = fixture({ files: { [otherPath]: noteText({ note_scope: 'personal', author_id: 99 }) } }); await assert.rejects(foreign.gh.saveAlgorithmNote({ nodeId, repo: 'team/notebook', noteScope: 'public', clientId: UUID, body: 'spoof', path: otherPath, sha: foreign.data.get(otherPath).sha }), /归属/); assert.equal(foreign.writes.length, 0);
 });
 
 function mainHarness(options) { const source = fs.readFileSync(path.join(__dirname, 'main.test.cjs'), 'utf8').split('// END_MAIN_HARNESS')[0]; return new Function('require', '__dirname', 'Buffer', source + '\nreturn harness;')(require, __dirname, Buffer)(options); }

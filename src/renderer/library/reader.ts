@@ -127,7 +127,7 @@ export function createLibraryReader(options: Options): Controller {
     append(panel, append(element('div', 'detail-top'), append(element('div', 'detail-meta'), platformLabel(record), element('span', '', record.pid || `#${record.number || '本地'}`), difficultyBadge(record), supplementaryDifficultyBadge(record), badge(record)), actions), element('h2', 'detail-title', record.title || '未命名错题'));
     const author = recordAuthor(record, getAccount()); append(panel, append(element('div', 'author-row'), authorAvatar(author), element('span', 'record-author-name', author.name), element('span', 'separator', '·'), element('span', '', `更新于 ${date(record.updatedAt)}`), record.kind === 'document' ? element('span', 'badge document', '正式题解') : null));
     const tagrow = tags(record); tagrow.classList.add('detail-tags'); append(panel, tagrow, element('hr', 'detail-divider'), element('div', 'body-label', '思路与复盘'));
-    const body = element('div', 'markdown-body'); renderMarkdown(body, record.body); panel.append(body);
+    const body = element('div', 'markdown-body'); renderMarkdown(body, record.body, true); panel.append(body);
     const masteryButtons = element('div', 'mastery-buttons'); Object.entries(stateLabels).forEach(([value, label]) => { const control = button(label, mastery(record) === value ? 'active' : '', () => changeLocal(() => { getLocal().mastery[key(record)] = value; })); control.setAttribute('aria-pressed', mastery(record) === value ? 'true' : 'false'); masteryButtons.append(control); });
     append(panel, append(element('div', 'mastery-box'), append(element('div'), element('strong', '', '这个思路，掌握了吗？'), element('small', '', '复习进度仅记录在你的学习空间')), masteryButtons));
     const edits = element('div', 'record-edit-actions');

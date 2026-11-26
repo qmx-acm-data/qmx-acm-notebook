@@ -117,8 +117,10 @@ var __QMXStandalone = (() => {
     for (let index = from; index < source.length; index++) {
       if (!spend()) return -1;
       if (braces === 0 && source.startsWith(delimiter, index)) {
-        if (delimiter !== "$" || source[index + 1] !== "$" && !/\s/.test(source[index - 1]) && !/\d/.test(source[index + 1] || "")) return index;
-        if (delimiter === "$") return -1;
+        if (delimiter !== "$") return index;
+        const next = source[index + 1] || "";
+        if (next === "$" || /\d/.test(next)) return -1;
+        return index;
       }
       const ch = source[index];
       if (ch === "\\") {
@@ -146,7 +148,7 @@ var __QMXStandalone = (() => {
     } else if (source.startsWith("\\(")) {
       left = "\\(";
       right = "\\)";
-    } else if (source[0] === "$" && source.length > 1 && !/\s/.test(source[1])) left = right = "$";
+    } else if (source[0] === "$") left = right = "$";
     else {
       const match = /^\\begin\{([A-Za-z]+\*?)\}/.exec(source);
       if (!match || !environments.has(match[1])) return;
@@ -188,7 +190,9 @@ var __QMXStandalone = (() => {
     if (end === void 0 || end < left.length) return;
     const raw = source.slice(0, end + right.length);
     let text = environment ? raw : source.slice(left.length, end);
-    if (!text.trim()) return;
+    const trimmed = text.trim();
+    if (!trimmed) return;
+    if (left === "$" && /^\d[\d,.]*[ \t]+(?:\p{L}{2}|\p{Script=Han})/u.test(text) && /[ \t]$/.test(text) && !/[\\_^{}=+*/<>−-]/.test(text)) return;
     const aliases = { displaymath: "", math: "" };
     const wrapper = environment || /^\s*\\begin\{([A-Za-z]+\*?)\}([\s\S]*)\\end\{\1\}\s*$/.exec(text)?.[1];
     if (Object.prototype.hasOwnProperty.call(aliases, wrapper)) {

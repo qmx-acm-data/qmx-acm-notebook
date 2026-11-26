@@ -7,6 +7,7 @@ import { DailyProblem } from '../home/daily-problem.js';
 import { Updates } from '../account/updates.js';
 import { CodeBlocks } from '../reading/code-blocks.js';
 import { MarkdownMath } from '../reading/markdown-math.js';
+import { addMarkdownOutline } from '../reading/markdown-outline.js';
 import { MarkdownColor } from '../reading/markdown-color.js';
 import { ReadingDetail } from '../reading/reading-detail.js';
 import { createNotebookIPC } from '../ipc/boundary.js';
@@ -162,10 +163,11 @@ import type { FavoriteEntry } from '../favorites/model.js';
     s.tricks = Array.isArray((payload as AppPayload).tricks) ? (payload as AppPayload).tricks : [];
     s.algorithmNotes = (Array.isArray((payload as AppPayload).algorithmNotes) ? (payload as AppPayload).algorithmNotes! : []).filter(record => record.kind === 'algorithm-note');
     s.algorithmTopics = Array.isArray((payload as AppPayload).algorithmTopics) ? (payload as AppPayload).algorithmTopics : [];
+    s.algorithmOverrides = Array.isArray((payload as AppPayload).algorithmOverrides) ? (payload as AppPayload).algorithmOverrides : [];
     s.algorithmNodeContents = Array.isArray((payload as AppPayload).algorithmNodeContents) ? (payload as AppPayload).algorithmNodeContents : [];
     s.learningGateContents = Array.isArray((payload as AppPayload).learningGateContents) ? (payload as AppPayload).learningGateContents : [];
     s.learningCurriculum = (payload as AppPayload).learningCurriculum || null;
-    s.algorithmTree = AlgorithmDirectory.hydrate(window.QMX_ALGORITHM_TREE, s.algorithmTopics);
+    s.algorithmTree = AlgorithmDirectory.hydrate(window.QMX_ALGORITHM_TREE, s.algorithmTopics, s.algorithmOverrides);
     s.issues = (Array.isArray((payload as AppPayload).issues) ? (payload as AppPayload).issues! : []).filter(record => record.kind === 'issue');
     s.permissions = (payload as AppPayload).permissions || {};
     s.settings = (payload as AppPayload).settings && typeof (payload as AppPayload).settings === 'object' ? (payload as AppPayload).settings! : {};
@@ -317,10 +319,10 @@ import type { FavoriteEntry } from '../favorites/model.js';
   }
   const { highlightCodeBlock, decorateCodeBlocks, codeBlockClick } = CodeBlocks.create({ toast, errorMessage });
   function algorithmFavoriteRecord(note: import('../../../types/algorithm-browser').AlgorithmBrowserNote): AppRecord | undefined { return visibleAlgorithmNotes().find(item => note.path ? item.path === note.path : item.id === note.id); }
-  const algorithms = createAlgorithmWorkspace({ isFavorite: note => { const item = algorithmFavoriteRecord(note); return !!item && favorite(item); }, onToggleFavorite: async note => { const item = algorithmFavoriteRecord(note); if (!item) throw new Error('笔记已不可见，请同步后重试'); await toggleFavorite(item); }, getAlgorithmNotes: () => s.algorithmNotes, setAlgorithmNotes: value => { s.algorithmNotes = value; }, getAlgorithmNodeContents: () => s.algorithmNodeContents || [], setAlgorithmNodeContents: value => { s.algorithmNodeContents = value; }, saveAlgorithmNodeContent: input => { if (!bridge) throw new Error('请在桌面客户端登录管理员账户后编辑简介与精选'); return bridge.saveAlgorithmNodeContent(input); }, getLearningCurriculum: () => s.learningCurriculum || null, setLearningCurriculum: value => { s.learningCurriculum = value; }, saveLearningCurriculum: input => { if (!bridge) throw new Error('请在桌面客户端登录管理员账户后编排课程'); return bridge.saveLearningCurriculum(input); }, getLearningGateContents: () => s.learningGateContents || [], setLearningGateContents: value => { s.learningGateContents = value; }, saveLearningGate: input => { if (!bridge) throw new Error('请在桌面客户端登录管理员账户后修改公共关卡'); return bridge.saveLearningGate(input); }, getAlgorithmTopics: () => s.algorithmTopics, setAlgorithmTopics: value => { s.algorithmTopics = value; }, getAlgorithmTree: () => s.algorithmTree, setAlgorithmTree: value => { s.algorithmTree = value; }, getAccount: () => s.account, getPermissions: () => s.permissions, getLocal: () => s.local, getBusy: () => s.busy, getReadingDetail: () => ReadingDetail, accountId, repo, repoSource, uuid, setBusy, persistLocal, call, openExternal, render, renderMarkdown, authorName, date, tags, toast, errorMessage });
+  const algorithms = createAlgorithmWorkspace({ isFavorite: note => { const item = algorithmFavoriteRecord(note); return !!item && favorite(item); }, onToggleFavorite: async note => { const item = algorithmFavoriteRecord(note); if (!item) throw new Error('笔记已不可见，请同步后重试'); await toggleFavorite(item); }, getAlgorithmNotes: () => s.algorithmNotes, setAlgorithmNotes: value => { s.algorithmNotes = value; }, getAlgorithmNodeContents: () => s.algorithmNodeContents || [], setAlgorithmNodeContents: value => { s.algorithmNodeContents = value; }, saveAlgorithmNodeContent: input => { if (!bridge) throw new Error('请在桌面客户端登录管理员账户后编辑简介与精选'); return bridge.saveAlgorithmNodeContent(input); }, getLearningCurriculum: () => s.learningCurriculum || null, setLearningCurriculum: value => { s.learningCurriculum = value; }, saveLearningCurriculum: input => { if (!bridge) throw new Error('请在桌面客户端登录管理员账户后编排课程'); return bridge.saveLearningCurriculum(input); }, getLearningGateContents: () => s.learningGateContents || [], setLearningGateContents: value => { s.learningGateContents = value; }, saveLearningGate: input => { if (!bridge) throw new Error('请在桌面客户端登录管理员账户后修改公共关卡'); return bridge.saveLearningGate(input); }, getAlgorithmTopics: () => s.algorithmTopics, setAlgorithmTopics: value => { s.algorithmTopics = value; }, getAlgorithmOverrides: () => s.algorithmOverrides || [], setAlgorithmOverrides: value => { s.algorithmOverrides = value; }, getAlgorithmTree: () => s.algorithmTree, setAlgorithmTree: value => { s.algorithmTree = value; }, getAccount: () => s.account, getPermissions: () => s.permissions, getLocal: () => s.local, getBusy: () => s.busy, getReadingDetail: () => ReadingDetail, accountId, repo, repoSource, uuid, setBusy, persistLocal, call, openExternal, render, renderMarkdown, authorName, date, tags, toast, errorMessage });
   const { renderAlgorithmNotes } = algorithms;
   const favoriteHost = element('section', 'favorites-workspace'); favoriteHost.id = 'favorites-panel'; favoriteHost.hidden = true; favoriteHost.setAttribute('aria-label', '统一个人收藏'); $('#library-panel')!.before(favoriteHost);
-  const favorites = createFavoritesWorkspace({ host: favoriteHost, getEntries: favoriteEntries, getContext: () => JSON.stringify([repoSource(), accountId()]), isFavorite: favorite, toggle: toggleFavorite, renderMarkdown, renderSolution: (record, host) => reader.renderDetail(record, host), authorName, date, errorMessage, toast });
+  const favorites = createFavoritesWorkspace({ host: favoriteHost, getEntries: favoriteEntries, getContext: () => JSON.stringify([repoSource(), accountId()]), isFavorite: favorite, toggle: toggleFavorite, noteActions: note => algorithms.noteActions(note), renderMarkdown, renderSolution: (record, host) => reader.renderDetail(record, host), authorName, date, errorMessage, toast });
   let trickAlgorithmTree: typeof s.algorithmTree | undefined;
   let trickTagCatalog: AppTagCatalog | undefined;
   let trickAlgorithmOptions: TrickAlgorithmOption[] = [];
@@ -366,12 +368,13 @@ import type { FavoriteEntry } from '../favorites/model.js';
     renderMarkdown, toast, errorMessage,
     isFavorite: item => favorite({ ...item }), onToggleFavorite: item => toggleFavorite({ ...item })
   });
-  function renderMarkdown(container: HTMLElement, body: unknown) {
+  function renderMarkdown(container: HTMLElement, body: unknown, withOutline = false) {
     const source = String(body || '还没有题解内容。可以从记录错因开始。');
     if ((window as AppWindowAccess).marked! && (window as AppWindowAccess).DOMPurify!) {
       try { const parse = typeof (window as AppWindowAccess).marked!.parse === 'function' ? (window as AppWindowAccess).marked!.parse.bind((window as AppWindowAccess).marked!) : (window as AppWindowAccess).marked!; const html = MarkdownMath ? MarkdownMath.parse(source, (window as AppWindowAccess).marked!) : parse(source);
         if (MarkdownColor) container.replaceChildren(MarkdownColor.sanitize(html, (window as AppWindowAccess).DOMPurify!, container.ownerDocument));
         else container.innerHTML = (window as AppWindowAccess).DOMPurify!.sanitize(html, { FORBID_TAGS: ['style', 'iframe', 'form', 'input', 'button'], FORBID_ATTR: ['style', 'color'] });
+        if (withOutline) addMarkdownOutline(container);
         MarkdownMath?.render(container, (window as AppWindowAccess).katex);
         // Prism runs after sanitizing and reads textContent only, so highlighting cannot inject markup.
         $$('pre code', container).forEach(code => { if (code.parentElement && (settingsUI.settingsPreview || s.settings).codeLineNumbers) code.parentElement.classList.add('line-numbers'); highlightCodeBlock(code); });
@@ -411,7 +414,7 @@ import type { FavoriteEntry } from '../favorites/model.js';
   const editor = createEditor({ demo, getEditor: () => s.editor, setEditor: value => { s.editor = value; }, getLocal: () => s.local, setLocal: value => { s.local = value; }, getRecords: () => s.records, setRecords: value => { s.records = value; }, getIssues: () => s.issues, setIssues: value => { s.issues = value; }, getComments: () => s.comments, getSelected: () => s.selected, setSelected: value => { s.selected = value; }, getBusy: () => s.busy, setBusy, getAccount: () => s.account, getPermissions: () => s.permissions, accountId, repo, key, uuid, isLocal, visibleLocal, canEditRemote, sameRepo, records, platformCode, colorRatingInput, renderEditorTags, cancelDraftSave: () => clearTimeout(draftTimer), persistLocal, call, refreshFilters, navigate, render, openDetail, toast, errorMessage });
   const { formDraft, fillForm, renderEditorDifficulty, setEditorPlatform, draftKey, editorError, openLocalSolution, openSubmit, saveDraft, saveRecord, deleteDiscussion, deleteRecord } = editor;
   async function sync() {
-    if (s.busy || $('#submit-dialog')!.open || tricks.hasEditor()) { toast('请先完成或关闭当前编辑'); return; }
+    if (s.busy || $('#submit-dialog')!.open || tricks.hasEditor() || algorithms.hasEditor()) { toast('请先完成或关闭当前编辑'); return; }
     setBusy(true);
     try {
       if (demo && !webPreview) { toast('演示模式：本地记录已保留，未连接公共题库'); return; }
@@ -434,10 +437,11 @@ import type { FavoriteEntry } from '../favorites/model.js';
               s.algorithmNotes = Array.isArray(data.algorithmNotes) ? data.algorithmNotes : [];
               s.tricks = Array.isArray(data.tricks) ? data.tricks : [];
               s.algorithmTopics = Array.isArray(data.algorithmTopics) ? data.algorithmTopics : [];
+              s.algorithmOverrides = Array.isArray(data.algorithmOverrides) ? data.algorithmOverrides : [];
               s.algorithmNodeContents = Array.isArray(data.algorithmNodeContents) ? data.algorithmNodeContents : [];
               s.learningGateContents = Array.isArray(data.learningGateContents) ? data.learningGateContents : [];
               s.learningCurriculum = data.learningCurriculum || null;
-              s.algorithmTree = AlgorithmDirectory.hydrate(window.QMX_ALGORITHM_TREE, s.algorithmTopics);
+              s.algorithmTree = AlgorithmDirectory.hydrate(window.QMX_ALGORITHM_TREE, s.algorithmTopics, s.algorithmOverrides);
               s.lastSync = new Date().toISOString();
               s.comments.clear();
               refreshFilters();
@@ -519,7 +523,7 @@ import type { FavoriteEntry } from '../favorites/model.js';
   $('#submit-form')!.addEventListener('input', () => { clearTimeout(draftTimer); draftTimer = setTimeout(saveDraft, 650); });
   $('#submit-form')!.elements.platform.addEventListener('change', () => { const form = $('#submit-form')!; form.elements.rating.value = ''; form.elements.difficulty.value = ''; setEditorPlatform(form.elements.platform.value, false); });
   $('#save-local-button')!.addEventListener('click', () => saveRecord(false)); $('#submit-form')!.addEventListener('submit', event => { event.preventDefault(); saveRecord(true); });
-  const settingsUI = createSettings({ demo, bridge, themeStorage: THEME_STORAGE, paletteStorage: PALETTE_STORAGE, getBusy: () => s.busy, setBusy, getSettings: () => s.settings, setSettings: value => { s.settings = value; }, getAccount: () => s.account, getAuthStatus: () => s.authStatus, getPermissions: () => s.permissions, setPermissionsRepo: value => { s.permissions.repo = value; }, getError: () => s.error, setError: value => { s.error = value; }, getLocal: () => s.local, repo, repoSource, quotaBlocked, reauthNeeded, call, applyPayload, resetRepositoryData: () => { s.records = []; s.issues = []; s.tricks = []; tricks.reset(); s.algorithmNotes = []; s.algorithmTopics = []; s.algorithmNodeContents = []; s.learningGateContents = []; s.learningCurriculum = null; s.lastSync = null; s.algorithmTree = AlgorithmDirectory.hydrate(window.QMX_ALGORITHM_TREE, []); }, resetSourceView: () => { s.comments.clear(); s.selected = null; reader.resetDetail(); tricks.reset(); }, clearComments: () => s.comments.clear(), refreshFilters, render, renderUpdate: () => updates.renderUpdate(), updateStatus, sync, writeDemo, toast, errorMessage });
+  const settingsUI = createSettings({ demo, bridge, themeStorage: THEME_STORAGE, paletteStorage: PALETTE_STORAGE, getBusy: () => s.busy, setBusy, getSettings: () => s.settings, setSettings: value => { s.settings = value; }, getAccount: () => s.account, getAuthStatus: () => s.authStatus, getPermissions: () => s.permissions, setPermissionsRepo: value => { s.permissions.repo = value; }, getError: () => s.error, setError: value => { s.error = value; }, getLocal: () => s.local, repo, repoSource, quotaBlocked, reauthNeeded, call, applyPayload, resetRepositoryData: () => { s.records = []; s.issues = []; s.tricks = []; tricks.reset(); s.algorithmNotes = []; s.algorithmTopics = []; s.algorithmOverrides = []; s.algorithmNodeContents = []; s.learningGateContents = []; s.learningCurriculum = null; s.lastSync = null; s.algorithmTree = AlgorithmDirectory.hydrate(window.QMX_ALGORITHM_TREE, []); }, resetSourceView: () => { s.comments.clear(); s.selected = null; reader.resetDetail(); tricks.reset(); }, clearComments: () => s.comments.clear(), refreshFilters, render, renderUpdate: () => updates.renderUpdate(), updateStatus, sync, writeDemo, toast, errorMessage });
   const { readTheme, readPalette, applyTheme, applyPalette, applyAppearance, applyCodeSettings, renderRepoSelector, renderSettingsRepoList, renderAccount, startLoginFromBanner, accountAction, cancelLogin } = settingsUI;
   $('#sidebar-toggle')!.addEventListener('click', event => {
     const wasPinned = sidebarPinned; applySidebar(!wasPinned);
@@ -559,7 +563,7 @@ import type { FavoriteEntry } from '../favorites/model.js';
   });
   sidebar.addEventListener('focusout', () => { queueMicrotask(() => { if (!sidebar.contains(document.activeElement)) { sidebarFocused = false; updateSidebar(); } }); });
   document.addEventListener('keydown', event => { if (event.key === 'Escape' && !sidebarPinned && !document.querySelector('dialog[open]')) { clearSidebarTimers(); sidebarHovered = false; sidebarFocused = false; if (sidebar.contains(document.activeElement)) (document.activeElement as HTMLElement).blur(); updateSidebar(); } });
-  const updates = Updates.create({ demo, bridge, getAppVersion: () => s.appVersion!, getUpdate: () => s.update, setUpdate: update => { s.update = update; }, getUpdateCapability: () => s.updateCapability, getBusy: () => s.busy, setBusy, call, cancelDraftSave: () => clearTimeout(draftTimer), getLocalWrite: () => localWrite, resetLocalWrite: () => { localWrite = Promise.resolve(); }, hasEditor: () => !!s.editor || tricks.hasEditor(), saveDraft, persistLocal, renderAccount, toast, errorMessage });
+  const updates = Updates.create({ demo, bridge, getAppVersion: () => s.appVersion!, getUpdate: () => s.update, setUpdate: update => { s.update = update; }, getUpdateCapability: () => s.updateCapability, getBusy: () => s.busy, setBusy, call, cancelDraftSave: () => clearTimeout(draftTimer), getLocalWrite: () => localWrite, resetLocalWrite: () => { localWrite = Promise.resolve(); }, hasEditor: () => !!s.editor || tricks.hasEditor() || algorithms.hasEditor(), saveDraft, persistLocal, renderAccount, toast, errorMessage });
   $('#submit-form')!.elements.url.addEventListener('blur', event => {
     try { const url = new URL((event.target as AppControl).value); const form = $('#submit-form')!; let match;
       if (url.hostname.endsWith('codeforces.com') && (match = url.pathname.match(/(?:problemset\/problem\/(\d+)\/([A-Za-z0-9]+)|contest\/(\d+)\/problem\/([A-Za-z0-9]+))/))) { setEditorPlatform('CF'); form.elements.pid.value = `CF${match[1] || match[3]}${(match[2] || match[4]).toUpperCase()}`; }

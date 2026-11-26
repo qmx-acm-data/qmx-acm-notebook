@@ -12,7 +12,8 @@ import type { BootstrapPayload } from '../models/bootstrap';
 import type { LocalDataSnapshot, LocalUpdate } from '../models/records';
 import type { PlannerActionArgs, PlannerSnapshot } from '../models/planner';
 import type {
-  AlgorithmNoteInput, AlgorithmTopic, AlgorithmTopicInput, CommentInput, CommentNumber,
+  AlgorithmNoteInput, AlgorithmTopic, AlgorithmTopicInput, AlgorithmTopicList, CommentInput, CommentNumber,
+  DeleteAlgorithmNoteInput, DeletedAlgorithmNote, DeleteAlgorithmTopicInput, UpdatedAlgorithmTopic, UpdateAlgorithmTopicInput,
   CommentSnapshot, ContestSnapshot, DeletedDocument, DeletedIssue, DeleteDocumentInput,
   DocumentWriteInput, InstallUpdateResult, IssueInput, LoginAccount, PlatformCode,
   PlatformSnapshot, SavedDocument, SettingsUpdate, TagCatalog, TagRequest, TagRequestInput,
@@ -81,10 +82,13 @@ export interface ServiceMethods {
   saveTrick(input: SaveTrickInput): Promise<Trick>;
   deleteTrick(input: DeleteTrickInput): Promise<DeletedTrick>;
   saveAlgorithmTopic(data: AlgorithmTopicInput): Promise<AlgorithmTopic>;
+  updateAlgorithmTopic(data: UpdateAlgorithmTopicInput): Promise<UpdatedAlgorithmTopic>;
+  deleteAlgorithmTopic(data: DeleteAlgorithmTopicInput): Promise<AlgorithmTopicList>;
   saveLearningGate(data: SaveLearningGateInput): Promise<LearningGateContent>;
   saveLearningCurriculum(input: SaveLearningCurriculumInput): Promise<LearningCurriculumDocument>;
   saveAlgorithmNodeContent(input: SaveAlgorithmNodeContentInput): Promise<AlgorithmNodeContent>;
   saveAlgorithmNote(record: AlgorithmNoteInput): Promise<SavedDocument>;
+  deleteAlgorithmNote(record: DeleteAlgorithmNoteInput): Promise<DeletedAlgorithmNote>;
   deleteDocument(record: DeleteDocumentInput): Promise<DeletedDocument>;
   deleteIssue(record: IssueInput): Promise<DeletedIssue>;
   refreshAccount(): Promise<BootstrapPayload>;

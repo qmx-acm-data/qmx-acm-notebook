@@ -17,6 +17,7 @@ export interface BootstrapPayload {
   tricks: Trick[];
   algorithmNotes: CachedEntry[];
   algorithmTopics: CachedEntry[];
+  algorithmOverrides?: import('./algorithm-directory').AlgorithmDirectoryOverride[];
   algorithmNodeContents: AlgorithmNodeContent[];
   learningGateContents: LearningGateContent[];
   learningCurriculum: LearningCurriculumDocument | null;

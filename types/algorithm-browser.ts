@@ -4,6 +4,9 @@ import type { AlgorithmDirectoryNode } from '../src/shared/models/algorithm-dire
 /** Legacy note values are displayed/coerced by the browser, without extra validation. */
 export interface AlgorithmBrowserNote {
   path?: unknown;
+  sha?: unknown;
+  repo?: unknown;
+  sourceKey?: unknown;
   id?: unknown;
   clientId?: unknown;
   nodeId?: unknown;
@@ -46,10 +49,12 @@ export interface AlgorithmBrowserOptions {
   onSelect?: (id: string | null) => void;
   onUpload?: (id: string | null) => void;
   onAddTopic?: (id: string) => void;
+  topicActions?: (id: string) => HTMLElement | null;
+  noteActions?: (note: AlgorithmBrowserNote, context: { isFullscreen(): boolean }) => HTMLElement | null;
   onLearningPath?: (id: string) => void;
   authorName?: (author: unknown) => unknown;
   formatDate?: (value: unknown) => unknown;
-  renderMarkdown?: (host: HTMLElement, markdown: string) => void;
+  renderMarkdown?: (host: HTMLElement, markdown: string, withOutline?: boolean) => void;
   isFavorite?: (note: AlgorithmBrowserNote) => boolean;
   onToggleFavorite?: (note: AlgorithmBrowserNote) => Promise<void>;
 }

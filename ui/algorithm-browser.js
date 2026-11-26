@@ -106,7 +106,7 @@ var __QMXStandalone = (() => {
     visit(tree);
     return tree;
   }
-  function hydrate(base, topics = []) {
+  function hydrate(base, topics = [], overrides = []) {
     const tree = JSON.parse(JSON.stringify(base)), byId = /* @__PURE__ */ new Map();
     function index(node, depth) {
       node.level = depth;
@@ -153,6 +153,22 @@ var __QMXStandalone = (() => {
       if (!added) break;
       pending = next;
     }
+    const byOverrideId = new Map(overrides.filter((item) => item && typeof item.id === "string" && typeof item.label === "string" && typeof item.fullLabel === "string" && typeof item.scope === "string" && (item.color === "unrated" || COLORS.includes(item.color))).map((item) => [item.id, item]));
+    function applyOverrides(node) {
+      node.children = node.children.filter(applyOverrides);
+      if (node.algorithmContentId && !node.children.some((child) => child.id === node.algorithmContentId)) delete node.algorithmContentId;
+      if (node.kind !== "algorithm" || node.children.length || node.origin === "admin") return true;
+      let override = byOverrideId.get(node.id);
+      for (let owner = node.contentOf; !override && owner; owner = byId.get(owner)?.contentOf) override = byOverrideId.get(owner);
+      if (!override) return true;
+      if (override.hidden) return false;
+      const aliases = [.../* @__PURE__ */ new Set([...node.aliases ?? [], node.label, node.fullLabel ?? node.label])].filter((label) => label !== override.label && label !== override.fullLabel);
+      Object.assign(node, { label: override.label, fullLabel: override.fullLabel, color: override.color, scope: override.scope, aliases, difficultySource: { kind: "admin" } });
+      if (override.color === "unrated") node.rating = { status: "unrated", type: "entry" };
+      else if (node.rating?.status === "unrated") delete node.rating;
+      return true;
+    }
+    if (byOverrideId.size) applyOverrides(tree);
     function ranges(node) {
       const values = [COLORS.indexOf(node.color) + 1, ...node.children.flatMap((child) => {
         const r = ranges(child);
@@ -1207,13 +1223,15 @@ ${entry.node.fullLabel}` : ""}`;
         actions.append(back, button2("打开详情 ↗", "alg-button reading-detail-trigger alg-open-detail", openDetail));
         const favorite = noteFavoriteControl({ note: reading, isFavorite: opts.isFavorite, onToggleFavorite: opts.onToggleFavorite });
         if (favorite) actions.append(favorite);
+        const management2 = opts.noteActions?.(reading, { isFullscreen: () => Boolean(expandedReader) });
+        if (management2) actions.append(management2);
         pane.append(actions, breadcrumbs(reading.nodeId));
         const article = element2("article", "alg-reading");
         const title2 = element2("h2", "alg-reading-title", reading.title || "未命名笔记");
         title2.tabIndex = -1;
         article.append(title2, noteMetadata(reading), noteTags(reading));
         const body = element2("div", "alg-markdown markdown-body");
-        if (typeof opts.renderMarkdown === "function") opts.renderMarkdown(body, String(reading.body || ""));
+        if (typeof opts.renderMarkdown === "function") opts.renderMarkdown(body, String(reading.body || ""), true);
         else body.textContent = String(reading.body || "");
         article.append(body);
         if (byId.has(reading.nodeId)) article.append(button2(`在目录中查看：${byId.get(reading.nodeId).node.label}`, "alg-text-button alg-note-location", () => selectNode(reading.nodeId)));
@@ -1239,6 +1257,8 @@ ${entry.node.fullLabel}` : ""}`;
         expandedReader?.close();
         opts.onAddTopic(selected.node.id);
       }));
+      const management = opts.topicActions?.(selected.node.id);
+      if (management) detailBar.append(management);
       if (typeof opts.onLearningPath === "function") utilities.append(button2("在学习路线中查看 →", "alg-text-button alg-add-topic-detail", () => {
         expandedReader?.close();
         opts.onLearningPath(selected.node.id);

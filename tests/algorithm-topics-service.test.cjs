@@ -3,7 +3,7 @@ const { appPath } = require('./app-path.cjs');
 const test = require('node:test');
 const assert = require('node:assert/strict');
 const { GitHub } = require(appPath('electron/github.cjs'));
-const { AlgorithmTopics, TOPICS_PATH, validateTopics, parseTopics } = require(appPath('electron/algorithm-topics.cjs'));
+const { AlgorithmTopics, TOPICS_PATH, OVERRIDES_PATH, validateTopics, parseTopics } = require(appPath('electron/algorithm-topics.cjs'));
 const tree = require(appPath('ui/algorithm-tree.js'));
 const UUID = '3d12970c-1ea6-4da8-809c-a8f85b2db247';
 const UUID2 = 'cc720a4b-31e5-4a89-a438-ea74ab9886c4';
@@ -29,6 +29,7 @@ function fixture({ admin = true, push = true, file = null, sha = 'old-sha', fail
       }
       return saved === null ? response({ message: 'Not Found' }, 404) : response({ type: 'file', encoding: 'base64', sha: currentSha, content: Buffer.from(saved).toString('base64') });
     }
+    if (pathname === `/repos/team/notebook/contents/${OVERRIDES_PATH}`) return response({ message: 'Not Found' }, 404);
     if (pathname === '/repos/team/notebook/git/trees/main') return response({ tree: saved ? [{ type: 'blob', path: TOPICS_PATH, sha: currentSha }] : [] });
     if (pathname === `/repos/team/notebook/git/blobs/${currentSha}`) return response({ encoding: 'base64', content: Buffer.from(saved).toString('base64') });
     if (pathname === '/repos/team/notebook/issues') return response([]);
@@ -145,6 +146,117 @@ test('SHA conflicts do not overwrite or silently merge remote contents; unknown 
   const h = fixture({ noSha: true }); await assert.rejects(h.service.save(input()), /结果未知/);
 });
 
+function selection(topic) {
+  const { id, parentId, label, fullLabel, kind = 'algorithm', color, scope = '' } = topic;
+  return { id, expected: { parentId, label, fullLabel, kind, color, scope } };
+}
+const topicFile = (...topics) => JSON.stringify({ schema: 1, topics });
+const edit = (topic, fields = {}) => ({ ...selection(topic), label: '更新后的算法', fullLabel: '更新后的算法全称', color: 'expert', scope: '新范围', ...fields });
+
+test('editing physical topics keeps identity and original creation metadata and uses the current file SHA', async () => {
+  const original = topic({ createdBy: { id: 17, login: 'creator' }, unknownField: 'outside schema allowlist' });
+  const sibling = topic({ id: id2, label: '另一算法', requestId: 'request-2' });
+  const h = fixture({ file: topicFile(original, sibling), sha: 'fresh-sha' });
+  const result = await h.service.update(edit(original, { label: '  更新后的算法 ', parentId: 'forged-parent', kind: 'directory', requestId: 'forged-request', createdAt: 'forged-time', createdBy: { id: 999, login: 'forged-user' } }));
+  const saved = parseTopics(h.saved);
+  assert.equal(h.writes[0].sha, 'fresh-sha');
+  assert.deepEqual(saved, [
+    { id, parentId: original.parentId, kind: original.kind || 'algorithm', label: '更新后的算法', fullLabel: '更新后的算法全称', color: 'expert', scope: '新范围', requestId: original.requestId, createdAt: original.createdAt, createdBy: original.createdBy },
+    validateTopics([sibling])[0],
+  ]);
+  assert.deepEqual(result.topics, saved.map(item => ({ ...item, repo: 'team/notebook' })));
+  assert.deepEqual(result.topic, result.topics[0]);
+});
+
+test('editing directories validates titles and difficulty while preserving their children', async () => {
+  const directory = topic({ kind: 'directory', color: 'parent' });
+  const child = topic({ id: id2, parentId: id, label: '子算法', requestId: 'request-2' });
+  const h = fixture({ file: topicFile(directory, child) });
+  await assert.rejects(h.service.update(edit(directory)), /目录不设置算法难度/);
+  await assert.rejects(h.service.update(edit(directory, { color: 'parent', scope: undefined })), /学习范围/);
+  assert.equal(h.writes.length, 0);
+  const result = await h.service.update(edit(directory, { color: 'parent', scope: '' }));
+  assert.equal(result.topic.kind, 'directory');
+  assert.equal(result.topic.scope, '');
+  assert.equal(result.topics[1].parentId, id);
+  const sibling = { ...child, parentId: directory.parentId };
+  const duplicate = fixture({ file: topicFile(directory, sibling) });
+  await assert.rejects(duplicate.service.update(edit(directory, { color: 'parent', label: sibling.label })), /已存在/);
+  assert.equal(duplicate.writes.length, 0);
+});
+
+test('mutation preconditions reject stale selections, built-ins and actors without fresh admin permission', async () => {
+  const original = topic();
+  const changed = fixture({ file: topicFile({ ...original, scope: 'concurrent scope change' }) });
+  const missing = fixture({ file: topicFile() });
+  for (const h of [changed, missing]) {
+    await assert.rejects(h.service.update(edit(original)), /先同步/);
+    await assert.rejects(h.service.remove(selection(original)), /先同步/);
+    assert.equal(h.writes.length, 0);
+  }
+  const builtin = fixture();
+  await assert.rejects(builtin.service.remove({ ...selection(original), id: original.parentId }), /已添加/);
+  const unauthorized = fixture({ admin: false, file: topicFile(original) });
+  await assert.rejects(unauthorized.service.update(edit(original)), /管理员/);
+  await assert.rejects(unauthorized.service.remove(selection(original)), /管理员/);
+  assert.equal(unauthorized.writes.length, 0);
+});
+
+test('removing a nonempty directory or split algorithm refuses before the reference guard', async () => {
+  for (const parent of [topic({ kind: 'directory', color: 'parent' }), topic()]) {
+    const child = topic({ id: id2, parentId: id, label: '子算法', requestId: 'request-2' });
+    const h = fixture({ file: topicFile(parent, child) });
+    await assert.rejects(h.service.remove(selection(parent), async () => assert.fail('blocked before guard')), /子节点或合成内容/);
+    assert.equal(h.writes.length, 0);
+  }
+  const parent = topic();
+  const child = topic({ id: id2, parentId: id, label: '子算法', requestId: 'request-2' });
+  const syntheticDependent = topic({ id: 'custom-a1d16a2e-502f-4a76-9f60-c5a6dca6b210', parentId: `algorithm-content-${id}`, label: '合成算法下的目录', kind: 'directory', color: 'parent', requestId: 'request-3' });
+  const h = fixture({ file: topicFile(parent, child, syntheticDependent) });
+  await assert.rejects(h.service.remove(selection(child), async () => assert.fail('blocked before guard')), /合成节点/);
+  assert.equal(h.writes.length, 0);
+});
+
+test('delete guard sees disappearing synthetic IDs and can protect the final commit', async () => {
+  const parent = topic();
+  const child = topic({ id: id2, parentId: id, label: '子算法', requestId: 'request-2' });
+  const file = topicFile(parent, child);
+  const h = fixture({ file, sha: 'fresh-sha' });
+  const synthetic = `algorithm-content-${id}`;
+  await assert.rejects(h.service.remove(selection(child), async context => {
+    assert.deepEqual(context.removedIds, new Set([id2, synthetic]));
+    throw new Error('仍有课程引用');
+  }), /课程引用/);
+  assert.equal(h.saved, file);
+  const result = await h.service.remove(selection(child), async ({ id: selected, branch, sha, index, removedIds }) => {
+    assert.equal(selected, id2);
+    assert.equal(branch, 'main');
+    assert.equal(sha, 'fresh-sha');
+    assert.equal(index.get(synthetic).kind, 'algorithm');
+    assert.deepEqual(removedIds, new Set([id2, synthetic]));
+    return async write => {
+      assert.equal(write.branch, branch);
+      assert.equal(write.sha, sha);
+      assert.deepEqual(parseTopics(write.text), validateTopics([parent]));
+    };
+  });
+  assert.deepEqual(result, { topics: [{ ...validateTopics([parent])[0], repo: 'team/notebook' }], overrides: [] });
+  assert.equal(h.writes.length, 0, 'callback replaces the Contents API write');
+});
+
+test('unguarded deletion writes an empty schema-1 document with CAS and reports write conflicts', async () => {
+  const original = topic();
+  const file = topicFile(original);
+  const h = fixture({ file });
+  assert.deepEqual(await h.service.remove(selection(original)), { topics: [], overrides: [] });
+  assert.deepEqual(JSON.parse(h.saved), { schema: 1, topics: [] });
+  assert.equal(h.writes[0].sha, 'old-sha');
+  const stale = fixture({ file, failPut: 409 });
+  await assert.rejects(stale.service.update(edit(original)), /SHA冲突/);
+  await assert.rejects(stale.service.remove(selection(original)), /SHA冲突/);
+  assert.equal(stale.saved, file);
+});
+
 test('sync returns shared additions and removes remotely deleted file without reusing stale topics', async () => {
   const h = fixture({ file: JSON.stringify({ schema: 1, topics: [topic()] }), token: '' });
   const result = await h.gh.sync(); assert.equal(result.algorithmTopics.length, 1);
@@ -156,8 +268,7 @@ test('sync returns shared additions and removes remotely deleted file without re
 // Reuse the existing main-process VM fixture without changing or registering its tests.
 function mainHarness(options) {
   const fs = require('node:fs'), path = require('node:path');
-  let source = fs.readFileSync(path.join(__dirname, 'main.test.cjs'), 'utf8').split('// END_MAIN_HARNESS')[0];
-  source = source.replace("['saveDocument', 'deleteDocument'", "['saveAlgorithmTopic', 'saveDocument', 'deleteDocument'");
+  const source = fs.readFileSync(path.join(__dirname, 'main.test.cjs'), 'utf8').split('// END_MAIN_HARNESS')[0];
   return new Function('require', '__dirname', 'Buffer', source + '\nreturn harness;')(require, __dirname, Buffer)(options);
 }
 
@@ -170,11 +281,11 @@ test('main IPC caches only committed additions, exposes offline bootstrap/sync a
   }, sync: async () => ({ records: [], issues: [], algorithmTopics: [record] }) } });
   assert.deepEqual((await h.invoke('bootstrap')).algorithmTopics, []);
   assert.deepEqual(await h.invoke('saveAlgorithmTopic', input()), record);
-  assert.deepEqual(h.stored('cache.json').algorithmTopics, [record]);
+  const scopedRecord = { ...record, serverUrl: '', sourceKey: 'https://api.github.com|team/notebook' };
+  assert.deepEqual(h.stored('cache.json').algorithmTopics, [scopedRecord]);
   const writes = h.writes.length; fail = true;
   await assert.rejects(h.invoke('saveAlgorithmTopic', input()), /SHA conflict/);
   assert.equal(h.writes.length, writes, 'failed remote commit does not write local cache');
-  const scopedRecord = { ...record, serverUrl: '', sourceKey: 'https://api.github.com|team/notebook' };
   const state = await h.invoke('sync'); assert.deepEqual(state.algorithmTopics, [scopedRecord]);
   await h.invoke('saveSettings', { repo: 'other/repo' });
   assert.deepEqual((await h.invoke('bootstrap')).algorithmTopics, []);

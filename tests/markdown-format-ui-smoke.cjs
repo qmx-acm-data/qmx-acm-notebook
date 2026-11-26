@@ -11,6 +11,10 @@ const source=String.raw`# Markdown 与公式
 
 下面是公式与格式示例。
 
+#### 质因子计数
+
+在 $ [1,n] $中，有 $ \left\lfloor \frac{n}{p} \right\rfloor $个数能被 $ p $整除。恰好能被 $ p^{k-1} $整除但不能被 $ p^k $整除的数有 $ \left\lfloor \frac{n}{p^{k-1}}\right\rfloor - \left\lfloor \frac{n}{p^k}\right\rfloor $个。
+
 内联 \(a_i+b_j\)，美元 $x^2$，价格 \$5 和 \$10。
 
 \[
@@ -59,7 +63,21 @@ $\href{javascript:alert(1)}{unsafe}$
 $\includegraphics{https://example.com/image.png}$
 `.replace(/\u0010/g,'`');
 (async()=>{const browser=await chromium.launch({channel:'msedge',headless:true});try{const page=await browser.newPage({viewport:{width:1440,height:1000}}),errors=[];page.on('pageerror',e=>errors.push(e.message));await page.addInitScript(body=>{const record={id:'document:format.md',kind:'document',repo:'test/math',path:'format.md',title:'格式回归',body,author:'test',authorId:'1'};const payload={records:[record],issues:[],account:null,permissions:{repo:'test/math'},settings:{repo:'test/math',autoSync:false},local:{records:[],favorites:[],mastery:{},draft:{}}};window.notebook={bootstrap:async()=>structuredClone(payload),sync:async()=>structuredClone(payload),openExternal:async()=>{}};},source);await page.goto(pathToFileURL(appPath('ui/index.html')).href);await page.locator('.rail-nav-item[data-view="public"]').click();await page.locator('.record-card .card-title').click();const reader=page.locator('#detail-panel .markdown-body');await reader.locator('.katex').first().waitFor();assert.equal(await reader.locator('table tbody tr').count(),4);assert.equal(await reader.locator('table td').count(),8);assert.equal(await reader.locator('table code').innerText(),'a|b');assert.equal(await reader.locator('table .katex').count(),3);assert.equal(await reader.locator('.markdown-task-marker').count(),2);assert.equal(await reader.locator('input,script,img,[onerror],a[href^="javascript:"]').count(),0);assert.equal(await page.evaluate(()=>window.injected),undefined);assert.equal(await reader.locator('pre code').innerText(),'\\[literal\\]\n$literal$\n');assert.ok((await reader.innerText()).includes('$5 和 $10'));assert.equal(await reader.locator('.notebook-math-error').count(),1);assert.match(await reader.locator('.notebook-math-error').getAttribute('title'),/unknowncommand/);assert.ok((await reader.locator('.notebook-math-rendered').allTextContents()).some(s=>s.includes('z')));assert.equal(await reader.locator('.katex .tag').count(),1);
-assert.equal(await page.evaluate(()=>typeof window.NotebookMarkdownMath),'undefined','The app must use explicit MarkdownMath imports');
+const outline=reader.locator('details.markdown-outline');
+ assert.equal(await outline.count(),1);
+ assert.equal(await outline.getAttribute('open'),null);
+ await outline.locator('summary').click();
+ const outlineLinks=outline.getByRole('button');
+ assert.deepEqual(await outlineLinks.allTextContents(),['Markdown 与公式','二级标题','三级标题','质因子计数']);
+ assert.equal(await outlineLinks.last().evaluate(link=>link.parentElement.dataset.outlineDepth),'3');
+ assert.ok(await outlineLinks.last().evaluate(link=>parseFloat(getComputedStyle(link.parentElement).paddingInlineStart)>0));
+ await outlineLinks.last().click();
+ assert.equal(await page.evaluate(()=>document.activeElement.textContent),'质因子计数');
+ const sample=reader.locator('p').filter({hasText:'恰好能被'});
+ assert.equal(await sample.locator('.notebook-math-rendered').count(),6);
+ assert.equal(await sample.locator('.notebook-math-error').count(),0);
+ assert.equal(await page.locator('.record-card .markdown-outline').count(),0);
+ assert.equal(await page.evaluate(()=>typeof window.NotebookMarkdownMath),'undefined','The app must use explicit MarkdownMath imports');
 await page.addScriptTag({url:pathToFileURL(appPath('ui/markdown-math.js')).href});
 await page.evaluate(()=>{window.__markdownSmoke={Math:window.NotebookMarkdownMath};delete window.NotebookMarkdownMath;});
 assert.equal(await page.evaluate(()=>typeof window.NotebookMarkdownMath),'undefined');

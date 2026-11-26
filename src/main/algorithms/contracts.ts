@@ -18,11 +18,30 @@ export interface AlgorithmTopic extends TopicInput, Record<string, unknown> {
 export interface TopicIndexEntry {
   id: string;
   label: string;
+  fullLabel: string;
   kind: string | undefined;
+  color: string;
+  scope: string;
   parentId: string | null;
   depth: number;
   children: HydratedAlgorithmDirectoryNode[];
 }
+export interface TopicMutationWrite {
+  path: string;
+  branch: string;
+  sha: string | null;
+  message: string;
+  text: string;
+}
+export interface TopicMutationContext extends Pick<TopicMutationWrite, 'path' | 'branch' | 'sha'> {
+  id: string;
+  topicsSha: string | null;
+  overridesSha: string | null;
+  index: ReadonlyMap<string, TopicIndexEntry>;
+  removedIds: ReadonlySet<string>;
+}
+export type TopicMutationCommit = (write: TopicMutationWrite) => Promise<void>;
+export type TopicMutationGuard = (context: TopicMutationContext) => Promise<void | TopicMutationCommit>;
 export interface TopicsGitHub {
   token: string;
   repo: string;

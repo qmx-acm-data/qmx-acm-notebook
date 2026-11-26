@@ -70,7 +70,7 @@ function splitMixed(tree: DirectoryNode): DirectoryBranch {
   }
   visit(tree); return tree as DirectoryBranch;
 }
-function hydrate(base: DirectoryNode, topics: (Topic | null | undefined)[] = []): HydratedNode {
+function hydrate(base: DirectoryNode, topics: (Topic | null | undefined)[] = [], overrides: readonly import('../../shared/models/algorithm-directory').AlgorithmDirectoryOverride[] = []): HydratedNode {
   const tree = JSON.parse(JSON.stringify(base)) as DirectoryBranch, byId = new Map<unknown, DirectoryBranch>();
   function index(node: DirectoryBranch, depth: number): void {
     node.level = depth; node.children = Array.isArray(node.children) ? node.children : [];
@@ -95,6 +95,22 @@ function hydrate(base: DirectoryNode, topics: (Topic | null | undefined)[] = [])
     }
     if (!added) break; pending = next;
   }
+  const byOverrideId = new Map(overrides.filter(item => item && typeof item.id === 'string' && typeof item.label === 'string' && typeof item.fullLabel === 'string' && typeof item.scope === 'string' && (item.color === 'unrated' || COLORS.includes(item.color))).map(item => [item.id, item]));
+  function applyOverrides(node: DirectoryBranch): boolean {
+    node.children = node.children.filter(applyOverrides);
+    if (node.algorithmContentId && !node.children.some(child => child.id === node.algorithmContentId)) delete node.algorithmContentId;
+    if (node.kind !== 'algorithm' || node.children.length || node.origin === 'admin') return true;
+    let override = byOverrideId.get(node.id);
+    for (let owner = node.contentOf; !override && owner; owner = byId.get(owner)?.contentOf) override = byOverrideId.get(owner);
+    if (!override) return true;
+    if (override.hidden) return false;
+    const aliases = [...new Set([...(node.aliases ?? []), node.label, node.fullLabel ?? node.label])].filter(label => label !== override.label && label !== override.fullLabel);
+    Object.assign(node, { label: override.label, fullLabel: override.fullLabel, color: override.color, scope: override.scope, aliases, difficultySource: { kind: 'admin' } });
+    if (override.color === 'unrated') node.rating = { status: 'unrated', type: 'entry' };
+    else if (node.rating?.status === 'unrated') delete node.rating;
+    return true;
+  }
+  if (byOverrideId.size) applyOverrides(tree);
   function ranges(node: DirectoryBranch): RatingRange | null {
     const values = [COLORS.indexOf(node.color) + 1, ...node.children.flatMap(child => { const r = ranges(child); return r ? [r.min, r.max] : []; })].filter(n => n > 0);
     const range = values.length ? { min: Math.min(...values), max: Math.max(...values) } : null;

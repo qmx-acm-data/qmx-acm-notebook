@@ -263,7 +263,7 @@
     visit(tree);
     return tree;
   }
-  function hydrate(base, topics = []) {
+  function hydrate(base, topics = [], overrides = []) {
     const tree = JSON.parse(JSON.stringify(base)), byId = /* @__PURE__ */ new Map();
     function index(node4, depth) {
       node4.level = depth;
@@ -310,6 +310,22 @@
       if (!added) break;
       pending2 = next;
     }
+    const byOverrideId = new Map(overrides.filter((item) => item && typeof item.id === "string" && typeof item.label === "string" && typeof item.fullLabel === "string" && typeof item.scope === "string" && (item.color === "unrated" || COLORS.includes(item.color))).map((item) => [item.id, item]));
+    function applyOverrides(node4) {
+      node4.children = node4.children.filter(applyOverrides);
+      if (node4.algorithmContentId && !node4.children.some((child) => child.id === node4.algorithmContentId)) delete node4.algorithmContentId;
+      if (node4.kind !== "algorithm" || node4.children.length || node4.origin === "admin") return true;
+      let override = byOverrideId.get(node4.id);
+      for (let owner = node4.contentOf; !override && owner; owner = byId.get(owner)?.contentOf) override = byOverrideId.get(owner);
+      if (!override) return true;
+      if (override.hidden) return false;
+      const aliases2 = [.../* @__PURE__ */ new Set([...node4.aliases ?? [], node4.label, node4.fullLabel ?? node4.label])].filter((label) => label !== override.label && label !== override.fullLabel);
+      Object.assign(node4, { label: override.label, fullLabel: override.fullLabel, color: override.color, scope: override.scope, aliases: aliases2, difficultySource: { kind: "admin" } });
+      if (override.color === "unrated") node4.rating = { status: "unrated", type: "entry" };
+      else if (node4.rating?.status === "unrated") delete node4.rating;
+      return true;
+    }
+    if (byOverrideId.size) applyOverrides(tree);
     function ranges(node4) {
       const values = [COLORS.indexOf(node4.color) + 1, ...node4.children.flatMap((child) => {
         const r = ranges(child);
@@ -3509,8 +3525,10 @@
     for (let index = from; index < source.length; index++) {
       if (!spend()) return -1;
       if (braces === 0 && source.startsWith(delimiter, index)) {
-        if (delimiter !== "$" || source[index + 1] !== "$" && !/\s/.test(source[index - 1]) && !/\d/.test(source[index + 1] || "")) return index;
-        if (delimiter === "$") return -1;
+        if (delimiter !== "$") return index;
+        const next = source[index + 1] || "";
+        if (next === "$" || /\d/.test(next)) return -1;
+        return index;
       }
       const ch = source[index];
       if (ch === "\\") {
@@ -3538,7 +3556,7 @@
     } else if (source.startsWith("\\(")) {
       left = "\\(";
       right = "\\)";
-    } else if (source[0] === "$" && source.length > 1 && !/\s/.test(source[1])) left = right = "$";
+    } else if (source[0] === "$") left = right = "$";
     else {
       const match2 = /^\\begin\{([A-Za-z]+\*?)\}/.exec(source);
       if (!match2 || !environments.has(match2[1])) return;
@@ -3580,7 +3598,9 @@
     if (end === void 0 || end < left.length) return;
     const raw = source.slice(0, end + right.length);
     let text3 = environment ? raw : source.slice(left.length, end);
-    if (!text3.trim()) return;
+    const trimmed = text3.trim();
+    if (!trimmed) return;
+    if (left === "$" && /^\d[\d,.]*[ \t]+(?:\p{L}{2}|\p{Script=Han})/u.test(text3) && /[ \t]$/.test(text3) && !/[\\_^{}=+*/<>−-]/.test(text3)) return;
     const aliases2 = { displaymath: "", math: "" };
     const wrapper = environment || /^\s*\\begin\{([A-Za-z]+\*?)\}([\s\S]*)\\end\{\1\}\s*$/.exec(text3)?.[1];
     if (Object.prototype.hasOwnProperty.call(aliases2, wrapper)) {
@@ -3666,6 +3686,40 @@
     }
   }
   var MarkdownMath = Object.freeze({ parse, render: render3 });
+
+  // src/renderer/reading/markdown-outline.ts
+  function addMarkdownOutline(container) {
+    const headings = [...container.querySelectorAll("h1,h2,h3,h4,h5,h6")].filter((heading) => !heading.closest("blockquote, pre, code")).map((heading) => ({ heading, label: heading.textContent?.replace(/\s+/g, " ").trim() ?? "", level: Number(heading.tagName.slice(1)) })).filter((entry2) => entry2.label);
+    if (!headings.length) return;
+    const doc = container.ownerDocument;
+    const details = doc.createElement("details");
+    details.className = "markdown-outline";
+    const summary = doc.createElement("summary");
+    summary.textContent = "目录";
+    const nav = doc.createElement("nav");
+    nav.setAttribute("aria-label", "正文目录");
+    const list = doc.createElement("ul");
+    const levels = [];
+    for (const { heading, label, level } of headings) {
+      while (levels.length && levels[levels.length - 1] >= level) levels.pop();
+      const item = doc.createElement("li");
+      item.dataset.outlineDepth = String(levels.length);
+      levels.push(level);
+      const jump = doc.createElement("button");
+      jump.type = "button";
+      jump.textContent = label;
+      jump.addEventListener("click", () => {
+        heading.tabIndex = -1;
+        heading.focus({ preventScroll: true });
+        heading.scrollIntoView({ block: "start" });
+      });
+      item.append(jump);
+      list.append(item);
+    }
+    nav.append(list);
+    details.append(summary, nav);
+    container.prepend(details);
+  }
 
   // src/renderer/reading/markdown-color.ts
   function color(value, document2) {
@@ -5013,7 +5067,7 @@ ${data.trick.trim()}` : ""].filter(Boolean).join("\n\n") : data.body;
       tagrow.classList.add("detail-tags");
       append(panel, tagrow, element5("hr", "detail-divider"), element5("div", "body-label", "思路与复盘"));
       const body = element5("div", "markdown-body");
-      renderMarkdown(body, record2.body);
+      renderMarkdown(body, record2.body, true);
       panel.append(body);
       const masteryButtons = element5("div", "mastery-buttons");
       Object.entries(stateLabels).forEach(([value, label]) => {
@@ -8109,13 +8163,15 @@ ${entry2.node.fullLabel}` : ""}`;
         actions.append(back, button6("打开详情 ↗", "alg-button reading-detail-trigger alg-open-detail", openDetail));
         const favorite = noteFavoriteControl({ note: reading, isFavorite: opts.isFavorite, onToggleFavorite: opts.onToggleFavorite });
         if (favorite) actions.append(favorite);
+        const management2 = opts.noteActions?.(reading, { isFullscreen: () => Boolean(expandedReader) });
+        if (management2) actions.append(management2);
         pane.append(actions, breadcrumbs(reading.nodeId));
         const article = element3("article", "alg-reading");
         const title2 = element3("h2", "alg-reading-title", reading.title || "未命名笔记");
         title2.tabIndex = -1;
         article.append(title2, noteMetadata(reading), noteTags(reading));
         const body = element3("div", "alg-markdown markdown-body");
-        if (typeof opts.renderMarkdown === "function") opts.renderMarkdown(body, String(reading.body || ""));
+        if (typeof opts.renderMarkdown === "function") opts.renderMarkdown(body, String(reading.body || ""), true);
         else body.textContent = String(reading.body || "");
         article.append(body);
         if (byId.has(reading.nodeId)) article.append(button6(`在目录中查看：${byId.get(reading.nodeId).node.label}`, "alg-text-button alg-note-location", () => selectNode(reading.nodeId)));
@@ -8141,6 +8197,8 @@ ${entry2.node.fullLabel}` : ""}`;
         expandedReader?.close();
         opts.onAddTopic(selected2.node.id);
       }));
+      const management = opts.topicActions?.(selected2.node.id);
+      if (management) detailBar.append(management);
       if (typeof opts.onLearningPath === "function") utilities.append(button6("在学习路线中查看 →", "alg-text-button alg-add-topic-detail", () => {
         expandedReader?.close();
         opts.onLearningPath(selected2.node.id);
@@ -10665,7 +10723,7 @@ ${entry2.node.fullLabel}` : ""}`;
   // src/renderer/algorithms/workspace.ts
   function createAlgorithmWorkspace(options) {
     const global2 = window;
-    const { getAlgorithmNotes, setAlgorithmNotes, getAlgorithmTopics, setAlgorithmTopics, getAlgorithmTree, setAlgorithmTree, getAccount, getPermissions, getLocal, getBusy, getReadingDetail, accountId, repo, uuid, setBusy, persistLocal, call, render: render6, renderMarkdown, authorName: authorName2, date, tags, toast, errorMessage } = options;
+    const { getAlgorithmNotes, setAlgorithmNotes, getAlgorithmTopics, setAlgorithmTopics, getAlgorithmOverrides, setAlgorithmOverrides, getAlgorithmTree, setAlgorithmTree, getAccount, getPermissions, getLocal, getBusy, getReadingDetail, accountId, repo, uuid, setBusy, persistLocal, call, render: render6, renderMarkdown, authorName: authorName2, date, tags, toast, errorMessage } = options;
     const $ = (selector) => document.querySelector(selector);
     function element5(tag, className, text3) {
       const node4 = document.createElement(tag);
@@ -10682,6 +10740,44 @@ ${entry2.node.fullLabel}` : ""}`;
       node4.type = "button";
       node4.addEventListener("click", action3);
       return node4;
+    }
+    function mutationContext() {
+      return { repo: repo(), sourceKey: options.repoSource(), owner: accountId() };
+    }
+    function assertMutationContext(context) {
+      const current = mutationContext();
+      if (context.repo !== current.repo || context.sourceKey !== current.sourceKey || context.owner !== current.owner) throw new Error("账号或资料来源已改变，请关闭后重试");
+    }
+    function isGitHubSource() {
+      return options.repoSource().startsWith("https://api.github.com|");
+    }
+    function canManageTopics() {
+      return accountId() !== null && isGitHubSource() && getPermissions().admin === true;
+    }
+    function canUploadNotes() {
+      return accountId() !== null && isGitHubSource() && getPermissions().push === true;
+    }
+    function showError3(selector, cause) {
+      const error = $(selector);
+      error.textContent = errorMessage(cause);
+      error.hidden = false;
+    }
+    function lockForm(form) {
+      const controls = Array.from(form.querySelectorAll('input, select, textarea, button[type="submit"]'));
+      const states = controls.map((control) => control.disabled);
+      setBusy(true);
+      controls.forEach((control) => {
+        control.disabled = true;
+      });
+      return () => {
+        controls.forEach((control, index) => {
+          control.disabled = states[index];
+        });
+        setBusy(false);
+      };
+    }
+    function hasEditor() {
+      return $("#algorithm-topic-dialog").open || $("#algorithm-note-dialog").open || $("#algorithm-delete-dialog").open;
     }
     let algorithmSelectedNode = "root";
     function flattenTree(node4, depth = 0, parent = null, out = []) {
@@ -10718,6 +10814,7 @@ ${entry2.node.fullLabel}` : ""}`;
     let algorithmController = null;
     let learningController = null;
     let resources = null;
+    let openRoadmapLeaf = null;
     function effectiveCurriculum() {
       const base = global2.QMX_ALGORITHM_LEARNING_PATH;
       const document2 = options.getLearningCurriculum();
@@ -10779,7 +10876,9 @@ ${entry2.node.fullLabel}` : ""}`;
       const panel = $("#algorithm-panel");
       resources?.destroy();
       resources = null;
+      openRoadmapLeaf = null;
       algorithmController?.destroy();
+      algorithmController = null;
       learningController?.destroy();
       learningController = null;
       panel.replaceChildren();
@@ -10796,7 +10895,7 @@ ${entry2.node.fullLabel}` : ""}`;
       const host = element5("div", "algorithm-view-content");
       panel.append(host);
       if (algorithmMode === "path") {
-        let openLeaf2 = function(topicId) {
+        let openLeaf2 = function(topicId, scope2) {
           const node4 = [...mapped.nodes, ...mapped.indexEntries].find((item) => (item.topicIds || []).some((id) => resolveAlgorithmLeaf(getAlgorithmTree(), id)?.id === topicId));
           if (!node4 || !curriculum) return;
           resources?.destroy();
@@ -10813,7 +10912,7 @@ ${entry2.node.fullLabel}` : ""}`;
             nodeContents: options.getAlgorithmNodeContents(),
             onSaveNodeContent: saveNodeContent,
             renderMarkdown,
-            scope: panel.dataset.scope === "personal" ? "personal" : "public",
+            scope: scope2 ?? (panel.dataset.scope === "personal" ? "personal" : "public"),
             account: getAccount(),
             onSaveGate: async () => {
               throw new Error("请通过简介编辑入口保存");
@@ -10823,7 +10922,7 @@ ${entry2.node.fullLabel}` : ""}`;
             onTopic: openLearningTopic,
             onNote: (note, gateId) => openAlgorithmNoteDetail(note, { gateId }),
             onExternal: options.openExternal,
-            onUploadLeaf: getAccount() && getPermissions().push ? (id) => {
+            onUploadLeaf: canUploadNotes() ? (id) => {
               algorithmSelectedNode = id;
               openAlgorithmNoteEditor();
             } : void 0,
@@ -10840,6 +10939,7 @@ ${entry2.node.fullLabel}` : ""}`;
           node4.gateIds = [.../* @__PURE__ */ new Set([...node4.gateIds || [], ...added.map((gate) => gate.id)])];
           node4.topicIds = [.../* @__PURE__ */ new Set([...node4.topicIds || [], ...added.flatMap((gate) => gate.topicIds || [])])];
         }
+        openRoadmapLeaf = openLeaf2;
         learningController = LearningRoadmap.render({
           host,
           data: mapped,
@@ -10872,7 +10972,7 @@ ${entry2.node.fullLabel}` : ""}`;
               renderMarkdown,
               scope: panel.dataset.scope === "personal" ? "personal" : "public",
               account: getAccount(),
-              onUploadLeaf: getAccount() && getPermissions().push ? (id) => {
+              onUploadLeaf: canUploadNotes() ? (id) => {
                 algorithmSelectedNode = id;
                 openAlgorithmNoteEditor();
               } : void 0,
@@ -10916,9 +11016,11 @@ ${entry2.node.fullLabel}` : ""}`;
         },
         scope: panel.dataset.scope || "public",
         account: getAccount(),
-        canUpload: Boolean(getAccount() && getPermissions().push),
-        canManage: Boolean(getAccount() && getPermissions().admin),
+        canUpload: canUploadNotes(),
+        canManage: canManageTopics(),
         onAddTopic: openAlgorithmTopicEditor,
+        topicActions,
+        noteActions: (note, context) => noteActions(note, () => ({ view: "tree", fullscreen: context.isFullscreen() })),
         onScopeChange(scope2) {
           if (scope2 === "personal" && !getAccount()) {
             toast("请先登录 GitHub 账户");
@@ -10946,54 +11048,170 @@ ${entry2.node.fullLabel}` : ""}`;
         algorithmController.selectNode(id);
       }
     }
-    let algorithmTopicRequest = null;
-    function updateAlgorithmTopicKind() {
-      const form = $("#algorithm-topic-form"), directory = form.elements.kind.value === "directory";
-      $("#algorithm-topic-difficulty").hidden = directory;
-      form.elements.color.disabled = directory;
-      form.elements.color.required = !directory;
-      $("#algorithm-topic-submit").textContent = directory ? "保存目录" : "保存算法";
+    const topicDialog = $("#algorithm-topic-dialog"), topicForm = $("#algorithm-topic-form");
+    const topicSubmit = $("#algorithm-topic-submit");
+    const unratedOption = element5("option", "", "未分级");
+    unratedOption.value = "unrated";
+    let topicEditor = null;
+    function currentTopic(id) {
+      if (!canManageTopics()) return null;
+      const entry2 = (getAlgorithmTopics() || []).find((record2) => record2.id === id);
+      if (entry2) {
+        if (typeof entry2.repo !== "string" || entry2.repo.toLowerCase() !== repo().toLowerCase() || entry2.sourceKey !== void 0 && entry2.sourceKey !== options.repoSource()) return null;
+        const { parentId: parentId2, kind, label: label2, fullLabel: fullLabel2, color: color3, scope: scope3 } = entry2;
+        if (typeof parentId2 !== "string" || typeof label2 !== "string" || kind !== "algorithm" && kind !== "directory" || typeof color3 !== "string") return null;
+        return { id, expected: { parentId: parentId2, kind, label: label2, fullLabel: fullLabel2 ?? label2, color: color3, scope: scope3 ?? "" } };
+      }
+      const nodes = algorithmNodes();
+      const node4 = nodes.find((item) => item.id === id);
+      if (!node4?.parent || node4.origin === "admin" || !isAlgorithmLeaf(node4)) return null;
+      const { parent: parentId, label, fullLabel, color: color2, scope: scope2 } = node4;
+      const overrideIds = [id];
+      let content = node4;
+      while (content.contentOf && content.contentOf === content.parent) {
+        const parent = nodes.find((item) => item.id === content.contentOf);
+        if (!parent) break;
+        overrideIds.push(parent.id);
+        content = parent;
+      }
+      return { id, expected: { parentId, kind: "algorithm", label, fullLabel: fullLabel ?? label, color: color2, scope: scope2 ?? "" }, overrideIds };
     }
-    document.querySelector('#algorithm-topic-form [name="kind"]').addEventListener("change", updateAlgorithmTopicKind);
+    function topicActions(id) {
+      const topic = currentTopic(id);
+      if (!topic) return null;
+      const noun = topic.expected.kind === "directory" ? "目录" : "算法";
+      const actions = element5("div", "alg-management-actions");
+      return append(
+        actions,
+        button10(`编辑${noun}`, "button secondary alg-topic-edit", () => openTopicEdit(id)),
+        button10(`删除${noun}`, "button danger alg-topic-delete", () => {
+          const current = currentTopic(id);
+          if (current) openDelete({ kind: "topic", topic: current });
+        })
+      );
+    }
+    function updateAlgorithmTopicKind() {
+      const directory = topicForm.elements.kind.value === "directory";
+      $("#algorithm-topic-difficulty").hidden = directory;
+      topicForm.elements.color.disabled = directory;
+      topicForm.elements.color.required = !directory;
+      topicSubmit.textContent = directory ? "保存目录" : "保存算法";
+    }
+    topicForm.elements.kind.addEventListener("change", updateAlgorithmTopicKind);
+    function showTopicEditor(parent, target) {
+      const fields = topicForm.elements;
+      if (target?.overrideIds) fields.color.append(unratedOption);
+      else unratedOption.remove();
+      topicForm.reset();
+      fields.parentId.value = target?.expected.parentId || parent?.id || "";
+      fields.kind.disabled = Boolean(target);
+      $("#algorithm-topic-parent-line").hidden = Boolean(target);
+      $("#algorithm-topic-parent").textContent = parent?.fullLabel || parent?.label || "";
+      $("#algorithm-topic-title").textContent = target ? target.expected.kind === "directory" ? "编辑目录" : "编辑算法" : "添加目录或算法";
+      $("#algorithm-topic-kind-hint").textContent = target ? "节点类型与所属目录固定。" : parent?.kind === "algorithm" ? "添加子项后，此节点将保留为目录，原算法及难度移入同名叶子，笔记保存在具体知识点。" : "算法需要选择难度；目录只组织子节点，不保存笔记。";
+      if (target) {
+        const { kind, label, fullLabel, color: color2, scope: scope2 } = target.expected;
+        fields.kind.value = kind;
+        fields.label.value = label;
+        fields.fullLabel.value = fullLabel;
+        fields.color.value = color2;
+        fields.scope.value = scope2;
+      }
+      updateAlgorithmTopicKind();
+      $("#algorithm-topic-error").hidden = true;
+      topicDialog.showModal();
+      fields.label.focus();
+    }
     function openAlgorithmTopicEditor(parentId) {
-      if (!getAccount() || !getPermissions().admin) return;
+      if (!canManageTopics() || getBusy() || hasEditor()) return;
       const parent = algorithmNodes().find((node4) => node4.id === parentId);
       if (!parent) return;
-      const form = $("#algorithm-topic-form");
-      form.reset();
-      form.elements.parentId.value = parent.id;
-      $("#algorithm-topic-parent").textContent = parent.fullLabel || parent.label;
-      updateAlgorithmTopicKind();
-      $("#algorithm-topic-kind-hint").textContent = parent.kind === "algorithm" ? "添加子项后，此节点将保留为目录，原算法及难度移入同名叶子，笔记保存在具体知识点。" : "算法需要选择难度；目录只组织子节点，不保存笔记。";
-      $("#algorithm-topic-error").hidden = true;
-      algorithmTopicRequest = uuid();
-      $("#algorithm-topic-dialog").showModal();
-      form.elements.label.focus();
+      topicEditor = { ...mutationContext(), parentId, requestId: uuid() };
+      showTopicEditor(parent);
     }
-    $("#algorithm-topic-form").addEventListener("submit", async (event) => {
+    function openTopicEdit(id) {
+      if (getBusy() || hasEditor()) return;
+      const target = currentTopic(id);
+      if (!target) return;
+      topicEditor = { ...mutationContext(), target };
+      showTopicEditor(void 0, target);
+    }
+    function setDirectory(topics, overrides) {
+      setAlgorithmTopics(topics);
+      setAlgorithmOverrides(overrides);
+      setAlgorithmTree(AlgorithmDirectory.hydrate(global2.QMX_ALGORITHM_TREE, topics, overrides));
+    }
+    function refreshTopics(topics, id, overrides = getAlgorithmOverrides()) {
+      setDirectory(topics, overrides);
+      algorithmPendingTopic = id;
+      render6();
+    }
+    topicForm.addEventListener("submit", async (event) => {
       event.preventDefault();
-      if (getBusy() || !getPermissions().admin || !getAccount()) return;
-      const form = event.currentTarget, data = Object.fromEntries(new FormData(form));
-      setBusy(true);
+      const editor2 = topicEditor;
+      if (!editor2 || !topicDialog.open || getBusy()) return;
+      const { repo: repo2, sourceKey } = editor2, fields = topicForm.elements;
+      const label = fields.label.value.trim();
+      const details = { label, fullLabel: fields.fullLabel.value.trim() || label, color: fields.kind.value === "directory" ? "parent" : fields.color.value, scope: fields.scope.value.trim() };
+      const unlock = lockForm(topicForm);
       $("#algorithm-topic-error").hidden = true;
       try {
-        const topic = await call("saveAlgorithmTopic", { repo: repo(), parentId: data.parentId, label: data.label.trim(), fullLabel: data.fullLabel.trim() || data.label.trim(), kind: data.kind, color: data.kind === "directory" ? "parent" : data.color, scope: data.scope.trim(), requestId: algorithmTopicRequest });
-        setAlgorithmTopics([...(getAlgorithmTopics() || []).filter((record2) => record2.id !== topic.id), topic]);
-        setAlgorithmTree(AlgorithmDirectory.hydrate(global2.QMX_ALGORITHM_TREE, getAlgorithmTopics()));
-        algorithmSelectedNode = topic.id;
-        $("#algorithm-topic-dialog").close();
-        renderAlgorithmNotes();
-        algorithmController?.selectNode?.(topic.id);
-        toast(topic.kind === "directory" ? "目录已添加，可继续添加子项或上传笔记" : "算法已添加，可继续上传笔记");
+        assertMutationContext(editor2);
+        if (!canManageTopics()) throw new Error("只有管理员可以修改算法目录");
+        if ("target" in editor2) {
+          const { id, expected, overrideIds } = editor2.target;
+          const result = await call("updateAlgorithmTopic", { repo: repo2, sourceKey, id, expected, ...details });
+          assertMutationContext(editor2);
+          const overrides = Array.isArray(result.overrides) ? result.overrides : void 0;
+          const updated = overrideIds ? overrides?.some((override) => override && overrideIds.includes(override.id) && override.hidden !== true) : result.topic?.id === id;
+          if (!updated || !Array.isArray(result.topics)) throw new Error("算法目录更新结果未知，请先同步核实");
+          topicDialog.close();
+          refreshTopics(result.topics, id, overrides);
+          toast("算法目录已更新");
+        } else {
+          const topic = await call("saveAlgorithmTopic", { repo: repo2, sourceKey, parentId: editor2.parentId, kind: fields.kind.value, requestId: editor2.requestId, ...details });
+          assertMutationContext(editor2);
+          if (typeof topic.id !== "string") throw new Error("算法目录写入结果未知，请先同步核实");
+          topicDialog.close();
+          refreshTopics([...(getAlgorithmTopics() || []).filter((record2) => record2.id !== topic.id), topic], topic.id);
+          toast(topic.kind === "directory" ? "目录已添加，可继续添加子项或上传笔记" : "算法已添加，可继续上传笔记");
+        }
       } catch (error) {
-        $("#algorithm-topic-error").textContent = errorMessage(error);
-        $("#algorithm-topic-error").hidden = false;
+        showError3("#algorithm-topic-error", error);
       } finally {
-        setBusy(false);
+        unlock();
       }
     });
     function isMineNote(note) {
-      return accountId() !== null && String(note.authorId || "") === accountId();
+      return accountId() !== null && String(note.authorId ?? "") === accountId();
+    }
+    function currentNote(note) {
+      if (!isGitHubSource() || accountId() === null || typeof note.path !== "string" || typeof note.sha !== "string" || !note.sha.trim()) return null;
+      if (typeof note.repo !== "string" || note.repo.toLowerCase() !== repo().toLowerCase() || note.sourceKey !== options.repoSource()) return null;
+      const record2 = getAlgorithmNotes().find((item) => item.path === note.path && item.sha === note.sha && item.sourceKey === note.sourceKey && item.repo === note.repo);
+      if (!record2 || record2.kind !== "algorithm-note") return null;
+      const { path, sha } = note;
+      if (record2.noteScope === "public" && /^algorithms\/notes\/public\/[^/]+\.md$/.test(path) && getPermissions().admin === true) return { ...record2, path, sha, noteScope: "public" };
+      const owner = /^algorithms\/notes\/personal\/([1-9]\d*)\/[^/]+\.md$/.exec(path)?.[1];
+      if (record2.noteScope === "personal" && owner === accountId() && isMineNote(record2) && canUploadNotes()) return { ...record2, path, sha, noteScope: "personal" };
+      return null;
+    }
+    function noteActions(note, origin = () => ({ view: "favorites" })) {
+      if (!currentNote(note)) return null;
+      const actions = element5("div", "alg-management-actions");
+      return append(
+        actions,
+        button10("编辑笔记", "button secondary alg-note-edit", () => {
+          const current = currentNote(note);
+          if (current) showNoteEditor(current, origin());
+          else toast("笔记或权限已改变，请同步后重试");
+        }),
+        button10("删除笔记", "button danger alg-note-delete", () => {
+          const current = currentNote(note);
+          if (current) openDelete({ kind: "note", note: current, origin: origin() });
+          else toast("笔记或权限已改变，请同步后重试");
+        })
+      );
     }
     function openAlgorithmNoteDetail(note, { gateId } = {}) {
       const holder = element5("div", "alg-browser"), pane = element5("div", "alg-pane");
@@ -11003,14 +11221,11 @@ ${entry2.node.fullLabel}` : ""}`;
       if (note.featured) meta.append(element5("span", "alg-featured", "精选"));
       append(meta, element5("span", "alg-note-author", authorName2(note.author)), element5("span", "", date(note.updatedAt)));
       const body = element5("div", "markdown-body alg-markdown");
-      renderMarkdown(body, note.body);
+      renderMarkdown(body, note.body, true);
       append(article, title, meta, tags(note));
       const favorite = noteFavoriteControl({ note, isFavorite: options.isFavorite, onToggleFavorite: options.onToggleFavorite, onError: (cause) => toast(errorMessage(cause)) });
-      if (favorite) {
-        const actions = element5("div", "reading-detail-actions");
-        actions.append(favorite);
-        article.append(actions);
-      }
+      const management = noteActions(note, () => ({ view: "path", gateId }));
+      if (favorite || management) article.append(append(element5("div", "reading-detail-actions"), favorite, management));
       article.append(body);
       pane.append(article);
       holder.append(pane);
@@ -11033,44 +11248,136 @@ ${entry2.node.fullLabel}` : ""}`;
         holder.remove();
       } });
     }
+    const noteDialog = $("#algorithm-note-dialog"), noteForm = $("#algorithm-note-form");
+    let noteEditor = null;
+    function showNoteEditor(target, origin) {
+      if (getBusy() || hasEditor()) return;
+      noteEditor = target && origin ? { ...mutationContext(), target, origin } : { ...mutationContext(), clientId: uuid() };
+      const fields = noteForm.elements, admin = getPermissions().admin === true;
+      noteForm.reset();
+      fields.nodeId.replaceChildren(...algorithmNodes().filter(isAlgorithmLeaf).map((node4) => {
+        const choice = element5("option", "", node4.label);
+        choice.value = node4.id;
+        return choice;
+      }));
+      fields.nodeId.value = resolveAlgorithmLeaf(getAlgorithmTree(), target ? target.nodeId : algorithmSelectedNode)?.id || "";
+      fields.noteScope.value = target?.noteScope || (admin ? "public" : "personal");
+      fields.noteScope.disabled = Boolean(target) || !admin;
+      fields.featured.disabled = !admin;
+      if (target) {
+        fields.noteTitle.value = target.title || "";
+        fields.noteTags.value = Array.isArray(target.tags) ? target.tags.join(", ") : "";
+        fields.body.value = String(target.body ?? "");
+        fields.featured.checked = target.featured === true;
+      }
+      $("#algorithm-note-title").textContent = target ? "编辑算法笔记" : "上传算法笔记";
+      $("#algorithm-note-error").hidden = true;
+      noteDialog.showModal();
+      fields.noteTitle.focus();
+    }
     function openAlgorithmNoteEditor() {
-      if (!getAccount() || !getPermissions().push) {
+      if (!canUploadNotes()) {
         toast("请先登录具有仓库写入权限的 GitHub 账户");
         return;
       }
-      const form = $("#algorithm-note-form");
-      form.reset();
-      const node4 = form.elements.nodeId;
-      node4.replaceChildren(...algorithmNodes().filter(isAlgorithmLeaf).map((n) => {
-        const o = element5("option", "", n.label);
-        o.value = n.id;
-        return o;
-      }));
-      const selectedLeaf = resolveAlgorithmLeaf(getAlgorithmTree(), algorithmSelectedNode);
-      if (selectedLeaf) node4.value = selectedLeaf.id;
-      form.elements.noteScope.value = getPermissions().admin ? "public" : "personal";
-      form.elements.noteScope.disabled = !getPermissions().admin;
-      $("#algorithm-note-error").hidden = true;
-      $("#algorithm-note-dialog").showModal();
+      showNoteEditor();
     }
-    $("#algorithm-note-form").addEventListener("submit", async (event) => {
+    function refreshNote(origin, note, saved) {
+      const leaf = resolveAlgorithmLeaf(getAlgorithmTree(), note.nodeId);
+      if (origin.view === "tree") algorithmPendingTopic = leaf?.id || getAlgorithmTree().id;
+      render6();
+      if (origin.view === "tree" && saved) algorithmController?.openNote(saved, { fullscreen: origin.fullscreen });
+      if (origin.view === "path" && algorithmMode === "path") {
+        if (saved && leaf) openAlgorithmNoteDetail({ ...saved, nodeId: leaf.id }, { gateId: origin.gateId });
+        else if (leaf) openRoadmapLeaf?.(leaf.id, note.noteScope === "personal" ? "personal" : "public");
+      }
+    }
+    noteForm.addEventListener("submit", async (event) => {
       event.preventDefault();
-      const form = event.currentTarget;
-      if (getBusy()) return;
-      const data = Object.fromEntries(new FormData(form));
-      const note = { title: data.noteTitle, noteScope: getPermissions().admin ? form.elements.noteScope.value : "personal", nodeId: data.nodeId, tags: String(data.noteTags || "").split(/[,，、]/).map((x) => x.trim()).filter(Boolean), body: data.body, featured: data.featured === "on", clientId: uuid(), repo: repo() };
-      setBusy(true);
+      const editor2 = noteEditor;
+      if (!editor2 || !noteDialog.open || getBusy()) return;
+      const fields = noteForm.elements, target = "target" in editor2 ? editor2.target : void 0;
+      const { repo: repo2, sourceKey } = editor2;
+      const admin = getPermissions().admin === true;
+      const noteScope = target?.noteScope || (admin ? fields.noteScope.value : "personal");
+      const nodeId = fields.nodeId.value;
+      const unlock = lockForm(noteForm);
+      $("#algorithm-note-error").hidden = true;
       try {
-        const result = await call("saveAlgorithmNote", note);
-        setAlgorithmNotes([...getAlgorithmNotes().filter((x) => x.path !== result.path), result]);
-        $("#algorithm-note-dialog").close();
-        render6();
+        assertMutationContext(editor2);
+        if (target ? !currentNote(target) : !canUploadNotes()) throw new Error("笔记或写入权限已改变，请同步后重试");
+        if (resolveAlgorithmLeaf(getAlgorithmTree(), nodeId)?.id !== nodeId) throw new Error("请选择一个算法知识点");
+        const note = {
+          repo: repo2,
+          sourceKey,
+          title: fields.noteTitle.value,
+          noteScope,
+          nodeId,
+          tags: fields.noteTags.value.split(/[,，、]/).map((tag) => tag.trim()).filter(Boolean),
+          body: fields.body.value,
+          ...admin ? { featured: fields.featured.checked } : {}
+        };
+        const result = await call("saveAlgorithmNote", "target" in editor2 ? { ...note, path: editor2.target.path, sha: editor2.target.sha } : { ...note, clientId: editor2.clientId });
+        assertMutationContext(editor2);
+        if (typeof result.path !== "string" || target && result.path !== target.path) throw new Error("算法笔记保存结果未知，请先同步核实");
+        setAlgorithmNotes([...getAlgorithmNotes().filter((item) => item.path !== result.path || item.sourceKey && item.sourceKey !== sourceKey), result]);
+        noteDialog.close();
+        if ("target" in editor2) refreshNote(editor2.origin, result, result);
+        else render6();
         toast("算法笔记已保存");
       } catch (error) {
-        $("#algorithm-note-error").textContent = errorMessage(error);
-        $("#algorithm-note-error").hidden = false;
+        showError3("#algorithm-note-error", error);
       } finally {
-        setBusy(false);
+        unlock();
+      }
+    });
+    const deleteDialog = $("#algorithm-delete-dialog"), deleteForm = $("#algorithm-delete-form");
+    let deletion = null;
+    function openDelete(target) {
+      if (getBusy() || hasEditor()) return;
+      deletion = { ...mutationContext(), ...target };
+      $("#algorithm-delete-error").hidden = true;
+      $("#algorithm-delete-title").textContent = target.kind === "topic" ? target.topic.expected.kind === "directory" ? "删除目录？" : "删除算法？" : "删除笔记？";
+      $("#algorithm-delete-target").textContent = target.kind === "topic" ? target.topic.expected.fullLabel : target.note.title || "未命名笔记";
+      deleteDialog.showModal();
+    }
+    deleteForm.addEventListener("submit", async (event) => {
+      event.preventDefault();
+      const pending2 = deletion;
+      if (!pending2 || !deleteDialog.open || getBusy()) return;
+      const { repo: repo2, sourceKey } = pending2;
+      const unlock = lockForm(deleteForm);
+      $("#algorithm-delete-error").hidden = true;
+      try {
+        assertMutationContext(pending2);
+        if (pending2.kind === "topic") {
+          if (!canManageTopics()) throw new Error("只有管理员可以删除算法目录");
+          const { id, expected, overrideIds } = pending2.topic;
+          const result = await call("deleteAlgorithmTopic", { repo: repo2, sourceKey, id, expected });
+          assertMutationContext(pending2);
+          const overrides = Array.isArray(result.overrides) ? result.overrides : void 0;
+          if (!Array.isArray(result.topics) || overrideIds && !overrides?.some((override) => override && overrideIds.includes(override.id) && override.hidden === true)) {
+            throw new Error("算法目录删除结果未知，请先同步核实");
+          }
+          const parent = algorithmNodes().find((node4) => node4.id === id)?.parent || getAlgorithmTree().id;
+          deleteDialog.close();
+          refreshTopics(result.topics, parent, overrides);
+          toast("算法目录已删除");
+        } else {
+          if (!currentNote(pending2.note)) throw new Error("笔记或写入权限已改变，请同步后重试");
+          const { path, sha } = pending2.note;
+          const result = await call("deleteAlgorithmNote", { repo: repo2, sourceKey, path, sha });
+          assertMutationContext(pending2);
+          if (result.deleted !== true || result.path !== path) throw new Error("算法笔记删除结果未知，请先同步核实");
+          setAlgorithmNotes(getAlgorithmNotes().filter((item) => item.path !== path || item.sourceKey !== sourceKey));
+          deleteDialog.close();
+          refreshNote(pending2.origin, pending2.note);
+          toast("算法笔记已删除");
+        }
+      } catch (error) {
+        showError3("#algorithm-delete-error", error);
+      } finally {
+        unlock();
       }
     });
     function setSelectedNode(id) {
@@ -11081,8 +11388,7 @@ ${entry2.node.fullLabel}` : ""}`;
       options.setLearningGateContents([]);
       options.setLearningCurriculum(null);
       options.setAlgorithmNodeContents([]);
-      setAlgorithmTopics([]);
-      setAlgorithmTree(AlgorithmDirectory.hydrate(global2.QMX_ALGORITHM_TREE, []));
+      setDirectory([], []);
     }
     return { get algorithmSelectedNode() {
       return algorithmSelectedNode;
@@ -11093,8 +11399,8 @@ ${entry2.node.fullLabel}` : ""}`;
     }, get learningController() {
       return learningController;
     }, get algorithmTopicRequest() {
-      return algorithmTopicRequest;
-    }, setSelectedNode, algorithmNodes, learningProgressKey, setAlgorithmMode, openLearningTopic, saveLearningProgress, renderAlgorithmNotes, updateAlgorithmTopicKind, openAlgorithmTopicEditor, isMineNote, openAlgorithmNoteDetail, openAlgorithmNoteEditor, resetRepository };
+      return topicEditor && "requestId" in topicEditor ? topicEditor.requestId : null;
+    }, setSelectedNode, algorithmNodes, learningProgressKey, setAlgorithmMode, openLearningTopic, saveLearningProgress, renderAlgorithmNotes, updateAlgorithmTopicKind, openAlgorithmTopicEditor, isMineNote, openAlgorithmNoteDetail, openAlgorithmNoteEditor, noteActions, hasEditor, resetRepository };
   }
 
   // src/shared/models/trick.ts
@@ -11926,7 +12232,7 @@ ${item.body}`);
           top.append(controls);
         }
         const intro = el3("p", "trick-reader-intro", item.introduction), body = el3("div", "markdown-body trick-content");
-        options.renderMarkdown(body, item.body);
+        options.renderMarkdown(body, item.body, true);
         reader.append(top, el3("h2", "trick-reader-title", item.title), author(item), intro, renderRecommendation(item.recommendation, item), body);
         host.append(reader);
         return;
@@ -12043,10 +12349,12 @@ ${item.body}`);
         });
         star.setAttribute("aria-pressed", "true");
         top.append(star);
+        const actions = entry2.type === "algorithm" ? options.noteActions(entry2.record) : null;
+        if (actions) top.append(actions);
         article.append(el4("span", "favorite-kind", labels[entry2.type]), el4("h2", "favorite-reader-title", entry2.record.title || "未命名内容"), el4("p", "favorite-reader-meta", `${options.authorName(entry2.record.author)} · ${options.date(entry2.record.updatedAt)}`));
         if (typeof entry2.record.introduction === "string") article.append(el4("p", "favorite-reader-intro", entry2.record.introduction));
         const body = el4("div", "markdown-body favorite-body");
-        options.renderMarkdown(body, entry2.record.body);
+        options.renderMarkdown(body, entry2.record.body, true);
         article.append(body);
         return;
       }
@@ -12338,10 +12646,11 @@ ${item.body}`);
       s.tricks = Array.isArray(payload.tricks) ? payload.tricks : [];
       s.algorithmNotes = (Array.isArray(payload.algorithmNotes) ? payload.algorithmNotes : []).filter((record2) => record2.kind === "algorithm-note");
       s.algorithmTopics = Array.isArray(payload.algorithmTopics) ? payload.algorithmTopics : [];
+      s.algorithmOverrides = Array.isArray(payload.algorithmOverrides) ? payload.algorithmOverrides : [];
       s.algorithmNodeContents = Array.isArray(payload.algorithmNodeContents) ? payload.algorithmNodeContents : [];
       s.learningGateContents = Array.isArray(payload.learningGateContents) ? payload.learningGateContents : [];
       s.learningCurriculum = payload.learningCurriculum || null;
-      s.algorithmTree = AlgorithmDirectory.hydrate(window.QMX_ALGORITHM_TREE, s.algorithmTopics);
+      s.algorithmTree = AlgorithmDirectory.hydrate(window.QMX_ALGORITHM_TREE, s.algorithmTopics, s.algorithmOverrides);
       s.issues = (Array.isArray(payload.issues) ? payload.issues : []).filter((record2) => record2.kind === "issue");
       s.permissions = payload.permissions || {};
       s.settings = payload.settings && typeof payload.settings === "object" ? payload.settings : {};
@@ -12630,6 +12939,8 @@ ${item.body}`);
       return bridge3.saveLearningGate(input2);
     }, getAlgorithmTopics: () => s.algorithmTopics, setAlgorithmTopics: (value) => {
       s.algorithmTopics = value;
+    }, getAlgorithmOverrides: () => s.algorithmOverrides || [], setAlgorithmOverrides: (value) => {
+      s.algorithmOverrides = value;
     }, getAlgorithmTree: () => s.algorithmTree, setAlgorithmTree: (value) => {
       s.algorithmTree = value;
     }, getAccount: () => s.account, getPermissions: () => s.permissions, getLocal: () => s.local, getBusy: () => s.busy, getReadingDetail: () => ReadingDetail, accountId, repo, repoSource, uuid, setBusy, persistLocal, call, openExternal, render: render6, renderMarkdown, authorName: authorName2, date, tags, toast, errorMessage });
@@ -12639,7 +12950,7 @@ ${item.body}`);
     favoriteHost.hidden = true;
     favoriteHost.setAttribute("aria-label", "统一个人收藏");
     $("#library-panel").before(favoriteHost);
-    const favorites = createFavoritesWorkspace({ host: favoriteHost, getEntries: favoriteEntries, getContext: () => JSON.stringify([repoSource(), accountId()]), isFavorite: favorite, toggle: toggleFavorite, renderMarkdown, renderSolution: (record2, host) => reader.renderDetail(record2, host), authorName: authorName2, date, errorMessage, toast });
+    const favorites = createFavoritesWorkspace({ host: favoriteHost, getEntries: favoriteEntries, getContext: () => JSON.stringify([repoSource(), accountId()]), isFavorite: favorite, toggle: toggleFavorite, noteActions: (note) => algorithms.noteActions(note), renderMarkdown, renderSolution: (record2, host) => reader.renderDetail(record2, host), authorName: authorName2, date, errorMessage, toast });
     let trickAlgorithmTree;
     let trickTagCatalog;
     let trickAlgorithmOptions = [];
@@ -12699,7 +13010,7 @@ ${item.body}`);
       isFavorite: (item) => favorite({ ...item }),
       onToggleFavorite: (item) => toggleFavorite({ ...item })
     });
-    function renderMarkdown(container, body) {
+    function renderMarkdown(container, body, withOutline = false) {
       const source = String(body || "还没有题解内容。可以从记录错因开始。");
       if (window.marked && window.DOMPurify) {
         try {
@@ -12707,6 +13018,7 @@ ${item.body}`);
           const html = MarkdownMath ? MarkdownMath.parse(source, window.marked) : parse2(source);
           if (MarkdownColor) container.replaceChildren(MarkdownColor.sanitize(html, window.DOMPurify, container.ownerDocument));
           else container.innerHTML = window.DOMPurify.sanitize(html, { FORBID_TAGS: ["style", "iframe", "form", "input", "button"], FORBID_ATTR: ["style", "color"] });
+          if (withOutline) addMarkdownOutline(container);
           MarkdownMath?.render(container, window.katex);
           $$("pre code", container).forEach((code) => {
             if (code.parentElement && (settingsUI.settingsPreview || s.settings).codeLineNumbers) code.parentElement.classList.add("line-numbers");
@@ -12792,7 +13104,7 @@ ${item.body}`);
     }, getBusy: () => s.busy, setBusy, getAccount: () => s.account, getPermissions: () => s.permissions, accountId, repo, key, uuid, isLocal, visibleLocal, canEditRemote, sameRepo, records, platformCode, colorRatingInput, renderEditorTags, cancelDraftSave: () => clearTimeout(draftTimer), persistLocal, call, refreshFilters, navigate, render: render6, openDetail, toast, errorMessage });
     const { formDraft, fillForm, renderEditorDifficulty, setEditorPlatform, draftKey: draftKey2, editorError, openLocalSolution, openSubmit, saveDraft, saveRecord, deleteDiscussion, deleteRecord } = editor2;
     async function sync() {
-      if (s.busy || $("#submit-dialog").open || tricks.hasEditor()) {
+      if (s.busy || $("#submit-dialog").open || tricks.hasEditor() || algorithms.hasEditor()) {
         toast("请先完成或关闭当前编辑");
         return;
       }
@@ -12818,10 +13130,11 @@ ${item.body}`);
                 s.algorithmNotes = Array.isArray(data.algorithmNotes) ? data.algorithmNotes : [];
                 s.tricks = Array.isArray(data.tricks) ? data.tricks : [];
                 s.algorithmTopics = Array.isArray(data.algorithmTopics) ? data.algorithmTopics : [];
+                s.algorithmOverrides = Array.isArray(data.algorithmOverrides) ? data.algorithmOverrides : [];
                 s.algorithmNodeContents = Array.isArray(data.algorithmNodeContents) ? data.algorithmNodeContents : [];
                 s.learningGateContents = Array.isArray(data.learningGateContents) ? data.learningGateContents : [];
                 s.learningCurriculum = data.learningCurriculum || null;
-                s.algorithmTree = AlgorithmDirectory.hydrate(window.QMX_ALGORITHM_TREE, s.algorithmTopics);
+                s.algorithmTree = AlgorithmDirectory.hydrate(window.QMX_ALGORITHM_TREE, s.algorithmTopics, s.algorithmOverrides);
                 s.lastSync = (/* @__PURE__ */ new Date()).toISOString();
                 s.comments.clear();
                 refreshFilters();
@@ -13059,6 +13372,7 @@ ${item.body}`);
       tricks.reset();
       s.algorithmNotes = [];
       s.algorithmTopics = [];
+      s.algorithmOverrides = [];
       s.algorithmNodeContents = [];
       s.learningGateContents = [];
       s.learningCurriculum = null;
@@ -13157,7 +13471,7 @@ ${item.body}`);
       s.update = update;
     }, getUpdateCapability: () => s.updateCapability, getBusy: () => s.busy, setBusy, call, cancelDraftSave: () => clearTimeout(draftTimer), getLocalWrite: () => localWrite, resetLocalWrite: () => {
       localWrite = Promise.resolve();
-    }, hasEditor: () => !!s.editor || tricks.hasEditor(), saveDraft, persistLocal, renderAccount, toast, errorMessage });
+    }, hasEditor: () => !!s.editor || tricks.hasEditor() || algorithms.hasEditor(), saveDraft, persistLocal, renderAccount, toast, errorMessage });
     $("#submit-form").elements.url.addEventListener("blur", (event) => {
       try {
         const url = new URL(event.target.value);

@@ -29,9 +29,11 @@ function closing(source: string, delimiter: string, from: number): number {
   for (let index = from; index < source.length; index++) {
     if (!spend()) return -1;
     if (braces === 0 && source.startsWith(delimiter, index)) {
-      if (delimiter !== '$' || (source[index + 1] !== '$' && !/\s/.test(source[index - 1]) && !/\d/.test(source[index + 1] || ''))) return index;
-      // Do not pair a price or malformed opener with a later valid formula.
-      if (delimiter === '$') return -1;
+      if (delimiter !== '$') return index;
+      const next = source[index + 1] || '';
+      // A dollar followed by a digit may be the start of another price.
+      if (next === '$' || /\d/.test(next)) return -1;
+      return index;
     }
     const ch = source[index];
     if (ch === '\\') { const verb = verbEnd(source, index); index = verb === -1 ? index + 1 : verb; }
@@ -47,7 +49,7 @@ function formula(source: string): Formula | undefined {
   if (source.startsWith('$$')) { left = right = '$$'; display = true; }
   else if (source.startsWith('\\[')) { left = '\\['; right = '\\]'; display = true; }
   else if (source.startsWith('\\(')) { left = '\\('; right = '\\)'; }
-  else if (source[0] === '$' && source.length > 1 && !/\s/.test(source[1])) left = right = '$';
+  else if (source[0] === '$') left = right = '$';
   else {
     const match = /^\\begin\{([A-Za-z]+\*?)\}/.exec(source);
     if (!match || !environments.has(match[1])) return;
@@ -74,7 +76,10 @@ function formula(source: string): Formula | undefined {
   if (end === undefined || end < left.length) return;
   const raw = source.slice(0, end + right.length);
   let text = environment ? raw : source.slice(left.length, end);
-  if (!text.trim()) return;
+  const trimmed = text.trim();
+  if (!trimmed) return;
+  // A compact price followed by prose can run into the next formula's opening dollar.
+  if (left === '$' && /^\d[\d,.]*[ \t]+(?:\p{L}{2}|\p{Script=Han})/u.test(text) && /[ \t]$/.test(text) && !/[\\_^{}=+*/<>−-]/.test(text)) return;
   // Preserve native AMS environments (including tags/numbering); unwrap only
   // standard math/displaymath aliases that KaTeX does not expose as environments.
   const aliases: Record<string, string> = { displaymath: '', math: '' };

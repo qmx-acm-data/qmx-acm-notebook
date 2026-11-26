@@ -7,8 +7,9 @@ interface Options {
   getContext(): string;
   isFavorite(record: AppRecord): boolean;
   toggle(record: AppRecord): Promise<void>;
-  renderMarkdown(host: HTMLElement, body: unknown): void;
+  renderMarkdown(host: HTMLElement, body: unknown, withOutline?: boolean): void;
   renderSolution(record: AppRecord, host: HTMLElement): void;
+  noteActions(record: AppRecord): HTMLElement | null;
   authorName(value: unknown): string;
   date(value: unknown): string;
   errorMessage(error: unknown): string;
@@ -29,9 +30,11 @@ export function createFavoritesWorkspace(options: Options) {
       const article=el('article','favorite-reader'),top=el('div','favorite-reader-top');top.append(button('← 返回个人收藏','button secondary favorite-back',back));article.append(top);host.append(article);
       if(entry.type==='solution'){const mount=el('section','favorite-solution-reader');article.append(mount);options.renderSolution(entry.record,mount);return;}
       const star=button('★ 已收藏','button secondary favorite-toggle',()=>{void options.toggle(entry.record).then(()=>{star.textContent=options.isFavorite(entry.record)?'★ 已收藏':'☆ 收藏';star.setAttribute('aria-pressed',String(options.isFavorite(entry.record)));}).catch(e=>options.toast(options.errorMessage(e)));});star.setAttribute('aria-pressed','true');top.append(star);
+      const actions = entry.type === 'algorithm' ? options.noteActions(entry.record) : null;
+      if (actions) top.append(actions);
       article.append(el('span','favorite-kind',labels[entry.type]),el('h2','favorite-reader-title',entry.record.title||'未命名内容'),el('p','favorite-reader-meta',`${options.authorName(entry.record.author)} · ${options.date(entry.record.updatedAt)}`));
       if(typeof entry.record.introduction==='string')article.append(el('p','favorite-reader-intro',entry.record.introduction));
-      const body=el('div','markdown-body favorite-body');options.renderMarkdown(body,entry.record.body);article.append(body);return;
+      const body=el('div','markdown-body favorite-body');options.renderMarkdown(body,entry.record.body,true);article.append(body);return;
     }
     // An item can be removed while open; return to the list rather than retaining stale content.
     selected=null;

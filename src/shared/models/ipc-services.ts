@@ -63,11 +63,12 @@ export interface AlgorithmNoteFields extends DocumentFields {
   featured?: boolean;
 }
 export type AlgorithmNoteInput = AlgorithmNoteFields & (
-  | { path?: undefined; sha?: unknown }
-  /** Algorithm notes require a truthy SHA on edits, without checking its scalar type. */
-  | { path: string; sha: unknown }
+  | { path?: undefined; sha?: undefined }
+  | { path: string; sha: string; repo: string }
 );
 export interface DeleteDocumentInput extends SourceInput { path: string; sha: string }
+export interface DeleteAlgorithmNoteInput extends DeleteDocumentInput { repo: string }
+export interface DeletedAlgorithmNote extends DeletedDocument { deleted: true }
 /** These handlers additionally require the issue's repository to equal the active one. */
 export interface IssueInput extends SourceInput { repo: string; number: number }
 /** getComments/comment coerce numeric issue identifiers; deletion requires a number. */
@@ -158,4 +159,9 @@ export interface AlgorithmTopic extends Record<string, unknown> {
   createdAt: string;
   createdBy: { id: number; login: string };
 }
+export type AlgorithmTopicFieldsSnapshot = Pick<AlgorithmTopic, 'parentId' | 'kind' | 'label' | 'fullLabel' | 'color' | 'scope'>;
+export interface DeleteAlgorithmTopicInput extends SourceInput { repo: string; id: string; expected: AlgorithmTopicFieldsSnapshot }
+export type UpdateAlgorithmTopicInput = DeleteAlgorithmTopicInput & Pick<AlgorithmTopic, 'label' | 'fullLabel' | 'color' | 'scope'>;
+export interface AlgorithmTopicList { topics: AlgorithmTopic[]; overrides: import('./algorithm-directory').AlgorithmDirectoryOverride[] }
+export type UpdatedAlgorithmTopic = AlgorithmTopicList & ({ topic: AlgorithmTopic; override?: never } | { override: import('./algorithm-directory').AlgorithmDirectoryOverride; topic?: never });
 export interface InstallUpdateResult { installing: boolean }
