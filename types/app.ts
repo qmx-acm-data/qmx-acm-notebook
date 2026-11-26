@@ -35,6 +35,7 @@ export interface AppPayload {
   [key: string]: unknown;
   tricks?: import('../src/shared/models/trick').Trick[];
   records?: AppRecord[]; algorithmNotes?: AppRecord[]; algorithmTopics?: import('../src/shared/models/algorithm-directory').AlgorithmDirectoryTopic[];
+  algorithmOverrides?: import('../src/shared/models/algorithm-directory').AlgorithmDirectoryOverride[];
   algorithmNodeContents?: import('../src/shared/models/algorithm-node-content').AlgorithmNodeContent[];
   learningGateContents?: import('../src/shared/models/learning-content').LearningGateContent[];
   learningCurriculum?: import('../src/shared/models/learning-curriculum').LearningCurriculumDocument | null;
@@ -48,6 +49,7 @@ export interface AppState {
   tricks?: import('../src/shared/models/trick').Trick[];
   view: string; libraryScope: string; records: AppRecord[]; algorithmNotes: AppRecord[];
   algorithmTopics?: import('../src/shared/models/algorithm-directory').AlgorithmDirectoryTopic[];
+  algorithmOverrides?: import('../src/shared/models/algorithm-directory').AlgorithmDirectoryOverride[];
   algorithmNodeContents?: import('../src/shared/models/algorithm-node-content').AlgorithmNodeContent[];
   learningGateContents?: import('../src/shared/models/learning-content').LearningGateContent[];
   learningCurriculum?: import('../src/shared/models/learning-curriculum').LearningCurriculumDocument | null;
@@ -62,6 +64,10 @@ export interface AppState {
 export interface AppResponse extends AppPayload, AppRecord {
   error?: string; canReview?: boolean; requests?: AppTagRequest[]; categories?: AppTagCatalog['categories'];
   document?: AppRecord; record?: AppRecord; deleted?: boolean; canceled?: boolean;
+  topic?: import('../src/shared/models/algorithm-directory').AlgorithmDirectoryTopic;
+  topics?: import('../src/shared/models/algorithm-directory').AlgorithmDirectoryTopic[];
+  overrides?: import('../src/shared/models/algorithm-directory').AlgorithmDirectoryOverride[];
+  override?: import('../src/shared/models/algorithm-directory').AlgorithmDirectoryOverride;
 }
 export type AppCallName = import('../src/shared/contracts/notebook').InvokeName;
 export interface AppCall {
@@ -213,6 +219,15 @@ export interface AppSelectorMap {
   '#contest-restore-cancel': HTMLElementTagNameMap['button'];
   '#contest-restore-confirm': HTMLElementTagNameMap['button'];
   '#algorithm-topic-dialog': HTMLElementTagNameMap['dialog'];
+  '#algorithm-topic-title': HTMLElementTagNameMap['h2'];
+  '#algorithm-topic-parent-line': HTMLElementTagNameMap['p'];
+  '#algorithm-note-title': HTMLElementTagNameMap['h2'];
+  '#algorithm-delete-dialog': HTMLElementTagNameMap['dialog'];
+  '#algorithm-delete-form': HTMLElementTagNameMap['form'];
+  '#algorithm-delete-title': HTMLElementTagNameMap['h2'];
+  '#algorithm-delete-target': HTMLElementTagNameMap['strong'];
+  '#algorithm-delete-error': HTMLElementTagNameMap['p'];
+  '#algorithm-delete-submit': HTMLElementTagNameMap['button'];
   '#algorithm-topic-parent': HTMLElementTagNameMap['strong'];
   '#algorithm-topic-kind-hint': HTMLElementTagNameMap['p'];
   '#algorithm-topic-difficulty': HTMLElementTagNameMap['label'];
@@ -232,7 +247,7 @@ export type AppForm<Fields> = HTMLFormElement & { elements: Omit<HTMLFormControl
 export type AppSubmitForm = AppForm<Record<'url' | 'title' | 'pid' | 'tags' | 'rating' | 'difficulty' | 'luoguDifficulty', HTMLInputElement> & Record<'reason' | 'body' | 'trick', HTMLTextAreaElement> & { platform: HTMLSelectElement }>;
 export type AppSettingsForm = AppForm<Record<'clientId' | 'displayName' | 'autoSync' | 'codeFontSize' | 'codeLineNumbers', HTMLInputElement> & { theme: HTMLSelectElement; palette: HTMLSelectElement }>;
 export type AppTopicForm = AppForm<Record<'parentId' | 'label' | 'fullLabel' | 'scope', HTMLInputElement> & Record<'kind' | 'color', HTMLSelectElement>>;
-export type AppNoteForm = AppForm<Record<'nodeId' | 'noteScope', HTMLSelectElement>>;
+export type AppNoteForm = AppForm<Record<'nodeId' | 'noteScope', HTMLSelectElement> & Record<'noteTitle' | 'noteTags' | 'featured', HTMLInputElement> & { body: HTMLTextAreaElement }>;
 export interface AppFormDraft extends Record<string, string> { url: string; title: string; pid: string; platform: string; tags: string; reason: string; body: string; trick: string; rating: string; difficulty: string; luoguDifficulty: string }
 export type AppFacet = 'platform' | 'tags' | 'authors' | 'native';
 export interface AppTagGroup { id: string; name: string; tags: string[]; historical?: boolean }

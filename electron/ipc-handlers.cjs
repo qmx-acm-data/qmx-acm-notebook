@@ -316,6 +316,18 @@ function registerRecordHandlers({ handle, writeOperation, requireWritableSource,
         saveRepoCache(old, { ...cache, algorithmNotes: [...notes, result] });
         return result;
     }));
+    handle('deleteAlgorithmNote', record => writeOperation(async () => {
+        checkRecordRepo(record);
+        requireWritableSource();
+        if (!getAccount()?.id || !getToken())
+            throw new Error('请先登录 GitHub');
+        const scope = sourceScope(), generation = getLoginGeneration();
+        const deleted = await client().deleteAlgorithmNote(record);
+        ensureSource(scope.sourceKey, generation);
+        const old = read('cache.json', {}), cache = repoCache(old, scope.repo, scope.serverUrl);
+        saveRepoCache(old, { ...cache, repo: scope.repo, algorithmNotes: (cache.algorithmNotes || []).filter(note => note.path !== deleted.path) }, scope);
+        return annotate(deleted, scope);
+    }));
     handle('submit', saveDocument);
     handle('propose', saveDocument);
     handle('deleteDocument', record => writeOperation(async () => {

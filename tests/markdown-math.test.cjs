@@ -30,11 +30,21 @@ test('math tokens leave code and ordinary Markdown intact', () => {
  assert.equal(count(parse('    $$x_i$$\n', marked)), 0);
  assert.equal(count(parse('> \\[x_i\\]\n\n- $a_j$\n- **B**', marked)), 2);
 });
+test('padded inline math works next to Chinese text and in GFM tables', () => {
+ const source = String.raw`$ [1,n] $中，有 $ \left\lfloor \frac{n}{p} \right\rfloor $个数。恰好含 $p^{k-1} $ 的数有 $ \left\lfloor \frac{n}{p^{k-1}}\right\rfloor - \left\lfloor \frac{n}{p^{k}}\right\rfloor $个。`;
+ const html = parse(source, marked);
+ assert.equal(count(html), 4);
+ assert.match(html, /\[1,n\].*<\/span>中/);
+ assert.equal(count(parse('| 式子 | 说明 |\n| --- | --- |\n| $ |x| $ | 绝对值 |', marked)), 1);
+ assert.equal(count(parse('`$ x $` 与 $ x$、$y $', marked)), 2);
+});
 test('escaped dollars, common currency and malformed delimiters stay literal', () => {
- for (const source of [String.raw`\$x_i\$`, 'unfinished $x_i', '$a\nb$', '$5 and $10', '$ x $', String.raw`\\(x\\)`, String.raw`\[unclosed`]) assert.equal(count(parse(source, marked)), 0, source);
+ for (const source of [String.raw`\$x_i\$`, 'unfinished $x_i', '$a\nb$', '$5 and $10', '$  $', String.raw`\\(x\\)`, String.raw`\[unclosed`]) assert.equal(count(parse(source, marked)), 0, source);
  assert.equal(count(parse(String.raw`$x + \$ + y$`, marked)), 1);
  assert.equal(count(parse('$5 and $10 plus $x$', marked)), 1);
  assert.match(parse('$5 and $10 plus $x$', marked), />x<\/span>/);
+ assert.match(parse('$5 and $ x $', marked), /\$5 and .*?> x <\/span>/);
+ assert.equal(count(parse('$ 2 x $ and $ 3x $', marked)), 2);
  assert.equal(count(parse('\\begin{equation}x % \\end{equation}\n+y\\end{equation}', marked)), 1);
  assert.match(parse('\\begin{equation}x % \\end{equation}\n+y\\end{equation}', marked), /\+y\\end\{equation\}/);
 });

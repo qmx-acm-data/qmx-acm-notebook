@@ -476,12 +476,14 @@ function render(options?: Options | null): Controller {
       actions.append(back, button('打开详情 ↗', 'alg-button reading-detail-trigger alg-open-detail', openDetail));
       const favorite = noteFavoriteControl({ note: reading, isFavorite: opts.isFavorite, onToggleFavorite: opts.onToggleFavorite });
       if (favorite) actions.append(favorite);
+      const management = opts.noteActions?.(reading, { isFullscreen: () => Boolean(expandedReader) });
+      if (management) actions.append(management);
       pane.append(actions, breadcrumbs(reading.nodeId));
       const article = element('article', 'alg-reading');
       const title = element('h2', 'alg-reading-title', reading.title || '未命名笔记'); title.tabIndex = -1;
       article.append(title, noteMetadata(reading), noteTags(reading));
       const body = element('div', 'alg-markdown markdown-body');
-      if (typeof opts.renderMarkdown === 'function') opts.renderMarkdown(body, String(reading.body || ''));
+      if (typeof opts.renderMarkdown === 'function') opts.renderMarkdown(body, String(reading.body || ''), true);
       else body.textContent = String(reading.body || '');
       article.append(body);
       if (byId.has(reading.nodeId)) article.append(button(`在目录中查看：${byId.get(reading.nodeId)!.node.label}`, 'alg-text-button alg-note-location', () => selectNode(reading.nodeId as string)));
@@ -499,6 +501,8 @@ function render(options?: Options | null): Controller {
     uploadWrap.hidden = !isAlgorithmLeaf(selected.node);
     const utilities = element('footer', 'alg-detail-utilities');
     if (opts.canManage && typeof opts.onAddTopic === 'function') utilities.append(button('＋ 添加算法', 'alg-text-button alg-add-topic-detail', () => { expandedReader?.close(); opts.onAddTopic!(selected.node.id); }));
+    const management = opts.topicActions?.(selected.node.id);
+    if (management) detailBar.append(management);
     if (typeof opts.onLearningPath === 'function') utilities.append(button('在学习路线中查看 →', 'alg-text-button alg-add-topic-detail', () => { expandedReader?.close(); opts.onLearningPath!(selected.node.id); }));
     if (isAlgorithmLeaf(selected.node)) {
       const storedContent = opts.nodeContents?.find(item => resolveAlgorithmLeaf(root, item.nodeId)?.id === selected.node.id);

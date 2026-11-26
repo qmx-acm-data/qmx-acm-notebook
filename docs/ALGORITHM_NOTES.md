@@ -17,7 +17,9 @@ client_id: uuid
 updated_at: 2026-11-08T00:00:00.000Z
 ```
 
-公共笔记位于 `algorithms/notes/public/`，个人笔记位于 `algorithms/notes/personal/<GitHub-ID>/`；公开范围只展示公共笔记，我的笔记只展示当前作者自己的笔记。普通用户只能创建或编辑自己的个人笔记，管理员可以维护公共笔记、Markdown 简介及多篇精选；设置新的精选不会取消其他笔记的精选。精选设置保存到 `algorithms/node-content/<节点ID的SHA256>.json`，包含 Markdown `introduction` 和多个精确笔记路径 `featuredNotePaths`，不复制笔记正文。保存时后端重新核验管理员、同一叶子归属、笔记范围与版本 SHA。
+公共笔记位于 `algorithms/notes/public/`，个人笔记位于 `algorithms/notes/personal/<GitHub-ID>/`；公开范围只展示公共笔记，我的笔记只展示当前作者自己的笔记。有仓库写入权限的作者可编辑和删除自己的个人笔记，管理员可编辑和删除公共笔记。阅读页提供这两个操作，编辑时也可以将笔记移动到其他算法叶子。已有笔记的作者、公开范围和文件路径随编辑保留。删除前会确认，遇到版本冲突时可先同步再试。管理员也可维护 Markdown 简介和多篇精选；设置新的精选不会取消其他笔记的精选。精选设置保存到 `algorithms/node-content/<节点ID的SHA256>.json`，包含 Markdown `introduction` 和多个精确笔记路径 `featuredNotePaths`，不复制笔记正文。保存时后端重新核验管理员、同一叶子归属、笔记范围与版本 SHA。
+
+管理员可在算法节点详情编辑内置叶子和仓库自建节点。删除前会检查子节点、笔记、已保存的简介、课程和 Trick 前置引用。内置叶子的改名、难度修改和删除记录独立保存在 `algorithms/directory-overrides.json`，以便各资料库分别维护，并由 v1.6.2 起的客户端同步。
 
 客户端提供知识树与四阶段学习路线。只有真实算法叶子保存笔记；物理分支和明确创建的空目录只组织子节点，不提供笔记上传或目录笔记列表。已有算法新增子节点时，原内容由 `algorithm-content-<原ID>` 叶子承载，原笔记身份和简介通过别名解析保留，不移动已有 Markdown 文件。提交答案题、算法竞赛经验与游记这类实际内容端点显示为未分级知识点，不再误标目录。
 

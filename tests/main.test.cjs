@@ -89,7 +89,7 @@ function harness({ files = {}, account = { id: 42, login: 'alice' }, backend = {
   class FakeGitHub {
     constructor(options) { this.options = options; }
   }
-  for (const method of ['saveDocument', 'saveTrick', 'deleteTrick', 'deleteDocument', 'deleteIssue', 'sync', 'saveLearningGate', 'saveLearningCurriculum', 'saveAlgorithmNodeContent', 'profile', 'identity', 'saveAlgorithmNote', 'saveAlgorithmTopic', 'comment', 'comments', 'getTagCatalog', 'requestTag', 'getTagReview', 'reviewTag']) {
+  for (const method of ['saveDocument', 'saveTrick', 'deleteTrick', 'deleteDocument', 'deleteIssue', 'sync', 'saveLearningGate', 'saveLearningCurriculum', 'saveAlgorithmNodeContent', 'profile', 'identity', 'saveAlgorithmNote', 'deleteAlgorithmNote', 'saveAlgorithmTopic', 'updateAlgorithmTopic', 'deleteAlgorithmTopic', 'comment', 'comments', 'getTagCatalog', 'requestTag', 'getTagReview', 'reviewTag']) {
     FakeGitHub.prototype[method] = async function (...args) {
       calls.push({ method, args: clone(args), options: clone(this.options) });
       if (backend[method]) return backend[method](...args, this.options);

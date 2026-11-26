@@ -26,7 +26,7 @@ export interface TrickWorkspaceOptions {
   setBusy: (busy: boolean) => void;
   save: (input: SaveTrickInput) => Promise<Trick>;
   remove: (input: DeleteTrickInput) => Promise<unknown>;
-  renderMarkdown: (host: HTMLElement, source: string) => void;
+  renderMarkdown: (host: HTMLElement, source: string, withOutline?: boolean) => void;
   toast: (message: string) => void;
   isFavorite?: (item: Trick) => boolean;
   onToggleFavorite?: (item: Trick) => Promise<void>;
@@ -544,7 +544,7 @@ export function createTrickWorkspace(options: TrickWorkspaceOptions) {
         controls.append(action('编辑', 'button secondary trick-edit', () => edit(item)), action('删除', 'button subtle trick-delete', () => showDelete(item))); top.append(controls);
       }
       const intro = el('p', 'trick-reader-intro', item.introduction), body = el('div', 'markdown-body trick-content');
-      options.renderMarkdown(body, item.body);
+      options.renderMarkdown(body, item.body, true);
       reader.append(top, el('h2', 'trick-reader-title', item.title), author(item), intro, renderRecommendation(item.recommendation, item), body); host.append(reader); return;
     }
     selected = null;

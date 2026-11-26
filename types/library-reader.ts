@@ -28,7 +28,7 @@ export interface LibraryReaderOptions {
   authorName(author: unknown): string;
   date(value: unknown): string;
   quotaBlocked(): boolean;
-  renderMarkdown(container: HTMLElement, body: unknown): void;
+  renderMarkdown(container: HTMLElement, body: unknown, withOutline?: boolean): void;
   persistLocal(): Promise<unknown>;
   call(name: 'getComments', number: import('./app').AppRecord['number']): Promise<import('./app').AppComment[] | { comments?: import('./app').AppComment[] }>;
   call(name: 'comment', payload: { number: import('./app').AppRecord['number']; repo: import('./app').AppRecord['repo']; body: string }): Promise<import('./app').AppResponse>;

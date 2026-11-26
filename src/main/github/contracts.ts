@@ -104,11 +104,11 @@ export interface AlgorithmTopic extends Fields {
   createdAt: string;
   createdBy: { id: number; login: string };
 }
-export interface AlgorithmTopicsService {
-  save(input: unknown): Promise<{ topic: AlgorithmTopic & { repo: string }; topics: (AlgorithmTopic & { repo: string })[] }>;
-}
+export type AlgorithmTopicsService = import('../algorithms/topics.cjs').AlgorithmTopics;
 export interface AlgorithmTopicsModule {
   AlgorithmTopics: new (github: GitHubServiceHost) => AlgorithmTopicsService;
   TOPICS_PATH: string;
+  OVERRIDES_PATH: string;
   parseTopics(text: unknown): AlgorithmTopic[];
+  parseOverrides: typeof import('../algorithms/topics.cjs').parseOverrides;
 }

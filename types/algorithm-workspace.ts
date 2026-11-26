@@ -13,6 +13,8 @@ export interface AlgorithmWorkspaceOptions {
   saveLearningGate(input: import('../src/shared/models/learning-content').SaveLearningGateInput): Promise<import('../src/shared/models/learning-content').LearningGateContent>;
   getAlgorithmTopics(): import('./app').AppState['algorithmTopics'];
   setAlgorithmTopics(topics: import('./app').AppState['algorithmTopics']): void;
+  getAlgorithmOverrides(): import('../src/shared/models/algorithm-directory').AlgorithmDirectoryOverride[];
+  setAlgorithmOverrides(overrides: import('../src/shared/models/algorithm-directory').AlgorithmDirectoryOverride[]): void;
   getAlgorithmTree(): import('./app').AppState['algorithmTree'];
   setAlgorithmTree(tree: import('./app').AppState['algorithmTree']): void;
   getAccount(): import('./app').AppState['account'];
@@ -26,10 +28,10 @@ export interface AlgorithmWorkspaceOptions {
   uuid(): string;
   setBusy(value: boolean): void;
   persistLocal(): Promise<unknown>;
-  call(operation: 'saveAlgorithmTopic' | 'saveAlgorithmNote', argument: Record<string, unknown>): Promise<import('./app').AppResponse>;
+  call(operation: 'saveAlgorithmTopic' | 'updateAlgorithmTopic' | 'deleteAlgorithmTopic' | 'saveAlgorithmNote' | 'deleteAlgorithmNote', argument: Record<string, unknown>): Promise<import('./app').AppResponse>;
   openExternal(url: unknown): Promise<void>;
   render(): void;
-  renderMarkdown(container: HTMLElement, body: unknown): void;
+  renderMarkdown(container: HTMLElement, body: unknown, withOutline?: boolean): void;
   authorName(author: unknown): string;
   date(value: unknown): string;
   tags(note: import('./app').AppRecord): HTMLElement;
@@ -57,6 +59,8 @@ export interface AlgorithmWorkspaceController {
   isMineNote(note: import('./app').AppRecord): boolean;
   openAlgorithmNoteDetail(note: import('./learning-path').LearningPathNote, context?: { gateId?: string }): void;
   openAlgorithmNoteEditor(): void;
+  noteActions(note: import('./algorithm-browser').AlgorithmBrowserNote): HTMLElement | null;
+  hasEditor(): boolean;
   /** Matches the algorithm data clearing performed by the app's demo repository switches. */
   resetRepository(): void;
 }

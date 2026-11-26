@@ -58,7 +58,7 @@ const { ROADMAP_DIRECTORY_IDS } = require('./algorithm-node-content-model.cjs');
 const { isTrickTier, trickTiers } = require('./trick-model.cjs');
 const node_buffer_1 = require("node:buffer");
 const { Tags } = require('./tags.cjs');
-const { AlgorithmTopics, TOPICS_PATH, parseTopics } = require('./algorithm-topics.cjs');
+const { AlgorithmTopics, TOPICS_PATH, OVERRIDES_PATH, parseTopics, parseOverrides } = require('./algorithm-topics.cjs');
 const API = 'https://api.github.com';
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 exports.LEARNING_GATES_PREFIX = 'algorithms/learning-path/gates/';
@@ -72,8 +72,8 @@ const { builtinIndex: curriculumTopicIndex } = require('./algorithm-topics.cjs')
 exports.ALGORITHM_NODE_CONTENT_PREFIX = 'algorithms/node-content/';
 const roadmapContentIds = new Set(ROADMAP_DIRECTORY_IDS.map(id => `roadmap:${id}`));
 /** Public introduction targets include approved roadmap directories; note targets remain leaf-only. */
-function algorithmContentTargetId(value, topics = []) {
-    return typeof value === 'string' && roadmapContentIds.has(value) ? value : canonicalAlgorithmLeafId(value, topics);
+function algorithmContentTargetId(value, topics = [], overrides = []) {
+    return typeof value === 'string' && roadmapContentIds.has(value) ? value : canonicalAlgorithmLeafId(value, topics, overrides);
 }
 function contentTargetFromIndex(value, index) {
     return typeof value === 'string' && roadmapContentIds.has(value) ? value : leafIdFromIndex(value, index);
@@ -82,8 +82,8 @@ function algorithmNodeContentPath(nodeId) {
     return `${exports.ALGORITHM_NODE_CONTENT_PREFIX}${(0, node_crypto_1.createHash)('sha256').update(nodeId, 'utf8').digest('hex')}.json`;
 }
 /** Resolve historic aliases and split algorithms, but never treat a physical branch as a leaf. */
-function canonicalAlgorithmLeafId(value, topics = []) {
-    return leafIdFromIndex(value, curriculumTopicIndex(builtinTopics, [...topics]));
+function canonicalAlgorithmLeafId(value, topics = [], overrides = []) {
+    return leafIdFromIndex(value, curriculumTopicIndex(builtinTopics, [...topics], overrides));
 }
 function leafIdFromIndex(value, index) {
     if (typeof value !== 'string')
@@ -153,12 +153,12 @@ function parseAlgorithmNodeContentText(text, sha) {
 function learningCurriculumGateIds(document) {
     return document ? new Set(document.layout.stages.flatMap(stage => stage.gates.map(gate => gate.id))) : new Set(learningGateIds);
 }
-function validateLearningCurriculumLayout(value, topics = []) {
+function validateLearningCurriculumLayout(value, topics = [], overrides = []) {
     const fields = learningFields(value);
     if (!Array.isArray(fields.stages) || fields.stages.length !== learningCurriculum.stages.length)
         throw new Error('公共课程必须包含全部正式章节');
     const seenStages = new Set(), seenGates = new Set();
-    const topicIds = new Set(curriculumTopicIndex(builtinTopics, [...topics]).keys());
+    const topicIds = new Set(curriculumTopicIndex(builtinTopics, [...topics], overrides).keys());
     const stages = fields.stages.map(raw => {
         const stage = learningFields(raw), id = learningText(stage.id, '章节标识', 200);
         const builtin = learningCurriculum.stages.find(item => item.id === id);
@@ -213,7 +213,7 @@ function validateLearningCurriculumLayout(value, topics = []) {
     });
     return { stages };
 }
-function parseLearningCurriculumContent(value, sha, topics = []) {
+function parseLearningCurriculumContent(value, sha, topics = [], overrides = []) {
     const fields = learningFields(value), author = learningFields(fields.author);
     if (fields.schema !== 1)
         throw new Error('公共课程版本不受支持');
@@ -223,12 +223,12 @@ function parseLearningCurriculumContent(value, sha, topics = []) {
         throw new Error('公共课程缺少可信作者');
     if (typeof fields.updatedAt !== 'string' || !Number.isFinite(Date.parse(fields.updatedAt)))
         throw new Error('公共课程缺少有效更新时间');
-    const result = { layout: validateLearningCurriculumLayout(fields.layout, topics), sha, updatedAt: fields.updatedAt, author: { id: author.id, login: learningText(author.login, '作者', 100) } };
+    const result = { layout: validateLearningCurriculumLayout(fields.layout, topics, overrides), sha, updatedAt: fields.updatedAt, author: { id: author.id, login: learningText(author.login, '作者', 100) } };
     if (node_buffer_1.Buffer.byteLength(JSON.stringify({ schema: 1, layout: result.layout, updatedAt: result.updatedAt, author: result.author }), 'utf8') > 1000000)
         throw new Error('公共课程文件过大');
     return result;
 }
-function parseLearningCurriculumText(text, sha, topics = []) {
+function parseLearningCurriculumText(text, sha, topics = [], overrides = []) {
     if (typeof text !== 'string' || node_buffer_1.Buffer.byteLength(text, 'utf8') > 1000000)
         throw new Error('公共课程文件过大');
     let value;
@@ -238,7 +238,7 @@ function parseLearningCurriculumText(text, sha, topics = []) {
     catch {
         throw new Error('公共课程JSON无法解析');
     }
-    return parseLearningCurriculumContent(value, sha, topics);
+    return parseLearningCurriculumContent(value, sha, topics, overrides);
 }
 function learningFields(value) {
     if (!value || typeof value !== 'object' || Array.isArray(value))
@@ -598,8 +598,8 @@ class GitHub {
         const current = await this.currentDocument(exports.LEARNING_CURRICULUM_PATH, branch);
         if (!current)
             return null;
-        const additions = await this.currentDocument(TOPICS_PATH, branch);
-        return parseLearningCurriculumText(current.text, current.sha, additions ? parseTopics(additions.text) : []);
+        const { topics, overrides } = await new AlgorithmTopics(this).current(branch);
+        return parseLearningCurriculumText(current.text, current.sha, topics, overrides);
     }
     async saveLearningCurriculum(input) {
         const fields = learningFields(input);
@@ -619,9 +619,8 @@ class GitHub {
         const current = await this.currentDocument(exports.LEARNING_CURRICULUM_PATH, branch);
         if (fields.sha === null ? current !== null : !current || current.sha !== fields.sha)
             throw new Error('公共课程SHA冲突，请先同步后重新编辑');
-        const additions = await this.currentDocument(TOPICS_PATH, branch);
-        const topics = additions ? parseTopics(additions.text) : [];
-        const provisional = parseLearningCurriculumContent({ schema: 1, layout: fields.layout, updatedAt: new Date().toISOString(), author: { id: user.id, login: user.login } }, fields.sha || 'pending', topics);
+        const { topics, overrides } = await new AlgorithmTopics(this).current(branch);
+        const provisional = parseLearningCurriculumContent({ schema: 1, layout: fields.layout, updatedAt: new Date().toISOString(), author: { id: user.id, login: user.login } }, fields.sha || 'pending', topics, overrides);
         const payload = { schema: 1, layout: provisional.layout, updatedAt: provisional.updatedAt, author: provisional.author };
         const text = JSON.stringify(payload, null, 2) + '\n';
         if (node_buffer_1.Buffer.byteLength(text, 'utf8') > 1000000)
@@ -668,6 +667,91 @@ class GitHub {
             this.checkScope(record);
         return new AlgorithmTopics(this).save(record);
     }
+    algorithmTopicMutationFields(input) {
+        if (!input || typeof input !== 'object' || Array.isArray(input))
+            throw new Error('算法节点输入格式错误');
+        const fields = input;
+        if (typeof fields.repo !== 'string')
+            throw new Error('算法节点必须指定当前仓库');
+        this.checkScope(fields);
+        if (fields.sourceKey !== undefined && fields.sourceKey !== repositoryKey(this.repo, this.serverUrl))
+            throw new Error('算法节点所属来源与当前仓库不一致');
+        return fields;
+    }
+    async updateAlgorithmTopic(input) {
+        const fields = this.algorithmTopicMutationFields(input);
+        return new AlgorithmTopics(this).update(fields, context => this.guardAlgorithmTopicMutation(context));
+    }
+    async deleteAlgorithmTopic(input) {
+        const fields = this.algorithmTopicMutationFields(input);
+        return new AlgorithmTopics(this).remove(fields, context => this.guardAlgorithmTopicMutation(context));
+    }
+    async guardAlgorithmTopicMutation({ branch, topicsSha, overridesSha, index, removedIds }) {
+        const branchPath = `/repos/${this.repo}/git/ref/heads/${branch.split('/').map(encodeURIComponent).join('/')}`;
+        const ref = (await this.request(branchPath)).data;
+        const head = ref?.object?.sha;
+        if (typeof head !== 'string' || !/^[a-f0-9]{40}$/i.test(head))
+            throw new Error('无法确认默认分支提交，请先同步后重试');
+        const commit = (await this.request(`/repos/${this.repo}/git/commits/${head}`)).data;
+        const treeSha = commit?.tree?.sha;
+        if (typeof treeSha !== 'string' || !/^[a-f0-9]{40}$/i.test(treeSha))
+            throw new Error('无法确认算法目录所在提交的文件树');
+        const tree = (await this.request(`/repos/${this.repo}/git/trees/${treeSha}?recursive=1`)).data;
+        if (!Array.isArray(tree?.tree) || tree.truncated !== false)
+            throw new Error('无法完整检查算法节点的仓库引用');
+        const files = tree.tree.filter(entry => entry.type === 'blob' && typeof entry.path === 'string');
+        for (const [path, expected] of [[TOPICS_PATH, topicsSha], [OVERRIDES_PATH, overridesSha]]) {
+            if ((files.find(entry => entry.path === path)?.sha ?? null) !== expected)
+                throw new Error('算法目录已更新，请先同步后重试');
+        }
+        const affected = (value) => typeof value === 'string' && (removedIds.has(value) || removedIds.has(index.get(value)?.id ?? ''));
+        const candidates = removedIds.size ? files.filter(entry => {
+            const path = entry.path;
+            return path === exports.LEARNING_CURRICULUM_PATH || /^(?:algorithms\/notes\/.+\.md|algorithms\/node-content\/[^/]+\.json)$/i.test(path) || TRICK_PATH.test(path);
+        }) : [];
+        for (let start = 0; start < candidates.length; start += 8)
+            await Promise.all(candidates.slice(start, start + 8).map(async (entry) => {
+                if (typeof entry.sha !== 'string' || !/^[a-f0-9]{40}$/i.test(entry.sha))
+                    throw new Error('引用文件缺少有效 SHA');
+                const file = (await this.request(`/repos/${this.repo}/git/blobs/${entry.sha}`)).data;
+                if (file?.encoding !== 'base64' || typeof file.content !== 'string')
+                    throw new Error('无法完整检查算法关联文件');
+                const text = node_buffer_1.Buffer.from(file.content, 'base64').toString('utf8');
+                const filePath = entry.path;
+                if (/^algorithms\/notes\//i.test(filePath)) {
+                    if (affected(frontmatter(text, true).meta.node_id))
+                        throw new Error('该节点仍有算法笔记，请先将笔记移到其他节点或删除');
+                }
+                else if (filePath.startsWith(exports.ALGORITHM_NODE_CONTENT_PREFIX)) {
+                    if (affected(parseAlgorithmNodeContentText(text, entry.sha).nodeId))
+                        throw new Error('该节点仍有已保存的简介或精选内容，无法删除');
+                }
+                else if (filePath === exports.LEARNING_CURRICULUM_PATH) {
+                    const { topics, overrides } = await new AlgorithmTopics(this).current(head);
+                    const curriculum = parseLearningCurriculumText(text, entry.sha, topics, overrides);
+                    if (curriculum.layout.stages.some(stage => stage.gates.some(gate => gate.topicIds?.some(affected))))
+                        throw new Error('该节点仍被学习课程引用，请先修改课程');
+                }
+                else {
+                    const recommendation = frontmatter(text, true).meta.recommendation;
+                    const prerequisites = recommendation && typeof recommendation === 'object' ? recommendation.prerequisiteIds : undefined;
+                    if (Array.isArray(prerequisites) && prerequisites.some(affected))
+                        throw new Error('该节点仍被 Trick 用作前置算法，请先修改推荐');
+                }
+            }));
+        return async ({ path, message, text }) => {
+            const { data } = await this.request('/graphql', { method: 'POST', body: JSON.stringify({
+                    query: 'mutation SaveDirectory($input:CreateCommitOnBranchInput!){createCommitOnBranch(input:$input){commit{oid}}}',
+                    variables: { input: { branch: { repositoryNameWithOwner: this.repo, branchName: branch }, expectedHeadOid: head, message: { headline: message }, fileChanges: { additions: [{ path, contents: node_buffer_1.Buffer.from(text).toString('base64') }] } } },
+                }) });
+            const result = data;
+            if (Array.isArray(result?.errors) && result.errors.length)
+                throw new Error('GitHub 拒绝写入算法节点，仓库可能已更新或权限已变更。请先同步再试');
+            const oid = result?.data?.createCommitOnBranch?.commit?.oid;
+            if (typeof oid !== 'string' || !/^[a-f0-9]{40}$/i.test(oid))
+                throw new Error('算法节点写入结果未知，请先同步确认');
+        };
+    }
     async saveAlgorithmNodeContent(input) {
         const fields = learningFields(input);
         if (typeof fields.repo !== 'string')
@@ -683,9 +767,8 @@ class GitHub {
             throw new Error('只有仓库管理员（admin）可以修改算法介绍和精选笔记');
         if (!Number.isSafeInteger(user.id) || user.id < 1 || typeof user.login !== 'string')
             throw new Error('无法确认GitHub登录用户身份');
-        const additions = await this.currentDocument(TOPICS_PATH, branch);
-        const topics = additions ? parseTopics(additions.text) : [];
-        const leafIndex = curriculumTopicIndex(builtinTopics, topics);
+        const { topics, overrides } = await new AlgorithmTopics(this).current(branch);
+        const leafIndex = curriculumTopicIndex(builtinTopics, topics, overrides);
         const nodeId = contentTargetFromIndex(clean.nodeId, leafIndex);
         if (!nodeId)
             throw new Error('算法介绍和笔记只能属于真实算法叶节点或批准的路线介绍目录');
@@ -725,64 +808,134 @@ class GitHub {
         return { ...provisional, nodeId, ...(storageNodeId === nodeId ? {} : { storageNodeId }), sha, repo: this.repo, serverUrl: this.serverUrl, sourceKey: repositoryKey(this.repo, this.serverUrl) };
     }
     async saveAlgorithmNote(input) {
+        if (!input || typeof input !== 'object' || Array.isArray(input))
+            throw new Error('算法笔记输入格式无效');
         const record = input;
         this.checkScope(record);
-        if (record.path !== undefined)
-            validatePath(record.path);
-        if (record.path && (!record.sha || !String(record.sha).trim()))
-            throw new Error('更新算法笔记必须提供当前 SHA，请先同步');
+        if (record.sourceKey !== undefined && record.sourceKey !== repositoryKey(this.repo, this.serverUrl))
+            throw new Error('算法笔记所属来源与当前仓库不一致，请重新同步');
+        const editPath = record.path === undefined ? undefined : validatePath(record.path);
+        if (editPath !== undefined && typeof record.repo !== 'string')
+            throw new Error('算法笔记必须指定当前仓库');
+        if (editPath === undefined ? record.sha !== undefined : typeof record.sha !== 'string' || !/^[A-Za-z0-9_-]{1,200}$/.test(record.sha)) {
+            throw new Error('更新算法笔记必须同时提供路径和当前 SHA，请先同步');
+        }
         if (!record.body || typeof record.body !== 'string')
             throw new Error('算法笔记正文必须是字符串');
-        const { user, branch } = await this.writeContext();
-        const admin = (await this.request(`/repos/${this.repo}`)).data.permissions?.admin === true;
-        const scope = record.noteScope === 'public' ? 'public' : 'personal';
-        if (scope === 'public' && !admin)
-            throw new Error('只有仓库管理员可以发布公共算法笔记');
-        const clientId = (record.clientId || require('node:crypto').randomUUID());
-        if (!UUID.test(clientId))
-            throw new Error('算法笔记 clientId 无效');
-        const path = record.path || (scope === 'public' ? `algorithms/notes/public/${clientId.toLowerCase()}.md` : `algorithms/notes/personal/${user.id}/${clientId.toLowerCase()}.md`);
-        const current = await this.currentDocument(path, branch);
-        if (record.path && !current)
-            throw new Error('算法笔记已被删除，请先同步');
-        if (current && record.path && current.sha !== record.sha)
-            throw new Error('算法笔记 SHA 冲突，请先同步');
-        if (!/^algorithms\/notes\/(?:public\/|personal\/[1-9]\d*\/)[^/]+\.md$/.test(path))
+        if (record.noteScope !== undefined && record.noteScope !== 'personal' && record.noteScope !== 'public')
+            throw new Error('算法笔记范围无效');
+        const { user, branch, admin, writable } = await this.writeContext();
+        if (!writable)
+            throw new Error('当前账号没有有效仓库写入权限');
+        let path = editPath;
+        let clientId;
+        if (path === undefined) {
+            const requestedId = record.clientId ?? require('node:crypto').randomUUID();
+            if (typeof requestedId !== 'string' || !UUID.test(requestedId))
+                throw new Error('算法笔记 clientId 无效');
+            clientId = requestedId.toLowerCase();
+            path = record.noteScope === 'public' ? `algorithms/notes/public/${clientId}.md` : `algorithms/notes/personal/${user.id}/${clientId}.md`;
+        }
+        const target = /^algorithms\/notes\/(?:public\/|personal\/([1-9]\d*)\/)[^/]+\.md$/.exec(path);
+        if (!target)
             throw new Error('算法笔记路径无效');
-        const personalOwner = /^algorithms\/notes\/personal\/([1-9]\d*)\//.exec(path)?.[1];
-        if (personalOwner ? personalOwner !== String(user.id) || scope !== 'personal' : scope !== 'public')
-            throw new Error('不能改变算法笔记路径的范围或账号归属');
-        const existing = current ? frontmatter(current.text, true).meta : {};
-        if (current) {
-            if (existing.note_scope === 'public') {
-                if (!admin || personalOwner)
-                    throw new Error('只有管理员可以编辑公共算法笔记');
-            }
-            else {
-                if (!personalOwner)
-                    throw new Error('算法笔记路径与范围不匹配');
-                this.checkOwner(current.text, user);
-            }
-            if (!record.path && existing.client_id !== clientId.toLowerCase())
-                throw new Error('算法笔记目标路径已存在且clientId不匹配，请同步');
+        const personalOwner = target[1];
+        const scope = personalOwner ? 'personal' : 'public';
+        if ((personalOwner && personalOwner !== String(user.id)) || (record.noteScope !== undefined && record.noteScope !== scope))
+            throw new Error('算法笔记路径的范围或账号归属不匹配');
+        if (scope === 'public' && !admin)
+            throw new Error('只有仓库管理员可以发布或编辑公共算法笔记');
+        const current = await this.currentDocument(path, branch);
+        if (editPath !== undefined && !current)
+            throw new Error('算法笔记已被删除，请先同步');
+        if (editPath !== undefined && current?.sha !== record.sha)
+            throw new Error('算法笔记 SHA 冲突，请先同步');
+        const existing = current ? frontmatter(current.text, true).meta : undefined;
+        if (existing) {
+            if (existing.note_scope !== scope || (existing.schema !== undefined && existing.schema !== 3) || typeof existing.node_id !== 'string' || !existing.node_id.trim() || !authorId(existing.author_id))
+                throw new Error('算法笔记路径与元数据不匹配或格式不受支持');
+            if (personalOwner && existing.author_id !== user.id)
+                throw new Error('只能编辑自己创建的个人算法笔记');
+            if (editPath === undefined && existing.client_id !== clientId)
+                throw new Error('算法笔记目标路径已存在且 clientId 不匹配，请同步');
         }
         const supplied = frontmatter(record.body, true);
-        const additions = await this.currentDocument(TOPICS_PATH, branch);
-        const topics = additions ? parseTopics(additions.text) : [];
-        const nodeId = canonicalAlgorithmLeafId(record.nodeId || supplied.meta.node_id || existing.node_id, topics);
+        const { topics, overrides } = await new AlgorithmTopics(this).current(branch);
+        const leafIndex = curriculumTopicIndex(builtinTopics, topics, overrides);
+        const previous = editPath === undefined ? undefined : existing;
+        const nodeId = leafIdFromIndex(record.nodeId ?? supplied.meta.node_id ?? previous?.node_id, leafIndex);
         if (!nodeId)
             throw new Error('算法笔记只能保存到真实算法叶节点，不能保存到目录');
-        const tags = Array.isArray(record.tags) ? record.tags.map(String) : Array.isArray(supplied.meta.tags) ? supplied.meta.tags.map(String) : [];
-        const meta = { schema: 3, note_scope: scope, node_id: nodeId, featured: admin ? record.featured === true : existing.featured === true, author_id: user.id, author: user.login, title: String(record.title || supplied.meta.title || '未命名算法笔记'), tags, client_id: clientId.toLowerCase(), updated_at: new Date().toISOString() };
+        const tags = record.tags ?? supplied.meta.tags;
+        const title = record.title || supplied.meta.title;
+        const meta = previous ? {
+            ...previous,
+            node_id: leafIdFromIndex(previous.node_id, leafIndex) === nodeId ? previous.node_id : nodeId,
+            ...(title ? { title: String(title) } : {}),
+            ...(Array.isArray(tags) ? { tags: tags.map(String) } : {}),
+            ...(admin && typeof record.featured === 'boolean' ? { featured: record.featured } : {}),
+            updated_at: new Date().toISOString(),
+        } : {
+            schema: 3, note_scope: scope, node_id: nodeId, featured: admin && record.featured === true,
+            author_id: user.id, author: user.login, title: String(title || '未命名算法笔记'),
+            tags: Array.isArray(tags) ? tags.map(String) : [], client_id: clientId, updated_at: new Date().toISOString(),
+        };
         const text = `---\n${YAML.stringify(meta)}---\n${supplied.body}`;
         if (text.length > 1000000)
             throw new Error('算法笔记内容过长');
         if (current && samePayload(current.text, text))
-            return this.recordResult(path, current.text, current.sha, branch);
-        const { data } = await this.request(this.contentEndpoint(path), { method: 'PUT', body: JSON.stringify({ message: `${current ? '更新' : '新增'}算法笔记：${meta.title}`, content: node_buffer_1.Buffer.from(text).toString('base64'), branch, ...(current ? { sha: current.sha } : {}) }) });
-        if (!data.content?.sha)
+            return { ...this.recordResult(path, current.text, current.sha, branch), nodeId };
+        if (editPath === undefined && current)
+            throw new Error('同一 clientId 的算法笔记已存在，但内容不同；请使用当前路径和 SHA 编辑');
+        const { data } = await this.request(this.contentEndpoint(path), {
+            method: 'PUT', body: JSON.stringify({
+                message: `${editPath === undefined ? '新增' : '更新'}算法笔记：${title || previous?.title || '未命名算法笔记'}`,
+                content: node_buffer_1.Buffer.from(text).toString('base64'), branch, ...(editPath === undefined ? {} : { sha: record.sha }),
+            }),
+        });
+        const sha = data.content?.sha;
+        if (typeof sha !== 'string' || !/^[A-Za-z0-9_-]{1,200}$/.test(sha))
             throw new Error('算法笔记写入结果未知，请先同步核实');
-        return this.recordResult(path, text, data.content.sha, branch);
+        return { ...this.recordResult(path, text, sha, branch), nodeId };
+    }
+    async deleteAlgorithmNote(input) {
+        if (!input || typeof input !== 'object' || Array.isArray(input))
+            throw new Error('算法笔记输入格式无效');
+        const record = input;
+        if (typeof record.repo !== 'string')
+            throw new Error('算法笔记必须指定当前仓库');
+        this.checkScope(record);
+        if (record.sourceKey !== undefined && record.sourceKey !== repositoryKey(this.repo, this.serverUrl))
+            throw new Error('算法笔记所属来源与当前仓库不一致，请重新同步');
+        const path = validatePath(record.path);
+        const target = /^algorithms\/notes\/(?:public\/|personal\/([1-9]\d*)\/)[^/]+\.md$/.exec(path);
+        if (!target)
+            throw new Error('算法笔记路径无效');
+        if (typeof record.sha !== 'string' || !/^[A-Za-z0-9_-]{1,200}$/.test(record.sha))
+            throw new Error('删除算法笔记必须提供当前 SHA，请先同步');
+        const { user, branch, admin, writable } = await this.writeContext();
+        if (!writable)
+            throw new Error('当前账号没有有效仓库写入权限');
+        const personalOwner = target[1];
+        const scope = personalOwner ? 'personal' : 'public';
+        if (personalOwner && personalOwner !== String(user.id))
+            throw new Error('算法笔记路径的账号归属不匹配');
+        if (scope === 'public' && !admin)
+            throw new Error('只有仓库管理员可以删除公共算法笔记');
+        const current = await this.currentDocument(path, branch);
+        if (!current)
+            throw new Error('算法笔记已不存在，请先同步');
+        if (current.sha !== record.sha)
+            throw new Error('算法笔记 SHA 冲突，请先同步');
+        const { meta } = frontmatter(current.text, true);
+        if (meta.note_scope !== scope || (meta.schema !== undefined && meta.schema !== 3) || typeof meta.node_id !== 'string' || !meta.node_id.trim() || !authorId(meta.author_id))
+            throw new Error('算法笔记路径与元数据不匹配或格式不受支持');
+        if (personalOwner && meta.author_id !== user.id)
+            throw new Error('只能删除自己创建的个人算法笔记');
+        await this.request(this.contentEndpoint(path), {
+            method: 'DELETE', body: JSON.stringify({ message: `删除算法笔记：${path}`, branch, sha: record.sha }),
+        });
+        return { id: `document:${path}`, path, deleted: true };
     }
     async saveTrick(input) {
         if (!input || typeof input !== 'object' || Array.isArray(input))
@@ -823,8 +976,8 @@ class GitHub {
             if (!admin)
                 throw new Error('只有仓库管理员（admin）可以修改Trick推荐');
             if (recommendation?.prerequisiteIds.length) {
-                const additions = await this.currentDocument(TOPICS_PATH, branch);
-                const index = curriculumTopicIndex(builtinTopics, additions ? parseTopics(additions.text) : []);
+                const { topics, overrides } = await new AlgorithmTopics(this).current(branch);
+                const index = curriculumTopicIndex(builtinTopics, topics, overrides);
                 const prerequisiteIds = recommendation.prerequisiteIds.map(id => {
                     const canonical = leafIdFromIndex(id, index);
                     if (!canonical || !TRICK_PREREQUISITE_ID.test(canonical))
@@ -882,8 +1035,8 @@ class GitHub {
     async saveDocument(input) {
         const record = input;
         this.checkScope(record);
-        if (record.path !== undefined)
-            validatePath(record.path);
+        if (record.path !== undefined && /^algorithms\/notes\//i.test(validatePath(record.path)))
+            throw new Error('请使用算法笔记编辑入口');
         if (record.path !== undefined && (typeof record.sha !== 'string' || !record.sha.trim()))
             throw new Error('更新文档必须提供当前 SHA，请先同步');
         if (record.body !== undefined && typeof record.body !== 'string')
@@ -945,6 +1098,8 @@ class GitHub {
         const record = input;
         this.checkScope(record);
         const path = validatePath(record.path);
+        if (/^algorithms\/notes\//i.test(path))
+            throw new Error('请使用算法笔记删除入口');
         if (typeof record.sha !== 'string' || !record.sha.trim())
             throw new Error('删除文档必须提供当前 SHA，请先同步');
         const { user, branch } = await this.writeContext();
@@ -1097,8 +1252,10 @@ class GitHub {
         tricks.sort((a, b) => b.updatedAt.localeCompare(a.updatedAt) || a.path.localeCompare(b.path));
         const additions = tree.tree.find(item => item.type === 'blob' && item.path === TOPICS_PATH);
         const algorithmTopics = additions ? parseTopics(await readPublicBlob(additions)).map(topic => ({ ...topic, ...scope })) : [];
+        const overrideFile = tree.tree.find(item => item.type === 'blob' && item.path === OVERRIDES_PATH);
+        const algorithmOverrides = overrideFile ? parseOverrides(await readPublicBlob(overrideFile)) : [];
         const curriculumFile = tree.tree.find(item => item.type === 'blob' && item.path === exports.LEARNING_CURRICULUM_PATH);
-        const curriculum = curriculumFile ? { ...parseLearningCurriculumText(await readPublicBlob(curriculumFile), curriculumFile.sha, algorithmTopics), ...scope } : null;
+        const curriculum = curriculumFile ? { ...parseLearningCurriculumText(await readPublicBlob(curriculumFile), curriculumFile.sha, algorithmTopics, algorithmOverrides), ...scope } : null;
         const activeGateIds = learningCurriculumGateIds(curriculum);
         const gateFiles = tree.tree.filter(item => item.type === 'blob' && typeof item.path === 'string' && item.path.startsWith(exports.LEARNING_GATES_PREFIX) && item.path.endsWith('.json') && activeGateIds.has(item.path.slice(exports.LEARNING_GATES_PREFIX.length, -5)));
         if (gateFiles.length > activeGateIds.size)
@@ -1124,7 +1281,7 @@ class GitHub {
             // Revalidate cached bytes too; disk cache is not a trusted input boundary.
             learningGateContents.push({ ...parseLearningGateText(text, gateId, sha), ...scope });
         }
-        const leafIndex = curriculumTopicIndex(builtinTopics, algorithmTopics);
+        const leafIndex = curriculumTopicIndex(builtinTopics, algorithmTopics, algorithmOverrides);
         const nodeContentFiles = tree.tree.filter(item => item.type === 'blob' && typeof item.path === 'string' && item.path.startsWith(exports.ALGORITHM_NODE_CONTENT_PREFIX) && item.path.endsWith('.json'));
         if (nodeContentFiles.length > 10000)
             throw new Error('算法节点内容文件过多');
@@ -1142,11 +1299,11 @@ class GitHub {
             algorithmNodeContents.push({ ...content, nodeId, ...(storageNodeId === nodeId ? {} : { storageNodeId }), ...scope });
         }
         return {
-            tricks, algorithmTopics, algorithmNodeContents, learningGateContents, learningCurriculum: curriculum,
+            tricks, algorithmTopics, algorithmOverrides, algorithmNodeContents, learningGateContents, learningCurriculum: curriculum,
             records: records.filter(r => r.kind === 'document'),
             algorithmNotes: records.filter(r => r.kind === 'algorithm-note').map(note => 'nodeId' in note ? { ...note, nodeId: leafIdFromIndex(note.nodeId, leafIndex) || note.nodeId } : note),
             issues: issues.filter(x => !x.pull_request && !/<!--\s*qmx-tag-request\s+[\s\S]*?-->/i.test(String(x.body || ''))).map(x => ({ ...issueRecord(x), ...scope })),
-            blobs: Object.fromEntries([...docs, ...trickFiles, ...gateFiles, ...nodeContentFiles, ...(curriculumFile ? [curriculumFile] : []), ...(additions ? [additions] : [])].map(d => [d.sha, blobs[d.sha]])), branch, lastSync: new Date().toISOString(),
+            blobs: Object.fromEntries([...docs, ...trickFiles, ...gateFiles, ...nodeContentFiles, ...(curriculumFile ? [curriculumFile] : []), ...(additions ? [additions] : []), ...(overrideFile ? [overrideFile] : [])].map(d => [d.sha, blobs[d.sha]])), branch, lastSync: new Date().toISOString(),
         };
     }
     // Legacy entry points now publish Markdown directly instead of opening Issues or PRs.

@@ -208,6 +208,19 @@ body:is(.sidebar-open,.sidebar-pinned) .sidebar-rail .rail-nav-item,body:is(.sid
 
 /* Reading layout: scroll wide content locally instead of widening the page. */
 .markdown-body{min-width:0;max-width:100%;tab-size:4}
+.markdown-outline{margin:0 0 1em;padding:7px 12px;border:1px solid var(--line);border-radius:7px;background:var(--surface-soft);font-size:.88em;line-height:1.5}
+.markdown-outline summary{cursor:pointer;color:var(--text);font-weight:650}
+.markdown-outline nav{display:block;max-height:14em;overflow:auto;overscroll-behavior:contain}
+.markdown-body .markdown-outline ul{list-style:none;margin:.4em 0 .15em;padding:0}
+.markdown-body .markdown-outline li{margin:0}
+.markdown-outline [data-outline-depth="1"]{padding-inline-start:.85em}
+.markdown-outline [data-outline-depth="2"]{padding-inline-start:1.7em}
+.markdown-outline [data-outline-depth="3"]{padding-inline-start:2.55em}
+.markdown-outline [data-outline-depth="4"]{padding-inline-start:3.4em}
+.markdown-outline [data-outline-depth="5"]{padding-inline-start:4.25em}
+.markdown-outline button{max-width:100%;border:0;border-radius:4px;background:transparent;color:var(--accent);padding:3px 5px;text-align:start;overflow-wrap:anywhere}
+.markdown-outline button:hover{background:var(--accent-soft);text-decoration:underline}
+.markdown-body :is(h1,h2,h3,h4,h5,h6)[tabindex="-1"]{scroll-margin-top:1.25rem}
 .markdown-body :is(h1,h2,h3,h4,h5,h6){color:var(--text);font-weight:750;font-synthesis:weight;letter-spacing:normal}
 .markdown-body h1{font-size:2em;line-height:1.35;margin:1.6em 0 .7em}
 .markdown-body h2{font-size:1.65em;line-height:1.4;margin:1.5em 0 .65em;padding-bottom:.3em;border-bottom:1px solid var(--line)}

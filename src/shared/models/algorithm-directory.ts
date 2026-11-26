@@ -77,6 +77,15 @@ export interface AlgorithmDirectorySearchNote {
   body?: unknown;
 }
 
+export interface AlgorithmDirectoryOverride {
+  id: string;
+  label: string;
+  fullLabel: string;
+  color: string;
+  scope: string;
+  hidden?: true;
+}
+
 export interface AlgorithmDirectoryApi {
   normalize(value: unknown): string;
   compact(value: unknown): string;
@@ -87,5 +96,5 @@ export interface AlgorithmDirectoryApi {
   /** Mutates and returns the same tree, retaining absent optional properties. */
   splitMixed(tree: AlgorithmDirectoryNode): AlgorithmDirectoryBranch;
   /** Clones the input with JSON semantics before adding or splitting topics. */
-  hydrate(base: AlgorithmDirectoryNode, topics?: (AlgorithmDirectoryTopic | null | undefined)[]): HydratedAlgorithmDirectoryNode;
+  hydrate(base: AlgorithmDirectoryNode, topics?: (AlgorithmDirectoryTopic | null | undefined)[], overrides?: readonly AlgorithmDirectoryOverride[]): HydratedAlgorithmDirectoryNode;
 }
